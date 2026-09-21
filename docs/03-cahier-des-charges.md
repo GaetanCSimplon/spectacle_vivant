@@ -1,0 +1,295 @@
+# Cahier des charges — SaaS « Gestion Spectacle Vivant »
+
+**Version** : 1.0 (base de travail) — **Date** : 21/09/2026
+**Statut** : à valider après la Phase 0 (entretiens avec de vrais utilisateurs)
+**Documents liés** : `CLAUDE.md`, `01-guide-architecture.md`, `02-guide-metier.md`, `04-feuille-de-route.md`
+
+---
+
+## 1. Présentation
+
+### 1.1 Contexte
+Les artistes auto-produits, petites compagnies et associations loi 1901 du spectacle vivant (musique principalement) produisent quelques dates par an, sans administrateur dédié. Ils gèrent contrats, factures, logistique et suivi financier avec des outils dispersés (Word, Excel, messageries). Les solutions existantes (Orfeo, Bob Booking) ciblent des structures plus établies et sont trop complexes.
+
+### 1.2 Objectif
+Fournir une application web **radicalement simple**, mobile-first, permettant à un artiste de gérer seul son activité de production : **de la prise de date au paiement**.
+
+### 1.3 Proposition de valeur
+> « Saisis ta date une seule fois : ton contrat, ta facture et ta feuille de route se font tout seuls. »
+
+### 1.4 Cibles
+- Artistes indépendants et groupes auto-produits
+- Petites compagnies
+- Associations loi 1901 produisant quelques dates par an
+- Tourneurs émergents
+
+### 1.5 Modèle économique
+SaaS B2B freemium : gratuit jusqu'à **3 dates par an**, puis abonnement mensuel/annuel bas. Le paiement en ligne est prévu en v1 ; le quota est prévu dès le MVP dans le modèle de données.
+
+### 1.6 Principes directeurs
+1. **Simplicité avant richesse** : prise en main en moins de 5 minutes ; onboarding en moins de 10 minutes.
+2. **Vocabulaire du métier** (cession, cachet, feuille de route), sans jargon comptable ou juridique.
+3. **Pas plus de 5 modules** dans la navigation principale.
+4. **Assistance** : formulaires guidés (wizards), modèles pré-remplis, tooltips.
+5. **Mobile-first** : la consultation en déplacement doit être impeccable sur smartphone.
+6. **Fiabilité des documents** : ce qui est émis est figé et traçable.
+
+---
+
+## 2. Périmètre
+
+### 2.1 MVP (v0.x)
+| Réf. | Fonctionnalité |
+|---|---|
+| M0 | Comptes, connexion, onboarding, isolation des structures |
+| M1 | Carnet d'adresses (organisateurs, lieux, contacts) |
+| M2 | Spectacles |
+| M3 | Dates (`Gig`) avec statuts, vue liste et calendrier |
+| M4 | Contrat de cession PDF |
+| M5 | Devis et factures PDF (acompte / solde) |
+| M6 | Feuille de route mobile avec lien secret + PDF |
+| M7 | Paiements, dépenses, tableau de bord, export CSV |
+| M8 | Ma structure (infos légales) |
+| M9 | Pages légales, RGPD de base |
+
+### 2.2 Version 1
+Paiement d'abonnement (Stripe) et quotas ; signature électronique (prestataire) ; facture électronique conforme (Factur-X, avant 09/2027) ; relances automatiques ; rappels d'échéances ; export iCal ; PWA de la feuille de route (hors-ligne) ; comptes « invités en lecture » ; bibliothèque de documents types.
+
+### 2.3 Version 2
+Carte des dates avec distances et temps de trajet ; import de données ; modèles de contrats multiples ; statistiques avancées.
+
+### 2.4 Hors périmètre
+Calcul de charges sociales GUSO/intermittence ; connecteur expert-comptable ou CAE ; aide au choix du statut juridique ; comptabilité générale (plan comptable, bilan, déclaration de TVA) ; billetterie ; droits SACEM ; application mobile native ; paie des artistes.
+
+---
+
+## 3. Utilisateurs et rôles
+
+| Rôle | Description | MVP |
+|---|---|---|
+| **Owner** | Crée la structure, accès complet, gère l'abonnement | Oui |
+| **Member** | Membre de la structure, accès complet aux données (sauf paramètres sensibles) | Prévu dans le modèle, invitation en v1 |
+| **Lecteur invité** | Consultation d'une date ou d'une feuille de route | Via lien secret |
+
+Un utilisateur = une structure en MVP (modèle `Membership` prêt pour plusieurs).
+
+---
+
+## 4. Exigences fonctionnelles
+
+> Convention : **F-xx** = exigence, **CA** = critère d'acceptation testable.
+
+### 4.1 Comptes et structure (M0, M8)
+- **F-01 Inscription** par e-mail + mot de passe, confirmation d'e-mail. *CA : un nouvel utilisateur reçoit un e-mail et peut se connecter après confirmation.*
+- **F-02 Connexion / déconnexion / mot de passe oublié.**
+- **F-03 Onboarding guidé** (≤ 5 écrans) : nom de la structure, forme juridique, SIRET (optionnel), régime de TVA, premier spectacle, première date. *CA : un utilisateur de test obtient un contrat PDF en moins de 10 minutes.*
+- **F-04 Fiche « Ma structure »** : nom, forme juridique (association, micro-entreprise, société, CAE, autre), adresse, SIRET, régime de TVA, n° de TVA, IBAN, n° de licence/récépissé (optionnel), logo. *CA : ces infos apparaissent dans les contrats et factures.*
+- **F-05 Isolation** : un utilisateur ne voit et ne modifie jamais les données d'une autre structure. *CA : tests automatisés d'isolation sur chaque modèle et chaque vue.*
+
+### 4.2 Carnet d'adresses (M1)
+- **F-10** CRUD `Promoter` (nom, type, SIRET, adresse de facturation, e-mail, téléphone, notes).
+- **F-11** CRUD `Venue` (nom, adresse, jauge, informations d'accès, notes).
+- **F-12** CRUD `Contact` rattaché à un `Promoter` ou à un `Venue` (nom, rôle, e-mail, téléphone).
+- **F-13** Recherche en direct (HTMX) sur les trois listes. *CA : la liste se filtre en < 500 ms après la saisie.*
+- **F-14** Création à la volée depuis le formulaire d'une date (« + Nouvel organisateur »).
+
+### 4.3 Spectacles (M2)
+- **F-20** CRUD `Show` : titre, description, durée, effectif, fiche technique (texte + fichier PDF optionnel), prix habituel (indicatif).
+
+### 4.4 Dates (M3)
+- **F-30 Création guidée d'une date** (wizard) : spectacle → organisateur → lieu → date/horaires → prix et conditions → récapitulatif.
+- **F-31 Statuts** : `option`, `confirmed`, `signed`, `cancelled`. Transitions autorisées : option→confirmed→signed ; option/confirmed/signed→cancelled. *« Réalisé » et « Payé » sont des indicateurs calculés (date passée, facture soldée), pas des statuts.*
+- **F-32 Option** : date de fin d'option facultative, mise en évidence quand elle approche.
+- **F-33 Page de détail d'une date** : résumé, statut, documents, feuille de route, paiements, dépenses, prochaines actions.
+- **F-34 Liste des dates** avec filtres (statut, mois, spectacle) via HTMX.
+- **F-35 Vue calendrier mensuel** (dates colorées par statut).
+- **F-36 Annulation** : une date annulée est conservée (historique), exclue des totaux à venir.
+- **F-37 Quota freemium** : le nombre de dates de l'année est comptabilisé ; le blocage se fait en v1.
+
+### 4.5 Contrat de cession (M4)
+- **F-40** Génération d'un PDF de contrat depuis une date (données de la structure, de l'organisateur, du lieu, de la date, prix, conditions).
+- **F-41** Aperçu avant génération et possibilité d'éditer les conditions particulières (champ texte).
+- **F-42** Numéro de contrat unique par structure. Historique des versions générées.
+- **F-43** Marquage « signé » (manuel en MVP) : fige un PDF, fait passer la date à `signed`.
+- *CA : le PDF est lisible, paginé, contient toutes les mentions prévues par le modèle validé.*
+
+### 4.6 Devis et factures (M5)
+- **F-50** Création de devis et de factures depuis une date (lignes : désignation, quantité, prix HT, taux de TVA).
+- **F-51** Types de facture : acompte, solde, totale. Suggestion automatique de l'acompte et du solde selon les conditions de la date.
+- **F-52** Numérotation séquentielle sans trou par structure et par année, attribuée à l'émission.
+- **F-53** Statuts : `draft` → `issued` → `paid` ; `cancelled` par avoir uniquement. Une facture `issued` n'est plus modifiable.
+- **F-54** Avoir : facture négative liée à la facture d'origine.
+- **F-55** PDF avec mentions obligatoires et snapshot des infos légales à l'émission.
+- **F-56** Mention de TVA selon le régime (assujetti, franchise en base, non assujetti). ⚠️ *Textes à valider par un expert-comptable.*
+
+### 4.7 Feuille de route (M6)
+- **F-60** Éditeur de feuille de route par date : créneaux horaires (arrivée, balances, repas, concert, départ…), contacts sur place, hébergement, repas, notes, membres de l'équipe.
+- **F-61** Pré-remplissage depuis la date (lieu, adresse, contacts du lieu, horaires du concert).
+- **F-62** **Lien secret** : URL non devinable, activable/révocable, sans compte requis. *CA : sans le lien, la page est inaccessible ; après révocation, l'ancien lien renvoie une 404.*
+- **F-63** Affichage **mobile-first** (lisible à 375 px, gros boutons « Appeler », « Itinéraire »).
+- **F-64** Export PDF.
+
+### 4.8 Finances (M7)
+- **F-70** Enregistrement de `Payment` (montant, date, mode) rattaché à une facture ; le statut de la facture se met à jour.
+- **F-71** Enregistrement de `Expense` (date, montant, catégorie, libellé, justificatif optionnel) rattaché à une date.
+- **F-72** Catégories : cachets, transport, hébergement, technique, communication, autres.
+- **F-73** **Bilan par date** : facturé, encaissé, dépensé, résultat.
+- **F-74** **Tableau de bord** : total facturé et encaissé sur l'année, factures en attente ou en retard, dates sans contrat, prochaines dates.
+- **F-75** **Export CSV** (recettes, dépenses, factures), période au choix, encodage UTF-8 avec BOM et séparateur `;` (compatible Excel FR).
+
+### 4.9 Légal et RGPD (M9)
+- **F-80** Mentions légales, CGU, politique de confidentialité.
+- **F-81** Export des données de la structure (CSV/JSON) et suppression du compte sur demande.
+- **F-82** Consentement pour e-mails non transactionnels si applicable.
+
+---
+
+## 5. Règles de gestion
+
+| Réf. | Règle |
+|---|---|
+| RG-01 | Toute donnée métier appartient à **une** structure et n'est jamais visible d'une autre. |
+| RG-02 | Un `Gig` relie obligatoirement un `Show`, un `Promoter` et une date ; le `Venue` est facultatif au statut `option`, obligatoire à `signed`. |
+| RG-03 | Un `Contact` est rattaché soit à un `Promoter`, soit à un `Venue` (exactement un des deux). |
+| RG-04 | Une date `cancelled` ne peut pas être remise en `option`/`confirmed` sans action explicite de réactivation. |
+| RG-05 | Les numéros de facture sont uniques et **sans trou** par structure et par année. |
+| RG-06 | Une facture `issued` est immuable ; toute correction passe par un avoir. |
+| RG-07 | À l'émission, les infos légales de la structure et du client sont copiées dans le document. |
+| RG-08 | Un contrat `signed` conserve son PDF figé. |
+| RG-09 | Une facture ne peut être marquée `paid` que si la somme des paiements ≥ son total. |
+| RG-10 | Les montants sont exprimés en euros, avec deux décimales (`Decimal`). |
+| RG-11 | Un lien secret de feuille de route expose uniquement cette feuille de route, jamais le reste de la date (prix, contrat…). |
+
+---
+
+## 6. Exigences non fonctionnelles
+
+### 6.1 Performance
+- Pages courantes rendues en < 1 s (95e centile) avec 500 dates par structure.
+- Génération d'un PDF en < 5 s.
+
+### 6.2 Sécurité
+- HTTPS obligatoire, cookies sécurisés, protection CSRF, mots de passe hachés (défaut Django), limitation des tentatives de connexion.
+- Secrets hors du code. Dépendances mises à jour régulièrement.
+- Journalisation sans donnée personnelle. Sentry configuré pour ne pas envoyer de PII.
+- `manage.py check --deploy` sans avertissement critique avant chaque mise en production.
+
+### 6.3 RGPD
+- Hébergement des données en **France/UE**, sous-traitants UE ou clauses adaptées.
+- Registre des traitements, politique de confidentialité, procédure d'export et suppression.
+- Minimisation : ne collecter que ce qui est nécessaire.
+
+### 6.4 Conservation
+- ⚠️ Les documents comptables (factures) doivent être conservés plusieurs années (10 ans en pratique courante) : la suppression d'un compte doit tenir compte de cette obligation. *À valider.*
+
+### 6.5 Sauvegardes et disponibilité
+- Sauvegardes quotidiennes de la base, restauration **testée au moins une fois** avant la bêta.
+- Objectif de disponibilité de 99 % pendant la bêta, avec supervision (moniteur d'uptime).
+
+### 6.6 Compatibilité et accessibilité
+- Navigateurs : versions récentes de Chrome, Safari, Firefox, Edge. Mobile : iOS Safari, Android Chrome.
+- Accessibilité : contrastes suffisants, libellés de formulaires, navigation au clavier (objectif d'orientation WCAG AA).
+
+### 6.7 Maintenabilité
+- Couverture de tests sur la logique métier et l'isolation. CI obligatoire avant fusion.
+- Code lisible, conventions dans `CLAUDE.md`, migrations versionnées.
+
+---
+
+## 7. Contraintes UX
+
+- Navigation principale : **Dates · Spectacles · Contacts · Documents/Finances · Ma structure** (5 entrées max).
+- Wizards pour les créations complexes (date, onboarding).
+- Tooltips contextuels ; textes d'aide courts. Messages d'erreur en français, compréhensibles.
+- Actions primaires évidentes (un bouton principal par écran).
+- Tous les écrans utilisables à une main sur smartphone.
+
+---
+
+## 8. Architecture technique (résumé)
+
+Monolithe modulaire Django 5.2 LTS + PostgreSQL ; HTMX + Alpine.js + Tailwind ; WeasyPrint ; `django-allauth` ; hébergement Scalingo (France) ; bucket S3 européen ; Sentry (UE).
+Multi-tenant par **base partagée avec clé `organization`**. Détails : `01-guide-architecture.md`.
+
+---
+
+## 9. Modèle de données (MVP)
+
+> Tous les modèles marqués (T) héritent de `TenantOwnedModel` (FK `organization`).
+
+**User** : email (login), first_name, last_name.
+**Organization** : name, legal_form, address, siret, vat_regime, vat_number, iban, licence_number, logo, plan, created_at.
+**Membership** : user, organization, role (`owner`/`member`). Unique (user, organization).
+
+**Show (T)** : title, description, duration_minutes, crew_size, tech_sheet_text, tech_sheet_file, indicative_price.
+**Promoter (T)** : name, kind, siret, billing_address, email, phone, notes.
+**Venue (T)** : name, address, capacity, access_info, notes.
+**Contact (T)** : name, role, email, phone, promoter (nullable) **ou** venue (nullable) — contrainte : exactement un des deux.
+
+**Gig (T)** : show, promoter, venue (nullable), date, start_time, status, price_excl_tax, vat_rate, deposit_percent, option_expires_on, conditions, notes.
+**GigMember (T)** : gig, name, role, phone, email.
+
+**Contract (T)** : gig, number, status (`draft`/`generated`/`signed`), special_conditions, template_version, pdf_file, generated_at, signed_at.
+**Quote (T)** / **Invoice (T)** : gig, number, kind (deposit/balance/full), status, issue_date, due_date, issuer_snapshot (JSON), customer_snapshot (JSON), total_excl_tax, total_vat, total_incl_tax, credit_note_of (nullable, pour les avoirs), pdf_file.
+**DocumentLine (T)** : parent (quote/invoice), label, quantity, unit_price_excl_tax, vat_rate.
+**InvoiceSequence (T)** : organization, year, last_number — verrouillée à l'émission.
+
+**Roadmap (T)** : gig (OneToOne), token, is_published, notes.
+**RoadmapSlot (T)** : roadmap, kind, time, label, note.
+**Lodging (T)** / **Meal (T)** : roadmap, address / place, time, notes.
+
+**Payment (T)** : invoice, amount, date, method.
+**Expense (T)** : gig, category, label, amount, date, receipt_file.
+
+---
+
+## 10. Écrans principaux
+
+1. Inscription / connexion / onboarding (assistant)
+2. Accueil / tableau de bord
+3. Liste des dates + calendrier
+4. Assistant de création d'une date
+5. Détail d'une date (documents, feuille de route, paiements, dépenses)
+6. Aperçu et génération du contrat
+7. Édition d'une facture / d'un devis
+8. Éditeur de feuille de route + vue publique mobile
+9. Listes et fiches : spectacles, organisateurs, lieux, contacts
+10. Finances : dashboard, dépenses, export
+11. Ma structure
+12. Pages légales
+
+---
+
+## 11. Recette du MVP (critères d'acceptation globaux)
+
+Le MVP est **livrable** quand un utilisateur de test, sans aide, peut :
+- [ ] créer son compte et sa structure en < 10 min ;
+- [ ] créer un organisateur, un lieu et un spectacle ;
+- [ ] créer une date et la faire évoluer de `option` à `signed` ;
+- [ ] générer un contrat PDF correct, le télécharger ;
+- [ ] émettre une facture d'acompte puis de solde, avec numérotation correcte ;
+- [ ] enregistrer un paiement et voir la facture passer à `paid` ;
+- [ ] créer une feuille de route, la partager par lien, l'ouvrir sur un téléphone ;
+- [ ] saisir une dépense, voir le bilan de la date et exporter un CSV ;
+- [ ] et que **les tests d'isolation prouvent** qu'une autre structure ne voit rien de tout cela.
+
+---
+
+## 12. Risques
+
+| Risque | Impact | Mesure |
+|---|---|---|
+| Produit non désiré par le marché | Élevé | Phase 0 : entretiens ; bêta fermée |
+| Fuite de données entre structures | Critique | Isolation testée dès la Phase 1 |
+| Contrats/factures non conformes | Élevé | Validation par un professionnel ; mentions figées |
+| Facture électronique (09/2027) | Moyen | Prévue en v1 |
+| Dérive du périmètre | Élevé | Liste hors périmètre ; ce cahier des charges fait foi |
+| Charge de travail en solo | Moyen | Découpage en petites PR, MVP resserré |
+| Dépendance à l'IA (code non compris) | Moyen | Relecture systématique, tests, plan avant code |
+| WeasyPrint difficile à déployer | Moyen | Test dès la Phase 1 |
+
+---
+
+## 13. Livrables
+
+Code source (dépôt Git), application déployée (staging et production), documentation (`docs/`), jeux de tests, pipeline CI/CD, modèles de documents validés.

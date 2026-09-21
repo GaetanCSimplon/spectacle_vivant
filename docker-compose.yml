@@ -1,0 +1,17 @@
+services:
+  db:
+    image: postgres:16
+    container_name: spectacle_db
+    restart: unless-stopped
+    environment:
+      # Identifiants de développement LOCAL uniquement
+      POSTGRES_DB: spectacle
+      POSTGRES_USER: spectacle
+      POSTGRES_PASSWORD: spectacle
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+volumes:
+  pgdata:
