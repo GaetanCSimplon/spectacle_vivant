@@ -11,3 +11,12 @@ class TenantOwnedModel(models.Model):
 
     class Meta:
         abstract = True
+
+
+class Note(TenantOwnedModel):
+    """Disposable model used only to validate the tenant isolation mechanism."""
+
+    text = models.TextField(blank=True)
+
+    def __str__(self):
+        return self.text[:50]
