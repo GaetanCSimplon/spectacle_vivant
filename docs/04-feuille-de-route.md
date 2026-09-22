@@ -72,12 +72,12 @@ Avant de coder : propose un plan (fichiers, modèles, tests) et attends mon acco
 
 ### 1.2 Projet Django
 - [ ] Créer l'environnement virtuel, installer Django 5.2 LTS.
-- [ ] Générer le projet avec le dossier `config/` et les réglages séparés `base.py`, `dev.py`, `test.py`, `prod.py`.
+- [x] Générer le projet avec le dossier `config/` et les réglages séparés `base.py`, `dev.py`, `test.py`, `prod.py`.
 - [ ] Créer les fichiers `requirements/base.txt`, `dev.txt`, `prod.txt`.
 - [ ] `.gitignore` (venv, `.env`, `__pycache__`, `staticfiles`, `media`).
-- [ ] `.env.example` documenté ; chargement via `django-environ`.
-- [ ] `docker-compose.yml` avec PostgreSQL 16 ; connexion Django → Postgres.
-- [ ] `LANGUAGE_CODE="fr"`, `TIME_ZONE="Europe/Paris"`.
+- [x] `.env.example` documenté ; chargement via `django-environ`.
+- [x] `docker-compose.yml` avec PostgreSQL 16 ; connexion Django → Postgres.
+- [x] `LANGUAGE_CODE="fr"`, `TIME_ZONE="Europe/Paris"`.
 
 ### 1.3 Qualité
 - [ ] Configurer `ruff` (règles de base + imports) et `pre-commit`.
@@ -85,14 +85,14 @@ Avant de coder : propose un plan (fichiers, modèles, tests) et attends mon acco
 - [ ] Ajouter un `Makefile` ou des scripts pour les commandes courantes (facultatif).
 
 ### 1.4 Utilisateur, structure et isolation ⚠️ *(à faire avant la première migration)*
-- [ ] App `accounts` : **User personnalisé** avec connexion par e-mail. **Créé avant tout `migrate`** (sinon très pénible à changer).
-- [ ] App `organizations` : modèle `Organization` (champs minimaux : name, legal_form, plan).
-- [ ] Modèle `Membership` (user, organization, role).
-- [ ] App `core` : `TenantOwnedModel` (abstract), middleware `request.organization`, `TenantScopedMixin` pour les vues.
+- [x] App `accounts` : **User personnalisé** avec connexion par e-mail. **Créé avant tout `migrate`** (sinon très pénible à changer).
+- [x] App `organizations` : modèle `Organization` (champs minimaux : name, legal_form, plan).
+- [x] Modèle `Membership` (user, organization, role).
+- [ ] App `core` : `TenantOwnedModel` (abstract) fait ; middleware `request.organization` et `TenantScopedMixin` pour les vues **restent à faire**.
 - [ ] Modèle de test jetable (ex. `Note`) pour valider le mécanisme.
 - [ ] **Tests d'isolation** : B reçoit 404 sur un objet de A ; les listes ne mélangent pas ; création forcée dans l'organisation courante.
 - [ ] **Test de couverture** : échoue si un modèle `TenantOwnedModel` n'a pas de test d'isolation.
-- [ ] Intégrer `django-allauth` (inscription, connexion, mot de passe oublié) avec e-mails en console en dev.
+- [ ] Intégrer `django-allauth` (inscription, connexion, mot de passe oublié) avec e-mails en console en dev. — inscription et connexion testées en local (OK) ; **mot de passe oublié pas encore testé**.
 
 ### 1.5 Front
 - [ ] `django-tailwind-cli` installé ; compilation OK.
