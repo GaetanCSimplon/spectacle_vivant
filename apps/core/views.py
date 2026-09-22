@@ -1,6 +1,9 @@
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.http import Http404
+from django.http import Http404, HttpResponse
+from django.views import View
 from django.views.generic import TemplateView
+
+from .services import render_pdf
 
 
 class TenantScopedMixin(LoginRequiredMixin):
@@ -31,3 +34,14 @@ class HomeView(LoginRequiredMixin, TemplateView):
         context = super().get_context_data(**kwargs)
         context["organization"] = self.request.organization
         return context
+
+
+class HelloPdfView(LoginRequiredMixin, View):
+    """Disposable view: validates that WeasyPrint works end to end.
+
+    To be removed once a real PDF (e.g. generate_contract_pdf) exists.
+    """
+
+    def get(self, request, *args, **kwargs):
+        pdf = render_pdf("core/hello_pdf.html")
+        return HttpResponse(pdf, content_type="application/pdf")
