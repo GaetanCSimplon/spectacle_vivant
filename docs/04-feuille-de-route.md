@@ -100,8 +100,8 @@ Avant de coder : propose un plan (fichiers, modèles, tests) et attends mon acco
 - [x] Une page d'accueil connectée qui affiche le nom de la structure.
 
 ### 1.6 PDF — validation précoce
-- [ ] Installer WeasyPrint (+ dépendances système) en local et **dans l'image Docker** si utilisée.
-- [ ] Vue qui génère un PDF « Bonjour » depuis un template HTML/CSS. Test automatisé qui vérifie qu'un PDF est bien renvoyé.
+- [ ] Installer WeasyPrint (+ dépendances système) en local et **dans l'image Docker** si utilisée. — fait en local (testé en navigateur) ; pas encore d'image Docker pour l'app Django à ce stade (seulement `docker-compose.yml` pour Postgres), donc **dépendances système à valider en Phase 1.7** (penser à `libharfbuzz-subset0`, requis par une prochaine version de WeasyPrint).
+- [x] Vue qui génère un PDF « Bonjour » depuis un template HTML/CSS. Test automatisé qui vérifie qu'un PDF est bien renvoyé.
 
 ### 1.7 CI/CD et déploiement
 - [ ] GitHub Actions : `ruff`, `pytest` (avec service Postgres), contrôle qu'il n'y a pas de migration manquante (`makemigrations --check`), `manage.py check --deploy`.
