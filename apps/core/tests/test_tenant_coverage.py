@@ -8,11 +8,15 @@ test is not order-dependent).
 
 from django.apps import apps
 
+from apps.addressbook.tests import test_isolation as addressbook_test_isolation  # noqa: F401
+from apps.catalog.tests import test_isolation as catalog_test_isolation  # noqa: F401
 from apps.core.models import TenantOwnedModel
 from apps.core.tests import (
     isolation_registry,
     test_tenant_isolation,  # noqa: F401
 )
+from apps.documents.tests import test_isolation as documents_test_isolation  # noqa: F401
+from apps.gigs.tests import test_isolation as gigs_test_isolation  # noqa: F401
 
 
 def _tenant_owned_models():
