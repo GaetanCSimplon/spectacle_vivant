@@ -1,0 +1,25 @@
+{% load static tailwind_cli %}
+<!DOCTYPE html>
+<html lang="fr">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{% block title %}Spectacle Vivant{% endblock %}</title>
+    {% tailwind_css %}
+    <script defer src="{% static 'vendor/htmx.min.js' %}"></script>
+    <script defer src="{% static 'vendor/alpine.min.js' %}"></script>
+    {% block extra_head %}{% endblock %}
+  </head>
+  <body class="min-h-screen bg-gray-50 text-gray-900">
+    {% include "components/_header.html" %}
+
+    <main class="mx-auto max-w-3xl px-4 py-6">
+      {% for message in messages %}
+        <p class="mb-4 rounded-md bg-blue-50 px-4 py-2 text-sm text-blue-800">{{ message }}</p>
+      {% endfor %}
+
+      {% block page_content %}{% endblock %}
+    </main>
+    {% block extra_body %}{% endblock %}
+  </body>
+</html>

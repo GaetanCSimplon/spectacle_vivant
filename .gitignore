@@ -19,8 +19,9 @@ db.sqlite3
 staticfiles/
 media/
 
-# Tailwind (outil téléchargé)
+# Tailwind (outil téléchargé + CSS compilé, régénéré à chaque build)
 .django_tailwind_cli/
+static/css/tailwind.css
 
 # Éditeurs et système
 .vscode/

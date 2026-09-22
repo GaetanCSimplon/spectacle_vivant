@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+
+{% block title %}{% block head_title %}{% endblock %}{% endblock %}
+
+{% block extra_head %}{% endblock %}
+
+{% block page_content %}
+  <div class="mx-auto max-w-sm">
+    {% block body %}
+      {% block content %}{% endblock %}
+    {% endblock %}
+  </div>
+{% endblock %}
+
+{% block extra_body %}{% endblock %}

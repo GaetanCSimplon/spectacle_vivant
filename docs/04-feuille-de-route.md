@@ -72,49 +72,51 @@ Avant de coder : propose un plan (fichiers, modèles, tests) et attends mon acco
 
 ### 1.2 Projet Django
 - [ ] Créer l'environnement virtuel, installer Django 5.2 LTS.
-- [ ] Générer le projet avec le dossier `config/` et les réglages séparés `base.py`, `dev.py`, `test.py`, `prod.py`.
+- [x] Générer le projet avec le dossier `config/` et les réglages séparés `base.py`, `dev.py`, `test.py`, `prod.py`.
 - [ ] Créer les fichiers `requirements/base.txt`, `dev.txt`, `prod.txt`.
 - [ ] `.gitignore` (venv, `.env`, `__pycache__`, `staticfiles`, `media`).
-- [ ] `.env.example` documenté ; chargement via `django-environ`.
-- [ ] `docker-compose.yml` avec PostgreSQL 16 ; connexion Django → Postgres.
-- [ ] `LANGUAGE_CODE="fr"`, `TIME_ZONE="Europe/Paris"`.
+- [x] `.env.example` documenté ; chargement via `django-environ`.
+- [x] `docker-compose.yml` avec PostgreSQL 16 ; connexion Django → Postgres.
+- [x] `LANGUAGE_CODE="fr"`, `TIME_ZONE="Europe/Paris"`.
 
 ### 1.3 Qualité
-- [ ] Configurer `ruff` (règles de base + imports) et `pre-commit`.
-- [ ] Configurer `pytest`, `pytest-django`, `factory_boy` ; premier test qui passe.
+- [x] Configurer `ruff` (règles de base + imports) et `pre-commit`.
+- [x] Configurer `pytest`, `pytest-django`, `factory_boy` ; premier test qui passe.
 - [ ] Ajouter un `Makefile` ou des scripts pour les commandes courantes (facultatif).
 
 ### 1.4 Utilisateur, structure et isolation ⚠️ *(à faire avant la première migration)*
-- [ ] App `accounts` : **User personnalisé** avec connexion par e-mail. **Créé avant tout `migrate`** (sinon très pénible à changer).
-- [ ] App `organizations` : modèle `Organization` (champs minimaux : name, legal_form, plan).
-- [ ] Modèle `Membership` (user, organization, role).
-- [ ] App `core` : `TenantOwnedModel` (abstract), middleware `request.organization`, `TenantScopedMixin` pour les vues.
-- [ ] Modèle de test jetable (ex. `Note`) pour valider le mécanisme.
-- [ ] **Tests d'isolation** : B reçoit 404 sur un objet de A ; les listes ne mélangent pas ; création forcée dans l'organisation courante.
-- [ ] **Test de couverture** : échoue si un modèle `TenantOwnedModel` n'a pas de test d'isolation.
-- [ ] Intégrer `django-allauth` (inscription, connexion, mot de passe oublié) avec e-mails en console en dev.
+- [x] App `accounts` : **User personnalisé** avec connexion par e-mail. **Créé avant tout `migrate`** (sinon très pénible à changer).
+- [x] App `organizations` : modèle `Organization` (champs minimaux : name, legal_form, plan).
+- [x] Modèle `Membership` (user, organization, role).
+- [x] App `core` : `TenantOwnedModel` (abstract), middleware `request.organization`, `TenantScopedMixin` pour les vues.
+- [x] Modèle de test jetable (ex. `Note`) pour valider le mécanisme.
+- [x] **Tests d'isolation** : B reçoit 404 sur un objet de A ; les listes ne mélangent pas ; création forcée dans l'organisation courante.
+- [x] **Test de couverture** : échoue si un modèle `TenantOwnedModel` n'a pas de test d'isolation.
+- [ ] Intégrer `django-allauth` (inscription, connexion, mot de passe oublié) avec e-mails en console en dev. — inscription et connexion testées en local (OK) ; **mot de passe oublié pas encore testé**.
 
 ### 1.5 Front
-- [ ] `django-tailwind-cli` installé ; compilation OK.
-- [ ] `base.html` : Tailwind, HTMX (`django-htmx`), Alpine.js, meta viewport, structure mobile-first (en-tête + menu).
-- [ ] Une page d'accueil connectée qui affiche le nom de la structure.
+- [x] `django-tailwind-cli` installé ; compilation OK.
+- [x] `base.html` : Tailwind, HTMX (`django-htmx`), Alpine.js, meta viewport, structure mobile-first (en-tête + menu). — en-tête minimal en place (pas de vrai menu de navigation : aucune fonctionnalité métier à lier avant Sprint 3.1). Testé en navigateur, y compris les pages allauth qui héritent du même layout.
+- [x] Une page d'accueil connectée qui affiche le nom de la structure.
 
 ### 1.6 PDF — validation précoce
-- [ ] Installer WeasyPrint (+ dépendances système) en local et **dans l'image Docker** si utilisée.
-- [ ] Vue qui génère un PDF « Bonjour » depuis un template HTML/CSS. Test automatisé qui vérifie qu'un PDF est bien renvoyé.
+- [ ] Installer WeasyPrint (+ dépendances système) en local et **dans l'image Docker** si utilisée. — fait en local (testé en navigateur) ; pas encore d'image Docker pour l'app Django à ce stade (seulement `docker-compose.yml` pour Postgres), donc **dépendances système à valider en Phase 1.7** (penser à `libharfbuzz-subset0`, requis par une prochaine version de WeasyPrint).
+- [x] Vue qui génère un PDF « Bonjour » depuis un template HTML/CSS. Test automatisé qui vérifie qu'un PDF est bien renvoyé.
 
 ### 1.7 CI/CD et déploiement
-- [ ] GitHub Actions : `ruff`, `pytest` (avec service Postgres), contrôle qu'il n'y a pas de migration manquante (`makemigrations --check`), `manage.py check --deploy`.
-- [ ] Protéger `main` : PR obligatoire, CI verte requise.
-- [ ] Scalingo : créer l'app **staging**, ajouter l'addon PostgreSQL, configurer variables d'environnement, `Procfile` (gunicorn), migrations automatiques après déploiement, `whitenoise` pour les statiques.
-- [ ] Rendre WeasyPrint opérationnel sur Scalingo (installation des bibliothèques système via le buildpack apt ; **suivre la documentation Scalingo à jour**).
-- [ ] Route `/health/` (renvoie 200) + moniteur d'uptime gratuit.
-- [ ] Sentry (région UE) branché, sans données personnelles.
-- [ ] Déploiement automatique de `main` vers staging.
+- [x] GitHub Actions : `ruff`, `pytest` (avec service Postgres), contrôle qu'il n'y a pas de migration manquante (`makemigrations --check`), `manage.py check --deploy`. — validé sur GitHub via la PR de la branche `feature/django-skeleton`, CI verte.
+- [x] Protéger `main` : PR obligatoire, CI verte requise.
+- [ ] Scalingo : créer l'app **staging**, ajouter l'addon PostgreSQL, configurer variables d'environnement, `Procfile` (gunicorn), migrations automatiques après déploiement, `whitenoise` pour les statiques. — **en attente : pas de compte Scalingo pour l'instant.**
+- [ ] Rendre WeasyPrint opérationnel sur Scalingo (installation des bibliothèques système via le buildpack apt ; **suivre la documentation Scalingo à jour**). — **en attente**, dépend du point précédent.
+- [ ] Route `/health/` (renvoie 200) + moniteur d'uptime gratuit. — **en attente**, peu utile sans déploiement.
+- [ ] Sentry (région UE) branché, sans données personnelles. — **en attente**, peu utile sans déploiement.
+- [ ] Déploiement automatique de `main` vers staging. — **en attente**, dépend du compte Scalingo.
 
 **Livrable** : une URL de staging avec inscription/connexion, une page connectée, un PDF de test, CI verte.
 **Critère de sortie** : tu peux modifier une ligne, ouvrir une PR, voir la CI passer, fusionner, et voir la modification en ligne en moins de 10 minutes.
 **Vigilance** : ne pas ajouter de fonctionnalités métier. Ne pas peaufiner le design.
+
+> **Décision du 2026-09-22** : critère de sortie non atteint (pas de compte Scalingo). Choix assumé de passer à la Phase 2 malgré tout, avec le risque connu de découvrir un problème de déploiement tardivement. Le reste de la §1.7 (Scalingo, `/health/`, Sentry, déploiement auto) est à reprendre dès qu'un compte Scalingo existe.
 
 ---
 

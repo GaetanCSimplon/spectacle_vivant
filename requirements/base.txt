@@ -4,5 +4,6 @@ django-environ
 django-allauth
 django-htmx
 django-tailwind-cli
+weasyprint
 whitenoise
 django-storages[s3]
