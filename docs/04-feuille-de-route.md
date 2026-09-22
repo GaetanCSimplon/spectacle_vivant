@@ -104,17 +104,19 @@ Avant de coder : propose un plan (fichiers, modèles, tests) et attends mon acco
 - [x] Vue qui génère un PDF « Bonjour » depuis un template HTML/CSS. Test automatisé qui vérifie qu'un PDF est bien renvoyé.
 
 ### 1.7 CI/CD et déploiement
-- [ ] GitHub Actions : `ruff`, `pytest` (avec service Postgres), contrôle qu'il n'y a pas de migration manquante (`makemigrations --check`), `manage.py check --deploy`.
-- [ ] Protéger `main` : PR obligatoire, CI verte requise.
-- [ ] Scalingo : créer l'app **staging**, ajouter l'addon PostgreSQL, configurer variables d'environnement, `Procfile` (gunicorn), migrations automatiques après déploiement, `whitenoise` pour les statiques.
-- [ ] Rendre WeasyPrint opérationnel sur Scalingo (installation des bibliothèques système via le buildpack apt ; **suivre la documentation Scalingo à jour**).
-- [ ] Route `/health/` (renvoie 200) + moniteur d'uptime gratuit.
-- [ ] Sentry (région UE) branché, sans données personnelles.
-- [ ] Déploiement automatique de `main` vers staging.
+- [ ] GitHub Actions : `ruff`, `pytest` (avec service Postgres), contrôle qu'il n'y a pas de migration manquante (`makemigrations --check`), `manage.py check --deploy`. — workflow écrit (`.github/workflows/ci.yml`) et chaque étape rejouée en local avec les mêmes variables d'environnement ; **pas encore vu tourner sur GitHub** (il faut pousser la branche et ouvrir une PR pour valider en conditions réelles).
+- [ ] Protéger `main` : PR obligatoire, CI verte requise. — réglage GitHub à faire manuellement (Settings → Branches) une fois la CI validée.
+- [ ] Scalingo : créer l'app **staging**, ajouter l'addon PostgreSQL, configurer variables d'environnement, `Procfile` (gunicorn), migrations automatiques après déploiement, `whitenoise` pour les statiques. — **en attente : pas de compte Scalingo pour l'instant.**
+- [ ] Rendre WeasyPrint opérationnel sur Scalingo (installation des bibliothèques système via le buildpack apt ; **suivre la documentation Scalingo à jour**). — **en attente**, dépend du point précédent.
+- [ ] Route `/health/` (renvoie 200) + moniteur d'uptime gratuit. — **en attente**, peu utile sans déploiement.
+- [ ] Sentry (région UE) branché, sans données personnelles. — **en attente**, peu utile sans déploiement.
+- [ ] Déploiement automatique de `main` vers staging. — **en attente**, dépend du compte Scalingo.
 
 **Livrable** : une URL de staging avec inscription/connexion, une page connectée, un PDF de test, CI verte.
 **Critère de sortie** : tu peux modifier une ligne, ouvrir une PR, voir la CI passer, fusionner, et voir la modification en ligne en moins de 10 minutes.
 **Vigilance** : ne pas ajouter de fonctionnalités métier. Ne pas peaufiner le design.
+
+> **Décision du 2026-09-22** : critère de sortie non atteint (pas de compte Scalingo). Choix assumé de passer à la Phase 2 malgré tout, avec le risque connu de découvrir un problème de déploiement tardivement. Le reste de la §1.7 (Scalingo, `/health/`, Sentry, déploiement auto) est à reprendre dès qu'un compte Scalingo existe.
 
 ---
 
