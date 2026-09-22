@@ -95,9 +95,9 @@ Avant de coder : propose un plan (fichiers, modèles, tests) et attends mon acco
 - [ ] Intégrer `django-allauth` (inscription, connexion, mot de passe oublié) avec e-mails en console en dev. — inscription et connexion testées en local (OK) ; **mot de passe oublié pas encore testé**.
 
 ### 1.5 Front
-- [ ] `django-tailwind-cli` installé ; compilation OK.
-- [ ] `base.html` : Tailwind, HTMX (`django-htmx`), Alpine.js, meta viewport, structure mobile-first (en-tête + menu).
-- [ ] Une page d'accueil connectée qui affiche le nom de la structure.
+- [x] `django-tailwind-cli` installé ; compilation OK.
+- [x] `base.html` : Tailwind, HTMX (`django-htmx`), Alpine.js, meta viewport, structure mobile-first (en-tête + menu). — en-tête minimal en place (pas de vrai menu de navigation : aucune fonctionnalité métier à lier avant Sprint 3.1). Testé en navigateur, y compris les pages allauth qui héritent du même layout.
+- [x] Une page d'accueil connectée qui affiche le nom de la structure.
 
 ### 1.6 PDF — validation précoce
 - [ ] Installer WeasyPrint (+ dépendances système) en local et **dans l'image Docker** si utilisée.
