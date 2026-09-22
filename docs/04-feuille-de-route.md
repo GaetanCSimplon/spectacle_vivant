@@ -125,14 +125,14 @@ Avant de coder : propose un plan (fichiers, modèles, tests) et attends mon acco
 **Objectif** : prouver **le parcours le plus précieux de bout en bout** : *un utilisateur s'inscrit, saisit une date, télécharge un contrat PDF correct.* Tout est minimal, mais réel et déployé.
 
 ### 2.1 Modèles minimaux
-- [ ] `Organization` complétée (adresse, SIRET, vat_regime).
-- [ ] `Show` (titre, durée, prix indicatif).
-- [ ] `Promoter` (nom, SIRET, adresse de facturation, e-mail).
-- [ ] `Venue` (nom, adresse).
-- [ ] `Gig` (show, promoter, venue, date, statut, prix HT, conditions).
-- [ ] `Contract` (gig, statut, pdf_file, generated_at).
-- [ ] Admin Django configuré pour tous les modèles (débogage).
-- [ ] Factories de test et **tests d'isolation pour chaque modèle**.
+- [x] `Organization` complétée (adresse, SIRET, vat_regime).
+- [x] `Show` (titre, durée, prix indicatif).
+- [x] `Promoter` (nom, SIRET, adresse de facturation, e-mail).
+- [x] `Venue` (nom, adresse).
+- [x] `Gig` (show, promoter, venue, date, statut, prix HT, conditions).
+- [x] `Contract` (gig, statut, pdf_file, generated_at).
+- [x] Admin Django configuré pour tous les modèles (débogage).
+- [x] Factories de test et **tests d'isolation pour chaque modèle**. — tests au niveau ORM (pas encore de vues CRUD, elles arrivent en §2.2/§3.2). Testé en local avec une vraie migration Postgres.
 
 ### 2.2 Wizard de création de date
 - [ ] Étape 1 : choisir/créer un spectacle. Étape 2 : choisir/créer un organisateur. Étape 3 : lieu. Étape 4 : date, horaires, prix. Étape 5 : récapitulatif et validation.

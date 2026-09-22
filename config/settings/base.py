@@ -41,6 +41,10 @@ INSTALLED_APPS = [
     "apps.accounts",
     "apps.organizations",
     "apps.core",
+    "apps.catalog",
+    "apps.addressbook",
+    "apps.gigs",
+    "apps.documents",
 ]
 
 MIDDLEWARE = [
@@ -140,6 +144,11 @@ USE_TZ = True
 
 STATIC_URL = "static/"
 STATICFILES_DIRS = [BASE_DIR / "static"]
+
+# Media files (uploaded/generated documents) — local storage in dev,
+# S3 européen via django-storages à partir du Sprint 3.4.
+MEDIA_URL = "media/"
+MEDIA_ROOT = BASE_DIR / "media"
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
