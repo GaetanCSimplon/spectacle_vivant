@@ -1,5 +1,6 @@
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.http import Http404
+from django.views.generic import TemplateView
 
 
 class TenantScopedMixin(LoginRequiredMixin):
@@ -21,3 +22,12 @@ class TenantScopedMixin(LoginRequiredMixin):
     def form_valid(self, form):
         form.instance.organization = self.request.organization
         return super().form_valid(form)
+
+
+class HomeView(LoginRequiredMixin, TemplateView):
+    template_name = "core/home.html"
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["organization"] = self.request.organization
+        return context
