@@ -105,7 +105,7 @@ Avant de coder : propose un plan (fichiers, modèles, tests) et attends mon acco
 
 ### 1.7 CI/CD et déploiement
 - [x] GitHub Actions : `ruff`, `pytest` (avec service Postgres), contrôle qu'il n'y a pas de migration manquante (`makemigrations --check`), `manage.py check --deploy`. — validé sur GitHub via la PR de la branche `feature/django-skeleton`, CI verte.
-- [ ] Protéger `main` : PR obligatoire, CI verte requise. — réglage GitHub à faire manuellement (Settings → Branches) une fois la CI validée.
+- [x] Protéger `main` : PR obligatoire, CI verte requise.
 - [ ] Scalingo : créer l'app **staging**, ajouter l'addon PostgreSQL, configurer variables d'environnement, `Procfile` (gunicorn), migrations automatiques après déploiement, `whitenoise` pour les statiques. — **en attente : pas de compte Scalingo pour l'instant.**
 - [ ] Rendre WeasyPrint opérationnel sur Scalingo (installation des bibliothèques système via le buildpack apt ; **suivre la documentation Scalingo à jour**). — **en attente**, dépend du point précédent.
 - [ ] Route `/health/` (renvoie 200) + moniteur d'uptime gratuit. — **en attente**, peu utile sans déploiement.
