@@ -1,0 +1,67 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+env:
+  DJANGO_SECRET_KEY: ci-secret-key-not-used-in-prod-but-long-enough-to-silence-w009
+  DJANGO_DEBUG: "False"
+  DJANGO_ALLOWED_HOSTS: localhost,127.0.0.1
+  DATABASE_URL: postgres://spectacle:spectacle@localhost:5432/spectacle
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_DB: spectacle
+          POSTGRES_USER: spectacle
+          POSTGRES_PASSWORD: spectacle
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U spectacle"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install WeasyPrint system dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            libpango-1.0-0 libpangocairo-1.0-0 libgdk-pixbuf2.0-0 \
+            libcairo2 libharfbuzz-subset0
+
+      - name: Install Python dependencies
+        run: pip install -r requirements/dev.txt
+
+      - name: Lint (ruff)
+        run: ruff check .
+
+      - name: Check formatting (ruff)
+        run: ruff format --check .
+
+      - name: Check for missing migrations
+        run: python manage.py makemigrations --check --no-input
+        env:
+          DJANGO_SETTINGS_MODULE: config.settings.test
+
+      - name: Run tests
+        run: pytest
+
+      - name: Deployment checks
+        run: python manage.py check --deploy
+        env:
+          DJANGO_SETTINGS_MODULE: config.settings.prod
