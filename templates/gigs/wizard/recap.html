@@ -44,7 +44,10 @@
     {% endif %}
   </dl>
 
-  <form method="post">
+  {# hx-boost="false": this submission leaves the wizard for the home page, #}
+  {# which has no #wizard element for hx-select to find — a full navigation #}
+  {# is required so the success message survives to be displayed there. #}
+  <form method="post" hx-boost="false">
     {% csrf_token %}
     <button type="submit" class="w-full rounded-md bg-blue-600 px-4 py-2 text-white">
       {% translate "Créer la date" %}
