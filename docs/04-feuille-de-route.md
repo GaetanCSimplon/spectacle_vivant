@@ -135,10 +135,10 @@ Avant de coder : propose un plan (fichiers, modèles, tests) et attends mon acco
 - [x] Factories de test et **tests d'isolation pour chaque modèle**. — tests au niveau ORM (pas encore de vues CRUD, elles arrivent en §2.2/§3.2). Testé en local avec une vraie migration Postgres.
 
 ### 2.2 Wizard de création de date
-- [ ] Étape 1 : choisir/créer un spectacle. Étape 2 : choisir/créer un organisateur. Étape 3 : lieu. Étape 4 : date, horaires, prix. Étape 5 : récapitulatif et validation.
-- [ ] Navigation HTMX entre étapes (sans rechargement complet), validation à chaque étape.
-- [ ] « Créer à la volée » un organisateur ou un lieu.
-- [ ] Le formulaire ne propose que les objets de **l'organisation courante**.
+- [x] Étape 1 : choisir/créer un spectacle. Étape 2 : choisir/créer un organisateur. Étape 3 : lieu. Étape 4 : date, horaires, prix. Étape 5 : récapitulatif et validation. — **horaires non inclus** : le modèle `Gig` validé en §2.1 n'a qu'un champ `date` (les horaires détaillés sont prévus dans `Roadmap`/`RoadmapSlot`, Sprint 3.6). Étape 4 = date + prix HT + conditions particulières.
+- [x] Navigation HTMX entre étapes (sans rechargement complet), validation à chaque étape. — un seul conteneur `#wizard` avec `hx-boost`/`hx-select`/`hx-target`, pas de vues dupliquées fragment/page complète.
+- [x] « Créer à la volée » un organisateur ou un lieu. — même mécanisme pour spectacle/organisateur/lieu (onglets Alpine « choisir » / « créer »).
+- [x] Le formulaire ne propose que les objets de **l'organisation courante**. — querysets filtrés + re-vérification côté service (`get_object_or_404(..., organization=...)`) à la création, y compris si l'id en session était falsifié.
 
 ### 2.3 Contrat PDF
 - [ ] Choisir **un** modèle de contrat validé en Phase 0.
