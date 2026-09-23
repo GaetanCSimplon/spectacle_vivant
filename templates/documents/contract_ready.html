@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}Date créée — Spectacle Vivant{% endblock %}
+
+{% block page_content %}
+  <h1 class="mb-4 text-lg font-semibold">{% translate "Date créée" %}</h1>
+  <p class="mb-6 text-gray-700">
+    {% blocktranslate with show=gig.show.title date=gig.date|date:"d/m/Y" %}
+      « {{ show }} » le {{ date }} a bien été enregistré.
+    {% endblocktranslate %}
+  </p>
+
+  <div class="flex flex-col gap-3">
+    <a
+      href="{% url 'documents:contract-preview' gig.pk %}"
+      target="_blank"
+      class="rounded-md border border-blue-600 px-4 py-2 text-center text-sm text-blue-700"
+    >
+      {% translate "Aperçu du contrat" %}
+    </a>
+    <a
+      href="{% url 'documents:contract-download' gig.pk %}"
+      class="rounded-md bg-blue-600 px-4 py-2 text-center text-sm text-white"
+    >
+      {% translate "Télécharger le contrat" %}
+    </a>
+    <a href="{% url 'home' %}" class="text-center text-sm text-gray-500">
+      {% translate "Retour à l'accueil" %}
+    </a>
+  </div>
+{% endblock %}

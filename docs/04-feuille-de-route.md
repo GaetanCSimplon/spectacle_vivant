@@ -141,10 +141,10 @@ Avant de coder : propose un plan (fichiers, modèles, tests) et attends mon acco
 - [x] Le formulaire ne propose que les objets de **l'organisation courante**. — querysets filtrés + re-vérification côté service (`get_object_or_404(..., organization=...)`) à la création, y compris si l'id en session était falsifié.
 
 ### 2.3 Contrat PDF
-- [ ] Choisir **un** modèle de contrat validé en Phase 0.
-- [ ] Template HTML/CSS du contrat (A4, marges, pagination, en-tête/pied de page).
-- [ ] Service `generate_contract_pdf(gig)` avec snapshot des infos des parties.
-- [ ] Vue de téléchargement + aperçu. Tests : contient les bons noms, montants, dates ; formats français (date, euros).
+- [x] Choisir **un** modèle de contrat validé en Phase 0. — **Phase 0 non faite** (aucun modèle récupéré, pas de relecteur). Décision assumée le 2026-09-23 : gabarit de contrat de cession provisoire (mentions courantes : parties, objet, prix, conditions particulières, résiliation), filigrané « PROJET — non relu par un professionnel » dans le PDF lui-même. **À refaire avec un vrai modèle validé et une relecture professionnelle avant la bêta (Phase 4).**
+- [x] Template HTML/CSS du contrat (A4, marges, pagination, en-tête/pied de page). — `templates/documents/contract_pdf.html`, pagination via `@page { @bottom-center }`.
+- [x] Service `generate_contract_pdf(gig)` avec snapshot des infos des parties. — pas de nouveaux champs de snapshot sur `Contract` : une fois généré, le PDF stocké dans `pdf_file` est figé (jamais régénéré si `status == signed`, conformément à RG-08) ; c'est le PDF lui-même qui fait office de snapshot pour le MVP.
+- [x] Vue de téléchargement + aperçu. Tests : contient les bons noms, montants, dates ; formats français (date, euros). — `documents:contract-preview` / `documents:contract-download`, isolation testée (404 sur le gig d'une autre organisation).
 
 ### 2.4 Test utilisateur
 - [ ] Déployer sur staging.
