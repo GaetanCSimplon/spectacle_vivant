@@ -1,0 +1,50 @@
+{% extends "gigs/wizard/wizard_base.html" %}
+{% load i18n %}
+
+{% block title %}Nouvelle date — Lieu{% endblock %}
+
+{% block wizard_content %}
+  <h1 class="mb-4 text-lg font-semibold">{% translate "Quel lieu ?" %}</h1>
+
+  <div
+    x-data="{ mode: '{% if create_form.errors %}new{% elif not has_choices %}new{% else %}existing{% endif %}' }"
+    class="space-y-6"
+  >
+    <div class="flex gap-4 border-b border-gray-200 text-sm">
+      <button
+        type="button"
+        @click="mode = 'existing'"
+        :class="mode === 'existing' ? 'border-b-2 border-blue-600 text-blue-700' : 'text-gray-500'"
+        class="pb-2"
+      >
+        {% translate "Choisir un lieu existant" %}
+      </button>
+      <button
+        type="button"
+        @click="mode = 'new'"
+        :class="mode === 'new' ? 'border-b-2 border-blue-600 text-blue-700' : 'text-gray-500'"
+        class="pb-2"
+      >
+        {% translate "Créer un nouveau lieu" %}
+      </button>
+    </div>
+
+    <form method="post" x-show="mode === 'existing'">
+      {% csrf_token %}
+      <input type="hidden" name="mode" value="existing">
+      {{ choice_form.as_p }}
+      <button type="submit" class="mt-4 w-full rounded-md bg-blue-600 px-4 py-2 text-white">
+        {% translate "Continuer" %}
+      </button>
+    </form>
+
+    <form method="post" x-show="mode === 'new'">
+      {% csrf_token %}
+      <input type="hidden" name="mode" value="new">
+      {{ create_form.as_p }}
+      <button type="submit" class="mt-4 w-full rounded-md bg-blue-600 px-4 py-2 text-white">
+        {% translate "Créer et continuer" %}
+      </button>
+    </form>
+  </div>
+{% endblock %}

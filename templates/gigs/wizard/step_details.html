@@ -1,0 +1,16 @@
+{% extends "gigs/wizard/wizard_base.html" %}
+{% load i18n %}
+
+{% block title %}Nouvelle date — Détails{% endblock %}
+
+{% block wizard_content %}
+  <h1 class="mb-4 text-lg font-semibold">{% translate "Quand et à quel prix ?" %}</h1>
+
+  <form method="post" class="space-y-4">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit" class="w-full rounded-md bg-blue-600 px-4 py-2 text-white">
+      {% translate "Continuer" %}
+    </button>
+  </form>
+{% endblock %}

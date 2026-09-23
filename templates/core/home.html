@@ -1,10 +1,17 @@
 {% extends "base.html" %}
+{% load i18n %}
 
 {% block title %}Accueil — Spectacle Vivant{% endblock %}
 
 {% block page_content %}
   {% if organization %}
     <h1 class="text-xl font-semibold">{{ organization.name }}</h1>
+    <a
+      href="{% url 'gigs:wizard-show' %}"
+      class="mt-4 inline-block rounded-md bg-blue-600 px-4 py-2 text-sm text-white"
+    >
+      {% translate "+ Nouvelle date" %}
+    </a>
   {% else %}
     <p class="text-gray-600">Aucune structure associée à ce compte pour l'instant.</p>
   {% endif %}
