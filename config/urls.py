@@ -26,6 +26,7 @@ urlpatterns = [
     path("", HomeView.as_view(), name="home"),
     path("pdf-test/", HelloPdfView.as_view(), name="pdf-test"),
     path("dates/", include("apps.gigs.urls")),
+    path("dates/<int:gig_id>/contrat/", include("apps.documents.urls")),
     path("admin/", admin.site.urls),
     path("accounts/", include("allauth.urls")),
 ]

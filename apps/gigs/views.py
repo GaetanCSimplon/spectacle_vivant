@@ -2,7 +2,6 @@ import datetime
 
 from django.contrib import messages
 from django.shortcuts import redirect, render
-from django.urls import reverse
 from django.utils.translation import gettext_lazy as _
 from django.views import View
 
@@ -243,7 +242,7 @@ class GigWizardRecapView(GigWizardMixin, View):
             return redirect_response
 
         data = self.get_wizard_data()
-        services.create_gig_from_wizard_data(request.organization, data)
+        gig = services.create_gig_from_wizard_data(request.organization, data)
         del request.session[WIZARD_SESSION_KEY]
         messages.success(request, _("La date a bien été créée."))
-        return redirect(reverse("home"))
+        return redirect("documents:contract-ready", gig_id=gig.pk)
