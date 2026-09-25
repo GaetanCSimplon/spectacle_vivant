@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}Compléter la date — Spectacle Vivant{% endblock %}
+
+{% block page_content %}
+  <h1 class="mb-1 text-lg font-semibold">{% translate "Compléter la date" %}</h1>
+  <p class="mb-6 text-sm text-gray-600">
+    {% blocktranslate with show=gig.show.title date=gig.date|date:"d/m/Y" %}
+      Renseignez ce qui manque pour « {{ show }} » le {{ date }}. Tout est facultatif :
+      un champ vide apparaît en pointillés dans le contrat.
+    {% endblocktranslate %}
+  </p>
+
+  <form method="post" class="space-y-6">
+    {% csrf_token %}
+
+    <fieldset class="space-y-3 rounded-md border border-gray-200 p-4"
+              x-data="{ free: {{ forms.gig.is_free.value|yesno:'true,false' }} }">
+      <legend class="px-1 text-sm font-semibold">{% translate "La date" %}</legend>
+      {{ forms.gig.as_p }}
+    </fieldset>
+
+    <fieldset class="space-y-3 rounded-md border border-gray-200 p-4">
+      <legend class="px-1 text-sm font-semibold">{% translate "Le spectacle" %}</legend>
+      {{ forms.show.as_p }}
+    </fieldset>
+
+    <fieldset class="space-y-3 rounded-md border border-gray-200 p-4">
+      <legend class="px-1 text-sm font-semibold">{% translate "Le lieu" %}</legend>
+      {{ forms.venue.as_p }}
+    </fieldset>
+
+    <fieldset class="space-y-3 rounded-md border border-gray-200 p-4">
+      <legend class="px-1 text-sm font-semibold">{% translate "L'organisateur" %}</legend>
+      {{ forms.promoter.as_p }}
+    </fieldset>
+
+    <fieldset class="space-y-3 rounded-md border border-gray-200 p-4">
+      <legend class="px-1 text-sm font-semibold">{% translate "Ma structure" %}</legend>
+      {% if is_owner %}
+        {{ forms.tenant.as_p }}
+      {% else %}
+        <p class="text-sm text-gray-600">
+          {% translate "Seul le propriétaire du compte peut modifier les informations de la structure." %}
+        </p>
+      {% endif %}
+    </fieldset>
+
+    <fieldset class="space-y-3 rounded-md border border-gray-200 p-4">
+      <legend class="px-1 text-sm font-semibold">{% translate "Signature" %}</legend>
+      {{ forms.contract.as_p }}
+    </fieldset>
+
+    <div class="flex flex-col gap-3">
+      <button type="submit" class="w-full rounded-md bg-blue-600 px-4 py-2 text-white">
+        {% translate "Enregistrer" %}
+      </button>
+      <a href="{% url 'documents:contract-ready' gig.pk %}" class="text-center text-sm text-gray-500">
+        {% translate "Annuler" %}
+      </a>
+    </div>
+  </form>
+{% endblock %}
