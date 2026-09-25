@@ -20,7 +20,7 @@ Le monolithe n'est pas un gros bloc en désordre : il est **rangé en tiroirs**.
 | App | Rôle (en une phrase) |
 |---|---|
 | `accounts` | Les personnes : comptes utilisateurs, connexion, lien avec une structure |
-| `organizations` | Les structures (l'artiste, l'association) et leurs infos légales |
+| `tenants` | Les structures (l'artiste, l'association) et leurs infos légales |
 | `core` | Les outils communs (notamment la protection entre structures, voir §4) |
 | `catalog` | Les spectacles vendus |
 | `addressbook` | Le carnet d'adresses : organisateurs, lieux, contacts |
@@ -65,32 +65,32 @@ Ton application sert **plusieurs clients** (des artistes, des associations) **su
 |---|---|---|---|
 | Une base par client | Un immeuble par locataire | Isolation maximale | Très lourd à gérer : des dizaines de bases à migrer |
 | Un schéma par client | Un étage par locataire | Bonne isolation | Complexe, outils spécifiques |
-| **Base partagée + clé `organization`** | Un immeuble, un badge sur chaque objet | **Simple**, une seule base | Il faut **ne jamais oublier** de filtrer |
+| **Base partagée + clé `tenant`** | Un immeuble, un badge sur chaque objet | **Simple**, une seule base | Il faut **ne jamais oublier** de filtrer |
 
-**Choix retenu : base partagée avec une clé `organization`.** Chaque ligne de chaque table métier porte l'identifiant de la structure propriétaire.
+**Choix retenu : base partagée avec une clé `tenant`.** Chaque ligne de chaque table métier porte l'identifiant de la structure propriétaire.
 
 ### Comment ça fonctionne concrètement
 
-1. Chaque modèle métier (`Show`, `Gig`, `Invoice`…) contient un champ `organization` (une clé étrangère vers `Organization`).
+1. Chaque modèle métier (`Show`, `Gig`, `Invoice`…) contient un champ `tenant` (une clé étrangère vers `Tenant`).
 2. Pour éviter de le réécrire partout, on crée une classe mère **`TenantOwnedModel`** dont tous héritent :
 
 ```python
 # apps/core/models.py (schéma, à faire écrire par Claude Code)
 class TenantOwnedModel(models.Model):
-    organization = models.ForeignKey(
-        "organizations.Organization", on_delete=models.CASCADE
+    tenant = models.ForeignKey(
+        "tenants.Tenant", on_delete=models.CASCADE
     )
 
     class Meta:
         abstract = True  # cette classe n'a pas de table à elle seule
 ```
 
-3. À chaque requête, un **middleware** (un petit code exécuté avant toutes les vues) détermine « quelle structure est en train d'utiliser l'app ? » et la place dans `request.organization`.
+3. À chaque requête, un **middleware** (un petit code exécuté avant toutes les vues) détermine « quelle structure est en train d'utiliser l'app ? » et la place dans `request.tenant`.
 4. Chaque vue hérite d'un **`TenantScopedMixin`** qui ajoute automatiquement le filtre :
 
 ```python
 # Ce que fait le mixin, en substance
-Gig.objects.filter(organization=request.organization)
+Gig.objects.filter(tenant=request.tenant)
 ```
 
 5. Résultat : même si un utilisateur devine l'URL `/dates/42/` d'une date d'une autre structure, il reçoit une **erreur 404**, car la date 42 n'existe pas *dans son périmètre*.
@@ -106,14 +106,14 @@ Le danger, c'est **l'oubli silencieux** : une vue qui écrit `Gig.objects.get(pk
 ## 5. Utilisateurs, structures et rôles
 
 ```
-User  ──(Membership + rôle)──►  Organization
+User  ──(Membership + rôle)──►  Tenant
 ```
 
 - **User** : une personne avec un e-mail et un mot de passe.
-- **Organization** : une structure (l'association « Les Nocturnes », l'artiste « Julie Martin »).
+- **Tenant** : une structure (l'association « Les Nocturnes », l'artiste « Julie Martin »).
 - **Membership** : la ligne qui dit « cette personne fait partie de cette structure, avec ce rôle ».
 
-**Pourquoi une table intermédiaire plutôt qu'un simple champ `user.organization` ?** Parce qu'un manager peut gérer deux artistes, ou un artiste peut inviter son tourneur. Ajouter cette table plus tard obligerait à réécrire l'authentification et les migrations. L'ajouter maintenant coûte une heure.
+**Pourquoi une table intermédiaire plutôt qu'un simple champ `user.tenant` ?** Parce qu'un manager peut gérer deux artistes, ou un artiste peut inviter son tourneur. Ajouter cette table plus tard obligerait à réécrire l'authentification et les migrations. L'ajouter maintenant coûte une heure.
 
 **En MVP** : un utilisateur = une structure (on prend la première `Membership`), sans sélecteur de structure. Le modèle de données est prêt pour plus tard.
 
@@ -168,7 +168,7 @@ Certaines actions ne doivent pas bloquer la page : envoyer un e-mail de relance,
                  ┌───────────────────┐
                  │  Scalingo (FR)    │
                  │  Django           │  ← un seul programme
-                 │  ├ middleware → request.organization
+                 │  ├ middleware → request.tenant
                  │  ├ vues (HTMX)    │
                  │  ├ services       │
                  │  └ WeasyPrint     │
@@ -184,7 +184,7 @@ Certaines actions ne doivent pas bloquer la page : envoyer un e-mail de relance,
 ## 13. Récapitulatif : les 6 décisions à retenir
 
 1. **Un monolithe Django** rangé en apps par domaine.
-2. **Base partagée**, chaque donnée porte son `organization`.
+2. **Base partagée**, chaque donnée porte son `tenant`.
 3. **Le filtre par organisation est obligatoire et testé**, jamais laissé au hasard.
 4. **`Membership`** entre utilisateurs et structures.
 5. **Documents figés** (snapshots, factures immuables, numérotation sans trou).

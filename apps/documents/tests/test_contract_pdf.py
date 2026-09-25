@@ -3,7 +3,7 @@ from django.template.loader import render_to_string
 from django.urls import reverse
 
 from apps.gigs.factories import GigFactory
-from apps.organizations.factories import MembershipFactory
+from apps.tenants.factories import MembershipFactory
 
 from ..models import Contract
 from ..services import build_contract_context, generate_contract_pdf
@@ -56,7 +56,7 @@ def test_contract_html_contains_the_gig_details_in_french_format():
     assert gig.show.title in html
     assert gig.promoter.name in html
     assert gig.venue.name in html
-    assert gig.organization.name in html
+    assert gig.tenant.name in html
     assert "500,00" in html
     assert str(gig.date.year) in html
 
@@ -69,10 +69,10 @@ def test_contract_preview_requires_login(client):
     assert response.status_code == 302
 
 
-def test_contract_preview_returns_a_pdf_for_the_gigs_organization(client):
+def test_contract_preview_returns_a_pdf_for_the_gigs_tenant(client):
     membership = MembershipFactory()
     client.force_login(membership.user)
-    gig = GigFactory(organization=membership.organization)
+    gig = GigFactory(tenant=membership.tenant)
 
     response = client.get(reverse("documents:contract-preview", args=[gig.pk]))
 
@@ -83,7 +83,7 @@ def test_contract_preview_returns_a_pdf_for_the_gigs_organization(client):
 def test_contract_download_is_an_attachment(client):
     membership = MembershipFactory()
     client.force_login(membership.user)
-    gig = GigFactory(organization=membership.organization)
+    gig = GigFactory(tenant=membership.tenant)
 
     response = client.get(reverse("documents:contract-download", args=[gig.pk]))
 
@@ -91,7 +91,7 @@ def test_contract_download_is_an_attachment(client):
     assert "attachment" in response["Content-Disposition"]
 
 
-def test_contract_preview_of_another_organizations_gig_returns_404(client):
+def test_contract_preview_of_another_tenants_gig_returns_404(client):
     membership = MembershipFactory()
     client.force_login(membership.user)
     other_gig = GigFactory()

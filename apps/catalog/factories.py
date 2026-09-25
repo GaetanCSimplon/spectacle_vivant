@@ -1,6 +1,6 @@
 import factory
 
-from apps.organizations.factories import OrganizationFactory
+from apps.tenants.factories import TenantFactory
 
 from .models import Show
 
@@ -9,7 +9,7 @@ class ShowFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = Show
 
-    organization = factory.SubFactory(OrganizationFactory)
+    tenant = factory.SubFactory(TenantFactory)
     title = factory.Sequence(lambda n: f"Spectacle {n}")
     duration_minutes = 60
     default_price = "500.00"

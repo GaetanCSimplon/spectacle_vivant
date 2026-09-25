@@ -57,17 +57,17 @@ class Membership(models.Model):
         MEMBER = "member", _("Membre")
 
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="memberships")
-    organization = models.ForeignKey(
-        "organizations.Organization", on_delete=models.CASCADE, related_name="memberships"
+    tenant = models.ForeignKey(
+        "tenants.Tenant", on_delete=models.CASCADE, related_name="memberships"
     )
     role = models.CharField(_("rôle"), max_length=20, choices=Role.choices, default=Role.MEMBER)
 
     class Meta:
         constraints = [
             models.UniqueConstraint(
-                fields=["user", "organization"], name="unique_membership_per_user_organization"
+                fields=["user", "tenant"], name="unique_membership_per_user_tenant"
             )
         ]
 
     def __str__(self):
-        return f"{self.user} @ {self.organization} ({self.role})"
+        return f"{self.user} @ {self.tenant} ({self.role})"

@@ -9,7 +9,7 @@ from .models import Contract
 def build_contract_context(gig):
     return {
         "gig": gig,
-        "organization": gig.organization,
+        "tenant": gig.tenant,
         "promoter": gig.promoter,
         "venue": gig.venue,
         "show": gig.show,
@@ -22,7 +22,7 @@ def generate_contract_pdf(gig):
 
     A signed contract keeps its figée PDF: it is never regenerated (RG-08).
     """
-    contract, _created = Contract.objects.get_or_create(gig=gig, organization=gig.organization)
+    contract, _created = Contract.objects.get_or_create(gig=gig, tenant=gig.tenant)
     if contract.status == Contract.Status.SIGNED:
         return contract
 

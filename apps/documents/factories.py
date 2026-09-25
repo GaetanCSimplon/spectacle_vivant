@@ -9,5 +9,5 @@ class ContractFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = Contract
 
-    organization = factory.SelfAttribute("gig.organization")
+    tenant = factory.SelfAttribute("gig.tenant")
     gig = factory.SubFactory(GigFactory)

@@ -42,7 +42,7 @@ config/settings/{base,dev,test,prod}.py   # réglages séparés
 config/urls.py
 apps/
   accounts/       # User, Membership, inscription
-  organizations/  # Organization (le tenant) + infos légales
+  tenants/        # Tenant (la structure de l'utilisateur) + infos légales
   core/           # TenantOwnedModel, mixins de vues, utilitaires communs
   catalog/        # Show (spectacles)
   addressbook/    # Promoter, Venue, Contact
@@ -61,10 +61,10 @@ Une app = un domaine métier. Ne pas créer d'app supplémentaire sans en parler
 
 | Code | Interface (FR) | Signification |
 |---|---|---|
-| `Organization` | « Ma structure » | Le **tenant** : l'artiste, l'association ou la micro-entreprise qui utilise l'app |
-| `Membership` | — | Lien utilisateur ↔ organisation, avec un rôle (`owner`, `member`) |
-| `Show` | Spectacle | Ce que l'artiste vend (titre, durée, fiche technique) |
-| `Promoter` | Organisateur | Le **client** qui achète le spectacle (à facturer : SIRET, adresse) |
+| `Tenant` | « Ma structure » | L'artiste, l'association ou la micro-entreprise qui **utilise l'app** (= le « PRODUCTEUR » dans le modèle de contrat fourni par le métier) |
+| `Membership` | — | Lien utilisateur ↔ tenant, avec un rôle (`owner`, `member`) |
+| `Show` | Spectacle | Ce que l'artiste vend (titre, durée, fiche technique, n° SACEM/objet) |
+| `Promoter` | Organisateur | Le **client** qui achète le spectacle, à facturer (= « ORGANISATEUR » dans le contrat) |
 | `Venue` | Lieu / Salle | L'endroit physique où a lieu la date |
 | `Contact` | Contact | Personne rattachée à un `Promoter` **ou** à un `Venue` |
 | `Gig` | Date | Une représentation : relie Show + Promoter + Venue + date + prix. **Objet central** |
@@ -73,22 +73,22 @@ Une app = un domaine métier. Ne pas créer d'app supplémentaire sans en parler
 | `Roadmap` | Feuille de route | Document logistique de la date (horaires, contacts, hébergement, repas) |
 | `Payment` / `Expense` | Paiement / Dépense | Argent reçu / argent dépensé pour une date |
 
-Ne jamais utiliser `Structure` (ambigu) ni `Client`. Vocabulaire UI : « cachet », « cession », « feuille de route », « organisateur ». **Pas** de « entité », « tiers », « écriture comptable ».
+**Le mot « Structure »**, utilisé par le métier pour désigner l'organisateur/le lieu (le partenaire externe), **ne doit jamais être utilisé dans le code** pour éviter la confusion avec `Tenant` (la structure de l'utilisateur). Dans les échanges avec le métier, traduire mentalement : leur « Structure » = notre `Promoter`/`Venue` ; leur « Producteur » = notre `Tenant`. Ne jamais utiliser `Client` dans le code. Vocabulaire UI : « cachet », « cession », « feuille de route », « organisateur ». **Pas** de « entité », « tiers », « écriture comptable ».
 
 ## 6. RÈGLES ABSOLUES
 
 ### 6.1 Isolation des tenants (priorité n°1 — une fuite de données = fin du produit)
-- Tout modèle métier hérite de `core.models.TenantOwnedModel` (FK `organization` obligatoire).
-- Toute vue qui lit ou modifie des données hérite de `core.views.TenantScopedMixin` (filtre automatique sur `request.organization`).
-- **Interdit** : `Model.objects.get(pk=...)` ou `Model.objects.all()` dans une vue sans filtre sur l'organisation.
-- Un formulaire ne doit jamais laisser choisir l'organisation ; elle est posée côté serveur. Les FK vers d'autres objets (ex. `promoter` dans un `Gig`) doivent être limitées aux objets de la même organisation.
-- Chaque nouveau modèle métier = **au moins un test d'isolation** (l'organisation B reçoit 404 sur un objet de A, et ne le voit dans aucune liste).
+- Tout modèle métier hérite de `core.models.TenantOwnedModel` (FK `tenant` obligatoire).
+- Toute vue qui lit ou modifie des données hérite de `core.views.TenantScopedMixin` (filtre automatique sur `request.tenant`).
+- **Interdit** : `Model.objects.get(pk=...)` ou `Model.objects.all()` dans une vue sans filtre sur le tenant.
+- Un formulaire ne doit jamais laisser choisir le tenant ; il est posé côté serveur. Les FK vers d'autres objets (ex. `promoter` dans un `Gig`) doivent être limitées aux objets du même tenant.
+- Chaque nouveau modèle métier = **au moins un test d'isolation** (le tenant B reçoit 404 sur un objet de A, et ne le voit dans aucune liste).
 - Le test `apps/core/tests/test_tenant_coverage.py` échoue si un modèle `TenantOwnedModel` n'a pas de test d'isolation.
 
 ### 6.2 Documents financiers et contractuels
 - Les montants sont en `DecimalField` (jamais `float`).
 - Une facture **émise** est **immuable** : correction par avoir, jamais par modification.
-- Numérotation des factures : séquentielle, **sans trou**, par organisation et par année, calculée dans une transaction avec verrou (`select_for_update`).
+- Numérotation des factures : séquentielle, **sans trou**, par tenant et par année, calculée dans une transaction avec verrou (`select_for_update`).
 - Les infos légales (nom, SIRET, TVA, adresse…) sont **copiées dans le document au moment de l'émission** (snapshot), pas lues dynamiquement.
 - Un contrat passé au statut « signé » conserve un PDF figé.
 
@@ -138,5 +138,6 @@ Calcul de charges sociales GUSO/intermittence, carte et temps de trajet, connect
 
 ## 11. État actuel
 
-- Phase en cours : **Phase 0 / Phase 1** — voir `docs/04-feuille-de-route.md`.
+- Phase en cours : **Phase 0 / Phase 2** — voir `docs/04-feuille-de-route.md`.
+- Un vrai modèle de contrat de cession et un document de logique métier ont été fournis par le métier. Le contrat (cas cession simple) est aligné avec le périmètre MVP ; le document de logique métier décrit un périmètre plus large (CRM de prospection, coréalisation, location de salle, paie des intermittents, déclarations SACEM/SACD). **Ces extensions restent hors du MVP tant qu'elles n'ont pas été explicitement confirmées** — voir `docs/03-cahier-des-charges.md` §14 (Questions ouvertes).
 - Décisions ouvertes : voir la section « Décisions à prendre » de la feuille de route.

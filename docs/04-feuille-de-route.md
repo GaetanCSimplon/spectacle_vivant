@@ -37,7 +37,9 @@ Contraintes : respecte CLAUDE.md (lexique, isolation des tenants).
 Avant de coder : propose un plan (fichiers, modèles, tests) et attends mon accord.
 ```
 
-**Ce que tu relis toi-même, toujours** : migrations, requêtes ORM dans les vues (filtre par organisation ?), montants (Decimal ?), permissions.
+**Ce que tu relis toi-même, toujours** : migrations, requêtes ORM dans les vues (filtre par tenant ?), montants (Decimal ?), permissions.
+
+> **Renommage du 2026-09-25** : `Organization` → `Tenant` dans tout le projet (modèle, champ FK, middleware `request.tenant`, mixin, app `organizations` → `tenants`). Les tâches déjà cochées ci-dessous utilisaient l'ancien nom au moment où elles ont été faites ; le texte a été mis à jour pour refléter le nom actuel, sans que ça change ce qui a été livré.
 
 ---
 
@@ -48,11 +50,12 @@ Avant de coder : propose un plan (fichiers, modèles, tests) et attends mon acco
 - [ ] Lire `02-guide-metier.md`.
 - [ ] Lister 10 à 15 personnes à contacter (artistes, groupes, associations, tourneurs, un comptable ou une CAE si possible) via ton réseau, réseaux sociaux, salles locales, groupes Facebook de musiciens.
 - [ ] Mener **5 entretiens** de 30 min avec la trame de la section 5 du guide métier. Enregistrer (avec accord) ou prendre des notes.
-- [ ] Récupérer des **exemples réels** anonymisés : un contrat de cession, une facture, une feuille de route, un tableau de suivi.
-- [ ] Repérer 2 à 3 **modèles de contrats de cession de référence** (organismes professionnels, syndicats) et vérifier **leurs conditions de réutilisation**.
+- [x] Récupérer des **exemples réels** : contrat de cession, document de logique métier, modèles de données de suivi (obtenus du collègue, 2026-09-25).
+- [ ] Repérer 2 à 3 **modèles de contrats de cession de référence** (organismes professionnels, syndicats) et vérifier **leurs conditions de réutilisation** — le modèle reçu du collègue n'a pas encore été validé par un professionnel, voir point suivant.
 - [ ] Identifier **un professionnel relecteur** (juriste, expert-comptable, CAE, association d'artistes) pour valider contrat et mentions de facture.
+- [ ] **Obtenir les réponses du collègue aux questions ouvertes Q1-Q7** (`docs/03-cahier-des-charges.md` §14) : CRM de prospection, types de contrat, suivi temps réel, paie des intermittents, déclarations SACEM, capitalisation, contrats multi-dates.
 - [ ] Rédiger une synthèse d'une page : 3 problèmes principaux, 3 fonctionnalités les plus demandées, vocabulaire noté, prix acceptable.
-- [ ] Mettre à jour `03-cahier-des-charges.md` si les entretiens changent le périmètre.
+- [x] Mettre à jour `03-cahier-des-charges.md` si les entretiens changent le périmètre — *mis à jour au fil des documents reçus du collègue (contrat, logique métier, tableurs de suivi) ; à revoir une fois les 5 entretiens artistes réellement menés.*
 - [ ] **Décider** : go / go modifié / stop.
 
 **Livrable** : synthèse des entretiens + 2 modèles de contrat + contact d'un relecteur.
@@ -84,20 +87,20 @@ Avant de coder : propose un plan (fichiers, modèles, tests) et attends mon acco
 - [x] Configurer `pytest`, `pytest-django`, `factory_boy` ; premier test qui passe.
 - [ ] Ajouter un `Makefile` ou des scripts pour les commandes courantes (facultatif).
 
-### 1.4 Utilisateur, structure et isolation ⚠️ *(à faire avant la première migration)*
+### 1.4 Utilisateur, tenant et isolation ⚠️ *(à faire avant la première migration)*
 - [x] App `accounts` : **User personnalisé** avec connexion par e-mail. **Créé avant tout `migrate`** (sinon très pénible à changer).
-- [x] App `organizations` : modèle `Organization` (champs minimaux : name, legal_form, plan).
-- [x] Modèle `Membership` (user, organization, role).
-- [x] App `core` : `TenantOwnedModel` (abstract), middleware `request.organization`, `TenantScopedMixin` pour les vues.
+- [x] App `tenants` *(anciennement `organizations`)* : modèle `Tenant` *(anciennement `Organization`)* (champs minimaux : name, legal_form, plan).
+- [x] Modèle `Membership` (user, tenant, role).
+- [x] App `core` : `TenantOwnedModel` (abstract), middleware `request.tenant`, `TenantScopedMixin` pour les vues.
 - [x] Modèle de test jetable (ex. `Note`) pour valider le mécanisme.
-- [x] **Tests d'isolation** : B reçoit 404 sur un objet de A ; les listes ne mélangent pas ; création forcée dans l'organisation courante.
+- [x] **Tests d'isolation** : B reçoit 404 sur un objet de A ; les listes ne mélangent pas ; création forcée dans le tenant courant.
 - [x] **Test de couverture** : échoue si un modèle `TenantOwnedModel` n'a pas de test d'isolation.
 - [ ] Intégrer `django-allauth` (inscription, connexion, mot de passe oublié) avec e-mails en console en dev. — inscription et connexion testées en local (OK) ; **mot de passe oublié pas encore testé**.
 
 ### 1.5 Front
 - [x] `django-tailwind-cli` installé ; compilation OK.
 - [x] `base.html` : Tailwind, HTMX (`django-htmx`), Alpine.js, meta viewport, structure mobile-first (en-tête + menu). — en-tête minimal en place (pas de vrai menu de navigation : aucune fonctionnalité métier à lier avant Sprint 3.1). Testé en navigateur, y compris les pages allauth qui héritent du même layout.
-- [x] Une page d'accueil connectée qui affiche le nom de la structure.
+- [x] Une page d'accueil connectée qui affiche le nom du tenant.
 
 ### 1.6 PDF — validation précoce
 - [ ] Installer WeasyPrint (+ dépendances système) en local et **dans l'image Docker** si utilisée. — fait en local (testé en navigateur) ; pas encore d'image Docker pour l'app Django à ce stade (seulement `docker-compose.yml` pour Postgres), donc **dépendances système à valider en Phase 1.7** (penser à `libharfbuzz-subset0`, requis par une prochaine version de WeasyPrint).
@@ -125,7 +128,7 @@ Avant de coder : propose un plan (fichiers, modèles, tests) et attends mon acco
 **Objectif** : prouver **le parcours le plus précieux de bout en bout** : *un utilisateur s'inscrit, saisit une date, télécharge un contrat PDF correct.* Tout est minimal, mais réel et déployé.
 
 ### 2.1 Modèles minimaux
-- [x] `Organization` complétée (adresse, SIRET, vat_regime).
+- [x] `Tenant` complété (adresse, SIRET, vat_regime).
 - [x] `Show` (titre, durée, prix indicatif).
 - [x] `Promoter` (nom, SIRET, adresse de facturation, e-mail).
 - [x] `Venue` (nom, adresse).
@@ -138,13 +141,15 @@ Avant de coder : propose un plan (fichiers, modèles, tests) et attends mon acco
 - [x] Étape 1 : choisir/créer un spectacle. Étape 2 : choisir/créer un organisateur. Étape 3 : lieu. Étape 4 : date, horaires, prix. Étape 5 : récapitulatif et validation. — **horaires non inclus** : le modèle `Gig` validé en §2.1 n'a qu'un champ `date` (les horaires détaillés sont prévus dans `Roadmap`/`RoadmapSlot`, Sprint 3.6). Étape 4 = date + prix HT + conditions particulières.
 - [x] Navigation HTMX entre étapes (sans rechargement complet), validation à chaque étape. — un seul conteneur `#wizard` avec `hx-boost`/`hx-select`/`hx-target`, pas de vues dupliquées fragment/page complète.
 - [x] « Créer à la volée » un organisateur ou un lieu. — même mécanisme pour spectacle/organisateur/lieu (onglets Alpine « choisir » / « créer »).
-- [x] Le formulaire ne propose que les objets de **l'organisation courante**. — querysets filtrés + re-vérification côté service (`get_object_or_404(..., organization=...)`) à la création, y compris si l'id en session était falsifié.
+- [x] Le formulaire ne propose que les objets du **tenant courant**. — querysets filtrés + re-vérification côté service (`get_object_or_404(..., tenant=...)`) à la création, y compris si l'id en session était falsifié.
 
 ### 2.3 Contrat PDF
 - [x] Choisir **un** modèle de contrat validé en Phase 0. — **Phase 0 non faite** (aucun modèle récupéré, pas de relecteur). Décision assumée le 2026-09-23 : gabarit de contrat de cession provisoire (mentions courantes : parties, objet, prix, conditions particulières, résiliation), filigrané « PROJET — non relu par un professionnel » dans le PDF lui-même. **À refaire avec un vrai modèle validé et une relecture professionnelle avant la bêta (Phase 4).**
 - [x] Template HTML/CSS du contrat (A4, marges, pagination, en-tête/pied de page). — `templates/documents/contract_pdf.html`, pagination via `@page { @bottom-center }`.
 - [x] Service `generate_contract_pdf(gig)` avec snapshot des infos des parties. — pas de nouveaux champs de snapshot sur `Contract` : une fois généré, le PDF stocké dans `pdf_file` est figé (jamais régénéré si `status == signed`, conformément à RG-08) ; c'est le PDF lui-même qui fait office de snapshot pour le MVP.
-- [x] Vue de téléchargement + aperçu. Tests : contient les bons noms, montants, dates ; formats français (date, euros). — `documents:contract-preview` / `documents:contract-download`, isolation testée (404 sur le gig d'une autre organisation).
+- [x] Vue de téléchargement + aperçu. Tests : contient les bons noms, montants, dates ; formats français (date, euros). — `documents:contract-preview` / `documents:contract-download`, isolation testée (404 sur le gig d'un autre tenant).
+- [ ] **Mise à jour du template** avec le vrai modèle de contrat reçu du métier (2026-09-25) : nouveaux champs `Tenant.contract_party_label` (« producteur » vs « artiste »), `Gig.invitations_count`, `Gig.signing_place`, `Contract.signatory_name`/`signatory_role`, et règle RG-12 (concert gratuit → prix des places à 0 automatiquement). Détail des champs dans `docs/03-cahier-des-charges.md` §9 et §5. Peut se faire avant ou après la fusion sur `main`, au choix.
+- [ ] Ne retirer le filigrane « gabarit provisoire » qu'une fois le contrat validé par le relecteur professionnel (Phase 0 puis confirmation en Phase 4).
 
 ### 2.4 Test utilisateur
 - [ ] Déployer sur staging.
@@ -170,13 +175,13 @@ Avant de coder : propose un plan (fichiers, modèles, tests) et attends mon acco
 - [ ] **Onboarding guidé** (≤ 5 écrans) : structure → statut juridique → TVA → premier spectacle → première date.
 - [ ] Page « Ma structure » complète (infos légales, IBAN, logo, licence). Textes d'aide.
 - [ ] Gestion du régime de TVA : assujetti / franchise en base / non assujetti (mentions à valider).
-- [ ] Tests : onboarding, création automatique de `Organization` + `Membership(owner)`.
+- [ ] Tests : onboarding, création automatique de `Tenant` + `Membership(owner)`.
 
 ### Sprint 3.2 — Carnet d'adresses et spectacles
 - [ ] CRUD complet : `Promoter`, `Venue`, `Contact` (avec contrainte : rattaché à l'un **ou** l'autre).
 - [ ] Recherche en direct HTMX sur les listes (debounce, fragment de liste).
 - [ ] Fiches de détail : un organisateur affiche ses contacts et l'historique de ses dates.
-- [ ] CRUD `Show` avec fiche technique (texte + PDF optionnel).
+- [ ] CRUD `Show` avec fiche technique (texte + PDF optionnel), nom du groupe distinct du titre du spectacle, distribution, rider.
 - [ ] Suppression sécurisée (empêcher de supprimer un organisateur utilisé, ou archiver).
 - [ ] Tests (CRUD, isolation, contrainte Contact, recherche).
 
@@ -192,8 +197,9 @@ Avant de coder : propose un plan (fichiers, modèles, tests) et attends mon acco
 
 ### Sprint 3.4 — Contrats
 - [ ] Modèle de contrat finalisé avec **conditions particulières** éditables.
+- [ ] Formulation adaptée selon `Tenant.contract_party_label` (« producteur » vs « artiste »), invitations et lieu de signature variables (voir §2.3 pour la mise à jour du template déjà en place).
 - [ ] Aperçu avant génération ; historique des versions générées.
-- [ ] Numérotation des contrats par structure.
+- [ ] Numérotation des contrats par tenant.
 - [ ] Marquage « signé » : figeage du PDF, passage de la date à `signed`, upload optionnel du PDF signé.
 - [ ] Stockage des PDF figés : bucket S3 européen via `django-storages` (dev = stockage local).
 - [ ] Tests : contenu du PDF, immutabilité après signature, accès protégé aux fichiers (pas d'URL publique devinable).
@@ -230,7 +236,7 @@ Avant de coder : propose un plan (fichiers, modèles, tests) et attends mon acco
 ### Sprint 3.8 — Légal, sécurité, finition, recette
 - [ ] Pages : mentions légales, CGU, confidentialité (à faire relire).
 - [ ] Export des données et suppression de compte (F-81).
-- [ ] **Audit d'isolation complet** : parcourir chaque URL et chaque vue avec 2 organisations.
+- [ ] **Audit d'isolation complet** : parcourir chaque URL et chaque vue avec 2 tenants.
 - [ ] Revue sécurité : en-têtes, cookies, CSRF, `check --deploy`, dépendances à jour, secrets.
 - [ ] Vérifier les téléchargements de fichiers (contrôle d'accès).
 - [ ] Passage d'accessibilité de base (contrastes, labels, clavier).
@@ -309,6 +315,7 @@ Avant de coder : propose un plan (fichiers, modèles, tests) et attends mon acco
 ### 5.7 Version 2 (à évaluer)
 - [ ] Carte des dates et calcul des trajets (OpenStreetMap + service d'itinéraire).
 - [ ] Statistiques avancées, import de données, éventuelle app mobile.
+- [ ] Contrat couvrant plusieurs dates (tournée en un seul accord) — voir Q7, `docs/03-cahier-des-charges.md` §14.
 
 ---
 
@@ -317,7 +324,8 @@ Avant de coder : propose un plan (fichiers, modèles, tests) et attends mon acco
 | Décision | Quand | Statut |
 |---|---|---|
 | Nom du produit et nom de domaine | Avant Phase 1 (Scalingo, e-mails) | ☐ |
-| Modèle de contrat de cession (source, droits de réutilisation) | Phase 0 | ☐ |
+| Modèle de contrat de cession (source, droits de réutilisation) | Phase 0 | ☑ *(reçu du collègue, 2026-09-25 ; relecture professionnelle encore à faire)* |
+| Réponses du collègue aux questions ouvertes Q1-Q7 (cahier des charges §14) | Phase 0 | ☐ |
 | Professionnel relecteur (juriste / comptable / CAE) | Phase 0 | ☐ |
 | Statut juridique de **ton** activité (facturation de l'app) | Avant la v1 payante | ☐ |
 | Prestataire d'e-mails transactionnels | Phase 3.1 | ☐ |
