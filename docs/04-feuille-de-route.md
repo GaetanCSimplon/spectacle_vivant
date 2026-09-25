@@ -150,7 +150,7 @@ Avant de coder : propose un plan (fichiers, modèles, tests) et attends mon acco
 - [x] Vue de téléchargement + aperçu. Tests : contient les bons noms, montants, dates ; formats français (date, euros). — `documents:contract-preview` / `documents:contract-download`, isolation testée (404 sur le gig d'un autre tenant).
 - [x] **Mise à jour du template** avec les nouveaux champs du modèle de contrat reçu du métier (2026-09-25) : `Tenant.contract_party_label` (défaut « artiste »), `Show.group_name`/`performers`/`rider_file`, `Gig.invitations_count`/`signing_place`/`is_free`/`ticket_price`, `Contract.signatory_name`/`signatory_role`, et règle RG-12 (dans `Gig.save()`). — Le template affiche le libellé de la partie, le lieu de signature, les invitations et le signataire. **Pas encore fait** : reprendre la formulation exacte du contrat du métier (à faire avec le texte sous les yeux), afficher `group_name`/`performers` dans l'objet du contrat, et exposer ces champs dans les formulaires (wizard, Sprints 3.2/3.3/3.4 : pour l'instant seulement via l'admin).
 - [x] **Template du contrat aligné sur le vrai modèle du métier** (2026-09-25, 9 articles). Nouveaux champs : `Tenant.licence_number`/`representative_name`/`representative_role`/`jurisdiction_city` (ville du tribunal, art. 8), mêmes champs de représentant et de licence sur `Promoter`, `Venue.capacity`, `Show.sacem_number`/`sacem_object_number`, `Gig.get_in_time`/`soundcheck_time`/`performance_time`/`crew_headcount`. Tout champ vide s'affiche en « …… » pour être complété à la main. Coquilles du modèle corrigées (« ORGANISTAEUR », « hébéerments », « Nécitge 2000 » retiré). Le régime de TVA « assujetti » n'est pas géré (TVA laissée en pointillés) : à traiter au Sprint 3.5. Logo de la structure non repris (Sprint 3.1). **À demander au collègue : que signifie « APA » dans « Siret / APA » ?** (on n'affiche que le SIRET en attendant.)
-- [ ] **Formulaire « Compléter la date »** : permettre de saisir les champs ci-dessus (horaires, participants, jauge, n° SACEM, représentants, ville du tribunal, invitations, lieu de signature…) hors admin. Sans lui, le contrat sort avec des pointillés.
+- [x] **Formulaire « Compléter la date »** (2026-09-25) : page unique `dates/<id>/contrat/completer/` (`documents:contract-complete`), atteinte depuis l'écran « Date créée ». Un seul bouton « Enregistrer » pour 6 sections (date, spectacle, lieu, organisateur, ma structure, signature), enregistrées dans une transaction (tout ou rien). Tous les champs sont facultatifs (vide = pointillés dans le contrat). La section « Ma structure » est **réservée au rôle `owner`** ; un contrat `signé` n'est plus modifiable (RG-08). — **Provisoire** : la section « Ma structure » sera retirée de ce formulaire quand la page « Ma structure » du Sprint 3.1 existera. `rider_file` et `performers` restent pour le Sprint 3.2. **Rendu à 375 px non contrôlé visuellement** (pas de navigateur dans l'environnement de développement) : à vérifier à la main.
 - [ ] Ne retirer le filigrane « gabarit provisoire » qu'une fois le contrat validé par le relecteur professionnel (Phase 0 puis confirmation en Phase 4).
 
 ### 2.4 Test utilisateur
@@ -175,7 +175,7 @@ Avant de coder : propose un plan (fichiers, modèles, tests) et attends mon acco
 - [ ] Navigation principale (5 entrées max) : responsive (menu bas ou burger sur mobile).
 - [ ] Confirmation d'e-mail activée ; e-mails transactionnels via le prestataire choisi ; expéditeur et domaine configurés.
 - [ ] **Onboarding guidé** (≤ 5 écrans) : structure → statut juridique → TVA → premier spectacle → première date.
-- [ ] Page « Ma structure » complète (infos légales, IBAN, logo, licence). Textes d'aide.
+- [ ] Page « Ma structure » complète (infos légales, IBAN, logo, licence). Textes d'aide. Y déplacer la section « Ma structure » du formulaire « Compléter la date » (§2.3), puis la retirer de ce formulaire.
 - [ ] Gestion du régime de TVA : assujetti / franchise en base / non assujetti (mentions à valider).
 - [ ] Tests : onboarding, création automatique de `Tenant` + `Membership(owner)`.
 
@@ -330,6 +330,7 @@ Avant de coder : propose un plan (fichiers, modèles, tests) et attends mon acco
 | Réponses du collègue aux questions ouvertes Q1-Q7 (cahier des charges §14) | Phase 0 | ☐ |
 | Professionnel relecteur (juriste / comptable / CAE) | Phase 0 | ☐ |
 | Statut juridique de **ton** activité (facturation de l'app) | Avant la v1 payante | ☐ |
+| Rôles : seul le `owner` peut modifier la structure. Faut-il un rôle intermédiaire (ex. « gestionnaire ») pour des utilisateurs non propriétaires qui peuvent la modifier ? | Phase 3.1 (invitation de membres : Phase 5.5) | ☐ |
 | Prestataire d'e-mails transactionnels | Phase 3.1 | ☐ |
 | Bucket S3 européen (Scaleway, OVH…) | Phase 3.4 | ☐ |
 | Politique de conservation des données | Phase 3.8 | ☐ |
