@@ -173,7 +173,7 @@ Avant de coder : propose un plan (fichiers, modèles, tests) et attends mon acco
 
 ### Sprint 3.1 — Comptes, onboarding, structure, navigation
 - [x] Page « Mes dates » (`gigs:list`, `/dates/`) : dates à venir (les plus proches d'abord) puis passées, chaque ligne ouvre l'écran « Date créée ». Isolation testée (2026-09-25). Lien depuis l'accueil ; la navigation principale vient dans la PR suivante.
-- [ ] Navigation principale (5 entrées max) : responsive (menu bas ou burger sur mobile).
+- [x] Navigation principale (5 entrées max) : responsive (menu bas ou burger sur mobile). — Fait (2026-09-25) : barre basse sur mobile, liens dans l'en-tête dès `sm`, lien actif marqué. 3 entrées pour l'instant (Accueil, Mes dates, Nouvelle date) ; « Ma structure » sera ajoutée avec sa page. Composant `templates/components/_nav.html`.
 - [ ] Confirmation d'e-mail activée ; e-mails transactionnels via le prestataire choisi ; expéditeur et domaine configurés.
 - [ ] **Onboarding guidé** (≤ 5 écrans) : structure → statut juridique → TVA → premier spectacle → première date.
 - [ ] Page « Ma structure » complète (infos légales, IBAN, logo, licence). Textes d'aide. Y déplacer la section « Ma structure » du formulaire « Compléter la date » (§2.3), puis la retirer de ce formulaire.

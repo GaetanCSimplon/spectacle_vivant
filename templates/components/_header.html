@@ -1,8 +1,11 @@
 {% load i18n %}
 <header class="bg-white border-b border-gray-200">
-  <div class="mx-auto max-w-3xl px-4 py-3 flex items-center justify-between">
-    <span class="font-semibold text-gray-900">Spectacle Vivant</span>
+  <div class="mx-auto max-w-3xl px-4 py-3 flex items-center justify-between gap-4">
+    <a href="{% url 'home' %}" class="font-semibold text-gray-900">Spectacle Vivant</a>
     {% if user.is_authenticated %}
+      <nav aria-label="{% translate 'Navigation principale' %}" class="hidden sm:flex sm:flex-1 sm:gap-4 text-sm">
+        {% include "components/_nav.html" with link_class="text-gray-600 hover:text-gray-900" active_class="font-semibold text-blue-700" %}
+      </nav>
       <form method="post" action="{% url 'account_logout' %}">
         {% csrf_token %}
         <button type="submit" class="text-sm text-gray-600 hover:text-gray-900">
