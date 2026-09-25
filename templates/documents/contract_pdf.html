@@ -54,6 +54,11 @@
         margin-bottom: 4px;
       }
 
+      .signatures {
+        margin-top: 24px;
+        min-height: 80px;
+      }
+
       section {
         margin-bottom: 16px;
       }
@@ -73,7 +78,7 @@
 
     <div class="parties">
       <div class="party">
-        <h2>Le cédant</h2>
+        <h2>{{ party_label }}</h2>
         <p>
           {{ tenant.name }}<br>
           {% if tenant.legal_form %}{{ tenant.legal_form }}<br>{% endif %}
@@ -82,7 +87,7 @@
         </p>
       </div>
       <div class="party">
-        <h2>Le cessionnaire (organisateur)</h2>
+        <h2>L'organisateur</h2>
         <p>
           {{ promoter.name }}<br>
           {% if promoter.siret %}SIRET : {{ promoter.siret }}<br>{% endif %}
@@ -94,7 +99,7 @@
     <section>
       <h2>Article 1 — Objet</h2>
       <p>
-        Le cédant cède au cessionnaire le droit de représenter le spectacle
+        {{ party_label }} cède à l'organisateur le droit de représenter le spectacle
         « {{ show.title }} » (durée indicative : {{ show.duration_minutes }} minutes),
         le {{ gig.date|date:"d F Y" }}, au lieu suivant :
       </p>
@@ -109,6 +114,9 @@
     <section>
       <h2>Article 3 — Conditions particulières</h2>
       <p>{{ gig.conditions|default:"Aucune condition particulière."|linebreaksbr }}</p>
+      {% if gig.invitations_count %}
+        <p>Nombre d'invitations : {{ gig.invitations_count }}.</p>
+      {% endif %}
     </section>
 
     <section>
@@ -119,6 +127,22 @@
       </p>
     </section>
 
-    <p style="margin-top: 40px;">Fait le {{ today|date:"d F Y" }}, en deux exemplaires.</p>
+    <p style="margin-top: 40px;">
+      Fait {% if gig.signing_place %}à {{ gig.signing_place }}, {% endif %}le {{ today|date:"d F Y" }}, en deux exemplaires.
+    </p>
+
+    <div class="parties signatures">
+      <div class="party">
+        <h2>{{ party_label }}</h2>
+        {% if contract.signatory_name %}
+          <p>
+            {{ contract.signatory_name }}{% if contract.signatory_role %}, {{ contract.signatory_role }}{% endif %}
+          </p>
+        {% endif %}
+      </div>
+      <div class="party">
+        <h2>L'organisateur</h2>
+      </div>
+    </div>
   </body>
 </html>

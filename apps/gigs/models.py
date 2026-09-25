@@ -24,6 +24,21 @@ class Gig(TenantOwnedModel):
     )
     price = models.DecimalField(_("prix HT"), max_digits=8, decimal_places=2)
     conditions = models.TextField(_("conditions particulières"), blank=True)
+    is_free = models.BooleanField(_("concert gratuit"), default=False)
+    ticket_price = models.DecimalField(
+        _("prix des places"), max_digits=8, decimal_places=2, default=0
+    )
+    invitations_count = models.PositiveIntegerField(_("nombre d'invitations"), default=0)
+    signing_place = models.CharField(_("lieu de signature"), max_length=255, blank=True)
+
+    def save(self, *args, **kwargs):
+        # RG-12: a free gig always has a ticket price of 0.
+        if self.is_free:
+            self.ticket_price = 0
+            update_fields = kwargs.get("update_fields")
+            if update_fields is not None and "is_free" in update_fields:
+                kwargs["update_fields"] = {*update_fields, "ticket_price"}
+        super().save(*args, **kwargs)
 
     def __str__(self):
         return f"{self.show} — {self.date}"
