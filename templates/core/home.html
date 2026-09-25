@@ -12,6 +12,9 @@
     >
       {% translate "+ Nouvelle date" %}
     </a>
+    <a href="{% url 'gigs:list' %}" class="mt-4 ml-2 inline-block text-sm text-blue-700 underline">
+      {% translate "Voir mes dates" %}
+    </a>
   {% else %}
     <p class="text-gray-600">Aucune structure associée à ce compte pour l'instant.</p>
   {% endif %}
