@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}Mes dates — Spectacle Vivant{% endblock %}
+
+{% block page_content %}
+  <div class="mb-4 flex items-center justify-between">
+    <h1 class="text-xl font-semibold">{% translate "Mes dates" %}</h1>
+    <a
+      href="{% url 'gigs:wizard-show' %}"
+      class="rounded-md bg-blue-600 px-4 py-2 text-sm text-white"
+    >
+      {% translate "+ Nouvelle date" %}
+    </a>
+  </div>
+
+  {% if not object_list %}
+    <p class="text-gray-600">{% translate "Vous n'avez pas encore de date. Créez la première !" %}</p>
+  {% endif %}
+
+  {% if upcoming_gigs %}
+    <h2 class="mb-2 text-sm font-semibold uppercase text-gray-500">{% translate "À venir" %}</h2>
+    <ul class="mb-6 flex flex-col gap-2">
+      {% for gig in upcoming_gigs %}{% include "gigs/_gig_row.html" %}{% endfor %}
+    </ul>
+  {% endif %}
+
+  {% if past_gigs %}
+    <h2 class="mb-2 text-sm font-semibold uppercase text-gray-500">{% translate "Passées" %}</h2>
+    <ul class="flex flex-col gap-2">
+      {% for gig in past_gigs %}{% include "gigs/_gig_row.html" %}{% endfor %}
+    </ul>
+  {% endif %}
+{% endblock %}

@@ -2,8 +2,10 @@ import datetime
 
 from django.contrib import messages
 from django.shortcuts import redirect, render
+from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 from django.views import View
+from django.views.generic import ListView
 
 from apps.core.views import TenantScopedMixin
 
@@ -17,6 +19,7 @@ from .forms import (
     ShowQuickCreateForm,
     VenueQuickCreateForm,
 )
+from .models import Gig
 
 WIZARD_SESSION_KEY = "gig_wizard"
 
@@ -244,3 +247,21 @@ class GigWizardRecapView(GigWizardMixin, View):
         del request.session[WIZARD_SESSION_KEY]
         messages.success(request, _("La date a bien été créée."))
         return redirect("documents:contract-ready", gig_id=gig.pk)
+
+
+class GigListView(TenantScopedMixin, ListView):
+    """ "Mes dates": upcoming gigs first (soonest on top), then past ones."""
+
+    model = Gig
+    template_name = "gigs/gig_list.html"
+
+    def get_queryset(self):
+        return super().get_queryset().select_related("show", "venue", "promoter")
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        today = timezone.localdate()
+        gigs = context["object_list"]
+        context["upcoming_gigs"] = gigs.filter(date__gte=today).order_by("date")
+        context["past_gigs"] = gigs.filter(date__lt=today).order_by("-date")
+        return context

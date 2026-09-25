@@ -172,6 +172,7 @@ Avant de coder : propose un plan (fichiers, modèles, tests) et attends mon acco
 **Objectif** : compléter les fonctionnalités du périmètre MVP. Le travail est découpé en **sprints d'environ une semaine**, chacun livrant quelque chose d'utilisable et déployé.
 
 ### Sprint 3.1 — Comptes, onboarding, structure, navigation
+- [x] Page « Mes dates » (`gigs:list`, `/dates/`) : dates à venir (les plus proches d'abord) puis passées, chaque ligne ouvre l'écran « Date créée ». Isolation testée (2026-09-25). Lien depuis l'accueil ; la navigation principale vient dans la PR suivante.
 - [ ] Navigation principale (5 entrées max) : responsive (menu bas ou burger sur mobile).
 - [ ] Confirmation d'e-mail activée ; e-mails transactionnels via le prestataire choisi ; expéditeur et domaine configurés.
 - [ ] **Onboarding guidé** (≤ 5 écrans) : structure → statut juridique → TVA → premier spectacle → première date.
