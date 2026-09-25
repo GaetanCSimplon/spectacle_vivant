@@ -45,13 +45,6 @@ def _payload(**overrides):
         "promoter-representative_role": "Maire",
         "contract-signatory_name": "Léa Roux",
         "contract-signatory_role": "Trésorière",
-        "tenant-siret": "12345678900012",
-        "tenant-address": "1 rue des Arts\n69001 Lyon",
-        "tenant-licence_number": "L-2",
-        "tenant-representative_name": "Julie Martin",
-        "tenant-representative_role": "Présidente",
-        "tenant-jurisdiction_city": "Montpellier",
-        "tenant-contract_party_label": "producteur",
     }
     data.update(overrides)
     return data
@@ -66,7 +59,7 @@ def test_complete_page_requires_login(client):
     assert response.url.startswith(reverse("account_login"))
 
 
-def test_complete_page_shows_every_section_to_the_owner(client):
+def test_complete_page_shows_every_section(client):
     tenant = _login(client)
     gig = GigFactory(tenant=tenant)
 
@@ -74,9 +67,10 @@ def test_complete_page_shows_every_section_to_the_owner(client):
 
     assert response.status_code == 200
     content = response.content.decode()
-    for section in ("La date", "Le spectacle", "Le lieu", "Ma structure", "Signature"):
+    for section in ("La date", "Le spectacle", "Le lieu", "Signature"):
         assert section in content
-    assert 'name="tenant-jurisdiction_city"' in content
+    assert 'name="tenant-' not in content
+    assert reverse("tenants:profile") in content
 
 
 def test_ready_page_links_to_the_complete_form(client):
@@ -100,7 +94,6 @@ def test_saving_updates_every_related_object(client):
     gig.show.refresh_from_db()
     gig.venue.refresh_from_db()
     gig.promoter.refresh_from_db()
-    tenant.refresh_from_db()
     assert gig.get_in_time == datetime.time(15, 30)
     assert gig.soundcheck_time == datetime.time(17, 0)
     assert gig.performance_time == datetime.time(21, 15)
@@ -114,9 +107,6 @@ def test_saving_updates_every_related_object(client):
     assert gig.venue.capacity == 300
     assert gig.promoter.licence_number == "L-1"
     assert gig.promoter.representative_name == "Marc Durand"
-    assert tenant.jurisdiction_city == "Montpellier"
-    assert tenant.representative_role == "Présidente"
-    assert tenant.contract_party_label == "producteur"
 
 
 def test_saving_creates_a_draft_contract_with_the_signatory(client):
@@ -171,7 +161,6 @@ def test_empty_optional_fields_are_accepted(client):
     tenant = _login(client)
     gig = GigFactory(tenant=tenant)
     data = {key: "" for key in _payload()}
-    data["tenant-contract_party_label"] = "artiste"
 
     response = client.post(_url(gig), data)
 
@@ -193,38 +182,28 @@ def test_invalid_values_save_nothing_and_show_errors(client):
     assert "Certains champs sont à corriger" in response.content.decode()
     gig.refresh_from_db()
     gig.show.refresh_from_db()
-    tenant.refresh_from_db()
     assert gig.crew_headcount is None
     assert gig.show.group_name == ""
-    assert tenant.jurisdiction_city == ""
     assert not Contract.objects.filter(gig=gig).exists()
 
 
-def test_unknown_party_label_is_rejected(client):
+def test_the_form_no_longer_edits_the_tenant(client):
     tenant = _login(client)
     gig = GigFactory(tenant=tenant)
 
-    response = client.post(_url(gig), _payload(**{"tenant-contract_party_label": "cedant"}))
+    client.post(_url(gig), _payload(**{"tenant-jurisdiction_city": "Montpellier"}))
 
-    assert response.status_code == 200
     tenant.refresh_from_db()
-    assert tenant.contract_party_label == "artiste"
+    assert tenant.jurisdiction_city == ""
 
 
-def test_a_member_who_is_not_owner_cannot_edit_the_tenant(client):
+def test_a_member_who_is_not_owner_can_fill_in_the_date(client):
     tenant = _login(client, role="member")
     gig = GigFactory(tenant=tenant)
 
-    get_response = client.get(_url(gig))
-    post_response = client.post(_url(gig), _payload())
+    response = client.post(_url(gig), _payload())
 
-    assert 'name="tenant-jurisdiction_city"' not in get_response.content.decode()
-    assert "Seul le propriétaire" in get_response.content.decode()
-    assert post_response.status_code == 302
-    tenant.refresh_from_db()
-    assert tenant.jurisdiction_city == ""
-    assert tenant.representative_name == ""
-    assert tenant.contract_party_label == "artiste"
+    assert response.status_code == 302
     gig.refresh_from_db()
     assert gig.signing_place == "Lyon"
 
@@ -240,10 +219,8 @@ def test_another_tenants_gig_returns_404_and_is_left_untouched(client):
     assert post_response.status_code == 404
     other_gig.refresh_from_db()
     other_gig.show.refresh_from_db()
-    other_gig.tenant.refresh_from_db()
     assert other_gig.signing_place == ""
     assert other_gig.show.group_name == ""
-    assert other_gig.tenant.jurisdiction_city == ""
     assert not Contract.objects.filter(gig=other_gig).exists()
 
 
@@ -255,10 +232,7 @@ def test_saving_never_touches_another_tenants_data(client):
     client.post(_url(gig), _payload())
 
     other_gig.show.refresh_from_db()
-    other_gig.tenant.refresh_from_db()
     assert other_gig.show.group_name == ""
-    assert other_gig.tenant.jurisdiction_city == ""
-    assert other_gig.tenant.contract_party_label == "artiste"
 
 
 def test_a_signed_contract_can_no_longer_be_edited(client):
@@ -272,9 +246,7 @@ def test_a_signed_contract_can_no_longer_be_edited(client):
     assert get_response.status_code == 302
     assert post_response.status_code == 302
     gig.refresh_from_db()
-    tenant.refresh_from_db()
     assert gig.signing_place == ""
-    assert tenant.jurisdiction_city == ""
 
 
 def test_completed_values_end_up_in_the_contract(client):
@@ -291,7 +263,4 @@ def test_completed_values_end_up_in_the_contract(client):
     assert "Heure de get in : 15h30" in text
     assert "numéro SACEM : SAC-1" in text
     assert "capacité de la salle est de 300 places" in text
-    assert "tribunaux de MONTPELLIER" in text
-    assert "LE PRODUCTEUR fournira" in text
     assert "Léa Roux, Trésorière" in text
-    assert "……" not in text

@@ -28,7 +28,12 @@ def test_navigation_links_are_shown_when_logged_in(client):
 
 @pytest.mark.parametrize(
     ("url_name", "label"),
-    [("home", "Accueil"), ("gigs:list", "Mes dates"), ("gigs:wizard-show", "Nouvelle date")],
+    [
+        ("home", "Accueil"),
+        ("gigs:list", "Mes dates"),
+        ("gigs:wizard-show", "Nouvelle date"),
+        ("tenants:profile", "Ma structure"),
+    ],
 )
 def test_current_page_is_marked_active(client, url_name, label):
     _login(client)

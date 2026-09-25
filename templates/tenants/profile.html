@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}Ma structure — Spectacle Vivant{% endblock %}
+
+{% block page_content %}
+  <h1 class="mb-2 text-xl font-semibold">{% translate "Ma structure" %}</h1>
+  <p class="mb-4 text-sm text-gray-600">
+    {% translate "Ces informations apparaissent dans vos contrats. Tout champ laissé vide s'affiche en pointillés à compléter à la main." %}
+  </p>
+
+  {% if not is_owner %}
+    <p class="mb-4 rounded-md bg-gray-100 px-4 py-2 text-sm text-gray-700">
+      {% translate "Seul le propriétaire du compte peut modifier les informations de la structure." %}
+    </p>
+  {% endif %}
+
+  <form method="post" class="space-y-4">
+    {% csrf_token %}
+    {{ form.as_p }}
+    {% if is_owner %}
+      <button type="submit" class="w-full rounded-md bg-blue-600 px-4 py-2 text-white">
+        {% translate "Enregistrer" %}
+      </button>
+    {% endif %}
+  </form>
+{% endblock %}
