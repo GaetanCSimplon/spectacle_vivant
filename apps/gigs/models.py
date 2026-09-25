@@ -24,6 +24,12 @@ class Gig(TenantOwnedModel):
     )
     price = models.DecimalField(_("prix HT"), max_digits=8, decimal_places=2)
     conditions = models.TextField(_("conditions particulières"), blank=True)
+    get_in_time = models.TimeField(_("heure de get in"), null=True, blank=True)
+    soundcheck_time = models.TimeField(_("heure des balances"), null=True, blank=True)
+    performance_time = models.TimeField(_("heure de passage"), null=True, blank=True)
+    crew_headcount = models.PositiveIntegerField(
+        _("nombre de participants (repas)"), null=True, blank=True
+    )
     is_free = models.BooleanField(_("concert gratuit"), default=False)
     ticket_price = models.DecimalField(
         _("prix des places"), max_digits=8, decimal_places=2, default=0

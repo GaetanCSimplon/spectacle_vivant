@@ -6,16 +6,27 @@ from apps.tenants.models import Tenant
 
 from .models import Contract
 
-PARTY_LABELS = {
-    Tenant.ContractPartyLabel.PRODUCER: "Le producteur",
-    Tenant.ContractPartyLabel.ARTIST: "L'artiste",
+# How the tenant is named in the contract body, with the article each
+# grammatical use needs (subject / "à" / "de").
+PARTY_FORMS = {
+    Tenant.ContractPartyLabel.PRODUCER: {
+        "subject": "LE PRODUCTEUR",
+        "to": "AU PRODUCTEUR",
+        "of": "DU PRODUCTEUR",
+    },
+    Tenant.ContractPartyLabel.ARTIST: {
+        "subject": "L'ARTISTE",
+        "to": "À L'ARTISTE",
+        "of": "DE L'ARTISTE",
+    },
 }
 
 
 def build_contract_context(gig, contract=None):
     return {
         "contract": contract,
-        "party_label": PARTY_LABELS[gig.tenant.contract_party_label],
+        "party": PARTY_FORMS[gig.tenant.contract_party_label],
+        "vat_exempt": gig.tenant.vat_regime != Tenant.VatRegime.TAXABLE,
         "gig": gig,
         "tenant": gig.tenant,
         "promoter": gig.promoter,

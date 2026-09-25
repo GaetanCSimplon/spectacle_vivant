@@ -9,6 +9,9 @@ class Promoter(TenantOwnedModel):
 
     name = models.CharField(_("nom"), max_length=255)
     siret = models.CharField(_("SIRET"), max_length=14, blank=True)
+    licence_number = models.CharField(_("n° de licence"), max_length=50, blank=True)
+    representative_name = models.CharField(_("représentant légal"), max_length=255, blank=True)
+    representative_role = models.CharField(_("qualité du représentant"), max_length=255, blank=True)
     billing_address = models.TextField(_("adresse de facturation"), blank=True)
     email = models.EmailField(_("e-mail"), blank=True)
 
@@ -21,6 +24,7 @@ class Venue(TenantOwnedModel):
 
     name = models.CharField(_("nom"), max_length=255)
     address = models.TextField(_("adresse"), blank=True)
+    capacity = models.PositiveIntegerField(_("jauge (places)"), null=True, blank=True)
 
     def __str__(self):
         return self.name

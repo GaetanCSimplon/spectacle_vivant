@@ -1,3 +1,4 @@
+import datetime
 import html as html_lib
 
 import pytest
@@ -107,7 +108,7 @@ def test_contract_preview_of_another_tenants_gig_returns_404(client):
 def _render(gig, contract=None):
     gig.refresh_from_db()
     html = render_to_string("documents/contract_pdf.html", build_contract_context(gig, contract))
-    return html_lib.unescape(html)
+    return " ".join(html_lib.unescape(html).split())
 
 
 def test_contract_names_the_tenant_as_the_artist_by_default():
@@ -115,8 +116,8 @@ def test_contract_names_the_tenant_as_the_artist_by_default():
 
     html = _render(gig)
 
-    assert "L'artiste" in html
-    assert "Le producteur" not in html
+    assert "L'ARTISTE fournira le spectacle" in html
+    assert "LE PRODUCTEUR" not in html
 
 
 def test_contract_names_the_tenant_as_the_producer_when_configured():
@@ -124,17 +125,108 @@ def test_contract_names_the_tenant_as_the_producer_when_configured():
 
     html = _render(gig)
 
-    assert "Le producteur" in html
-    assert "L'artiste" not in html
+    assert "LE PRODUCTEUR fournira le spectacle" in html
+    assert "fournie par LE PRODUCTEUR" in html
 
 
-def test_contract_shows_the_signing_place_and_invitations():
-    gig = GigFactory(signing_place="Lyon", invitations_count=4)
+def test_contract_uses_the_right_grammatical_form_for_the_artist():
+    gig = GigFactory(invitations_count=5)
 
     html = _render(gig)
 
-    assert "à Lyon, le" in html
-    assert "Nombre d'invitations : 4" in html
+    assert "À L'ARTISTE ou à son représentant" in html
+    assert "verser À L'ARTISTE, en contrepartie" in html
+
+
+def test_contract_shows_the_signing_place():
+    gig = GigFactory(signing_place="Lyon")
+
+    html = _render(gig)
+
+    assert "Fait à Lyon en 2 exemplaires" in html
+
+
+def test_contract_shows_invitations_only_when_there_are_some():
+    with_invitations = _render(GigFactory(invitations_count=4))
+    without = _render(GigFactory(invitations_count=0))
+
+    assert "fournira 4 invitations personnelles" in with_invitations
+    assert "invitations personnelles" not in without
+    assert "filtrer l'entrée des loges." in without
+
+
+def test_contract_shows_the_parties_details():
+    gig = GigFactory(
+        tenant__licence_number="L-123",
+        tenant__representative_name="Julie Martin",
+        tenant__representative_role="Présidente",
+        promoter__licence_number="L-456",
+        promoter__representative_name="Marc Durand",
+        promoter__representative_role="Maire",
+    )
+
+    html = _render(gig)
+
+    assert "N° de licence : L-123" in html
+    assert "Représenté par Julie Martin" in html
+    assert "en qualité de Présidente" in html
+    assert "N° de licence : L-456" in html
+    assert "Représenté par Marc Durand" in html
+
+
+def test_contract_shows_show_venue_and_schedule_details():
+    gig = GigFactory(
+        show__group_name="Les Nocturnes",
+        show__sacem_number="SAC-1",
+        show__sacem_object_number="OBJ-2",
+        venue__capacity=300,
+        get_in_time=datetime.time(15, 30),
+        soundcheck_time=datetime.time(17, 0),
+        performance_time=datetime.time(21, 15),
+        crew_headcount=6,
+    )
+
+    html = _render(gig)
+
+    assert "Les Nocturnes" in html
+    assert "numéro SACEM : SAC-1" in html
+    assert "numéro d'objet : OBJ-2" in html
+    assert "capacité de la salle est de 300 places" in html
+    assert "Heure de get in : 15h30" in html
+    assert "Heure de balances : 17h00" in html
+    assert "Heure de représentation : 21h15" in html
+    assert "soit 6 personnes" in html
+
+
+def test_contract_free_gig_hides_the_ticket_price():
+    free = _render(GigFactory(is_free=True, ticket_price=15))
+    paid = _render(GigFactory(is_free=False, ticket_price=15))
+
+    assert "Le concert est-il gratuit ? : Oui" in free
+    assert "prix des places" not in free
+    assert "Le concert est-il gratuit ? : Non" in paid
+    assert "prix des places est fixé à 15" in paid
+
+
+@pytest.mark.parametrize("regime", ["franchise", "not_taxable"])
+def test_contract_vat_exempt_regimes_show_the_legal_mention(regime):
+    html = _render(GigFactory(tenant__vat_regime=regime))
+
+    assert "TVA 0 €" in html
+    assert "article 293 B du CGI" in html
+
+
+def test_contract_taxable_regime_leaves_vat_to_fill_in():
+    html = _render(GigFactory(tenant__vat_regime="taxable"))
+
+    assert "293 B" not in html
+    assert "HT + TVA …… €" in html
+
+
+def test_contract_shows_the_jurisdiction_city_of_the_tenant():
+    html = _render(GigFactory(tenant__jurisdiction_city="Montpellier"))
+
+    assert "tribunaux de MONTPELLIER" in html
 
 
 def test_contract_shows_the_signatory():
@@ -152,6 +244,7 @@ def test_contract_without_optional_fields_still_renders_and_generates_a_pdf():
     html = _render(gig)
     contract = generate_contract_pdf(gig)
 
-    assert "Nombre d'invitations" not in html
-    assert " à , le" not in html
+    assert "Fait à …… en 2 exemplaires" in html
+    assert "N° de licence : ……" in html
+    assert "tribunaux de ……" in html
     assert contract.pdf_file.read().startswith(b"%PDF-")
