@@ -4,7 +4,6 @@ from django.utils.translation import gettext_lazy as _
 from apps.addressbook.models import Promoter, Venue
 from apps.catalog.models import Show
 from apps.gigs.models import Gig
-from apps.tenants.models import Tenant
 
 from .models import Contract
 
@@ -68,27 +67,6 @@ class PromoterCompletionForm(forms.ModelForm):
     class Meta:
         model = Promoter
         fields = ["siret", "licence_number", "representative_name", "representative_role"]
-
-
-class TenantCompletionForm(forms.ModelForm):
-    class Meta:
-        model = Tenant
-        fields = [
-            "siret",
-            "address",
-            "licence_number",
-            "representative_name",
-            "representative_role",
-            "jurisdiction_city",
-            "contract_party_label",
-        ]
-        widgets = {"address": forms.Textarea(attrs={"rows": 3})}
-        help_texts = {
-            "jurisdiction_city": _("Ville dont les tribunaux sont compétents en cas de litige."),
-            "contract_party_label": _(
-                "Comment vous êtes nommé dans le contrat : « L'artiste » ou « Le producteur »."
-            ),
-        }
 
 
 class ContractCompletionForm(forms.ModelForm):

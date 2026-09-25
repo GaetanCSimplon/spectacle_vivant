@@ -36,16 +36,10 @@
       {{ forms.promoter.as_p }}
     </fieldset>
 
-    <fieldset class="space-y-3 rounded-md border border-gray-200 p-4">
-      <legend class="px-1 text-sm font-semibold">{% translate "Ma structure" %}</legend>
-      {% if is_owner %}
-        {{ forms.tenant.as_p }}
-      {% else %}
-        <p class="text-sm text-gray-600">
-          {% translate "Seul le propriétaire du compte peut modifier les informations de la structure." %}
-        </p>
-      {% endif %}
-    </fieldset>
+    <p class="text-sm text-gray-600">
+      {% translate "Les informations de votre structure (SIRET, adresse, représentant…) se modifient dans" %}
+      <a href="{% url 'tenants:profile' %}" class="text-blue-700 underline">{% translate "Ma structure" %}</a>.
+    </p>
 
     <fieldset class="space-y-3 rounded-md border border-gray-200 p-4">
       <legend class="px-1 text-sm font-semibold">{% translate "Signature" %}</legend>

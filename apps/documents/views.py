@@ -5,7 +5,6 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.utils.translation import gettext_lazy as _
 from django.views import View
 
-from apps.accounts.services import is_tenant_owner
 from apps.core.views import TenantScopedMixin
 from apps.gigs.models import Gig
 
@@ -15,7 +14,6 @@ from .forms import (
     GigCompletionForm,
     PromoterCompletionForm,
     ShowCompletionForm,
-    TenantCompletionForm,
     VenueCompletionForm,
 )
 from .models import Contract
@@ -59,27 +57,21 @@ class ContractCompleteView(TenantScopedMixin, View):
         self.contract = Contract.objects.filter(gig=self.gig, tenant=tenant).first() or Contract(
             gig=self.gig, tenant=tenant
         )
-        self.is_owner = is_tenant_owner(self.request.user, tenant)
 
     def is_frozen(self):
         return self.contract.status == Contract.Status.SIGNED
 
     def build_forms(self, data=None):
-        forms = {
+        return {
             "gig": GigCompletionForm(data, instance=self.gig, prefix="gig"),
             "show": ShowCompletionForm(data, instance=self.gig.show, prefix="show"),
             "venue": VenueCompletionForm(data, instance=self.gig.venue, prefix="venue"),
             "promoter": PromoterCompletionForm(data, instance=self.gig.promoter, prefix="promoter"),
             "contract": ContractCompletionForm(data, instance=self.contract, prefix="contract"),
         }
-        if self.is_owner:
-            forms["tenant"] = TenantCompletionForm(
-                data, instance=self.request.tenant, prefix="tenant"
-            )
-        return forms
 
     def render_page(self, forms):
-        context = {"gig": self.gig, "forms": forms, "is_owner": self.is_owner}
+        context = {"gig": self.gig, "forms": forms}
         return render(self.request, self.template_name, context)
 
     def frozen_response(self):
