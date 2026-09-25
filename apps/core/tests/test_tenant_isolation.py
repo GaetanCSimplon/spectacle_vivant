@@ -7,7 +7,7 @@ from apps.accounts.factories import UserFactory
 from apps.core.models import Note
 from apps.core.tests.isolation_registry import mark_isolation_tested
 from apps.core.views import TenantScopedMixin
-from apps.organizations.factories import MembershipFactory
+from apps.tenants.factories import MembershipFactory
 
 mark_isolation_tested(Note)
 
@@ -60,26 +60,26 @@ def membership_b():
     return MembershipFactory()
 
 
-def test_middleware_sets_current_organization(client, membership_a):
+def test_middleware_sets_current_tenant(client, membership_a):
     client.force_login(membership_a.user)
 
     response = client.get("/admin/")
 
-    assert response.wsgi_request.organization == membership_a.organization
+    assert response.wsgi_request.tenant == membership_a.tenant
 
 
-def test_middleware_organization_is_none_without_membership(client):
+def test_middleware_tenant_is_none_without_membership(client):
     user = UserFactory()
     client.force_login(user)
 
     response = client.get("/admin/")
 
-    assert response.wsgi_request.organization is None
+    assert response.wsgi_request.tenant is None
 
 
-def test_list_view_does_not_mix_organizations(client, urls, membership_a, membership_b):
-    note_a = Note.objects.create(organization=membership_a.organization, text="Note A")
-    Note.objects.create(organization=membership_b.organization, text="Note B")
+def test_list_view_does_not_mix_tenants(client, urls, membership_a, membership_b):
+    note_a = Note.objects.create(tenant=membership_a.tenant, text="Note A")
+    Note.objects.create(tenant=membership_b.tenant, text="Note B")
 
     client.force_login(membership_a.user)
     response = client.get(reverse("test-note-list"))
@@ -87,8 +87,8 @@ def test_list_view_does_not_mix_organizations(client, urls, membership_a, member
     assert response.json()["pks"] == [note_a.pk]
 
 
-def test_detail_of_another_organization_is_not_found(client, urls, membership_a, membership_b):
-    note_b = Note.objects.create(organization=membership_b.organization, text="Note B")
+def test_detail_of_another_tenant_is_not_found(client, urls, membership_a, membership_b):
+    note_b = Note.objects.create(tenant=membership_b.tenant, text="Note B")
 
     client.force_login(membership_a.user)
     response = client.get(reverse("test-note-detail", args=[note_b.pk]))
@@ -96,8 +96,8 @@ def test_detail_of_another_organization_is_not_found(client, urls, membership_a,
     assert response.status_code == 404
 
 
-def test_detail_of_own_organization_is_found(client, urls, membership_a):
-    note_a = Note.objects.create(organization=membership_a.organization, text="Note A")
+def test_detail_of_own_tenant_is_found(client, urls, membership_a):
+    note_a = Note.objects.create(tenant=membership_a.tenant, text="Note A")
 
     client.force_login(membership_a.user)
     response = client.get(reverse("test-note-detail", args=[note_a.pk]))
@@ -105,11 +105,11 @@ def test_detail_of_own_organization_is_found(client, urls, membership_a):
     assert response.status_code == 200
 
 
-def test_create_view_forces_current_organization(client, urls, membership_a, membership_b):
+def test_create_view_forces_current_tenant(client, urls, membership_a, membership_b):
     client.force_login(membership_a.user)
 
     client.post(reverse("test-note-create"), {"text": "Nouvelle note"})
 
     note = Note.objects.get(text="Nouvelle note")
-    assert note.organization == membership_a.organization
-    assert note.organization != membership_b.organization
+    assert note.tenant == membership_a.tenant
+    assert note.tenant != membership_b.tenant

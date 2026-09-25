@@ -57,24 +57,22 @@ class GigWizardShowStepView(GigWizardMixin, View):
 
     def get(self, request):
         data = self.get_wizard_data()
-        choice_form = GigShowStepForm(
-            organization=request.organization, initial={"show": data.get("show_id")}
-        )
+        choice_form = GigShowStepForm(tenant=request.tenant, initial={"show": data.get("show_id")})
         create_form = ShowQuickCreateForm()
         return render(request, self.template_name, self._context(choice_form, create_form))
 
     def post(self, request):
         if request.POST.get("mode") == "new":
             create_form = ShowQuickCreateForm(request.POST)
-            choice_form = GigShowStepForm(organization=request.organization)
+            choice_form = GigShowStepForm(tenant=request.tenant)
             if create_form.is_valid():
                 show = create_form.save(commit=False)
-                show.organization = request.organization
+                show.tenant = request.tenant
                 show.save()
                 self.update_wizard_data(show_id=show.pk)
                 return redirect("gigs:wizard-promoter")
         else:
-            choice_form = GigShowStepForm(request.POST, organization=request.organization)
+            choice_form = GigShowStepForm(request.POST, tenant=request.tenant)
             create_form = ShowQuickCreateForm()
             if choice_form.is_valid():
                 self.update_wizard_data(show_id=choice_form.cleaned_data["show"].pk)
@@ -98,7 +96,7 @@ class GigWizardPromoterStepView(GigWizardMixin, View):
             return redirect_response
         data = self.get_wizard_data()
         choice_form = GigPromoterStepForm(
-            organization=request.organization, initial={"promoter": data.get("promoter_id")}
+            tenant=request.tenant, initial={"promoter": data.get("promoter_id")}
         )
         create_form = PromoterQuickCreateForm()
         return render(request, self.template_name, self._context(choice_form, create_form))
@@ -110,15 +108,15 @@ class GigWizardPromoterStepView(GigWizardMixin, View):
 
         if request.POST.get("mode") == "new":
             create_form = PromoterQuickCreateForm(request.POST)
-            choice_form = GigPromoterStepForm(organization=request.organization)
+            choice_form = GigPromoterStepForm(tenant=request.tenant)
             if create_form.is_valid():
                 promoter = create_form.save(commit=False)
-                promoter.organization = request.organization
+                promoter.tenant = request.tenant
                 promoter.save()
                 self.update_wizard_data(promoter_id=promoter.pk)
                 return redirect("gigs:wizard-venue")
         else:
-            choice_form = GigPromoterStepForm(request.POST, organization=request.organization)
+            choice_form = GigPromoterStepForm(request.POST, tenant=request.tenant)
             create_form = PromoterQuickCreateForm()
             if choice_form.is_valid():
                 self.update_wizard_data(promoter_id=choice_form.cleaned_data["promoter"].pk)
@@ -142,7 +140,7 @@ class GigWizardVenueStepView(GigWizardMixin, View):
             return redirect_response
         data = self.get_wizard_data()
         choice_form = GigVenueStepForm(
-            organization=request.organization, initial={"venue": data.get("venue_id")}
+            tenant=request.tenant, initial={"venue": data.get("venue_id")}
         )
         create_form = VenueQuickCreateForm()
         return render(request, self.template_name, self._context(choice_form, create_form))
@@ -154,15 +152,15 @@ class GigWizardVenueStepView(GigWizardMixin, View):
 
         if request.POST.get("mode") == "new":
             create_form = VenueQuickCreateForm(request.POST)
-            choice_form = GigVenueStepForm(organization=request.organization)
+            choice_form = GigVenueStepForm(tenant=request.tenant)
             if create_form.is_valid():
                 venue = create_form.save(commit=False)
-                venue.organization = request.organization
+                venue.tenant = request.tenant
                 venue.save()
                 self.update_wizard_data(venue_id=venue.pk)
                 return redirect("gigs:wizard-details")
         else:
-            choice_form = GigVenueStepForm(request.POST, organization=request.organization)
+            choice_form = GigVenueStepForm(request.POST, tenant=request.tenant)
             create_form = VenueQuickCreateForm()
             if choice_form.is_valid():
                 self.update_wizard_data(venue_id=choice_form.cleaned_data["venue"].pk)
@@ -222,7 +220,7 @@ class GigWizardRecapView(GigWizardMixin, View):
             return redirect_response
 
         data = self.get_wizard_data()
-        show, promoter, venue = services.get_wizard_related_objects(request.organization, data)
+        show, promoter, venue = services.get_wizard_related_objects(request.tenant, data)
         context = self.wizard_context(
             5,
             show=show,
@@ -242,7 +240,7 @@ class GigWizardRecapView(GigWizardMixin, View):
             return redirect_response
 
         data = self.get_wizard_data()
-        gig = services.create_gig_from_wizard_data(request.organization, data)
+        gig = services.create_gig_from_wizard_data(request.tenant, data)
         del request.session[WIZARD_SESSION_KEY]
         messages.success(request, _("La date a bien été créée."))
         return redirect("documents:contract-ready", gig_id=gig.pk)

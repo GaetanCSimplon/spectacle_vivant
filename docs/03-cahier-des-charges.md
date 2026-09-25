@@ -1,7 +1,7 @@
 # Cahier des charges — SaaS « Gestion Spectacle Vivant »
 
-**Version** : 1.0 (base de travail) — **Date** : 21/09/2026
-**Statut** : à valider après la Phase 0 (entretiens avec de vrais utilisateurs)
+**Version** : 1.1 — **Date** : 25/09/2026 (mise à jour : renommage `Organization` → `Tenant`, champs du modèle de contrat réel, §14 questions ouvertes)
+**Statut** : à valider après la Phase 0 (entretiens avec de vrais utilisateurs) et après réponses du §14
 **Documents liés** : `CLAUDE.md`, `01-guide-architecture.md`, `02-guide-metier.md`, `04-feuille-de-route.md`
 
 ---
@@ -159,6 +159,7 @@ Un utilisateur = une structure en MVP (modèle `Membership` prêt pour plusieurs
 | RG-09 | Une facture ne peut être marquée `paid` que si la somme des paiements ≥ son total. |
 | RG-10 | Les montants sont exprimés en euros, avec deux décimales (`Decimal`). |
 | RG-11 | Un lien secret de feuille de route expose uniquement cette feuille de route, jamais le reste de la date (prix, contrat…). |
+| RG-12 | Si `Gig.is_free` est vrai, `Gig.ticket_price` est automatiquement forcé à 0 (calculé, non modifiable manuellement dans ce cas). |
 
 ---
 
@@ -209,30 +210,30 @@ Un utilisateur = une structure en MVP (modèle `Membership` prêt pour plusieurs
 ## 8. Architecture technique (résumé)
 
 Monolithe modulaire Django 5.2 LTS + PostgreSQL ; HTMX + Alpine.js + Tailwind ; WeasyPrint ; `django-allauth` ; hébergement Scalingo (France) ; bucket S3 européen ; Sentry (UE).
-Multi-tenant par **base partagée avec clé `organization`**. Détails : `01-guide-architecture.md`.
+Multi-tenant par **base partagée avec clé `tenant`**. Détails : `01-guide-architecture.md`.
 
 ---
 
 ## 9. Modèle de données (MVP)
 
-> Tous les modèles marqués (T) héritent de `TenantOwnedModel` (FK `organization`).
+> Tous les modèles marqués (T) héritent de `TenantOwnedModel` (FK `tenant`).
 
 **User** : email (login), first_name, last_name.
-**Organization** : name, legal_form, address, siret, vat_regime, vat_number, iban, licence_number, logo, plan, created_at.
-**Membership** : user, organization, role (`owner`/`member`). Unique (user, organization).
+**Tenant** *(anciennement `Organization`)* : name, legal_form, address, siret, licence_number, representative_name, representative_role, contract_party_label (`producteur`/`artiste` — détermine la formulation utilisée dans le contrat), vat_regime, vat_number, iban, logo, plan, created_at.
+**Membership** : user, tenant, role (`owner`/`member`). Unique (user, tenant).
 
-**Show (T)** : title, description, duration_minutes, crew_size, tech_sheet_text, tech_sheet_file, indicative_price.
-**Promoter (T)** : name, kind, siret, billing_address, email, phone, notes.
-**Venue (T)** : name, address, capacity, access_info, notes.
+**Show (T)** : title, group_name (nom du groupe/artiste, distinct du titre du spectacle), description, performers (distribution, texte libre), duration_minutes (« Durée du Set »), crew_size, tech_sheet_text, tech_sheet_file, rider_file (fiche d'exigences artiste/hospitalité, distincte de la fiche technique), indicative_price, sacem_number (« N° SACEM »), sacem_object_number (« N° d'objet »).
+**Promoter (T)** : name, kind, siret, licence_number, representative_name, representative_role, billing_address, email, phone, notes.
+**Venue (T)** : name, address, capacity (« Jauge Max »), access_info, notes.
 **Contact (T)** : name, role, email, phone, promoter (nullable) **ou** venue (nullable) — contrainte : exactement un des deux.
 
-**Gig (T)** : show, promoter, venue (nullable), date, start_time, status, price_excl_tax, vat_rate, deposit_percent, option_expires_on, conditions, notes.
+**Gig (T)** : show, promoter, venue (nullable), date, status, price_excl_tax, vat_rate, deposit_percent, option_expires_on, conditions, notes, get_in_time, soundcheck_time (« Balances »), performance_time (« Passage »), crew_headcount (« Nb Participants », pour repas/hébergement), is_free (« Concert Gratuit »), ticket_price (« Prix des places » — voir RG-12), invitations_count (nombre d'invitations dues, variable), signing_place (« Fait à … »).
 **GigMember (T)** : gig, name, role, phone, email.
 
-**Contract (T)** : gig, number, status (`draft`/`generated`/`signed`), special_conditions, template_version, pdf_file, generated_at, signed_at.
+**Contract (T)** : gig, number, status (`draft`/`generated`/`signed`), signatory_name (nullable — si différent du représentant légal du `Tenant`/`Promoter`), signatory_role, special_conditions, template_version, pdf_file, generated_at, signed_at.
 **Quote (T)** / **Invoice (T)** : gig, number, kind (deposit/balance/full), status, issue_date, due_date, issuer_snapshot (JSON), customer_snapshot (JSON), total_excl_tax, total_vat, total_incl_tax, credit_note_of (nullable, pour les avoirs), pdf_file.
 **DocumentLine (T)** : parent (quote/invoice), label, quantity, unit_price_excl_tax, vat_rate.
-**InvoiceSequence (T)** : organization, year, last_number — verrouillée à l'émission.
+**InvoiceSequence (T)** : tenant, year, last_number — verrouillée à l'émission.
 
 **Roadmap (T)** : gig (OneToOne), token, is_published, notes.
 **RoadmapSlot (T)** : roadmap, kind, time, label, note.
@@ -293,3 +294,21 @@ Le MVP est **livrable** quand un utilisateur de test, sans aide, peut :
 ## 13. Livrables
 
 Code source (dépôt Git), application déployée (staging et production), documentation (`docs/`), jeux de tests, pipeline CI/CD, modèles de documents validés.
+
+---
+
+## 14. Questions ouvertes (issues du document de logique métier du 2026-09-25)
+
+Le document « Logique métier – Cycle de vie d'un spectacle » fourni par le collègue décrit un périmètre plus large que le MVP défini ci-dessus. **Tant que les réponses ci-dessous ne sont pas obtenues, le périmètre du §2 (MVP/v1/v2/hors périmètre) reste la référence pour le développement.**
+
+| # | Sujet | Ce que décrit le document métier | Statut MVP actuel | Question à trancher |
+|---|---|---|---|---|
+| Q1 | CRM de prospection (Phases 1-2 du document) | Fiche de qualification, statuts `Prospect` → `En négociation` → `Client actif`, historique des échanges, canal d'entrée | Non prévu | Indispensable dès le MVP, ou fonctionnalité v1/v2 ? |
+| Q2 | Types de contrat | Cession (géré) / coréalisation (partage de recette + responsabilité solidaire employeur au-delà de 5000 €) / location de salle | Seule la cession est gérée (`Gig.price_excl_tax` fixe) | Faut-il gérer les trois dès le MVP, ou rester sur la cession seule pour l'instant ? *(Le modèle de contrat transmis est un contrat de cession simple — cohérent avec le MVP actuel.)* |
+| Q3 | Suivi temps réel jour J (Phase 5 du document) | Check-in équipe, horaires réels vs prévus, remontée d'incidents en direct | Non prévu (feuille de route = document consultable, pas de suivi live) | Utile pour la cible « quelques dates par an » ou fonctionnalité pour un usage plus intensif (v2) ? |
+| Q4 | Paie des intermittents (Phase 4 et 6 du document) | DPAE, relevés d'heures, bulletins récapitulatifs, export GUSO | **Explicitement hors périmètre** (§2.4) | Confirmation : l'app reste hors de ce périmètre (renvoi vers le GUSO/un comptable), ou attente réelle de couverture ? Risque juridique élevé à évaluer avec un professionnel si oui. |
+| Q5 | Déclarations SACEM/SACD/CNM (Phase 6 du document) | Déclaration définitive et régularisation du montant réel de recette | **Explicitement hors périmètre** (§2.4) ; le contrat reçu montre que c'est **l'organisateur** qui gère ces déclarations, pas la structure de l'utilisateur | À confirmer que ça reste hors périmètre — le contrat fourni semble aller dans ce sens |
+| Q6 | Capitalisation / relance (Phase 7 du document) | Historique par partenaire, qualification post-date, relance automatique programmable | Non prévu au MVP | v1/v2, à situer une fois Q1 tranché (dépend du CRM) |
+| Q7 | Contrat couvrant plusieurs dates | Les tableurs de suivi (`contrat.xlsx`, `date_representation.xlsx`) montrent qu'un contrat peut lister plusieurs représentations (tournée négociée en un seul accord) | Un `Contract` est lié à **une seule** `Gig` — cohérent avec le vrai contrat déjà reçu (une seule date) | À garder en tête pour v1/v2 si des tournées multi-dates doivent être couvertes par un contrat unique ; aucun changement nécessaire pour le MVP |
+
+**Recommandation** : traiter Q2 et Q5 en priorité (impact direct sur le modèle de données du contrat, déjà en cours de développement) ; Q4 en priorité également, car sa réponse conditionne fortement la charge de travail restante et le niveau de risque juridique du projet. Q7 ne nécessite aucune décision immédiate.

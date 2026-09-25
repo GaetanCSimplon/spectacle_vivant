@@ -2,10 +2,10 @@ from django.db import models
 
 
 class TenantOwnedModel(models.Model):
-    """Abstract base for models scoped to an Organization (the tenant)."""
+    """Abstract base for models scoped to a Tenant."""
 
-    organization = models.ForeignKey(
-        "organizations.Organization",
+    tenant = models.ForeignKey(
+        "tenants.Tenant",
         on_delete=models.CASCADE,
     )
 

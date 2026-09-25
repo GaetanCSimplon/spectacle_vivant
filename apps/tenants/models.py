@@ -2,7 +2,7 @@ from django.db import models
 from django.utils.translation import gettext_lazy as _
 
 
-class Organization(models.Model):
+class Tenant(models.Model):
     """The tenant: the artist, association or company using the app."""
 
     class VatRegime(models.TextChoices):

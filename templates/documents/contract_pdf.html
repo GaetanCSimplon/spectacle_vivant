@@ -75,10 +75,10 @@
       <div class="party">
         <h2>Le cédant</h2>
         <p>
-          {{ organization.name }}<br>
-          {% if organization.legal_form %}{{ organization.legal_form }}<br>{% endif %}
-          {% if organization.siret %}SIRET : {{ organization.siret }}<br>{% endif %}
-          {{ organization.address|linebreaksbr }}
+          {{ tenant.name }}<br>
+          {% if tenant.legal_form %}{{ tenant.legal_form }}<br>{% endif %}
+          {% if tenant.siret %}SIRET : {{ tenant.siret }}<br>{% endif %}
+          {{ tenant.address|linebreaksbr }}
         </p>
       </div>
       <div class="party">

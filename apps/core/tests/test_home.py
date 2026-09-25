@@ -1,7 +1,7 @@
 import pytest
 from django.urls import reverse
 
-from apps.organizations.factories import MembershipFactory
+from apps.tenants.factories import MembershipFactory
 
 pytestmark = pytest.mark.django_db
 
@@ -13,8 +13,8 @@ def test_home_requires_login(client):
     assert response.url.startswith(reverse("account_login"))
 
 
-def test_home_shows_the_organization_name(client):
-    membership = MembershipFactory(organization__name="Compagnie du Soleil")
+def test_home_shows_the_tenant_name(client):
+    membership = MembershipFactory(tenant__name="Compagnie du Soleil")
     client.force_login(membership.user)
 
     response = client.get(reverse("home"))
