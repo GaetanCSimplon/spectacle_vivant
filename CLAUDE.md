@@ -26,8 +26,8 @@ Le développeur est seul, débutant en projet professionnel, et travaille avec t
 
 ```bash
 docker compose up -d db                 # PostgreSQL local
-python manage.py runserver              # serveur de dev
-python manage.py tailwind start         # compilation Tailwind (2e terminal)
+python manage.py tailwind runserver     # serveur de dev + compilation Tailwind (1 seul terminal, recommandé)
+python manage.py runserver              # serveur de dev seul (sans compilation Tailwind)
 python manage.py makemigrations && python manage.py migrate
 pytest                                  # tests
 pytest -x -q apps/gigs                  # tests d'une app, arrêt au 1er échec
