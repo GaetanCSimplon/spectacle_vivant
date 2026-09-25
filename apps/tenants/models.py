@@ -25,6 +25,12 @@ class Tenant(models.Model):
         choices=VatRegime.choices,
         default=VatRegime.FRANCHISE,
     )
+    licence_number = models.CharField(_("n° de licence"), max_length=50, blank=True)
+    representative_name = models.CharField(_("représentant légal"), max_length=255, blank=True)
+    representative_role = models.CharField(_("qualité du représentant"), max_length=255, blank=True)
+    jurisdiction_city = models.CharField(
+        _("ville du tribunal compétent"), max_length=255, blank=True
+    )
     contract_party_label = models.CharField(
         _("désignation dans le contrat"),
         max_length=20,
