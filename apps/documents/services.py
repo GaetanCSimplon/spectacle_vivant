@@ -2,12 +2,20 @@ from django.core.files.base import ContentFile
 from django.utils import timezone
 
 from apps.core.services import render_pdf
+from apps.tenants.models import Tenant
 
 from .models import Contract
 
+PARTY_LABELS = {
+    Tenant.ContractPartyLabel.PRODUCER: "Le producteur",
+    Tenant.ContractPartyLabel.ARTIST: "L'artiste",
+}
 
-def build_contract_context(gig):
+
+def build_contract_context(gig, contract=None):
     return {
+        "contract": contract,
+        "party_label": PARTY_LABELS[gig.tenant.contract_party_label],
         "gig": gig,
         "tenant": gig.tenant,
         "promoter": gig.promoter,
@@ -26,7 +34,7 @@ def generate_contract_pdf(gig):
     if contract.status == Contract.Status.SIGNED:
         return contract
 
-    pdf_bytes = render_pdf("documents/contract_pdf.html", build_contract_context(gig))
+    pdf_bytes = render_pdf("documents/contract_pdf.html", build_contract_context(gig, contract))
     contract.pdf_file.save(f"contrat-{gig.pk}.pdf", ContentFile(pdf_bytes), save=False)
     contract.generated_at = timezone.now()
     contract.save()

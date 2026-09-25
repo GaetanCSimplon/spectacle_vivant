@@ -10,6 +10,10 @@ class Tenant(models.Model):
         FRANCHISE = "franchise", _("Franchise en base")
         NOT_TAXABLE = "not_taxable", _("Non assujetti")
 
+    class ContractPartyLabel(models.TextChoices):
+        PRODUCER = "producteur", _("Producteur")
+        ARTIST = "artiste", _("Artiste")
+
     name = models.CharField(_("nom"), max_length=255)
     legal_form = models.CharField(_("forme juridique"), max_length=255, blank=True)
     plan = models.CharField(_("offre"), max_length=50, default="free")
@@ -20,6 +24,12 @@ class Tenant(models.Model):
         max_length=20,
         choices=VatRegime.choices,
         default=VatRegime.FRANCHISE,
+    )
+    contract_party_label = models.CharField(
+        _("désignation dans le contrat"),
+        max_length=20,
+        choices=ContractPartyLabel.choices,
+        default=ContractPartyLabel.ARTIST,
     )
 
     def __str__(self):

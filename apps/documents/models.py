@@ -15,6 +15,8 @@ class Contract(TenantOwnedModel):
     status = models.CharField(
         _("statut"), max_length=20, choices=Status.choices, default=Status.DRAFT
     )
+    signatory_name = models.CharField(_("nom du signataire"), max_length=255, blank=True)
+    signatory_role = models.CharField(_("qualité du signataire"), max_length=255, blank=True)
     pdf_file = models.FileField(_("fichier PDF"), upload_to="contracts/", blank=True)
     generated_at = models.DateTimeField(_("généré le"), null=True, blank=True)
 
