@@ -1,6 +1,6 @@
 from django import forms
 
-from .models import Promoter
+from .models import Promoter, Venue
 
 
 class PromoterForm(forms.ModelForm):
@@ -16,3 +16,10 @@ class PromoterForm(forms.ModelForm):
             "billing_address",
         ]
         widgets = {"billing_address": forms.Textarea(attrs={"rows": 3})}
+
+
+class VenueForm(forms.ModelForm):
+    class Meta:
+        model = Venue
+        fields = ["name", "address", "capacity"]
+        widgets = {"address": forms.Textarea(attrs={"rows": 3})}
