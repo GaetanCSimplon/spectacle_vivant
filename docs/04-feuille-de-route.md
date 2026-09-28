@@ -181,7 +181,7 @@ Avant de coder : propose un plan (fichiers, modèles, tests) et attends mon acco
 - [x] Tests : onboarding, création automatique de `Tenant` + `Membership(owner)` (2026-09-28).
 
 ### Sprint 3.2 — Carnet d'adresses et spectacles
-- [ ] CRUD complet : `Promoter`, `Venue`, `Contact` (avec contrainte : rattaché à l'un **ou** l'autre). — Modèle `Contact` fait (2026-09-28) : contrainte base (`CheckConstraint`) + validation (`clean()`) que le tenant du contact correspond à celui de son organisateur/lieu, test d'isolation. **Reste à faire** : les vues CRUD elles-mêmes (Promoter, Venue, Contact, Show).
+- [ ] CRUD complet : `Promoter`, `Venue`, `Contact` (avec contrainte : rattaché à l'un **ou** l'autre). — Modèle `Contact` fait (2026-09-28) : contrainte base (`CheckConstraint`) + validation (`clean()`) que le tenant du contact correspond à celui de son organisateur/lieu, test d'isolation. **CRUD `Promoter` fait** (2026-09-28) : liste, création, modification, fiche de détail (contacts + historique des dates via `Gig.promoter`), suppression bloquée si l'organisateur est utilisé par une date (`on_delete=PROTECT`, déjà en place depuis la Phase 2, message d'erreur ajouté côté vue). Au passage, correctif sur `TenantScopedMixin` : `form_valid` plantait sur `DeleteView` (son formulaire n'a pas de `.instance`), corrigé + testé. **Reste à faire** : CRUD `Venue`, `Contact`, `Show`.
 - [ ] Recherche en direct HTMX sur les listes (debounce, fragment de liste).
 - [ ] Fiches de détail : un organisateur affiche ses contacts et l'historique de ses dates.
 - [ ] CRUD `Show` avec fiche technique (texte + PDF optionnel), nom du groupe distinct du titre du spectacle, distribution, rider.
@@ -333,6 +333,7 @@ Avant de coder : propose un plan (fichiers, modèles, tests) et attends mon acco
 | Statut juridique de **ton** activité (facturation de l'app) | Avant la v1 payante | ☐ |
 | Rôles : seul le `owner` peut modifier la structure. Faut-il un rôle intermédiaire (ex. « gestionnaire ») pour des utilisateurs non propriétaires qui peuvent la modifier ? | Phase 3.1 (invitation de membres : Phase 5.5) | ☐ |
 | Prestataire d'e-mails transactionnels | Phase 3.1 | ☐ |
+| Navigation principale limitée à 5 entrées (Accueil, Mes dates, Nouvelle date, Ma structure + 1) : où loger l'accès au carnet d'adresses (Organisateurs/Lieux/Contacts) et aux spectacles ? Pour l'instant `/organisateurs/` n'est accessible que par URL directe, pas de lien dans le menu. | Sprint 3.2 | ☐ |
 | Bucket S3 européen (Scaleway, OVH…) | Phase 3.4 | ☐ |
 | Politique de conservation des données | Phase 3.8 | ☐ |
 | Grille tarifaire | Phase 4 | ☐ |

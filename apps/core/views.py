@@ -23,7 +23,9 @@ class TenantScopedMixin(LoginRequiredMixin):
         return super().get_queryset().filter(tenant=self.request.tenant)
 
     def form_valid(self, form):
-        form.instance.tenant = self.request.tenant
+        # DeleteView's form has no `instance` (nothing to set the tenant on).
+        if hasattr(form, "instance"):
+            form.instance.tenant = self.request.tenant
         return super().form_valid(form)
 
 

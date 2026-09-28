@@ -1,7 +1,7 @@
 import pytest
 from django.http import JsonResponse
 from django.urls import path, reverse
-from django.views.generic import CreateView, DetailView, ListView
+from django.views.generic import CreateView, DeleteView, DetailView, ListView
 
 from apps.accounts.factories import UserFactory
 from apps.core.models import Note
@@ -38,10 +38,16 @@ class NoteCreateView(TenantScopedMixin, CreateView):
     success_url = "/"
 
 
+class NoteDeleteView(TenantScopedMixin, DeleteView):
+    model = Note
+    success_url = "/"
+
+
 urlpatterns = [
     path("__test__/notes/", NoteListView.as_view(), name="test-note-list"),
     path("__test__/notes/new/", NoteCreateView.as_view(), name="test-note-create"),
     path("__test__/notes/<int:pk>/", NoteDetailView.as_view(), name="test-note-detail"),
+    path("__test__/notes/<int:pk>/delete/", NoteDeleteView.as_view(), name="test-note-delete"),
 ]
 
 
@@ -113,3 +119,23 @@ def test_create_view_forces_current_tenant(client, urls, membership_a, membershi
     note = Note.objects.get(text="Nouvelle note")
     assert note.tenant == membership_a.tenant
     assert note.tenant != membership_b.tenant
+
+
+def test_delete_view_works_even_though_its_form_has_no_instance(client, urls, membership_a):
+    note = Note.objects.create(tenant=membership_a.tenant, text="À supprimer")
+
+    client.force_login(membership_a.user)
+    response = client.post(reverse("test-note-delete", args=[note.pk]))
+
+    assert response.status_code == 302
+    assert not Note.objects.filter(pk=note.pk).exists()
+
+
+def test_delete_view_404s_for_another_tenants_note(client, urls, membership_a, membership_b):
+    note = Note.objects.create(tenant=membership_b.tenant, text="Pas la mienne")
+
+    client.force_login(membership_a.user)
+    response = client.post(reverse("test-note-delete", args=[note.pk]))
+
+    assert response.status_code == 404
+    assert Note.objects.filter(pk=note.pk).exists()
