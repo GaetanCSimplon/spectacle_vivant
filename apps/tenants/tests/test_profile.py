@@ -145,12 +145,22 @@ def test_a_member_cannot_update_the_tenant(client):
     assert tenant.jurisdiction_city == ""
 
 
-def test_user_without_tenant_gets_404(client):
+def test_user_without_tenant_is_redirected_to_onboarding_on_get(client):
     membership = MembershipFactory()
     membership.delete()
     client.force_login(membership.user)
 
-    assert client.get(URL).status_code == 404
+    response = client.get(URL)
+
+    assert response.status_code == 302
+    assert response.url == reverse("tenants-onboarding")
+
+
+def test_user_without_tenant_gets_404_on_post(client):
+    membership = MembershipFactory()
+    membership.delete()
+    client.force_login(membership.user)
+
     assert client.post(URL, _payload()).status_code == 404
 
 

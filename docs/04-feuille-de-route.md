@@ -175,10 +175,10 @@ Avant de coder : propose un plan (fichiers, modèles, tests) et attends mon acco
 - [x] Page « Mes dates » (`gigs:list`, `/dates/`) : dates à venir (les plus proches d'abord) puis passées, chaque ligne ouvre l'écran « Date créée ». Isolation testée (2026-09-25). Lien depuis l'accueil ; la navigation principale vient dans la PR suivante.
 - [x] Navigation principale (5 entrées max) : responsive (menu bas ou burger sur mobile). — Fait (2026-09-25) : barre basse sur mobile, liens dans l'en-tête dès `sm`, lien actif marqué. 3 entrées pour l'instant (Accueil, Mes dates, Nouvelle date) ; « Ma structure » sera ajoutée avec sa page. Composant `templates/components/_nav.html`.
 - [ ] Confirmation d'e-mail activée ; e-mails transactionnels via le prestataire choisi ; expéditeur et domaine configurés.
-- [ ] **Onboarding guidé** (≤ 5 écrans) : structure → statut juridique → TVA → premier spectacle → première date.
+- [x] **Onboarding guidé** (2026-09-28) : un seul écran (`bienvenue/`, `tenants-onboarding`) — nom, forme juridique, régime de TVA — qui crée le `Tenant` et le `Membership(owner)`, puis redirige vers le wizard de date existant plutôt que de dupliquer ses étapes (spectacle/date restent gérés par le wizard). Tout utilisateur connecté sans structure est redirigé automatiquement vers cet écran par `OnboardingRequiredMiddleware` (exemptions : admin, allauth, statiques, l'écran lui-même). Aucun nouveau champ sur `Tenant` : aucune migration.
 - [x] Page « Ma structure » (2026-09-25) : `ma-structure/` (`tenants:profile`), 4ᵉ entrée du menu. Propriétaire = modification ; membre = lecture seule (POST refusé en 403). Section provisoire retirée du formulaire « Compléter la date » (remplacée par un lien). **Reste à faire** (avec les factures / le stockage S3) : `vat_number`, `iban`, logo, et forme juridique en liste de choix.
-- [x] Gestion du régime de TVA (2026-09-28) : `Tenant.vat_rate` (taux en %, facultatif, modifiable depuis « Ma structure ») — le contrat calcule TVA et TTC pour le régime `taxable` quand le taux est renseigné, sinon garde les pointillés comme avant. `franchise`/`non_taxable` inchangés. **Mentions toujours à valider par un professionnel** (voir Q3, `docs/03-cahier-des-charges.md` §14) : aucun taux n'est deviné ou pré-rempli, le spectacle vivant ayant souvent des taux réduits variables.
-- [ ] Tests : onboarding, création automatique de `Tenant` + `Membership(owner)`.
+- [ ] Gestion du régime de TVA : assujetti / franchise en base / non assujetti (mentions à valider).
+- [x] Tests : onboarding, création automatique de `Tenant` + `Membership(owner)` (2026-09-28).
 
 ### Sprint 3.2 — Carnet d'adresses et spectacles
 - [ ] CRUD complet : `Promoter`, `Venue`, `Contact` (avec contrainte : rattaché à l'un **ou** l'autre).

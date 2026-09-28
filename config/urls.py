@@ -21,10 +21,12 @@ from django.contrib import admin
 from django.urls import include, path
 
 from apps.core.views import HelloPdfView, HomeView
+from apps.tenants.views import OnboardingView
 
 urlpatterns = [
     path("", HomeView.as_view(), name="home"),
     path("pdf-test/", HelloPdfView.as_view(), name="pdf-test"),
+    path("bienvenue/", OnboardingView.as_view(), name="tenants-onboarding"),
     path("ma-structure/", include("apps.tenants.urls")),
     path("dates/", include("apps.gigs.urls")),
     path("dates/<int:gig_id>/contrat/", include("apps.documents.urls")),

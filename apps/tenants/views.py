@@ -2,13 +2,36 @@ from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.exceptions import PermissionDenied
 from django.http import Http404
+from django.shortcuts import redirect
 from django.urls import reverse_lazy
 from django.utils.translation import gettext_lazy as _
-from django.views.generic import UpdateView
+from django.views.generic import FormView, UpdateView
 
 from apps.accounts.services import is_tenant_owner
 
-from .forms import TenantProfileForm
+from .forms import OnboardingForm, TenantProfileForm
+from .services import create_tenant_for_user
+
+
+class OnboardingView(LoginRequiredMixin, FormView):
+    """First screen for a brand-new user: creates their Tenant and makes them its owner.
+
+    Redirects to the existing gig wizard afterwards instead of asking for a
+    first show/gig here too.
+    """
+
+    form_class = OnboardingForm
+    template_name = "tenants/onboarding.html"
+    success_url = reverse_lazy("gigs:wizard-show")
+
+    def dispatch(self, request, *args, **kwargs):
+        if request.user.is_authenticated and request.tenant is not None:
+            return redirect("home")
+        return super().dispatch(request, *args, **kwargs)
+
+    def form_valid(self, form):
+        create_tenant_for_user(self.request.user, **form.cleaned_data)
+        return super().form_valid(form)
 
 
 class TenantProfileView(LoginRequiredMixin, UpdateView):

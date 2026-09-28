@@ -54,6 +54,7 @@ MIDDLEWARE = [
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "apps.core.middleware.TenantMiddleware",
+    "apps.core.middleware.OnboardingRequiredMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
     "allauth.account.middleware.AccountMiddleware",
@@ -144,6 +145,10 @@ USE_TZ = True
 
 STATIC_URL = "static/"
 STATICFILES_DIRS = [BASE_DIR / "static"]
+
+# django-tailwind-cli: custom source (outside STATICFILES_DIRS, see its docs) so we can
+# define our own button/form/card styles instead of the plain "@import tailwindcss" default.
+TAILWIND_CLI_SRC_CSS = "css/source.css"
 
 # Media files (uploaded/generated documents) — local storage in dev,
 # S3 européen via django-storages à partir du Sprint 3.4.
