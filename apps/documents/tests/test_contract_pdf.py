@@ -216,11 +216,21 @@ def test_contract_vat_exempt_regimes_show_the_legal_mention(regime):
     assert "article 293 B du CGI" in html
 
 
-def test_contract_taxable_regime_leaves_vat_to_fill_in():
+def test_contract_taxable_regime_leaves_vat_to_fill_in_without_a_rate():
     html = _render(GigFactory(tenant__vat_regime="taxable"))
 
     assert "293 B" not in html
     assert "HT + TVA …… €" in html
+
+
+def test_contract_taxable_regime_computes_vat_when_a_rate_is_set():
+    gig = GigFactory(tenant__vat_regime="taxable", tenant__vat_rate="20.00", price="100.00")
+
+    html = _render(gig)
+
+    assert "293 B" not in html
+    assert "…… €" not in html
+    assert "100,00 € HT + TVA (20,00 %) 20,00 € = 120,00 € T.T.C." in html
 
 
 def test_contract_shows_the_jurisdiction_city_of_the_tenant():
