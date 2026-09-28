@@ -25,6 +25,18 @@ class Tenant(models.Model):
         choices=VatRegime.choices,
         default=VatRegime.FRANCHISE,
     )
+    vat_rate = models.DecimalField(
+        _("taux de TVA (%)"),
+        max_digits=5,
+        decimal_places=2,
+        null=True,
+        blank=True,
+        help_text=_(
+            "Le spectacle vivant a souvent un taux réduit, différent du taux standard : "
+            "vérifiez le taux qui s'applique à vos dates. Laissez vide pour l'indiquer "
+            "à la main sur le contrat."
+        ),
+    )
     licence_number = models.CharField(_("n° de licence"), max_length=50, blank=True)
     representative_name = models.CharField(_("représentant légal"), max_length=255, blank=True)
     representative_role = models.CharField(_("qualité du représentant"), max_length=255, blank=True)

@@ -177,7 +177,7 @@ Avant de coder : propose un plan (fichiers, modèles, tests) et attends mon acco
 - [ ] Confirmation d'e-mail activée ; e-mails transactionnels via le prestataire choisi ; expéditeur et domaine configurés.
 - [ ] **Onboarding guidé** (≤ 5 écrans) : structure → statut juridique → TVA → premier spectacle → première date.
 - [x] Page « Ma structure » (2026-09-25) : `ma-structure/` (`tenants:profile`), 4ᵉ entrée du menu. Propriétaire = modification ; membre = lecture seule (POST refusé en 403). Section provisoire retirée du formulaire « Compléter la date » (remplacée par un lien). **Reste à faire** (avec les factures / le stockage S3) : `vat_number`, `iban`, logo, et forme juridique en liste de choix.
-- [ ] Gestion du régime de TVA : assujetti / franchise en base / non assujetti (mentions à valider).
+- [x] Gestion du régime de TVA (2026-09-28) : `Tenant.vat_rate` (taux en %, facultatif, modifiable depuis « Ma structure ») — le contrat calcule TVA et TTC pour le régime `taxable` quand le taux est renseigné, sinon garde les pointillés comme avant. `franchise`/`non_taxable` inchangés. **Mentions toujours à valider par un professionnel** (voir Q3, `docs/03-cahier-des-charges.md` §14) : aucun taux n'est deviné ou pré-rempli, le spectacle vivant ayant souvent des taux réduits variables.
 - [ ] Tests : onboarding, création automatique de `Tenant` + `Membership(owner)`.
 
 ### Sprint 3.2 — Carnet d'adresses et spectacles

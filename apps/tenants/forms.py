@@ -13,6 +13,7 @@ class TenantProfileForm(forms.ModelForm):
             "siret",
             "address",
             "vat_regime",
+            "vat_rate",
             "licence_number",
             "representative_name",
             "representative_role",

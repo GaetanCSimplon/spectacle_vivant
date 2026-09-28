@@ -1,3 +1,5 @@
+from decimal import ROUND_HALF_UP, Decimal
+
 from django.core.files.base import ContentFile
 from django.utils import timezone
 
@@ -5,6 +7,8 @@ from apps.core.services import render_pdf
 from apps.tenants.models import Tenant
 
 from .models import Contract
+
+TWO_PLACES = Decimal("0.01")
 
 # How the tenant is named in the contract body, with the article each
 # grammatical use needs (subject / "à" / "de").
@@ -22,11 +26,25 @@ PARTY_FORMS = {
 }
 
 
+def _compute_vat(gig, tenant):
+    """Return (vat_amount, total_with_vat), or (None, None) if the rate is not known yet."""
+    if tenant.vat_regime != Tenant.VatRegime.TAXABLE or tenant.vat_rate is None:
+        return None, None
+
+    vat_amount = (gig.price * Decimal(tenant.vat_rate) / Decimal("100")).quantize(
+        TWO_PLACES, rounding=ROUND_HALF_UP
+    )
+    return vat_amount, gig.price + vat_amount
+
+
 def build_contract_context(gig, contract=None):
+    vat_amount, total_with_vat = _compute_vat(gig, gig.tenant)
     return {
         "contract": contract,
         "party": PARTY_FORMS[gig.tenant.contract_party_label],
         "vat_exempt": gig.tenant.vat_regime != Tenant.VatRegime.TAXABLE,
+        "vat_amount": vat_amount,
+        "total_with_vat": total_with_vat,
         "gig": gig,
         "tenant": gig.tenant,
         "promoter": gig.promoter,

@@ -1,3 +1,5 @@
+from decimal import Decimal
+
 import pytest
 from django.urls import reverse
 
@@ -23,6 +25,7 @@ def _payload(**overrides):
         "siret": "12345678900012",
         "address": "1 rue des Arts\n69001 Lyon",
         "vat_regime": "franchise",
+        "vat_rate": "",
         "licence_number": "L-2",
         "representative_name": "Julie Martin",
         "representative_role": "Présidente",
@@ -87,6 +90,26 @@ def test_unknown_choice_values_are_rejected(client):
     tenant.refresh_from_db()
     assert tenant.contract_party_label == "artiste"
     assert tenant.name == "Compagnie A"
+
+
+def test_owner_can_set_a_vat_rate(client):
+    tenant = _login(client)
+
+    response = client.post(URL, _payload(vat_regime="taxable", vat_rate="2.10"))
+
+    assert response.status_code == 302
+    tenant.refresh_from_db()
+    assert tenant.vat_rate == Decimal("2.10")
+
+
+def test_an_invalid_vat_rate_is_rejected(client):
+    tenant = _login(client)
+
+    response = client.post(URL, _payload(vat_regime="taxable", vat_rate="123.456"))
+
+    assert response.status_code == 200
+    tenant.refresh_from_db()
+    assert tenant.vat_rate is None
 
 
 def test_too_long_siret_is_rejected(client):
