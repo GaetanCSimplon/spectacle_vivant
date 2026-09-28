@@ -181,7 +181,7 @@ Avant de coder : propose un plan (fichiers, modèles, tests) et attends mon acco
 - [x] Tests : onboarding, création automatique de `Tenant` + `Membership(owner)` (2026-09-28).
 
 ### Sprint 3.2 — Carnet d'adresses et spectacles
-- [ ] CRUD complet : `Promoter`, `Venue`, `Contact` (avec contrainte : rattaché à l'un **ou** l'autre).
+- [ ] CRUD complet : `Promoter`, `Venue`, `Contact` (avec contrainte : rattaché à l'un **ou** l'autre). — Modèle `Contact` fait (2026-09-28) : contrainte base (`CheckConstraint`) + validation (`clean()`) que le tenant du contact correspond à celui de son organisateur/lieu, test d'isolation. **Reste à faire** : les vues CRUD elles-mêmes (Promoter, Venue, Contact, Show).
 - [ ] Recherche en direct HTMX sur les listes (debounce, fragment de liste).
 - [ ] Fiches de détail : un organisateur affiche ses contacts et l'historique de ses dates.
 - [ ] CRUD `Show` avec fiche technique (texte + PDF optionnel), nom du groupe distinct du titre du spectacle, distribution, rider.

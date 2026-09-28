@@ -1,3 +1,4 @@
+from django.core.exceptions import ValidationError
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 
@@ -25,6 +26,43 @@ class Venue(TenantOwnedModel):
     name = models.CharField(_("nom"), max_length=255)
     address = models.TextField(_("adresse"), blank=True)
     capacity = models.PositiveIntegerField(_("jauge (places)"), null=True, blank=True)
+
+    def __str__(self):
+        return self.name
+
+
+class Contact(TenantOwnedModel):
+    """A person (Contact) attached to either a Promoter or a Venue, never both."""
+
+    promoter = models.ForeignKey(
+        Promoter, on_delete=models.CASCADE, related_name="contacts", null=True, blank=True
+    )
+    venue = models.ForeignKey(
+        Venue, on_delete=models.CASCADE, related_name="contacts", null=True, blank=True
+    )
+    name = models.CharField(_("nom"), max_length=255)
+    role = models.CharField(_("fonction"), max_length=255, blank=True)
+    email = models.EmailField(_("e-mail"), blank=True)
+    phone = models.CharField(_("téléphone"), max_length=30, blank=True)
+
+    class Meta:
+        constraints = [
+            models.CheckConstraint(
+                condition=(
+                    models.Q(promoter__isnull=False, venue__isnull=True)
+                    | models.Q(promoter__isnull=True, venue__isnull=False)
+                ),
+                name="contact_belongs_to_promoter_or_venue",
+            ),
+        ]
+
+    def clean(self):
+        super().clean()
+        parent = self.promoter or self.venue
+        if parent and parent.tenant_id != self.tenant_id:
+            raise ValidationError(
+                _("Le contact doit appartenir à la même structure que son organisateur ou lieu.")
+            )
 
     def __str__(self):
         return self.name
