@@ -4,6 +4,15 @@ from django.utils.translation import gettext_lazy as _
 from .models import Tenant
 
 
+class OnboardingForm(forms.ModelForm):
+    class Meta:
+        model = Tenant
+        fields = ["name", "legal_form", "vat_regime"]
+        help_texts = {
+            "legal_form": _("Par exemple : association loi 1901, micro-entreprise, SARL…"),
+        }
+
+
 class TenantProfileForm(forms.ModelForm):
     class Meta:
         model = Tenant
