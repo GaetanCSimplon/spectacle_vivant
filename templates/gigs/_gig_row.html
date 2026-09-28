@@ -2,13 +2,13 @@
 <li>
   <a
     href="{% url 'documents:contract-ready' gig.pk %}"
-    class="flex items-center justify-between gap-3 rounded-md border border-gray-200 bg-white px-4 py-3"
+    class="card card-link flex items-center justify-between gap-3"
   >
     <span class="min-w-0">
-      <span class="block font-medium">{{ gig.date|date:"d/m/Y" }} — {{ gig.show.title }}</span>
+      <span class="block font-medium text-gray-900">{{ gig.date|date:"d/m/Y" }} — {{ gig.show.title }}</span>
       <span class="block truncate text-sm text-gray-600">{{ gig.venue.name }} · {{ gig.promoter.name }}</span>
     </span>
-    <span class="shrink-0 rounded-full bg-gray-100 px-2 py-0.5 text-xs text-gray-700">
+    <span class="badge shrink-0">
       {{ gig.get_status_display }}
     </span>
   </a>

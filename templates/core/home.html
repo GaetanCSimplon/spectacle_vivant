@@ -5,17 +5,16 @@
 
 {% block page_content %}
   {% if tenant %}
-    <h1 class="text-xl font-semibold">{{ tenant.name }}</h1>
-    <a
-      href="{% url 'gigs:wizard-show' %}"
-      class="mt-4 inline-block rounded-md bg-blue-600 px-4 py-2 text-sm text-white"
-    >
-      {% translate "+ Nouvelle date" %}
-    </a>
-    <a href="{% url 'gigs:list' %}" class="mt-4 ml-2 inline-block text-sm text-blue-700 underline">
-      {% translate "Voir mes dates" %}
-    </a>
+    <h1 class="mb-4 text-xl font-semibold">{{ tenant.name }}</h1>
+    <div class="flex flex-wrap gap-3">
+      <a href="{% url 'gigs:wizard-show' %}" class="btn btn-primary">
+        {% translate "+ Nouvelle date" %}
+      </a>
+      <a href="{% url 'gigs:list' %}" class="btn btn-secondary">
+        {% translate "Voir mes dates" %}
+      </a>
+    </div>
   {% else %}
-    <p class="text-gray-600">Aucune structure associée à ce compte pour l'instant.</p>
+    <p>Aucune structure associée à ce compte pour l'instant.</p>
   {% endif %}
 {% endblock %}

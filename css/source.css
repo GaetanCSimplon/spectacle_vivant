@@ -1,0 +1,91 @@
+@import "tailwindcss";
+
+/*
+ * Tailwind source for Spectacle Vivant.
+ * Django form helpers (`{{ form.as_p }}`) render plain HTML with no classes,
+ * so the `base` layer below styles raw elements directly: every form in the
+ * app gets consistent inputs/labels without touching each template.
+ */
+
+@layer base {
+  h1 {
+    @apply mb-4 text-lg font-semibold text-gray-900;
+  }
+
+  p {
+    @apply text-sm text-gray-600;
+  }
+
+  form p {
+    @apply mb-4;
+  }
+
+  form label {
+    @apply mb-1 block text-sm font-medium text-gray-700;
+  }
+
+  form .helptext {
+    @apply mt-1 block text-xs text-gray-500;
+  }
+
+  form ul.errorlist {
+    @apply mt-1 list-none space-y-0.5 text-sm text-red-600;
+  }
+
+  input[type="text"],
+  input[type="email"],
+  input[type="password"],
+  input[type="number"],
+  input[type="date"],
+  input[type="tel"],
+  input[type="url"],
+  select,
+  textarea {
+    @apply block w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900
+      shadow-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none;
+  }
+
+  textarea {
+    @apply min-h-24;
+  }
+
+  input:disabled,
+  select:disabled,
+  textarea:disabled {
+    @apply cursor-not-allowed bg-gray-100 text-gray-500;
+  }
+}
+
+@layer components {
+  .btn {
+    @apply inline-flex items-center justify-center gap-2 rounded-md px-4 py-2 text-sm font-medium
+      transition-colors;
+  }
+
+  /* Combine with `.btn`: class="btn btn-primary". Tailwind v4 can't @apply a custom
+     class inside another custom class, so these only add color/border, not layout. */
+  .btn-primary {
+    @apply bg-blue-600 text-white hover:bg-blue-700;
+  }
+
+  .btn-secondary {
+    @apply border border-gray-300 bg-white text-gray-700 hover:bg-gray-50;
+  }
+
+  .btn-block {
+    @apply w-full;
+  }
+
+  .card {
+    @apply rounded-lg border border-gray-200 bg-white p-4 shadow-sm;
+  }
+
+  /* Combine with `.card`: class="card card-link". */
+  .card-link {
+    @apply block transition-colors hover:border-gray-300 hover:bg-gray-50;
+  }
+
+  .badge {
+    @apply inline-flex items-center rounded-full bg-gray-100 px-2 py-0.5 text-xs font-medium text-gray-700;
+  }
+}

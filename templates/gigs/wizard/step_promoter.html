@@ -33,7 +33,7 @@
       {% csrf_token %}
       <input type="hidden" name="mode" value="existing">
       {{ choice_form.as_p }}
-      <button type="submit" class="mt-4 w-full rounded-md bg-blue-600 px-4 py-2 text-white">
+      <button type="submit" class="btn btn-primary btn-block mt-4">
         {% translate "Continuer" %}
       </button>
     </form>
@@ -42,7 +42,7 @@
       {% csrf_token %}
       <input type="hidden" name="mode" value="new">
       {{ create_form.as_p }}
-      <button type="submit" class="mt-4 w-full rounded-md bg-blue-600 px-4 py-2 text-white">
+      <button type="submit" class="btn btn-primary btn-block mt-4">
         {% translate "Créer et continuer" %}
       </button>
     </form>
