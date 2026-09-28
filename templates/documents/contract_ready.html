@@ -12,26 +12,16 @@
   </p>
 
   <div class="flex flex-col gap-3">
-    <a
-      href="{% url 'documents:contract-complete' gig.pk %}"
-      class="rounded-md border border-blue-600 px-4 py-2 text-center text-sm text-blue-700"
-    >
+    <a href="{% url 'documents:contract-complete' gig.pk %}" class="btn btn-secondary">
       {% translate "Compléter la date" %}
     </a>
-    <a
-      href="{% url 'documents:contract-preview' gig.pk %}"
-      target="_blank"
-      class="rounded-md border border-blue-600 px-4 py-2 text-center text-sm text-blue-700"
-    >
+    <a href="{% url 'documents:contract-preview' gig.pk %}" target="_blank" class="btn btn-secondary">
       {% translate "Aperçu du contrat" %}
     </a>
-    <a
-      href="{% url 'documents:contract-download' gig.pk %}"
-      class="rounded-md bg-blue-600 px-4 py-2 text-center text-sm text-white"
-    >
+    <a href="{% url 'documents:contract-download' gig.pk %}" class="btn btn-primary">
       {% translate "Télécharger le contrat" %}
     </a>
-    <a href="{% url 'home' %}" class="text-center text-sm text-gray-500">
+    <a href="{% url 'home' %}" class="text-center text-sm text-gray-500 hover:text-gray-700">
       {% translate "Retour à l'accueil" %}
     </a>
   </div>
