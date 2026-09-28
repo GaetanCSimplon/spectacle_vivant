@@ -18,4 +18,9 @@ urlpatterns = [
         views.PromoterDeleteView.as_view(),
         name="promoter-delete",
     ),
+    path("lieux/", views.VenueListView.as_view(), name="venue-list"),
+    path("lieux/nouveau/", views.VenueCreateView.as_view(), name="venue-create"),
+    path("lieux/<int:pk>/", views.VenueDetailView.as_view(), name="venue-detail"),
+    path("lieux/<int:pk>/modifier/", views.VenueUpdateView.as_view(), name="venue-update"),
+    path("lieux/<int:pk>/supprimer/", views.VenueDeleteView.as_view(), name="venue-delete"),
 ]
