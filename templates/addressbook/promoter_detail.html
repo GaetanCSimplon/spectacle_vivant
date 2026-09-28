@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{{ promoter.name }} — Spectacle Vivant{% endblock %}
+
+{% block page_content %}
+  <div class="mb-4 flex items-start justify-between gap-3">
+    <h1 class="text-xl font-semibold">{{ promoter.name }}</h1>
+    <a href="{% url 'addressbook:promoter-update' promoter.pk %}" class="btn btn-secondary">
+      {% translate "Modifier" %}
+    </a>
+  </div>
+
+  <div class="card mb-6 space-y-1 text-sm">
+    {% if promoter.email %}<p>{{ promoter.email }}</p>{% endif %}
+    {% if promoter.siret %}<p>SIRET : {{ promoter.siret }}</p>{% endif %}
+    {% if promoter.billing_address %}<p>{{ promoter.billing_address|linebreaksbr }}</p>{% endif %}
+    {% if promoter.representative_name %}
+      <p>
+        {% translate "Représenté par" %} {{ promoter.representative_name }}{% if promoter.representative_role %}, {{ promoter.representative_role }}{% endif %}
+      </p>
+    {% endif %}
+  </div>
+
+  <h2 class="mb-2 text-sm font-semibold uppercase text-gray-500">{% translate "Contacts" %}</h2>
+  {% if promoter.contacts.all %}
+    <ul class="mb-6 flex flex-col gap-2">
+      {% for contact in promoter.contacts.all %}
+        <li class="card text-sm">
+          <span class="block font-medium text-gray-900">
+            {{ contact.name }}{% if contact.role %} — {{ contact.role }}{% endif %}
+          </span>
+          {% if contact.email %}<span class="block text-gray-600">{{ contact.email }}</span>{% endif %}
+          {% if contact.phone %}<span class="block text-gray-600">{{ contact.phone }}</span>{% endif %}
+        </li>
+      {% endfor %}
+    </ul>
+  {% else %}
+    <p class="mb-6">{% translate "Aucun contact enregistré." %}</p>
+  {% endif %}
+
+  <h2 class="mb-2 text-sm font-semibold uppercase text-gray-500">{% translate "Historique des dates" %}</h2>
+  {% if gigs %}
+    <ul class="mb-6 flex flex-col gap-2">
+      {% for gig in gigs %}{% include "gigs/_gig_row.html" %}{% endfor %}
+    </ul>
+  {% else %}
+    <p class="mb-6">{% translate "Aucune date pour l'instant." %}</p>
+  {% endif %}
+
+  <a
+    href="{% url 'addressbook:promoter-delete' promoter.pk %}"
+    class="text-sm text-red-600 hover:text-red-700"
+  >
+    {% translate "Supprimer cet organisateur" %}
+  </a>
+{% endblock %}
