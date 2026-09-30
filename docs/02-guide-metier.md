@@ -15,7 +15,7 @@ Un **artiste ou un groupe** (« la structure de production ») veut jouer des co
 
 | Acteur | Qui c'est | Dans l'app |
 |---|---|---|
-| **Artiste / structure de production** | Celui qui vend le spectacle (association, micro-entreprise…) | **L'utilisateur** (`Organization`) |
+| **Artiste / structure de production** | Celui qui vend le spectacle (association, micro-entreprise…) | **L'utilisateur** (`Tenant`) |
 | **Organisateur / programmateur** | Celui qui achète le concert : salle, festival, mairie, bar, association | `Promoter` (le **client**) |
 | **Lieu / salle** | L'endroit où ça se passe | `Venue` |
 | **Équipe** | Musiciens, technicien son/lumière, tourneur (celui qui cherche des dates) | `GigMember` |
@@ -146,6 +146,8 @@ Une date peut aussi être **Annulée** (à toute étape). L'app doit le gérer p
 - **Rôles simples** : `owner` (tout faire) / `member` ; « invité en lecture » plus tard.
 - **Onboarding < 10 min** : au premier lancement, un assistant en quelques écrans (nom de la structure, forme juridique, SIRET, premier spectacle, première date) avec des **modèles pré-remplis**. Un utilisateur qui a un contrat PDF en 10 minutes est un utilisateur conquis.
 - **Freemium** : gratuit jusqu'à 3 dates par an, puis abonnement bas. Justification : les artistes émergents n'ont presque pas de revenus. Techniquement : un champ « plan » sur la structure et une vérification de quota ; le paiement (Stripe) vient en v1.
+
+⚠️ **À arbitrer** : la note de cadrage technique du 29/09 propose de remplacer ce freemium par deux formules payantes dès le départ (« Essentiel » / « Collectif »). Voir Q9, `docs/03-cahier-des-charges.md` §14 — non tranché à ce jour, ce guide garde la description du freemium tant que ce n'est pas confirmé.
 
 ---
 
