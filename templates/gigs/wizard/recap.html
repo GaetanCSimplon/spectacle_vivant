@@ -32,6 +32,12 @@
       <dt class="text-gray-500">{% translate "Date" %}</dt>
       <dd>{{ date|date:"d/m/Y" }}</dd>
     </div>
+    {% if option_expires_on %}
+      <div class="flex items-center justify-between">
+        <dt class="text-gray-500">{% translate "Option valable jusqu'au" %}</dt>
+        <dd>{{ option_expires_on|date:"d/m/Y" }}</dd>
+      </div>
+    {% endif %}
     <div class="flex items-center justify-between">
       <dt class="text-gray-500">{% translate "Prix HT" %}</dt>
       <dd>{{ price }} €</dd>

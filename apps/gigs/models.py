@@ -1,7 +1,17 @@
+from collections import namedtuple
+from functools import cached_property
+
 from django.db import models
+from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 
 from apps.core.models import TenantOwnedModel
+
+# An option is highlighted as "soon" when it expires within this many days.
+OPTION_WARNING_DAYS = 7
+
+# state: "ok" | "soon" | "expired". days: days left, or days since expiry when expired.
+OptionExpiry = namedtuple("OptionExpiry", ["state", "days"])
 
 
 class Gig(TenantOwnedModel):
@@ -19,6 +29,7 @@ class Gig(TenantOwnedModel):
     )
     venue = models.ForeignKey("addressbook.Venue", on_delete=models.PROTECT, related_name="gigs")
     date = models.DateField(_("date"))
+    option_expires_on = models.DateField(_("option valable jusqu'au"), null=True, blank=True)
     status = models.CharField(
         _("statut"), max_length=20, choices=Status.choices, default=Status.OPTION
     )
@@ -36,6 +47,18 @@ class Gig(TenantOwnedModel):
     )
     invitations_count = models.PositiveIntegerField(_("nombre d'invitations"), default=0)
     signing_place = models.CharField(_("lieu de signature"), max_length=255, blank=True)
+
+    @cached_property
+    def option_expiry(self):
+        """How close a live option is to expiring, or None when it does not apply."""
+        if self.status != self.Status.OPTION or self.option_expires_on is None:
+            return None
+        days_left = (self.option_expires_on - timezone.localdate()).days
+        if days_left < 0:
+            return OptionExpiry("expired", -days_left)
+        if days_left <= OPTION_WARNING_DAYS:
+            return OptionExpiry("soon", days_left)
+        return OptionExpiry("ok", days_left)
 
     def save(self, *args, **kwargs):
         # RG-12: a free gig always has a ticket price of 0.

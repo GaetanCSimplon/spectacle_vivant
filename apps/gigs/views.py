@@ -189,6 +189,7 @@ class GigWizardDetailsStepView(GigWizardMixin, View):
         form = GigDetailsStepForm(
             initial={
                 "date": data.get("date"),
+                "option_expires_on": data.get("option_expires_on"),
                 "price": data.get("price"),
                 "conditions": data.get("conditions", ""),
             }
@@ -202,8 +203,10 @@ class GigWizardDetailsStepView(GigWizardMixin, View):
 
         form = GigDetailsStepForm(request.POST)
         if form.is_valid():
+            expires_on = form.cleaned_data["option_expires_on"]
             self.update_wizard_data(
                 date=form.cleaned_data["date"].isoformat(),
+                option_expires_on=expires_on.isoformat() if expires_on else "",
                 price=str(form.cleaned_data["price"]),
                 conditions=form.cleaned_data["conditions"],
             )
@@ -230,6 +233,11 @@ class GigWizardRecapView(GigWizardMixin, View):
             promoter=promoter,
             venue=venue,
             date=datetime.date.fromisoformat(data["date"]),
+            option_expires_on=(
+                datetime.date.fromisoformat(data["option_expires_on"])
+                if data.get("option_expires_on")
+                else None
+            ),
             price=data["price"],
             conditions=data.get("conditions", ""),
         )

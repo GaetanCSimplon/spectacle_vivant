@@ -18,6 +18,7 @@ class GigCompletionForm(forms.ModelForm):
     class Meta:
         model = Gig
         fields = [
+            "option_expires_on",
             "get_in_time",
             "soundcheck_time",
             "performance_time",
@@ -28,6 +29,7 @@ class GigCompletionForm(forms.ModelForm):
             "ticket_price",
         ]
         widgets = {
+            "option_expires_on": forms.DateInput(attrs={"type": "date"}, format="%Y-%m-%d"),
             "get_in_time": _time_widget(),
             "soundcheck_time": _time_widget(),
             "performance_time": _time_widget(),
@@ -40,12 +42,21 @@ class GigCompletionForm(forms.ModelForm):
         # A disabled input is not submitted: an empty price simply means 0.
         self.fields["ticket_price"].required = False
         self.fields["invitations_count"].required = False
+        # An option's validity only matters while the gig is still an option.
+        if self.instance.status != Gig.Status.OPTION:
+            del self.fields["option_expires_on"]
 
     def clean_invitations_count(self):
         return self.cleaned_data["invitations_count"] or 0
 
     def clean(self):
         cleaned_data = super().clean()
+        expires_on = cleaned_data.get("option_expires_on")
+        if expires_on and expires_on > self.instance.date:
+            self.add_error(
+                "option_expires_on",
+                _("L'option ne peut pas se prolonger après la date du concert."),
+            )
         if cleaned_data.get("is_free") or cleaned_data.get("ticket_price") is None:
             cleaned_data["ticket_price"] = 0
         return cleaned_data

@@ -52,5 +52,18 @@ class VenueQuickCreateForm(forms.ModelForm):
 class GigDetailsStepForm(forms.ModelForm):
     class Meta:
         model = Gig
-        fields = ["date", "price", "conditions"]
-        widgets = {"date": forms.DateInput(attrs={"type": "date"})}
+        fields = ["date", "option_expires_on", "price", "conditions"]
+        widgets = {
+            "date": forms.DateInput(attrs={"type": "date"}),
+            "option_expires_on": forms.DateInput(attrs={"type": "date"}),
+        }
+
+    def clean(self):
+        cleaned = super().clean()
+        date, expires_on = cleaned.get("date"), cleaned.get("option_expires_on")
+        if date and expires_on and expires_on > date:
+            self.add_error(
+                "option_expires_on",
+                _("L'option ne peut pas se prolonger après la date du concert."),
+            )
+        return cleaned

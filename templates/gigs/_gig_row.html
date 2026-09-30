@@ -7,6 +7,7 @@
     <span class="min-w-0">
       <span class="block font-medium text-gray-900">{{ gig.date|date:"d/m/Y" }} — {{ gig.show.title }}</span>
       <span class="block truncate text-sm text-gray-600">{{ gig.venue.name }} · {{ gig.promoter.name }}</span>
+      {% include "gigs/_option_expiry.html" %}
     </span>
     {% include "gigs/_status_badge.html" %}
   </a>
