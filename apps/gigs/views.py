@@ -1,11 +1,11 @@
 import datetime
 
 from django.contrib import messages
-from django.shortcuts import redirect, render
+from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 from django.views import View
-from django.views.generic import ListView
+from django.views.generic import DetailView, ListView
 
 from apps.core.views import TenantScopedMixin
 
@@ -246,7 +246,7 @@ class GigWizardRecapView(GigWizardMixin, View):
         gig = services.create_gig_from_wizard_data(request.tenant, data)
         del request.session[WIZARD_SESSION_KEY]
         messages.success(request, _("La date a bien été créée."))
-        return redirect("documents:contract-ready", gig_id=gig.pk)
+        return redirect("gigs:detail", pk=gig.pk)
 
 
 class GigListView(TenantScopedMixin, ListView):
@@ -265,3 +265,59 @@ class GigListView(TenantScopedMixin, ListView):
         context["upcoming_gigs"] = gigs.filter(date__gte=today).order_by("date")
         context["past_gigs"] = gigs.filter(date__lt=today).order_by("-date")
         return context
+
+
+class GigDetailView(TenantScopedMixin, DetailView):
+    model = Gig
+    template_name = "gigs/gig_detail.html"
+
+    def get_queryset(self):
+        return super().get_queryset().select_related("show", "promoter", "venue")
+
+
+class GigTransitionView(TenantScopedMixin, View):
+    """Base for the POST-only buttons that change a gig's status."""
+
+    http_method_names = ["post"]
+    success_message = ""
+
+    def apply(self, gig):
+        raise NotImplementedError
+
+    def post(self, request, pk):
+        gig = get_object_or_404(Gig, pk=pk, tenant=request.tenant)
+        try:
+            self.apply(gig)
+        except services.InvalidTransition as error:
+            messages.error(request, error.args[0])
+        else:
+            messages.success(request, self.success_message)
+        return redirect("gigs:detail", pk=gig.pk)
+
+
+class GigConfirmView(GigTransitionView):
+    success_message = _("La date est confirmée.")
+
+    def apply(self, gig):
+        services.change_status(gig, Gig.Status.CONFIRMED)
+
+
+class GigReactivateView(GigTransitionView):
+    success_message = _("La date est réactivée : elle repasse en option.")
+
+    def apply(self, gig):
+        services.reactivate_gig(gig)
+
+
+class GigCancelView(GigTransitionView):
+    """Cancelling asks for a confirmation first; the gig is kept, never deleted (F-36)."""
+
+    http_method_names = ["get", "post"]
+    success_message = _("La date est annulée. Elle reste consultable dans votre historique.")
+
+    def get(self, request, pk):
+        gig = get_object_or_404(Gig, pk=pk, tenant=request.tenant)
+        return render(request, "gigs/gig_confirm_cancel.html", {"gig": gig})
+
+    def apply(self, gig):
+        services.change_status(gig, Gig.Status.CANCELLED)

@@ -1,15 +1,13 @@
 {% load i18n %}
 <li>
   <a
-    href="{% url 'documents:contract-ready' gig.pk %}"
+    href="{% url 'gigs:detail' gig.pk %}"
     class="card card-link flex items-center justify-between gap-3"
   >
     <span class="min-w-0">
       <span class="block font-medium text-gray-900">{{ gig.date|date:"d/m/Y" }} — {{ gig.show.title }}</span>
       <span class="block truncate text-sm text-gray-600">{{ gig.venue.name }} · {{ gig.promoter.name }}</span>
     </span>
-    <span class="badge shrink-0">
-      {{ gig.get_status_display }}
-    </span>
+    {% include "gigs/_status_badge.html" %}
   </a>
 </li>

@@ -15,4 +15,8 @@ urlpatterns = [
     path("nouvelle/lieu/", views.GigWizardVenueStepView.as_view(), name="wizard-venue"),
     path("nouvelle/details/", views.GigWizardDetailsStepView.as_view(), name="wizard-details"),
     path("nouvelle/recapitulatif/", views.GigWizardRecapView.as_view(), name="wizard-recap"),
+    path("<int:pk>/", views.GigDetailView.as_view(), name="detail"),
+    path("<int:pk>/confirmer/", views.GigConfirmView.as_view(), name="confirm"),
+    path("<int:pk>/annuler/", views.GigCancelView.as_view(), name="cancel"),
+    path("<int:pk>/reactiver/", views.GigReactivateView.as_view(), name="reactivate"),
 ]

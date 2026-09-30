@@ -1,0 +1,4 @@
+{% comment %}Coloured status pill for a gig (`gig` in context).{% endcomment %}
+<span class="badge shrink-0 {% if gig.status == 'option' %}bg-amber-100 text-amber-800{% elif gig.status == 'confirmed' %}bg-blue-100 text-blue-800{% elif gig.status == 'signed' %}bg-green-100 text-green-800{% else %}bg-gray-200 text-gray-600{% endif %}">
+  {{ gig.get_status_display }}
+</span>
