@@ -1,0 +1,20 @@
+{% load i18n %}
+{% comment %}
+  Live-search box. Params: `url` (the list URL), `q` (current query), `placeholder`.
+  Works without JavaScript too: it is a plain GET form.
+{% endcomment %}
+<form method="get" action="{{ url }}" class="mb-4" role="search">
+  <input
+    type="search"
+    name="q"
+    value="{{ q }}"
+    placeholder="{{ placeholder }}"
+    aria-label="{{ placeholder }}"
+    autocomplete="off"
+    class="w-full rounded-md border border-gray-300 px-3 py-2 text-sm"
+    hx-get="{{ url }}"
+    hx-trigger="input changed delay:300ms, search"
+    hx-target="#results"
+    hx-swap="innerHTML"
+  >
+</form>

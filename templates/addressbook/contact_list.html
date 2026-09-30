@@ -7,13 +7,11 @@
   {% include "addressbook/_tabs.html" with active="contacts" %}
   <h1 class="mb-6 text-xl font-semibold">{% translate "Contacts" %}</h1>
 
-  {% if not object_list %}
-    <div class="card">
-      <p>{% translate "Aucun contact pour l'instant. Ajoutez-les depuis la fiche d'un organisateur ou d'un lieu." %}</p>
-    </div>
-  {% else %}
-    <ul class="flex flex-col gap-2">
-      {% for contact in object_list %}{% include "addressbook/_contact_row.html" with show_parent=True %}{% endfor %}
-    </ul>
-  {% endif %}
+  {% url 'addressbook:contact-list' as list_url %}
+  {% translate "Rechercher un contact" as search_placeholder %}
+  {% include "components/_search.html" with url=list_url placeholder=search_placeholder %}
+
+  <div id="results">
+    {% include "addressbook/_contact_results.html" %}
+  </div>
 {% endblock %}

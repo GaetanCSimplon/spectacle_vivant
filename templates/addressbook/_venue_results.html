@@ -1,0 +1,26 @@
+{% load i18n %}
+{% if not object_list %}
+  <div class="card">
+    {% if q %}
+      <p>{% blocktranslate %}Aucun lieu ne correspond à « {{ q }} ».{% endblocktranslate %}</p>
+    {% else %}
+      <p>{% translate "Vous n'avez pas encore de lieu." %}</p>
+      <a href="{% url 'addressbook:venue-create' %}" class="btn btn-primary mt-4">
+        {% translate "+ Nouveau lieu" %}
+      </a>
+    {% endif %}
+  </div>
+{% else %}
+  <ul class="flex flex-col gap-2">
+    {% for venue in object_list %}
+      <li>
+        <a href="{% url 'addressbook:venue-detail' venue.pk %}" class="card card-link block">
+          <span class="block font-medium text-gray-900">{{ venue.name }}</span>
+          {% if venue.capacity %}
+            <span class="block text-sm text-gray-600">{{ venue.capacity }} places</span>
+          {% endif %}
+        </a>
+      </li>
+    {% endfor %}
+  </ul>
+{% endif %}

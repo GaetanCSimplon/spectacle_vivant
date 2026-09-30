@@ -5,7 +5,7 @@ from django.urls import reverse, reverse_lazy
 from django.utils.translation import gettext_lazy as _
 from django.views.generic import CreateView, DeleteView, DetailView, ListView, UpdateView
 
-from apps.core.views import TenantScopedMixin
+from apps.core.views import SearchListMixin, TenantScopedMixin
 
 from .forms import ContactForm, PromoterForm, VenueForm
 from .models import Contact, Promoter, Venue
@@ -20,9 +20,11 @@ class DetailRedirectMixin:
         return reverse(self.detail_url_name, args=[self.object.pk])
 
 
-class PromoterListView(TenantScopedMixin, ListView):
+class PromoterListView(TenantScopedMixin, SearchListMixin, ListView):
     model = Promoter
     template_name = "addressbook/promoter_list.html"
+    results_template_name = "addressbook/_promoter_results.html"
+    search_fields = ["name", "email"]
 
     def get_queryset(self):
         return super().get_queryset().order_by("name")
@@ -83,9 +85,11 @@ class PromoterDeleteView(TenantScopedMixin, DeleteView):
             return redirect("addressbook:promoter-detail", pk=self.object.pk)
 
 
-class VenueListView(TenantScopedMixin, ListView):
+class VenueListView(TenantScopedMixin, SearchListMixin, ListView):
     model = Venue
     template_name = "addressbook/venue_list.html"
+    results_template_name = "addressbook/_venue_results.html"
+    search_fields = ["name", "address"]
 
     def get_queryset(self):
         return super().get_queryset().order_by("name")
@@ -146,9 +150,11 @@ class VenueDeleteView(TenantScopedMixin, DeleteView):
             return redirect("addressbook:venue-detail", pk=self.object.pk)
 
 
-class ContactListView(TenantScopedMixin, ListView):
+class ContactListView(TenantScopedMixin, SearchListMixin, ListView):
     model = Contact
     template_name = "addressbook/contact_list.html"
+    results_template_name = "addressbook/_contact_results.html"
+    search_fields = ["name", "role", "email", "promoter__name", "venue__name"]
 
     def get_queryset(self):
         return super().get_queryset().select_related("promoter", "venue").order_by("name")

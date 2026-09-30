@@ -1,4 +1,5 @@
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.db.models import Q
 from django.http import Http404, HttpResponse
 from django.views import View
 from django.views.generic import TemplateView
@@ -27,6 +28,44 @@ class TenantScopedMixin(LoginRequiredMixin):
         if hasattr(form, "instance"):
             form.instance.tenant = self.request.tenant
         return super().form_valid(form)
+
+
+class SearchListMixin:
+    """Filter a ListView with `?q=` (case-insensitive, on `search_fields`).
+
+    A live-search request (HTMX) gets only the results fragment
+    (`results_template_name`); a normal request gets the whole page.
+    Put it after TenantScopedMixin: the search only narrows an already
+    tenant-scoped queryset.
+    """
+
+    search_fields = ()
+    results_template_name = None
+
+    def get_search_query(self):
+        return self.request.GET.get("q", "").strip()
+
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        query = self.get_search_query()
+        if query:
+            condition = Q()
+            for field in self.search_fields:
+                condition |= Q(**{f"{field}__icontains": query})
+            queryset = queryset.filter(condition)
+        return queryset
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["q"] = self.get_search_query()
+        return context
+
+    def get_template_names(self):
+        # A boosted link is a full page navigation, not a live-search request.
+        htmx = self.request.htmx
+        if htmx and not htmx.boosted and self.results_template_name:
+            return [self.results_template_name]
+        return super().get_template_names()
 
 
 class HomeView(LoginRequiredMixin, TemplateView):
