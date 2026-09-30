@@ -13,7 +13,10 @@
 
   <div class="card mb-6 space-y-1 text-sm">
     {% if venue.address %}<p>{{ venue.address|linebreaksbr }}</p>{% endif %}
+    {% if venue.phone %}<p><a href="tel:{{ venue.phone }}" class="text-blue-600">{{ venue.phone }}</a></p>{% endif %}
     {% if venue.capacity %}<p>{% translate "Jauge :" %} {{ venue.capacity }} places</p>{% endif %}
+    {% if venue.access_info %}<p>{% translate "Accès :" %} {{ venue.access_info|linebreaksbr }}</p>{% endif %}
+    {% if venue.notes %}<p class="text-gray-600">{{ venue.notes|linebreaksbr }}</p>{% endif %}
   </div>
 
   <div class="mb-2 flex items-center justify-between">

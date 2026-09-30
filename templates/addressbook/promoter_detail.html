@@ -12,9 +12,12 @@
   </div>
 
   <div class="card mb-6 space-y-1 text-sm">
-    {% if promoter.email %}<p>{{ promoter.email }}</p>{% endif %}
+    {% if promoter.kind %}<p class="text-gray-600">{{ promoter.get_kind_display }}</p>{% endif %}
+    {% if promoter.email %}<p><a href="mailto:{{ promoter.email }}" class="text-blue-600">{{ promoter.email }}</a></p>{% endif %}
+    {% if promoter.phone %}<p><a href="tel:{{ promoter.phone }}" class="text-blue-600">{{ promoter.phone }}</a></p>{% endif %}
     {% if promoter.siret %}<p>SIRET : {{ promoter.siret }}</p>{% endif %}
     {% if promoter.billing_address %}<p>{{ promoter.billing_address|linebreaksbr }}</p>{% endif %}
+    {% if promoter.notes %}<p class="text-gray-600">{{ promoter.notes|linebreaksbr }}</p>{% endif %}
     {% if promoter.representative_name %}
       <p>
         {% translate "Représenté par" %} {{ promoter.representative_name }}{% if promoter.representative_role %}, {{ promoter.representative_role }}{% endif %}
