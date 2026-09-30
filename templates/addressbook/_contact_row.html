@@ -1,0 +1,17 @@
+{% load i18n %}
+{% comment %}One contact card. Set `show_parent` to name the organiser/venue it belongs to.{% endcomment %}
+<li class="card flex items-start justify-between gap-3 text-sm">
+  <div>
+    <span class="block font-medium text-gray-900">
+      {{ contact.name }}{% if contact.role %} — {{ contact.role }}{% endif %}
+    </span>
+    {% if show_parent %}
+      <span class="block text-gray-500">{{ contact.promoter|default:contact.venue }}</span>
+    {% endif %}
+    {% if contact.email %}<a href="mailto:{{ contact.email }}" class="block text-gray-600">{{ contact.email }}</a>{% endif %}
+    {% if contact.phone %}<a href="tel:{{ contact.phone }}" class="block text-gray-600">{{ contact.phone }}</a>{% endif %}
+  </div>
+  <a href="{% url 'addressbook:contact-update' contact.pk %}" class="shrink-0 text-blue-600">
+    {% translate "Modifier" %}
+  </a>
+</li>

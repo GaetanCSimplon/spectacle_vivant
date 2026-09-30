@@ -4,6 +4,7 @@
 {% block title %}Lieux — Spectacle Vivant{% endblock %}
 
 {% block page_content %}
+  {% include "addressbook/_tabs.html" with active="venues" %}
   <div class="mb-6 flex items-center justify-between">
     <h1 class="text-xl font-semibold">{% translate "Lieux" %}</h1>
     <a href="{% url 'addressbook:venue-create' %}" class="btn btn-primary">

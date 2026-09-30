@@ -1,5 +1,6 @@
 from django.core.exceptions import ValidationError
 from django.db import models
+from django.urls import reverse
 from django.utils.translation import gettext_lazy as _
 
 from apps.core.models import TenantOwnedModel
@@ -19,6 +20,9 @@ class Promoter(TenantOwnedModel):
     def __str__(self):
         return self.name
 
+    def get_absolute_url(self):
+        return reverse("addressbook:promoter-detail", args=[self.pk])
+
 
 class Venue(TenantOwnedModel):
     """The physical place (Lieu / Salle) where the gig happens."""
@@ -29,6 +33,9 @@ class Venue(TenantOwnedModel):
 
     def __str__(self):
         return self.name
+
+    def get_absolute_url(self):
+        return reverse("addressbook:venue-detail", args=[self.pk])
 
 
 class Contact(TenantOwnedModel):
