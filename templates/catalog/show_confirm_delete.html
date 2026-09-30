@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}Supprimer {{ show.title }} — Spectacle Vivant{% endblock %}
+
+{% block page_content %}
+  <h1 class="mb-4 text-lg font-semibold">{% translate "Supprimer ce spectacle ?" %}</h1>
+  <p class="mb-6">
+    {% blocktranslate with name=show.title %}
+      Voulez-vous vraiment supprimer « {{ name }} » ? Cette action est irréversible.
+    {% endblocktranslate %}
+  </p>
+
+  <form method="post" class="flex flex-col gap-3">
+    {% csrf_token %}
+    <button type="submit" class="btn btn-primary btn-block">{% translate "Supprimer" %}</button>
+    <a
+      href="{% url 'catalog:show-detail' show.pk %}"
+      class="text-center text-sm text-gray-500 hover:text-gray-700"
+    >{% translate "Annuler" %}</a>
+  </form>
+{% endblock %}

@@ -32,6 +32,7 @@ def test_navigation_links_are_shown_when_logged_in(client):
         ("home", "Accueil"),
         ("gigs:list", "Mes dates"),
         ("gigs:wizard-show", "Mes dates"),
+        ("catalog:show-list", "Spectacles"),
         ("addressbook:promoter-list", "Contacts"),
         ("addressbook:venue-list", "Contacts"),
         ("addressbook:contact-list", "Contacts"),

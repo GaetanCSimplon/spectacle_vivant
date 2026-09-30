@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}Spectacles — Spectacle Vivant{% endblock %}
+
+{% block page_content %}
+  <div class="mb-6 flex items-center justify-between">
+    <h1 class="text-xl font-semibold">{% translate "Spectacles" %}</h1>
+    <a href="{% url 'catalog:show-create' %}" class="btn btn-primary">
+      {% translate "+ Nouveau spectacle" %}
+    </a>
+  </div>
+
+  {% url 'catalog:show-list' as list_url %}
+  {% translate "Rechercher un spectacle" as search_placeholder %}
+  {% include "components/_search.html" with url=list_url placeholder=search_placeholder %}
+
+  <div id="results">
+    {% include "catalog/_show_results.html" %}
+  </div>
+{% endblock %}

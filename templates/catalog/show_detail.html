@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{{ show.title }} — Spectacle Vivant{% endblock %}
+
+{% block page_content %}
+  <div class="mb-4 flex items-start justify-between gap-3">
+    <div>
+      <h1 class="text-xl font-semibold">{{ show.title }}</h1>
+      {% if show.group_name %}<p class="text-sm text-gray-600">{{ show.group_name }}</p>{% endif %}
+    </div>
+    <a href="{% url 'catalog:show-update' show.pk %}" class="btn btn-secondary">
+      {% translate "Modifier" %}
+    </a>
+  </div>
+
+  <div class="card mb-6 space-y-1 text-sm">
+    <p>{% translate "Durée du set" %} : {{ show.duration_minutes }} min</p>
+    <p>{% translate "Prix indicatif" %} : {{ show.default_price }} €</p>
+    {% if show.crew_size %}<p>{% translate "Effectif" %} : {{ show.crew_size }}</p>{% endif %}
+    {% if show.performers %}<p>{% translate "Distribution" %} : {{ show.performers|linebreaksbr }}</p>{% endif %}
+    {% if show.sacem_number %}<p>{% translate "N° SACEM" %} : {{ show.sacem_number }}</p>{% endif %}
+    {% if show.sacem_object_number %}<p>{% translate "N° d'objet" %} : {{ show.sacem_object_number }}</p>{% endif %}
+    {% if show.epk_url %}
+      <p>
+        <a href="{{ show.epk_url }}" target="_blank" rel="noopener noreferrer" class="text-blue-600">
+          {% translate "Dossier de presse (EPK)" %}
+        </a>
+      </p>
+    {% endif %}
+  </div>
+
+  {% if show.tech_sheet_text or show.tech_sheet_file or show.rider_file %}
+    <h2 class="mb-2 text-sm font-semibold uppercase text-gray-500">{% translate "Fiche technique" %}</h2>
+    <div class="card mb-6 space-y-2 text-sm">
+      {% if show.tech_sheet_text %}<p>{{ show.tech_sheet_text|linebreaksbr }}</p>{% endif %}
+      {% if show.tech_sheet_file %}
+        <p>
+          <a href="{% url 'catalog:show-file' show.pk 'fiche-technique' %}" class="text-blue-600">
+            {% translate "Télécharger la fiche technique (PDF)" %}
+          </a>
+        </p>
+      {% endif %}
+      {% if show.rider_file %}
+        <p>
+          <a href="{% url 'catalog:show-file' show.pk 'rider' %}" class="text-blue-600">
+            {% translate "Télécharger le rider" %}
+          </a>
+        </p>
+      {% endif %}
+    </div>
+  {% endif %}
+
+  <h2 class="mb-2 text-sm font-semibold uppercase text-gray-500">{% translate "Historique des dates" %}</h2>
+  {% if gigs %}
+    <ul class="mb-6 flex flex-col gap-2">
+      {% for gig in gigs %}{% include "gigs/_gig_row.html" %}{% endfor %}
+    </ul>
+  {% else %}
+    <p class="mb-6">{% translate "Aucune date pour l'instant." %}</p>
+  {% endif %}
+
+  <a href="{% url 'catalog:show-delete' show.pk %}" class="text-sm text-red-600 hover:text-red-700">
+    {% translate "Supprimer ce spectacle" %}
+  </a>
+{% endblock %}
