@@ -12,25 +12,11 @@
     </a>
   </div>
 
-  {% if not object_list %}
-    <div class="card">
-      <p>{% translate "Vous n'avez pas encore d'organisateur." %}</p>
-      <a href="{% url 'addressbook:promoter-create' %}" class="btn btn-primary mt-4">
-        {% translate "+ Nouvel organisateur" %}
-      </a>
-    </div>
-  {% else %}
-    <ul class="flex flex-col gap-2">
-      {% for promoter in object_list %}
-        <li>
-          <a href="{% url 'addressbook:promoter-detail' promoter.pk %}" class="card card-link block">
-            <span class="block font-medium text-gray-900">{{ promoter.name }}</span>
-            {% if promoter.email %}
-              <span class="block text-sm text-gray-600">{{ promoter.email }}</span>
-            {% endif %}
-          </a>
-        </li>
-      {% endfor %}
-    </ul>
-  {% endif %}
+  {% url 'addressbook:promoter-list' as list_url %}
+  {% translate "Rechercher un organisateur" as search_placeholder %}
+  {% include "components/_search.html" with url=list_url placeholder=search_placeholder %}
+
+  <div id="results">
+    {% include "addressbook/_promoter_results.html" %}
+  </div>
 {% endblock %}

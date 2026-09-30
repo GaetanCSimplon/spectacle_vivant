@@ -1,0 +1,26 @@
+{% load i18n %}
+{% if not object_list %}
+  <div class="card">
+    {% if q %}
+      <p>{% blocktranslate %}Aucun organisateur ne correspond à « {{ q }} ».{% endblocktranslate %}</p>
+    {% else %}
+      <p>{% translate "Vous n'avez pas encore d'organisateur." %}</p>
+      <a href="{% url 'addressbook:promoter-create' %}" class="btn btn-primary mt-4">
+        {% translate "+ Nouvel organisateur" %}
+      </a>
+    {% endif %}
+  </div>
+{% else %}
+  <ul class="flex flex-col gap-2">
+    {% for promoter in object_list %}
+      <li>
+        <a href="{% url 'addressbook:promoter-detail' promoter.pk %}" class="card card-link block">
+          <span class="block font-medium text-gray-900">{{ promoter.name }}</span>
+          {% if promoter.email %}
+            <span class="block text-sm text-gray-600">{{ promoter.email }}</span>
+          {% endif %}
+        </a>
+      </li>
+    {% endfor %}
+  </ul>
+{% endif %}

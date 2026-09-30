@@ -1,0 +1,14 @@
+{% load i18n %}
+{% if not object_list %}
+  <div class="card">
+    {% if q %}
+      <p>{% blocktranslate %}Aucun contact ne correspond à « {{ q }} ».{% endblocktranslate %}</p>
+    {% else %}
+      <p>{% translate "Aucun contact pour l'instant. Ajoutez-les depuis la fiche d'un organisateur ou d'un lieu." %}</p>
+    {% endif %}
+  </div>
+{% else %}
+  <ul class="flex flex-col gap-2">
+    {% for contact in object_list %}{% include "addressbook/_contact_row.html" with show_parent=True %}{% endfor %}
+  </ul>
+{% endif %}

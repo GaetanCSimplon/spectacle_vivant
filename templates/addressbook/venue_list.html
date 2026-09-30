@@ -12,25 +12,11 @@
     </a>
   </div>
 
-  {% if not object_list %}
-    <div class="card">
-      <p>{% translate "Vous n'avez pas encore de lieu." %}</p>
-      <a href="{% url 'addressbook:venue-create' %}" class="btn btn-primary mt-4">
-        {% translate "+ Nouveau lieu" %}
-      </a>
-    </div>
-  {% else %}
-    <ul class="flex flex-col gap-2">
-      {% for venue in object_list %}
-        <li>
-          <a href="{% url 'addressbook:venue-detail' venue.pk %}" class="card card-link block">
-            <span class="block font-medium text-gray-900">{{ venue.name }}</span>
-            {% if venue.capacity %}
-              <span class="block text-sm text-gray-600">{{ venue.capacity }} places</span>
-            {% endif %}
-          </a>
-        </li>
-      {% endfor %}
-    </ul>
-  {% endif %}
+  {% url 'addressbook:venue-list' as list_url %}
+  {% translate "Rechercher un lieu" as search_placeholder %}
+  {% include "components/_search.html" with url=list_url placeholder=search_placeholder %}
+
+  <div id="results">
+    {% include "addressbook/_venue_results.html" %}
+  </div>
 {% endblock %}
