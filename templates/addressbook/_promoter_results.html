@@ -16,8 +16,10 @@
       <li>
         <a href="{% url 'addressbook:promoter-detail' promoter.pk %}" class="card card-link block">
           <span class="block font-medium text-gray-900">{{ promoter.name }}</span>
-          {% if promoter.email %}
-            <span class="block text-sm text-gray-600">{{ promoter.email }}</span>
+          {% if promoter.kind or promoter.email %}
+            <span class="block text-sm text-gray-600">
+              {{ promoter.get_kind_display }}{% if promoter.kind and promoter.email %} · {% endif %}{{ promoter.email }}
+            </span>
           {% endif %}
         </a>
       </li>

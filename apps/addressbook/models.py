@@ -9,6 +9,14 @@ from apps.core.models import TenantOwnedModel
 class Promoter(TenantOwnedModel):
     """The client (Organisateur) who buys the show and gets invoiced."""
 
+    class Kind(models.TextChoices):
+        MUNICIPALITY = "municipality", _("Mairie / collectivité")
+        FESTIVAL = "festival", _("Festival")
+        VENUE = "venue", _("Salle / théâtre")
+        ASSOCIATION = "association", _("Association")
+        BAR = "bar", _("Bar / café-concert")
+        OTHER = "other", _("Autre")
+
     name = models.CharField(_("nom"), max_length=255)
     siret = models.CharField(_("SIRET"), max_length=14, blank=True)
     licence_number = models.CharField(_("n° de licence"), max_length=50, blank=True)
@@ -16,6 +24,9 @@ class Promoter(TenantOwnedModel):
     representative_role = models.CharField(_("qualité du représentant"), max_length=255, blank=True)
     billing_address = models.TextField(_("adresse de facturation"), blank=True)
     email = models.EmailField(_("e-mail"), blank=True)
+    phone = models.CharField(_("téléphone"), max_length=30, blank=True)
+    kind = models.CharField(_("type d'organisateur"), max_length=20, choices=Kind, blank=True)
+    notes = models.TextField(_("notes"), blank=True)
 
     def __str__(self):
         return self.name
@@ -30,6 +41,9 @@ class Venue(TenantOwnedModel):
     name = models.CharField(_("nom"), max_length=255)
     address = models.TextField(_("adresse"), blank=True)
     capacity = models.PositiveIntegerField(_("jauge (places)"), null=True, blank=True)
+    phone = models.CharField(_("téléphone"), max_length=30, blank=True)
+    access_info = models.TextField(_("infos d'accès (parking, chargement…)"), blank=True)
+    notes = models.TextField(_("notes"), blank=True)
 
     def __str__(self):
         return self.name

@@ -8,21 +8,31 @@ class PromoterForm(forms.ModelForm):
         model = Promoter
         fields = [
             "name",
+            "kind",
             "email",
+            "phone",
             "siret",
             "licence_number",
             "representative_name",
             "representative_role",
             "billing_address",
+            "notes",
         ]
-        widgets = {"billing_address": forms.Textarea(attrs={"rows": 3})}
+        widgets = {
+            "billing_address": forms.Textarea(attrs={"rows": 3}),
+            "notes": forms.Textarea(attrs={"rows": 3}),
+        }
 
 
 class VenueForm(forms.ModelForm):
     class Meta:
         model = Venue
-        fields = ["name", "address", "capacity"]
-        widgets = {"address": forms.Textarea(attrs={"rows": 3})}
+        fields = ["name", "address", "capacity", "phone", "access_info", "notes"]
+        widgets = {
+            "address": forms.Textarea(attrs={"rows": 3}),
+            "access_info": forms.Textarea(attrs={"rows": 3}),
+            "notes": forms.Textarea(attrs={"rows": 3}),
+        }
 
 
 class ContactForm(forms.ModelForm):
