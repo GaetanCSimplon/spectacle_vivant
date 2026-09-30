@@ -15,7 +15,7 @@ Un **artiste ou un groupe** (« la structure de production ») veut jouer des co
 
 | Acteur | Qui c'est | Dans l'app |
 |---|---|---|
-| **Artiste / structure de production** | Celui qui vend le spectacle (association, micro-entreprise…) | **L'utilisateur** (`Tenant`) |
+| **Artiste / structure de production** | Celui qui vend le spectacle (association, micro-entreprise…) | **L'utilisateur** (`Organization`) |
 | **Organisateur / programmateur** | Celui qui achète le concert : salle, festival, mairie, bar, association | `Promoter` (le **client**) |
 | **Lieu / salle** | L'endroit où ça se passe | `Venue` |
 | **Équipe** | Musiciens, technicien son/lumière, tourneur (celui qui cherche des dates) | `GigMember` |
