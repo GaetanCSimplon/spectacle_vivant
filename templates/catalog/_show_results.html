@@ -1,0 +1,26 @@
+{% load i18n %}
+{% if not object_list %}
+  <div class="card">
+    {% if q %}
+      <p>{% blocktranslate %}Aucun spectacle ne correspond à « {{ q }} ».{% endblocktranslate %}</p>
+    {% else %}
+      <p>{% translate "Vous n'avez pas encore de spectacle." %}</p>
+      <a href="{% url 'catalog:show-create' %}" class="btn btn-primary mt-4">
+        {% translate "+ Nouveau spectacle" %}
+      </a>
+    {% endif %}
+  </div>
+{% else %}
+  <ul class="flex flex-col gap-2">
+    {% for show in object_list %}
+      <li>
+        <a href="{% url 'catalog:show-detail' show.pk %}" class="card card-link block">
+          <span class="block font-medium text-gray-900">{{ show.title }}</span>
+          <span class="block text-sm text-gray-600">
+            {% if show.group_name %}{{ show.group_name }} · {% endif %}{{ show.duration_minutes }} min
+          </span>
+        </a>
+      </li>
+    {% endfor %}
+  </ul>
+{% endif %}

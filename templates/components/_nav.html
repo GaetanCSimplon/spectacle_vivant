@@ -15,6 +15,11 @@
     {% if ns == 'gigs' or ns == 'documents' %}aria-current="page"{% endif %}
   >{% translate "Mes dates" %}</a>
   <a
+    href="{% url 'catalog:show-list' %}"
+    class="{{ link_class }} {% if ns == 'catalog' %}{{ active_class }}{% endif %}"
+    {% if ns == 'catalog' %}aria-current="page"{% endif %}
+  >{% translate "Spectacles" %}</a>
+  <a
     href="{% url 'addressbook:promoter-list' %}"
     class="{{ link_class }} {% if ns == 'addressbook' %}{{ active_class }}{% endif %}"
     {% if ns == 'addressbook' %}aria-current="page"{% endif %}
