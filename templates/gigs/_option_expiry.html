@@ -1,0 +1,16 @@
+{% load i18n %}
+{% comment %}Warning under a gig when its option is about to expire, or has. `gig` in context.{% endcomment %}
+{% with expiry=gig.option_expiry %}
+  {% if expiry.state == "soon" %}
+    <span class="block text-xs font-medium text-amber-700">
+      {% if expiry.days == 0 %}{% translate "Option : expire aujourd'hui" %}
+      {% elif expiry.days == 1 %}{% translate "Option : expire demain" %}
+      {% else %}{% blocktranslate with days=expiry.days %}Option : expire dans {{ days }} jours{% endblocktranslate %}{% endif %}
+    </span>
+  {% elif expiry.state == "expired" %}
+    <span class="block text-xs font-medium text-red-700">
+      {% if expiry.days == 1 %}{% translate "Option expirée depuis hier" %}
+      {% else %}{% blocktranslate with days=expiry.days %}Option expirée depuis {{ days }} jours{% endblocktranslate %}{% endif %}
+    </span>
+  {% endif %}
+{% endwith %}
