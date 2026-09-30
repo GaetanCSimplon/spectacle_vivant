@@ -23,7 +23,7 @@ def test_navigation_links_are_shown_when_logged_in(client):
 
     assert content.count("Navigation principale") == 2  # top bar + bottom bar
     assert reverse("gigs:list") in content
-    assert reverse("gigs:wizard-show") in content
+    assert reverse("addressbook:promoter-list") in content
 
 
 @pytest.mark.parametrize(
@@ -31,7 +31,10 @@ def test_navigation_links_are_shown_when_logged_in(client):
     [
         ("home", "Accueil"),
         ("gigs:list", "Mes dates"),
-        ("gigs:wizard-show", "Nouvelle date"),
+        ("gigs:wizard-show", "Mes dates"),
+        ("addressbook:promoter-list", "Contacts"),
+        ("addressbook:venue-list", "Contacts"),
+        ("addressbook:contact-list", "Contacts"),
         ("tenants:profile", "Ma structure"),
     ],
 )

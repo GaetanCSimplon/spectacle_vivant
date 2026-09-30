@@ -1,14 +1,14 @@
 from django.contrib import messages
 from django.db.models import ProtectedError
-from django.shortcuts import redirect
+from django.shortcuts import get_object_or_404, redirect
 from django.urls import reverse, reverse_lazy
 from django.utils.translation import gettext_lazy as _
 from django.views.generic import CreateView, DeleteView, DetailView, ListView, UpdateView
 
 from apps.core.views import TenantScopedMixin
 
-from .forms import PromoterForm, VenueForm
-from .models import Promoter, Venue
+from .forms import ContactForm, PromoterForm, VenueForm
+from .models import Contact, Promoter, Venue
 
 
 class DetailRedirectMixin:
@@ -144,3 +144,104 @@ class VenueDeleteView(TenantScopedMixin, DeleteView):
                 _("Impossible de supprimer : ce lieu est utilisé par au moins une date."),
             )
             return redirect("addressbook:venue-detail", pk=self.object.pk)
+
+
+class ContactListView(TenantScopedMixin, ListView):
+    model = Contact
+    template_name = "addressbook/contact_list.html"
+
+    def get_queryset(self):
+        return super().get_queryset().select_related("promoter", "venue").order_by("name")
+
+
+class ContactCreateView(TenantScopedMixin, CreateView):
+    """Create a contact from the detail page of its Promoter or Venue.
+
+    The parent comes from the URL and is looked up inside the current tenant,
+    so a contact can never be attached to another tenant's organiser or venue.
+    """
+
+    model = Contact
+    form_class = ContactForm
+    template_name = "addressbook/contact_form.html"
+    parent_model = None
+    parent_kwarg = None
+    parent_field = None
+
+    def get_parent(self):
+        if not hasattr(self, "_parent"):
+            self._parent = get_object_or_404(
+                self.parent_model, pk=self.kwargs[self.parent_kwarg], tenant=self.request.tenant
+            )
+        return self._parent
+
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        # Set before validation so Contact.clean() can compare tenants.
+        kwargs["instance"] = Contact(
+            tenant=self.request.tenant, **{self.parent_field: self.get_parent()}
+        )
+        return kwargs
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["parent"] = self.get_parent()
+        return context
+
+    def get_success_url(self):
+        return self.get_parent().get_absolute_url()
+
+    def form_valid(self, form):
+        response = super().form_valid(form)
+        messages.success(self.request, _("Le contact a été créé."))
+        return response
+
+
+class PromoterContactCreateView(ContactCreateView):
+    parent_model = Promoter
+    parent_kwarg = "promoter_pk"
+    parent_field = "promoter"
+
+
+class VenueContactCreateView(ContactCreateView):
+    parent_model = Venue
+    parent_kwarg = "venue_pk"
+    parent_field = "venue"
+
+
+class ContactUpdateView(TenantScopedMixin, UpdateView):
+    model = Contact
+    form_class = ContactForm
+    template_name = "addressbook/contact_form.html"
+
+    def get_queryset(self):
+        return super().get_queryset().select_related("promoter", "venue")
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["parent"] = self.object.promoter or self.object.venue
+        return context
+
+    def get_success_url(self):
+        return (self.object.promoter or self.object.venue).get_absolute_url()
+
+    def form_valid(self, form):
+        response = super().form_valid(form)
+        messages.success(self.request, _("Le contact a été modifié."))
+        return response
+
+
+class ContactDeleteView(TenantScopedMixin, DeleteView):
+    model = Contact
+    template_name = "addressbook/contact_confirm_delete.html"
+
+    def get_queryset(self):
+        return super().get_queryset().select_related("promoter", "venue")
+
+    def get_success_url(self):
+        return (self.object.promoter or self.object.venue).get_absolute_url()
+
+    def form_valid(self, form):
+        response = super().form_valid(form)
+        messages.success(self.request, _("Le contact a été supprimé."))
+        return response

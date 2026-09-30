@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}
+  {% if object %}Modifier un contact{% else %}Nouveau contact{% endif %} — Spectacle Vivant
+{% endblock %}
+
+{% block page_content %}
+  <h1 class="mb-1 text-lg font-semibold">
+    {% if object %}{% translate "Modifier le contact" %}{% else %}{% translate "Nouveau contact" %}{% endif %}
+  </h1>
+  <p class="mb-4 text-sm text-gray-600">{% blocktranslate %}Rattaché à : {{ parent }}{% endblocktranslate %}</p>
+
+  <form method="post" class="space-y-4">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <datalist id="contact-roles">
+      <option value="Accueil"></option>
+      <option value="Technique"></option>
+      <option value="Comm'"></option>
+    </datalist>
+    <button type="submit" class="btn btn-primary btn-block">{% translate "Enregistrer" %}</button>
+  </form>
+
+  {% if object %}
+    <a
+      href="{% url 'addressbook:contact-delete' object.pk %}"
+      class="mt-6 inline-block text-sm text-red-600 hover:text-red-700"
+    >{% translate "Supprimer ce contact" %}</a>
+  {% endif %}
+{% endblock %}

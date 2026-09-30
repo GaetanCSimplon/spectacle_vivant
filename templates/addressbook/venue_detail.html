@@ -16,18 +16,15 @@
     {% if venue.capacity %}<p>{% translate "Jauge :" %} {{ venue.capacity }} places</p>{% endif %}
   </div>
 
-  <h2 class="mb-2 text-sm font-semibold uppercase text-gray-500">{% translate "Contacts" %}</h2>
+  <div class="mb-2 flex items-center justify-between">
+    <h2 class="text-sm font-semibold uppercase text-gray-500">{% translate "Contacts" %}</h2>
+    <a href="{% url 'addressbook:venue-contact-create' venue.pk %}" class="text-sm text-blue-600">
+      {% translate "+ Ajouter un contact" %}
+    </a>
+  </div>
   {% if venue.contacts.all %}
     <ul class="mb-6 flex flex-col gap-2">
-      {% for contact in venue.contacts.all %}
-        <li class="card text-sm">
-          <span class="block font-medium text-gray-900">
-            {{ contact.name }}{% if contact.role %} — {{ contact.role }}{% endif %}
-          </span>
-          {% if contact.email %}<span class="block text-gray-600">{{ contact.email }}</span>{% endif %}
-          {% if contact.phone %}<span class="block text-gray-600">{{ contact.phone }}</span>{% endif %}
-        </li>
-      {% endfor %}
+      {% for contact in venue.contacts.all %}{% include "addressbook/_contact_row.html" %}{% endfor %}
     </ul>
   {% else %}
     <p class="mb-6">{% translate "Aucun contact enregistré." %}</p>

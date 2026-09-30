@@ -23,4 +23,17 @@ urlpatterns = [
     path("lieux/<int:pk>/", views.VenueDetailView.as_view(), name="venue-detail"),
     path("lieux/<int:pk>/modifier/", views.VenueUpdateView.as_view(), name="venue-update"),
     path("lieux/<int:pk>/supprimer/", views.VenueDeleteView.as_view(), name="venue-delete"),
+    path(
+        "organisateurs/<int:promoter_pk>/contacts/nouveau/",
+        views.PromoterContactCreateView.as_view(),
+        name="promoter-contact-create",
+    ),
+    path(
+        "lieux/<int:venue_pk>/contacts/nouveau/",
+        views.VenueContactCreateView.as_view(),
+        name="venue-contact-create",
+    ),
+    path("contacts/", views.ContactListView.as_view(), name="contact-list"),
+    path("contacts/<int:pk>/modifier/", views.ContactUpdateView.as_view(), name="contact-update"),
+    path("contacts/<int:pk>/supprimer/", views.ContactDeleteView.as_view(), name="contact-delete"),
 ]

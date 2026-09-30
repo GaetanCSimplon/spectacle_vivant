@@ -1,0 +1,19 @@
+{% load i18n %}
+{% comment %}Switch between the three address-book lists. `active` = promoters | venues | contacts.{% endcomment %}
+<div class="mb-4 flex gap-4 border-b border-gray-200 text-sm">
+  <a
+    href="{% url 'addressbook:promoter-list' %}"
+    class="-mb-px border-b-2 pb-2 {% if active == 'promoters' %}border-blue-700 font-semibold text-blue-700{% else %}border-transparent text-gray-600 hover:text-gray-900{% endif %}"
+    {% if active == 'promoters' %}aria-current="true"{% endif %}
+  >{% translate "Organisateurs" %}</a>
+  <a
+    href="{% url 'addressbook:venue-list' %}"
+    class="-mb-px border-b-2 pb-2 {% if active == 'venues' %}border-blue-700 font-semibold text-blue-700{% else %}border-transparent text-gray-600 hover:text-gray-900{% endif %}"
+    {% if active == 'venues' %}aria-current="true"{% endif %}
+  >{% translate "Lieux" %}</a>
+  <a
+    href="{% url 'addressbook:contact-list' %}"
+    class="-mb-px border-b-2 pb-2 {% if active == 'contacts' %}border-blue-700 font-semibold text-blue-700{% else %}border-transparent text-gray-600 hover:text-gray-900{% endif %}"
+    {% if active == 'contacts' %}aria-current="true"{% endif %}
+  >{% translate "Contacts" %}</a>
+</div>

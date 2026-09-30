@@ -11,14 +11,14 @@
   >{% translate "Accueil" %}</a>
   <a
     href="{% url 'gigs:list' %}"
-    class="{{ link_class }} {% if view == 'gigs:list' or ns == 'documents' %}{{ active_class }}{% endif %}"
-    {% if view == 'gigs:list' or ns == 'documents' %}aria-current="page"{% endif %}
+    class="{{ link_class }} {% if ns == 'gigs' or ns == 'documents' %}{{ active_class }}{% endif %}"
+    {% if ns == 'gigs' or ns == 'documents' %}aria-current="page"{% endif %}
   >{% translate "Mes dates" %}</a>
   <a
-    href="{% url 'gigs:wizard-show' %}"
-    class="{{ link_class }} {% if ns == 'gigs' and view != 'gigs:list' %}{{ active_class }}{% endif %}"
-    {% if ns == 'gigs' and view != 'gigs:list' %}aria-current="page"{% endif %}
-  >{% translate "Nouvelle date" %}</a>
+    href="{% url 'addressbook:promoter-list' %}"
+    class="{{ link_class }} {% if ns == 'addressbook' %}{{ active_class }}{% endif %}"
+    {% if ns == 'addressbook' %}aria-current="page"{% endif %}
+  >{% translate "Contacts" %}</a>
   <a
     href="{% url 'tenants:profile' %}"
     class="{{ link_class }} {% if ns == 'tenants' %}{{ active_class }}{% endif %}"
