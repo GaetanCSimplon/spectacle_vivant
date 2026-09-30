@@ -1,6 +1,6 @@
 # Cahier des charges — SaaS « Gestion Spectacle Vivant »
 
-**Version** : 1.1 — **Date** : 25/09/2026 (mise à jour : renommage `Organization` → `Tenant`, champs du modèle de contrat réel, §14 questions ouvertes)
+**Version** : 1.2 — **Date** : 30/09/2026 (mise à jour : entretien du 28/09 avec le collègue, note de cadrage abonnement, modèle de données Projet/Spectacle proposé, §14 étendu à Q8-Q13)
 **Statut** : à valider après la Phase 0 (entretiens avec de vrais utilisateurs) et après réponses du §14
 **Documents liés** : `CLAUDE.md`, `01-guide-architecture.md`, `02-guide-metier.md`, `04-feuille-de-route.md`
 
@@ -25,6 +25,8 @@ Fournir une application web **radicalement simple**, mobile-first, permettant à
 
 ### 1.5 Modèle économique
 SaaS B2B freemium : gratuit jusqu'à **3 dates par an**, puis abonnement mensuel/annuel bas. Le paiement en ligne est prévu en v1 ; le quota est prévu dès le MVP dans le modèle de données.
+
+⚠️ **À arbitrer (Q9, §14)** : la note de cadrage technique transmise le 29/09 par le collègue propose un modèle différent — deux formules payantes dès le départ (« Essentiel » / « Collectif », distinguées par nombre d'utilisateurs, quota de signatures, accès à la feuille de route, à la comptabilité de gestion et à la facturation électronique conforme), sans palier gratuit. Ce document ne remplace pas encore ce cahier des charges : **le modèle freemium ci-dessus reste la référence tant que le choix n'est pas confirmé**, mais la grille tarifaire (§5.1 de la feuille de route) ne doit pas être développée avant cette décision.
 
 ### 1.6 Principes directeurs
 1. **Simplicité avant richesse** : prise en main en moins de 5 minutes ; onboarding en moins de 10 minutes.
@@ -83,18 +85,18 @@ Un utilisateur = une structure en MVP (modèle `Membership` prêt pour plusieurs
 - **F-01 Inscription** par e-mail + mot de passe, confirmation d'e-mail. *CA : un nouvel utilisateur reçoit un e-mail et peut se connecter après confirmation.*
 - **F-02 Connexion / déconnexion / mot de passe oublié.**
 - **F-03 Onboarding guidé** (≤ 5 écrans) : nom de la structure, forme juridique, SIRET (optionnel), régime de TVA, premier spectacle, première date. *CA : un utilisateur de test obtient un contrat PDF en moins de 10 minutes.*
-- **F-04 Fiche « Ma structure »** : nom, forme juridique (association, micro-entreprise, société, CAE, autre), adresse, SIRET, régime de TVA, n° de TVA, IBAN, n° de licence/récépissé (optionnel), logo. *CA : ces infos apparaissent dans les contrats et factures.*
+- **F-04 Fiche « Ma structure »** : nom, forme juridique (association, micro-entreprise, société, CAE, autre), adresse, SIRET, **code APE** *(demandé le 28/09)*, régime de TVA, n° de TVA, IBAN, n° de licence/récépissé (optionnel), logo. *CA : ces infos apparaissent dans les contrats et factures.*
 - **F-05 Isolation** : un utilisateur ne voit et ne modifie jamais les données d'une autre structure. *CA : tests automatisés d'isolation sur chaque modèle et chaque vue.*
 
 ### 4.2 Carnet d'adresses (M1)
 - **F-10** CRUD `Promoter` (nom, type, SIRET, adresse de facturation, e-mail, téléphone, notes).
 - **F-11** CRUD `Venue` (nom, adresse, jauge, informations d'accès, notes).
-- **F-12** CRUD `Contact` rattaché à un `Promoter` ou à un `Venue` (nom, rôle, e-mail, téléphone).
+- **F-12** CRUD `Contact` rattaché à un `Promoter` ou à un `Venue` (nom, rôle, e-mail, téléphone). *Rôles usuels suggérés (28/09) : Accueil, Technique, Comm' — texte libre en MVP.*
 - **F-13** Recherche en direct (HTMX) sur les trois listes. *CA : la liste se filtre en < 500 ms après la saisie.*
 - **F-14** Création à la volée depuis le formulaire d'une date (« + Nouvel organisateur »).
 
 ### 4.3 Spectacles (M2)
-- **F-20** CRUD `Show` : titre, description, durée, effectif, fiche technique (texte + fichier PDF optionnel), prix habituel (indicatif).
+- **F-20** CRUD `Show` : titre, description, durée, effectif, fiche technique (texte + fichier PDF optionnel), prix habituel (indicatif), **lien EPK** *(press-kit électronique, demandé le 28/09)*.
 
 ### 4.4 Dates (M3)
 - **F-30 Création guidée d'une date** (wizard) : spectacle → organisateur → lieu → date/horaires → prix et conditions → récapitulatif.
@@ -104,7 +106,7 @@ Un utilisateur = une structure en MVP (modèle `Membership` prêt pour plusieurs
 - **F-34 Liste des dates** avec filtres (statut, mois, spectacle) via HTMX.
 - **F-35 Vue calendrier mensuel** (dates colorées par statut).
 - **F-36 Annulation** : une date annulée est conservée (historique), exclue des totaux à venir.
-- **F-37 Quota freemium** : le nombre de dates de l'année est comptabilisé ; le blocage se fait en v1.
+- **F-37 Quota freemium** : le nombre de dates de l'année est comptabilisé ; le blocage se fait en v1. *(Voir Q9, §14 — dépend du modèle économique retenu.)*
 
 ### 4.5 Contrat de cession (M4)
 - **F-40** Génération d'un PDF de contrat depuis une date (données de la structure, de l'organisateur, du lieu, de la date, prix, conditions).
@@ -120,7 +122,9 @@ Un utilisateur = une structure en MVP (modèle `Membership` prêt pour plusieurs
 - **F-53** Statuts : `draft` → `issued` → `paid` ; `cancelled` par avoir uniquement. Une facture `issued` n'est plus modifiable.
 - **F-54** Avoir : facture négative liée à la facture d'origine.
 - **F-55** PDF avec mentions obligatoires et snapshot des infos légales à l'émission.
-- **F-56** Mention de TVA selon le régime (assujetti, franchise en base, non assujetti). ⚠️ *Textes à valider par un expert-comptable.*
+- **F-56** Mention de TVA selon le régime (assujetti, franchise en base, non assujetti). ⚠️ *Textes à valider par un expert-comptable — voir aussi Q8 et Q13, §14.* ⚠️ **Nuance signalée par la note de cadrage du 29/09** : « sans TVA facturée » (ex. franchise en base) et « non assujetti à la TVA » (ex. association hors champ) sont **deux cas juridiquement distincts**, à ne pas confondre dans les mentions générées — impacte directement Q8 (article 293B) et Q13.
+- **F-57** *(29/09)* Distinction entre **recette prévue** (prix convenu au contrat), **recette facturée** (montant des factures émises) et **recette encaissée** (paiements reçus) : ces trois montants peuvent différer (ex. avoir, facture partielle) et doivent rester consultables séparément, pas fusionnés en un seul chiffre. Le tableau de bord (F-74) et le bilan par date (F-73) s'appuient sur cette distinction.
+- **F-58** *(29/09)* Affichage des montants en **euros entiers arrondis** dans les vues de synthèse (tableau de bord, listes), mais **stockage et calculs au centime près** (`Decimal`, cohérent avec RG-10) : l'arrondi est un choix d'affichage, jamais de stockage.
 
 ### 4.7 Feuille de route (M6)
 - **F-60** Éditeur de feuille de route par date : créneaux horaires (arrivée, balances, repas, concert, départ…), contacts sur place, hébergement, repas, notes, membres de l'équipe.
@@ -216,16 +220,18 @@ Multi-tenant par **base partagée avec clé `tenant`**. Détails : `01-guide-arc
 
 ## 9. Modèle de données (MVP)
 
-> Tous les modèles marqués (T) héritent de `TenantOwnedModel` (FK `organization`).
+> Tous les modèles marqués (T) héritent de `TenantOwnedModel` (FK `tenant`).
 
 **User** : email (login), first_name, last_name.
-**Tenant** *(anciennement `Organization`)* : name, legal_form, address, siret, licence_number, representative_name, representative_role, contract_party_label (`producteur`/`artiste` — détermine la formulation utilisée dans le contrat), vat_regime, vat_number, iban, logo, plan, created_at.
+**Tenant** *(anciennement `Organization`)* : name, legal_form, address, siret, **code_ape** (code APE/INSEE — nouveau champ demandé le 28/09, distinct de l'ancien champ ambigu « APA », voir Q11), licence_number, representative_name, representative_role, jurisdiction_city (ville du tribunal compétent, art. 8 du contrat), contract_party_label (`producteur`/`artiste` — détermine la formulation utilisée dans le contrat), vat_regime, vat_number, iban, logo, plan, created_at.
 **Membership** : user, tenant, role (`owner`/`member`). Unique (user, tenant).
 
-**Show (T)** : title, group_name (nom du groupe/artiste, distinct du titre du spectacle), description, performers (distribution, texte libre), duration_minutes (« Durée du Set »), crew_size, tech_sheet_text, tech_sheet_file, rider_file (fiche d'exigences artiste/hospitalité, distincte de la fiche technique), indicative_price, sacem_number (« N° SACEM »), sacem_object_number (« N° d'objet »).
+**Show (T)** : title, group_name (nom du groupe/artiste, distinct du titre du spectacle), description, performers (distribution, texte libre), duration_minutes (« Durée du Set »), crew_size, tech_sheet_text, tech_sheet_file, rider_file (fiche d'exigences artiste/hospitalité, distincte de la fiche technique), epk_url (lien vers le press-kit électronique — demandé le 28/09), indicative_price, sacem_number (« N° SACEM »), sacem_object_number (« N° d'objet »).
 **Promoter (T)** : name, kind, siret, licence_number, representative_name, representative_role, billing_address, email, phone, notes.
 **Venue (T)** : name, address, capacity (« Jauge Max »), access_info, notes.
-**Contact (T)** : name, role, email, phone, promoter (nullable) **ou** venue (nullable) — contrainte : exactement un des deux.
+**Contact (T)** : name, role (rôles usuels observés côté métier : Accueil, Technique, Comm' — texte libre en MVP, pas d'`enum` fermé), email, phone, promoter (nullable) **ou** venue (nullable) — contrainte : exactement un des deux.
+
+> **Non retenu dans ce modèle MVP** (voir Q10, §14) : le document « Refonte de la base Projet – Spectacle » du 29/09 propose de remplacer `Show` par une hiérarchie `Projet` → `Spectacle` → `Spectacle_version` → `Representation`, avec un référentiel `Personne` réutilisable et un `Distribution_type` (casting par défaut, copié — pas référencé — sur chaque représentation). C'est un modèle plus riche, pertinent pour des compagnies gérant plusieurs versions d'un même spectacle, mais il représenterait une refonte du cœur déjà développé (`Show`/`Gig`, CRUD en cours). **Traité comme une évolution v1/v2 candidate, pas comme une modification du modèle MVP**, tant que ce n'est pas explicitement tranché.
 
 **Gig (T)** : show, promoter, venue (nullable), date, status, price_excl_tax, vat_rate, deposit_percent, option_expires_on, conditions, notes, get_in_time, soundcheck_time (« Balances »), performance_time (« Passage »), crew_headcount (« Nb Participants », pour repas/hébergement), is_free (« Concert Gratuit »), ticket_price (« Prix des places » — voir RG-12), invitations_count (nombre d'invitations dues, variable), signing_place (« Fait à … »).
 **GigMember (T)** : gig, name, role, phone, email.
@@ -241,6 +247,8 @@ Multi-tenant par **base partagée avec clé `tenant`**. Détails : `01-guide-arc
 
 **Payment (T)** : invoice, amount, date, method.
 **Expense (T)** : gig, category, label, amount, date, receipt_file.
+
+> *(non prévu au MVP actuel, à confirmer via Q12 §14)* Annuaire des salariés/intermittents rattaché au `Tenant`, avec possibilité de le lier à un `Show` donné — proposé le 28/09, pas encore modélisé.
 
 ---
 
@@ -297,7 +305,7 @@ Code source (dépôt Git), application déployée (staging et production), docum
 
 ---
 
-## 14. Questions ouvertes (issues du document de logique métier du 2026-09-25)
+## 14. Questions ouvertes (issues du document de logique métier du 2026-09-25, complétées par l'entretien du 28/09 et le point d'étape du 30/09)
 
 Le document « Logique métier – Cycle de vie d'un spectacle » fourni par le collègue décrit un périmètre plus large que le MVP défini ci-dessus. **Tant que les réponses ci-dessous ne sont pas obtenues, le périmètre du §2 (MVP/v1/v2/hors périmètre) reste la référence pour le développement.**
 
@@ -312,3 +320,17 @@ Le document « Logique métier – Cycle de vie d'un spectacle » fourni par le 
 | Q7 | Contrat couvrant plusieurs dates | Les tableurs de suivi (`contrat.xlsx`, `date_representation.xlsx`) montrent qu'un contrat peut lister plusieurs représentations (tournée négociée en un seul accord) | Un `Contract` est lié à **une seule** `Gig` — cohérent avec le vrai contrat déjà reçu (une seule date) | À garder en tête pour v1/v2 si des tournées multi-dates doivent être couvertes par un contrat unique ; aucun changement nécessaire pour le MVP |
 
 **Recommandation** : traiter Q2 et Q5 en priorité (impact direct sur le modèle de données du contrat, déjà en cours de développement) ; Q4 en priorité également, car sa réponse conditionne fortement la charge de travail restante et le niveau de risque juridique du projet. Q7 ne nécessite aucune décision immédiate.
+
+### Questions complémentaires (entretien du 28/09 et point d'étape du 30/09)
+
+| # | Sujet | Contexte | Question à trancher |
+|---|---|---|---|
+| Q8 | ⚠️ Clause TVA du contrat | Le collègue avait explicitement demandé de **conserver** la mention « Nécitge 2000 et non assujetti à la TVA : article 293b du CGI ». Le développement l'a retirée en la prenant pour un reliquat de template (« Nécitge 2000 » ne se rattache à rien d'identifié). | Cette suppression était-elle correcte, ou faut-il la restaurer ? Si elle doit être restaurée, sous quelle forme (le sens exact de la mention doit être clarifié) ? |
+| Q9 | Modèle économique : freemium ou abonnement à deux formules | La note de cadrage technique du 29/09 propose deux formules payantes (« Essentiel » / « Collectif », avec une matrice de fonctionnalités par formule) au lieu du modèle « gratuit jusqu'à 3 dates/an » actuel (§1.5). | Confirmer si ce modèle remplace le freemium, et si oui figer la matrice de fonctionnalités par formule avant de développer la grille tarifaire (Phase 5.1). |
+| Q10 | Modèle de données Projet/Spectacle/Version | Le document du 29/09 propose une hiérarchie `Projet` → `Spectacle` → `Spectacle_version` → `Representation` plus riche que le `Show`/`Gig` actuel (déjà développé). | Adopter cette hiérarchie maintenant (refonte), la traiter comme évolution v1/v2, ou n'en reprendre que certains éléments (ex. `Personne` réutilisable) ? |
+| Q11 | Signification exacte de « APA » | Le cahier des charges et le contrat mentionnaient un champ « Siret/APA » ambigu ; le champ a été simplifié en « SIRET » seul, et un champ `code_ape` (code INSEE) a été ajouté séparément suite à la demande du 28/09. | Confirmer que « APA » ne désignait rien d'autre que ce qui a été couvert, sinon préciser ce qui manque. |
+| Q12 | Nouvelles fonctionnalités proposées le 28/09 | Auto-remplissage d'un formulaire en ligne envoyé à l'organisateur pour ses propres informations contractuelles (cf. exemple bord-pro.base44.app) ; connexion bidirectionnelle avec Google Calendar (en plus de l'export iCal déjà prévu en v1, §2.2) ; annuaire des salariés/intermittents rattaché à la structure (et éventuellement à un spectacle). | Ces trois idées sont-elles à inscrire en v1/v2 (voir feuille de route §5.7), ou certaines sont-elles prioritaires ? |
+| Q13 | Questions techniques du contrat listées dans le point d'étape du 30/09 | Date du contrat vs date de signature ; l'article 293B du CGI convient-il aussi bien au cas « non assujetti » qu'au cas « franchise en base » (voir aussi F-56) ; nombre d'invitations par défaut ; ville du tribunal compétent (par structure ou fixe — voir `Tenant.jurisdiction_city`, déjà modélisé) ; qui relira le contrat avant la Phase 4. | Réponses à obtenir du collègue et/ou du futur relecteur professionnel — voir aussi Phase 0 de la feuille de route. |
+| Q14 | Ordre de livraison de la v1 (note de cadrage du 29/09) | La note technique propose 3 lots : **Lot 1** = tout le périmètre vendable de la formule « Essentiel » ; **Lot 2** = « Collectif » sans la facturation électronique conforme (affichée « bientôt incluse ») ; **Lot 3** = facturation électronique conforme, seulement une fois le prestataire, le flux et le coût validés. Règle explicite : **ne jamais qualifier la facturation électronique d'« incluse » avant des tests réels du flux complet.** | À confirmer comme trame de la Phase 5 (`docs/04-feuille-de-route.md` §5.1-5.2), dépend de Q9 (formules retenues). |
+
+**Recommandation complémentaire** : traiter **Q8 en priorité absolue** (le contrat généré aujourd'hui contredit une instruction explicite du collègue) ; Q9 et Q10 conditionnent des décisions structurantes (modèle de données, tarification) à ne pas prendre à la légère vu l'investissement déjà réalisé sur le MVP actuel — les traiter comme des choix produit à valider avec le collègue avant tout développement, pas comme de simples précisions ; Q11, Q13 et Q14 sont plus légères et peuvent être répondues au fil de l'eau.

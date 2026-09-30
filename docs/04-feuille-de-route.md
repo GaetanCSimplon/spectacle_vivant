@@ -41,6 +41,8 @@ Avant de coder : propose un plan (fichiers, modèles, tests) et attends mon acco
 
 > **Renommage du 2026-09-25** : `Organization` → `Tenant` dans tout le projet (modèle, champ FK, middleware `request.tenant`, mixin, app `organizations` → `tenants`). Les tâches déjà cochées ci-dessous utilisaient l'ancien nom au moment où elles ont été faites ; le texte a été mis à jour pour refléter le nom actuel, sans que ça change ce qui a été livré.
 
+> **Mise à jour du 2026-09-30** : intégration de l'entretien du 28/09 avec le collègue, de sa note de cadrage technique (modèle d'abonnement à deux formules) et de sa proposition de modèle de données Projet/Spectacle. Les ajouts additifs (code APE, rôles de contact, lien EPK, idées v1/v2) sont intégrés directement ci-dessous, marqués *(28/09)*. Les décisions structurantes (modèle économique, hiérarchie Projet/Spectacle, clause TVA du contrat) sont marquées ⚠️ et **ne sont pas développées tant qu'elles ne sont pas tranchées** — voir le tableau « Décisions à prendre » et `docs/03-cahier-des-charges.md` §14 (Q8-Q13).
+
 ---
 
 ## Phase 0 — Validation métier (semaine 0, sans code)
@@ -50,12 +52,13 @@ Avant de coder : propose un plan (fichiers, modèles, tests) et attends mon acco
 - [ ] Lire `02-guide-metier.md`.
 - [ ] Lister 10 à 15 personnes à contacter (artistes, groupes, associations, tourneurs, un comptable ou une CAE si possible) via ton réseau, réseaux sociaux, salles locales, groupes Facebook de musiciens.
 - [ ] Mener **5 entretiens** de 30 min avec la trame de la section 5 du guide métier. Enregistrer (avec accord) ou prendre des notes.
-- [x] Récupérer des **exemples réels** : contrat de cession, document de logique métier, modèles de données de suivi (obtenus du collègue, 2026-09-25).
+- [x] Récupérer des **exemples réels** : contrat de cession, document de logique métier, modèles de données de suivi (obtenus du collègue, 2026-09-25) ; entretien complémentaire, note de cadrage technique et modèle de données Projet/Spectacle (obtenus le 2026-09-28/29).
 - [ ] Repérer 2 à 3 **modèles de contrats de cession de référence** (organismes professionnels, syndicats) et vérifier **leurs conditions de réutilisation** — le modèle reçu du collègue n'a pas encore été validé par un professionnel, voir point suivant.
 - [ ] Identifier **un professionnel relecteur** (juriste, expert-comptable, CAE, association d'artistes) pour valider contrat et mentions de facture.
-- [ ] **Obtenir les réponses du collègue aux questions ouvertes Q1-Q7** (`docs/03-cahier-des-charges.md` §14) : CRM de prospection, types de contrat, suivi temps réel, paie des intermittents, déclarations SACEM, capitalisation, contrats multi-dates.
+- [ ] **Obtenir les réponses du collègue aux questions ouvertes Q1-Q13** (`docs/03-cahier-des-charges.md` §14) : CRM de prospection, types de contrat, suivi temps réel, paie des intermittents, déclarations SACEM, capitalisation, contrats multi-dates, **+ Q8-Q13 issues de l'entretien du 28/09** (clause TVA retirée par erreur possible, modèle économique à deux formules, hiérarchie Projet/Spectacle, etc.).
+- [ ] ⚠️ **Trancher en priorité Q8** : confirmer si la suppression de la mention « Nécitge 2000 et non assujetti à la TVA : article 293b du CGI » dans le contrat (faite lors du nettoyage des coquilles du template) doit être annulée — le collègue avait explicitement demandé de la conserver.
 - [ ] Rédiger une synthèse d'une page : 3 problèmes principaux, 3 fonctionnalités les plus demandées, vocabulaire noté, prix acceptable.
-- [x] Mettre à jour `03-cahier-des-charges.md` si les entretiens changent le périmètre — *mis à jour au fil des documents reçus du collègue (contrat, logique métier, tableurs de suivi) ; à revoir une fois les 5 entretiens artistes réellement menés.*
+- [x] Mettre à jour `03-cahier-des-charges.md` si les entretiens changent le périmètre — *mis à jour au fil des documents reçus du collègue (contrat, logique métier, tableurs de suivi, entretien du 28/09, note de cadrage) ; à revoir une fois les 5 entretiens artistes réellement menés.*
 - [ ] **Décider** : go / go modifié / stop.
 
 **Livrable** : synthèse des entretiens + 2 modèles de contrat + contact d'un relecteur.
@@ -148,8 +151,11 @@ Avant de coder : propose un plan (fichiers, modèles, tests) et attends mon acco
 - [x] Template HTML/CSS du contrat (A4, marges, pagination, en-tête/pied de page). — `templates/documents/contract_pdf.html`, pagination via `@page { @bottom-center }`.
 - [x] Service `generate_contract_pdf(gig)` avec snapshot des infos des parties. — pas de nouveaux champs de snapshot sur `Contract` : une fois généré, le PDF stocké dans `pdf_file` est figé (jamais régénéré si `status == signed`, conformément à RG-08) ; c'est le PDF lui-même qui fait office de snapshot pour le MVP.
 - [x] Vue de téléchargement + aperçu. Tests : contient les bons noms, montants, dates ; formats français (date, euros). — `documents:contract-preview` / `documents:contract-download`, isolation testée (404 sur le gig d'un autre tenant).
-- [ ] **Mise à jour du template** avec le vrai modèle de contrat reçu du métier (2026-09-25) : nouveaux champs `Tenant.contract_party_label` (« producteur » vs « artiste »), `Gig.invitations_count`, `Gig.signing_place`, `Contract.signatory_name`/`signatory_role`, et règle RG-12 (concert gratuit → prix des places à 0 automatiquement). Détail des champs dans `docs/03-cahier-des-charges.md` §9 et §5. Peut se faire avant ou après la fusion sur `main`, au choix.
+- [x] **Mise à jour du template** avec les nouveaux champs du modèle de contrat reçu du métier (2026-09-25) : `Tenant.contract_party_label` (défaut « artiste »), `Show.group_name`/`performers`/`rider_file`, `Gig.invitations_count`/`signing_place`/`is_free`/`ticket_price`, `Contract.signatory_name`/`signatory_role`, et règle RG-12 (dans `Gig.save()`). — Le template affiche le libellé de la partie, le lieu de signature, les invitations et le signataire. **Pas encore fait** : reprendre la formulation exacte du contrat du métier (à faire avec le texte sous les yeux), afficher `group_name`/`performers` dans l'objet du contrat, et exposer ces champs dans les formulaires (wizard, Sprints 3.2/3.3/3.4 : pour l'instant seulement via l'admin).
+- [x] **Template du contrat aligné sur le vrai modèle du métier** (2026-09-25, 9 articles). Nouveaux champs : `Tenant.licence_number`/`representative_name`/`representative_role`/`jurisdiction_city` (ville du tribunal, art. 8), mêmes champs de représentant et de licence sur `Promoter`, `Venue.capacity`, `Show.sacem_number`/`sacem_object_number`, `Gig.get_in_time`/`soundcheck_time`/`performance_time`/`crew_headcount`. Tout champ vide s'affiche en « …… » pour être complété à la main. Coquilles du modèle corrigées (« ORGANISTAEUR », « hébéerments », « Nécitge 2000 » retiré). ⚠️ **Voir Q8, `docs/03-cahier-des-charges.md` §14** : le collègue avait explicitement demandé de conserver la mention « Nécitge 2000 » — sa suppression n'était pas confirmée par lui, à trancher avant toute nouvelle retouche du contrat. Le régime de TVA « assujetti » n'est pas géré (TVA laissée en pointillés) : à traiter au Sprint 3.5. Logo de la structure non repris (Sprint 3.1). **À demander au collègue : que signifie « APA » dans « Siret / APA » ?** (on n'affiche que le SIRET en attendant — voir aussi Q11, §14, sur le champ `code_ape` distinct.)
+- [x] **Formulaire « Compléter la date »** (2026-09-25) : page unique `dates/<id>/contrat/completer/` (`documents:contract-complete`), atteinte depuis l'écran « Date créée ». Un seul bouton « Enregistrer » pour 6 sections (date, spectacle, lieu, organisateur, ma structure, signature), enregistrées dans une transaction (tout ou rien). Tous les champs sont facultatifs (vide = pointillés dans le contrat). La section « Ma structure » est **réservée au rôle `owner`** ; un contrat `signé` n'est plus modifiable (RG-08). — **Provisoire** : la section « Ma structure » sera retirée de ce formulaire quand la page « Ma structure » du Sprint 3.1 existera. `rider_file` et `performers` restent pour le Sprint 3.2. **Testé à la main dans le navigateur (2026-09-25)** : rendu à 375 px, grisage du prix pour un concert gratuit, remplissage et pré-remplissage des champs, isolation entre structures, section « Ma structure » non modifiable par un `member`, contrat `signé` figé et refusé à la modification.
 - [ ] Ne retirer le filigrane « gabarit provisoire » qu'une fois le contrat validé par le relecteur professionnel (Phase 0 puis confirmation en Phase 4).
+- [ ] *(signalé manquant dans le point d'étape du 30/09)* Logo de la structure (`Tenant.logo`) non encore affiché sur le PDF du contrat — dépend aussi de la page « Ma structure » complète (Sprint 3.1).
 
 ### 2.4 Test utilisateur
 - [ ] Déployer sur staging.
@@ -170,20 +176,23 @@ Avant de coder : propose un plan (fichiers, modèles, tests) et attends mon acco
 **Objectif** : compléter les fonctionnalités du périmètre MVP. Le travail est découpé en **sprints d'environ une semaine**, chacun livrant quelque chose d'utilisable et déployé.
 
 ### Sprint 3.1 — Comptes, onboarding, structure, navigation
-- [ ] Navigation principale (5 entrées max) : responsive (menu bas ou burger sur mobile).
+- [x] Page « Mes dates » (`gigs:list`, `/dates/`) : dates à venir (les plus proches d'abord) puis passées, chaque ligne ouvre l'écran « Date créée ». Isolation testée (2026-09-25). Lien depuis l'accueil ; la navigation principale vient dans la PR suivante.
+- [x] Navigation principale (5 entrées max) : responsive (menu bas ou burger sur mobile). — Fait (2026-09-25) : barre basse sur mobile, liens dans l'en-tête dès `sm`, lien actif marqué. 3 entrées pour l'instant (Accueil, Mes dates, Nouvelle date) ; « Ma structure » sera ajoutée avec sa page. Composant `templates/components/_nav.html`.
 - [ ] Confirmation d'e-mail activée ; e-mails transactionnels via le prestataire choisi ; expéditeur et domaine configurés.
-- [ ] **Onboarding guidé** (≤ 5 écrans) : structure → statut juridique → TVA → premier spectacle → première date.
-- [ ] Page « Ma structure » complète (infos légales, IBAN, logo, licence). Textes d'aide.
-- [ ] Gestion du régime de TVA : assujetti / franchise en base / non assujetti (mentions à valider).
-- [ ] Tests : onboarding, création automatique de `Tenant` + `Membership(owner)`.
+- [x] **Onboarding guidé** (2026-09-28) : un seul écran (`bienvenue/`, `tenants-onboarding`) — nom, forme juridique, régime de TVA — qui crée le `Tenant` et le `Membership(owner)`, puis redirige vers le wizard de date existant plutôt que de dupliquer ses étapes (spectacle/date restent gérés par le wizard). Tout utilisateur connecté sans structure est redirigé automatiquement vers cet écran par `OnboardingRequiredMiddleware` (exemptions : admin, allauth, statiques, l'écran lui-même). Aucun nouveau champ sur `Tenant` à cette étape : aucune migration.
+- [x] Page « Ma structure » (2026-09-25) : `ma-structure/` (`tenants:profile`), 4ᵉ entrée du menu. Propriétaire = modification ; membre = lecture seule (POST refusé en 403). Section provisoire retirée du formulaire « Compléter la date » (remplacée par un lien). **Reste à faire** (avec les factures / le stockage S3) : `vat_number`, `iban`, logo, forme juridique en liste de choix, et **`code_ape`** *(nouveau champ demandé le 28/09, code INSEE, distinct de l'ancien « APA »)*.
+- [ ] Gestion du régime de TVA : assujetti / franchise en base / non assujetti (mentions à valider — voir aussi Q8 et Q13, §14 du cahier des charges).
+- [x] Tests : onboarding, création automatique de `Tenant` + `Membership(owner)` (2026-09-28).
 
 ### Sprint 3.2 — Carnet d'adresses et spectacles
-- [ ] CRUD complet : `Promoter`, `Venue`, `Contact` (avec contrainte : rattaché à l'un **ou** l'autre).
+- [ ] CRUD complet : `Promoter`, `Venue`, `Contact` (avec contrainte : rattaché à l'un **ou** l'autre). — Modèle `Contact` fait (2026-09-28) : contrainte base (`CheckConstraint`) + validation (`clean()`) que le tenant du contact correspond à celui de son organisateur/lieu, test d'isolation. **CRUD `Promoter` fait** (2026-09-28) : liste, création, modification, fiche de détail (contacts + historique des dates via `Gig.promoter`), suppression bloquée si l'organisateur est utilisé par une date (`on_delete=PROTECT`, déjà en place depuis la Phase 2, message d'erreur ajouté côté vue). Au passage, correctif sur `TenantScopedMixin` : `form_valid` plantait sur `DeleteView` (son formulaire n'a pas de `.instance`), corrigé + testé. **CRUD `Venue` fait** (2026-09-28) : même principe que `Promoter` (liste, création, modification, fiche de détail avec contacts + historique via `Gig.venue`, suppression bloquée par `on_delete=PROTECT`), en réutilisant le mixin de redirection factorisé. **Reste à faire** : CRUD `Contact`, `Show`.
+- [ ] Champ `role` du `Contact` : prévoir des suggestions pour les rôles usuels du métier (Accueil, Technique, Comm' — demandé le 28/09), sans figer un `enum` fermé en MVP.
 - [ ] Recherche en direct HTMX sur les listes (debounce, fragment de liste).
 - [ ] Fiches de détail : un organisateur affiche ses contacts et l'historique de ses dates.
-- [ ] CRUD `Show` avec fiche technique (texte + PDF optionnel), nom du groupe distinct du titre du spectacle, distribution, rider.
+- [ ] CRUD `Show` avec fiche technique (texte + PDF optionnel), nom du groupe distinct du titre du spectacle, distribution, rider, **lien EPK** *(demandé le 28/09)*.
 - [ ] Suppression sécurisée (empêcher de supprimer un organisateur utilisé, ou archiver).
 - [ ] Tests (CRUD, isolation, contrainte Contact, recherche).
+- [ ] *(non prévu au MVP actuel, à confirmer via Q12 §14)* Annuaire des salariés/intermittents rattaché à la structure, avec possibilité de le lier à un spectacle donné.
 
 ### Sprint 3.3 — Dates : statuts, liste, calendrier, détail
 - [ ] Statuts `option/confirmed/signed/cancelled` avec **transitions contrôlées** dans un service.
@@ -228,7 +237,8 @@ Avant de coder : propose un plan (fichiers, modèles, tests) et attends mon acco
 - [ ] `Payment` et `Expense` avec formulaires rapides (HTMX).
 - [ ] Mise à jour automatique du statut de facture selon les paiements.
 - [ ] Catégories de dépenses.
-- [ ] Bilan par date (facturé / encaissé / dépensé / résultat).
+- [ ] Bilan par date (facturé / encaissé / dépensé / résultat) — **distinguer recette prévue (prix du contrat) / facturée / encaissée** (F-57, `docs/03-cahier-des-charges.md` §4.8, demandé le 29/09), pas un chiffre unique.
+- [ ] Affichage des montants de synthèse en euros entiers arrondis, stockage et calculs au centime près (F-58, demandé le 29/09).
 - [ ] Tableau de bord global : totaux annuels, factures en retard, dates sans contrat, prochaines dates.
 - [ ] **Export CSV** (`;`, UTF-8 BOM) : recettes, dépenses, factures ; test d'ouverture dans Excel.
 - [ ] Tests : calculs, exports, isolation, cas limites (paiement partiel, surpaiement).
@@ -280,7 +290,7 @@ Avant de coder : propose un plan (fichiers, modèles, tests) et attends mon acco
 **Objectif** : ouvrir à un public plus large et facturer. L'**ordre** doit être revu selon les retours de la bêta.
 
 ### 5.1 Abonnement et quotas (priorité haute)
-- [ ] Choisir la grille tarifaire (gratuit jusqu'à 3 dates/an, puis mensuel/annuel).
+- [ ] Choisir la grille tarifaire — **⚠️ deux modèles concurrents à trancher (Q9, `docs/03-cahier-des-charges.md` §14)** : soit le freemium initial (gratuit jusqu'à 3 dates/an, puis mensuel/annuel), soit les deux formules payantes « Essentiel »/« Collectif » proposées le 29/09 (sans palier gratuit, avec matrice de fonctionnalités par formule). Ne pas développer cette section avant la décision.
 - [ ] Intégrer Stripe (Checkout + webhooks), gestion de la facturation des abonnés, résiliation.
 - [ ] Appliquer le quota : blocage doux à la 4ᵉ date avec message clair et invitation à s'abonner.
 - [ ] Conditions générales de vente.
@@ -289,6 +299,7 @@ Avant de coder : propose un plan (fichiers, modèles, tests) et attends mon acco
 - [ ] Étudier les **plateformes agréées** et leurs API ; choisir l'option (génération Factur-X + envoi via une PA, ou partenariat).
 - [ ] Générer des factures au format **Factur-X** ; ajouter les nouvelles mentions requises (dont SIREN du client).
 - [ ] Gestion des statuts de cycle de vie côté plateforme.
+- [ ] ⚠️ **Ordre de livraison proposé le 29/09 (Q14, `docs/03-cahier-des-charges.md` §14)** : Lot 1 = périmètre vendable de la formule « Essentiel » ; Lot 2 = « Collectif » **sans** la facturation électronique conforme (affichée « bientôt incluse ») ; Lot 3 = facturation électronique conforme, seulement une fois prestataire/flux/coût validés. **Ne jamais annoncer la facturation électronique comme « incluse » avant des tests réels du flux complet.**
 
 ### 5.3 Signature électronique
 - [ ] Choisir un prestataire ; intégrer envoi, signature, récupération du PDF signé et du certificat.
@@ -301,10 +312,12 @@ Avant de coder : propose un plan (fichiers, modèles, tests) et attends mon acco
 
 ### 5.5 Confort et partage
 - [ ] Export **iCal** (lien d'abonnement à l'agenda).
+- [ ] *(idée du 28/09, à confirmer — Q12 §14)* Connexion bidirectionnelle avec Google Calendar, au-delà du simple export iCal.
 - [ ] **PWA** de la feuille de route : mode hors-ligne, installation sur l'écran d'accueil.
 - [ ] Invitation de membres (rôle `member`) et **invités en lecture**.
 - [ ] Bibliothèque de documents types.
 - [ ] Modèles de contrats supplémentaires.
+- [ ] *(idée du 28/09, à confirmer — Q12 §14)* Formulaire en ligne envoyé à l'organisateur pour qu'il renseigne lui-même ses informations contractuelles (auto-remplissage), inspiré de bord-pro.base44.app.
 
 ### 5.6 Exploitation
 - [ ] Supervision et alertes ; procédure d'incident ; sauvegardes surveillées.
@@ -316,6 +329,7 @@ Avant de coder : propose un plan (fichiers, modèles, tests) et attends mon acco
 - [ ] Carte des dates et calcul des trajets (OpenStreetMap + service d'itinéraire).
 - [ ] Statistiques avancées, import de données, éventuelle app mobile.
 - [ ] Contrat couvrant plusieurs dates (tournée en un seul accord) — voir Q7, `docs/03-cahier-des-charges.md` §14.
+- [ ] *(à arbitrer — Q10, §14)* Refonte du modèle `Show` vers une hiérarchie `Projet` → `Spectacle` → `Spectacle_version` → `Representation` avec référentiel `Personne` réutilisable, si confirmée utile au-delà du MVP actuel.
 
 ---
 
@@ -325,10 +339,15 @@ Avant de coder : propose un plan (fichiers, modèles, tests) et attends mon acco
 |---|---|---|
 | Nom du produit et nom de domaine | Avant Phase 1 (Scalingo, e-mails) | ☐ |
 | Modèle de contrat de cession (source, droits de réutilisation) | Phase 0 | ☑ *(reçu du collègue, 2026-09-25 ; relecture professionnelle encore à faire)* |
-| Réponses du collègue aux questions ouvertes Q1-Q7 (cahier des charges §14) | Phase 0 | ☐ |
+| Réponses du collègue aux questions ouvertes Q1-Q13 (cahier des charges §14) | Phase 0 | ☐ |
+| ⚠️ Clause « Nécitge 2000 / article 293B » retirée du contrat — à confirmer (Q8) | Immédiat, avant toute autre retouche du contrat | ☐ |
 | Professionnel relecteur (juriste / comptable / CAE) | Phase 0 | ☐ |
 | Statut juridique de **ton** activité (facturation de l'app) | Avant la v1 payante | ☐ |
+| Rôles : seul le `owner` peut modifier la structure. Faut-il un rôle intermédiaire (ex. « gestionnaire ») pour des utilisateurs non propriétaires qui peuvent la modifier ? | Phase 3.1 (invitation de membres : Phase 5.5) | ☐ |
 | Prestataire d'e-mails transactionnels | Phase 3.1 | ☐ |
+| Navigation principale limitée à 5 entrées (Accueil, Mes dates, Nouvelle date, Ma structure + 1) : où loger l'accès au carnet d'adresses (Organisateurs/Lieux/Contacts) et aux spectacles ? Pour l'instant `/organisateurs/` n'est accessible que par URL directe, pas de lien dans le menu. | Sprint 3.2 | ☐ |
+| Modèle économique : freemium (3 dates gratuites) ou formules Essentiel/Collectif (Q9) | Avant Phase 5.1 | ☐ |
+| Adoption ou non de la hiérarchie Projet/Spectacle/Version proposée le 29/09 (Q10) | Avant toute refonte du modèle `Show` | ☐ |
 | Bucket S3 européen (Scaleway, OVH…) | Phase 3.4 | ☐ |
 | Politique de conservation des données | Phase 3.8 | ☐ |
 | Grille tarifaire | Phase 4 | ☐ |
