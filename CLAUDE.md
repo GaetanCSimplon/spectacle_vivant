@@ -86,7 +86,8 @@ Une app = un domaine métier. Ne pas créer d'app supplémentaire sans en parler
 - Le test `apps/core/tests/test_tenant_coverage.py` échoue si un modèle `TenantOwnedModel` n'a pas de test d'isolation.
 
 ### 6.2 Documents financiers et contractuels
-- Les montants sont en `DecimalField` (jamais `float`).
+- Les montants sont en `DecimalField` (jamais `float`), stockés et calculés **au centime près** ; l'arrondi à l'euro entier est un choix d'affichage réservé aux vues de synthèse (tableau de bord, listes), jamais au stockage (F-58).
+- Recette **prévue** (prix du contrat), **facturée** (montant émis) et **encaissée** (paiements reçus) sont trois montants distincts à garder consultables séparément, jamais fusionnés (F-57).
 - Une facture **émise** est **immuable** : correction par avoir, jamais par modification.
 - Numérotation des factures : séquentielle, **sans trou**, par tenant et par année, calculée dans une transaction avec verrou (`select_for_update`).
 - Les infos légales (nom, SIRET, TVA, adresse…) sont **copiées dans le document au moment de l'émission** (snapshot), pas lues dynamiquement.
@@ -138,6 +139,7 @@ Calcul de charges sociales GUSO/intermittence, carte et temps de trajet, connect
 
 ## 11. État actuel
 
-- Phase en cours : **Phase 0 / Phase 2** — voir `docs/04-feuille-de-route.md`.
-- Un vrai modèle de contrat de cession et un document de logique métier ont été fournis par le métier. Le contrat (cas cession simple) est aligné avec le périmètre MVP ; le document de logique métier décrit un périmètre plus large (CRM de prospection, coréalisation, location de salle, paie des intermittents, déclarations SACEM/SACD). **Ces extensions restent hors du MVP tant qu'elles n'ont pas été explicitement confirmées** — voir `docs/03-cahier-des-charges.md` §14 (Questions ouvertes).
+- Phase en cours : **Phase 2 terminée / Phase 3 en cours** — voir `docs/04-feuille-de-route.md`. Acquis à ce stade : onboarding, page « Ma structure », navigation principale, CRUD `Promoter`/`Venue`/`Contact` (partiel), formulaire « Compléter la date », génération du contrat PDF alignée sur le vrai modèle du métier. Pas encore déployé (pas de compte Scalingo).
+- Un vrai modèle de contrat de cession et un document de logique métier ont été fournis par le métier, puis complétés le 2026-09-28/29 par un entretien, un modèle de données plus riche (hiérarchie Projet/Spectacle/Version) et une note de cadrage technique (abonnement à deux niveaux). Le contrat (cas cession simple) reste aligné avec le périmètre MVP ; les extensions de périmètre (CRM, hiérarchie Projet/Spectacle, types de contrat multiples, paie intermittents, déclarations SACEM) **restent hors du MVP tant qu'elles n'ont pas été explicitement confirmées** — voir `docs/03-cahier-des-charges.md` §14 (Questions ouvertes, Q1-Q13).
+- ⚠️ **Point à trancher en priorité** : le collègue avait demandé de conserver la mention « Nécitge 2000 et non assujetti à la TVA : article 293b du CGI » dans le contrat ; elle a été retirée pendant le nettoyage du template (coquilles corrigées) en la prenant pour un reliquat. Voir Q8 en §14 — ne pas modifier à nouveau le contrat sur ce point tant que ce n'est pas tranché avec le collègue.
 - Décisions ouvertes : voir la section « Décisions à prendre » de la feuille de route.
