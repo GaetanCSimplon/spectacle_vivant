@@ -19,12 +19,6 @@ from .forms import (
 from .models import Contract
 
 
-class ContractReadyView(TenantScopedMixin, View):
-    def get(self, request, gig_id):
-        gig = get_object_or_404(Gig, pk=gig_id, tenant=request.tenant)
-        return render(request, "documents/contract_ready.html", {"gig": gig})
-
-
 class ContractPreviewView(TenantScopedMixin, View):
     def get(self, request, gig_id):
         gig = get_object_or_404(Gig, pk=gig_id, tenant=request.tenant)
@@ -79,7 +73,7 @@ class ContractCompleteView(TenantScopedMixin, View):
             self.request,
             _("Ce contrat est signé : ses informations ne peuvent plus être modifiées."),
         )
-        return redirect("documents:contract-ready", gig_id=self.gig.pk)
+        return redirect("gigs:detail", pk=self.gig.pk)
 
     def get(self, request, gig_id):
         self.load(gig_id)
@@ -101,4 +95,4 @@ class ContractCompleteView(TenantScopedMixin, View):
             for form in forms.values():
                 form.save()
         messages.success(request, _("Les informations ont bien été enregistrées."))
-        return redirect("documents:contract-ready", gig_id=self.gig.pk)
+        return redirect("gigs:detail", pk=self.gig.pk)

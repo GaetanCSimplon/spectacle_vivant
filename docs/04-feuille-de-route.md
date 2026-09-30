@@ -196,14 +196,14 @@ Avant de coder : propose un plan (fichiers, modèles, tests) et attends mon acco
 - [ ] *(non prévu au MVP actuel, à confirmer via Q12 §14)* Annuaire des salariés/intermittents rattaché à la structure, avec possibilité de le lier à un spectacle donné.
 
 ### Sprint 3.3 — Dates : statuts, liste, calendrier, détail
-- [ ] Statuts `option/confirmed/signed/cancelled` avec **transitions contrôlées** dans un service.
+- [x] Statuts `option/confirmed/signed/cancelled` avec **transitions contrôlées** dans un service. — Fait (2026-09-30) : `gigs/services.py` (`change_status`, `reactivate_gig`, `InvalidTransition`), ligne relue sous verrou (`select_for_update`) pour qu'un double clic ne rejoue pas une transition périmée. Le passage à `signed` est autorisé par le service mais **aucun bouton n'est exposé** : il arrivera au Sprint 3.4 avec le marquage « signé » du contrat (qui fige le PDF, RG-08). Réactivation d'une date annulée = retour en `option` (RG-04).
 - [ ] Date de fin d'option ; mise en évidence des options qui expirent.
-- [ ] Page de **détail d'une date** (tableau de bord de la date) avec blocs : infos, documents, feuille de route, paiements, dépenses, « prochaine action ».
+- [ ] Page de **détail d'une date** (tableau de bord de la date) avec blocs : infos, documents, feuille de route, paiements, dépenses, « prochaine action ». — **Commencé** (2026-09-30, `gigs:detail`) : infos, statut, « prochaine action » selon le statut, documents (contrat). L'écran provisoire « Date créée » (`documents:contract-ready`) est supprimé : le wizard et « Mes dates » mènent au détail. Les blocs feuille de route / paiements / dépenses seront ajoutés avec leurs sprints (3.6, 3.7), pas de bloc vide d'ici là.
 - [ ] Liste filtrable (statut, mois, spectacle) par HTMX.
 - [ ] Vue calendrier mensuel.
-- [ ] Annulation d'une date (avec conservation de l'historique).
+- [x] Annulation d'une date (avec conservation de l'historique). — Page de confirmation puis statut `cancelled` ; la date reste consultable, jamais supprimée ; bouton « Réactiver » (2026-09-30). L'exclusion des totaux à venir viendra avec les filtres de la liste.
 - [ ] Comptage des dates de l'année (prépare le quota freemium).
-- [ ] Tests : transitions valides/invalides, filtres, isolation.
+- [ ] Tests : transitions valides/invalides, filtres, isolation. — transitions et isolation faites (PR statuts) ; filtres à venir.
 
 ### Sprint 3.4 — Contrats
 - [ ] Modèle de contrat finalisé avec **conditions particulières** éditables.

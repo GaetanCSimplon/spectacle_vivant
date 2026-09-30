@@ -57,6 +57,7 @@ def test_full_wizard_creates_a_gig(client):
     assert response.status_code == 302
 
     gig = Gig.objects.get(tenant=tenant)
+    assert response.url == reverse("gigs:detail", args=[gig.pk])
     assert gig.show == show
     assert gig.promoter == promoter
     assert gig.venue == venue

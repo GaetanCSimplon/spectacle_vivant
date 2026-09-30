@@ -73,11 +73,11 @@ def test_complete_page_shows_every_section(client):
     assert reverse("tenants:profile") in content
 
 
-def test_ready_page_links_to_the_complete_form(client):
+def test_gig_detail_links_to_the_complete_form(client):
     tenant = _login(client)
     gig = GigFactory(tenant=tenant)
 
-    response = client.get(reverse("documents:contract-ready", args=[gig.pk]))
+    response = client.get(reverse("gigs:detail", args=[gig.pk]))
 
     assert _url(gig) in response.content.decode()
 
@@ -89,7 +89,7 @@ def test_saving_updates_every_related_object(client):
     response = client.post(_url(gig), _payload())
 
     assert response.status_code == 302
-    assert response.url == reverse("documents:contract-ready", args=[gig.pk])
+    assert response.url == reverse("gigs:detail", args=[gig.pk])
     gig.refresh_from_db()
     gig.show.refresh_from_db()
     gig.venue.refresh_from_db()
