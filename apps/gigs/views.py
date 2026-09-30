@@ -7,11 +7,12 @@ from django.utils.translation import gettext_lazy as _
 from django.views import View
 from django.views.generic import DetailView, ListView
 
-from apps.core.views import TenantScopedMixin
+from apps.core.views import TenantScopedMixin, wants_fragment
 
 from . import services
 from .forms import (
     GigDetailsStepForm,
+    GigFilterForm,
     GigPromoterStepForm,
     GigShowStepForm,
     GigVenueStepForm,
@@ -258,20 +259,41 @@ class GigWizardRecapView(GigWizardMixin, View):
 
 
 class GigListView(TenantScopedMixin, ListView):
-    """ "Mes dates": upcoming gigs first (soonest on top), then past ones."""
+    """ "Mes dates": upcoming gigs first (soonest on top), then past ones, then cancelled ones."""
 
     model = Gig
     template_name = "gigs/gig_list.html"
+    results_template_name = "gigs/_gig_results.html"
+
+    def get_filter_form(self):
+        if not hasattr(self, "_filter_form"):
+            self._filter_form = GigFilterForm(self.request.GET, tenant=self.request.tenant)
+        return self._filter_form
 
     def get_queryset(self):
-        return super().get_queryset().select_related("show", "venue", "promoter")
+        queryset = super().get_queryset().select_related("show", "venue", "promoter")
+        return self.get_filter_form().apply(queryset)
+
+    def get_template_names(self):
+        if wants_fragment(self.request):
+            return [self.results_template_name]
+        return super().get_template_names()
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         today = timezone.localdate()
         gigs = context["object_list"]
-        context["upcoming_gigs"] = gigs.filter(date__gte=today).order_by("date")
-        context["past_gigs"] = gigs.filter(date__lt=today).order_by("-date")
+        live, cancelled = (
+            gigs.exclude(status=Gig.Status.CANCELLED),
+            gigs.filter(status=Gig.Status.CANCELLED),
+        )
+        context["upcoming_gigs"] = live.filter(date__gte=today).order_by("date")
+        context["past_gigs"] = live.filter(date__lt=today).order_by("-date")
+        context["cancelled_gigs"] = cancelled.order_by("-date")
+        context["filter_form"] = self.get_filter_form()
+        context["has_any_gig"] = Gig.objects.filter(tenant=self.request.tenant).exists()
+        context["year"] = today.year
+        context["year_count"] = services.count_gigs_for_year(self.request.tenant, today.year)
         return context
 
 

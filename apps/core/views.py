@@ -30,6 +30,16 @@ class TenantScopedMixin(LoginRequiredMixin):
         return super().form_valid(form)
 
 
+def wants_fragment(request):
+    """True for a live HTMX request that must get only a page fragment.
+
+    A boosted link is a full page navigation, and so is the browser Back
+    button when htmx restores history: both need the whole page.
+    """
+    htmx = request.htmx
+    return bool(htmx) and not htmx.boosted and not htmx.history_restore_request
+
+
 class SearchListMixin:
     """Filter a ListView with `?q=` (case-insensitive, on `search_fields`).
 
@@ -61,9 +71,7 @@ class SearchListMixin:
         return context
 
     def get_template_names(self):
-        # A boosted link is a full page navigation, not a live-search request.
-        htmx = self.request.htmx
-        if htmx and not htmx.boosted and self.results_template_name:
+        if wants_fragment(self.request) and self.results_template_name:
             return [self.results_template_name]
         return super().get_template_names()
 

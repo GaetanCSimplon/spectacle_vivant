@@ -30,6 +30,15 @@ def create_gig_from_wizard_data(tenant, data):
     )
 
 
+def count_gigs_for_year(tenant, year):
+    """Number of gigs dated in `year`, cancelled ones excluded (prepares the freemium quota)."""
+    return (
+        Gig.objects.filter(tenant=tenant, date__year=year)
+        .exclude(status=Gig.Status.CANCELLED)
+        .count()
+    )
+
+
 class InvalidTransition(Exception):
     """Raised when a status change is not allowed from the gig's current status."""
 
