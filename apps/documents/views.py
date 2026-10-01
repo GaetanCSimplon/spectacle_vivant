@@ -1,6 +1,6 @@
 from django.contrib import messages
 from django.db import transaction
-from django.http import FileResponse, HttpResponse
+from django.http import FileResponse, Http404, HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils.translation import gettext_lazy as _
 from django.views import View
@@ -14,6 +14,7 @@ from .forms import (
     GigCompletionForm,
     PromoterCompletionForm,
     ShowCompletionForm,
+    SignedPdfForm,
     VenueCompletionForm,
 )
 from .models import Contract, ContractVersion
@@ -44,14 +45,91 @@ class ContractHistoryView(TenantScopedMixin, View):
         gig = get_object_or_404(Gig, pk=gig_id, tenant=request.tenant)
         contract = Contract.objects.filter(gig=gig, tenant=request.tenant).first()
         versions = contract.versions.select_related("created_by") if contract else []
+        signed = bool(contract and contract.status == Contract.Status.SIGNED)
         context = {
             "gig": gig,
             "contract": contract,
             "versions": versions,
-            "can_generate": gig.status != Gig.Status.CANCELLED
-            and not (contract and contract.status == Contract.Status.SIGNED),
+            "can_generate": gig.status != Gig.Status.CANCELLED and not signed,
+            "can_sign": gig.status == Gig.Status.CONFIRMED
+            and bool(contract and contract.latest_version)
+            and not signed,
+            "can_add_signed_pdf": signed and not contract.signed_pdf,
+            "signed_pdf_form": SignedPdfForm(),
         }
         return render(request, self.template_name, context)
+
+
+class ContractSignView(TenantScopedMixin, View):
+    """Confirmation page, then freeze the latest version as the signed contract."""
+
+    template_name = "documents/contract_sign.html"
+
+    def load(self, gig_id):
+        self.gig = get_object_or_404(Gig, pk=gig_id, tenant=self.request.tenant)
+        self.contract = Contract.objects.filter(gig=self.gig, tenant=self.request.tenant).first()
+
+    def render_page(self, form):
+        context = {"gig": self.gig, "contract": self.contract, "form": form}
+        return render(self.request, self.template_name, context)
+
+    def refuse(self, error):
+        messages.error(self.request, error)
+        return redirect("documents:contract-history", gig_id=self.gig.pk)
+
+    def get(self, request, gig_id):
+        self.load(gig_id)
+        if not (self.contract and self.contract.latest_version):
+            return self.refuse(_("Générez d'abord le contrat avant de le marquer signé."))
+        if self.contract.status == Contract.Status.SIGNED:
+            return self.refuse(_("Ce contrat est déjà signé."))
+        return self.render_page(SignedPdfForm())
+
+    def post(self, request, gig_id):
+        self.load(gig_id)
+        form = SignedPdfForm(request.POST, request.FILES)
+        if not form.is_valid():
+            return (
+                self.render_page(form) if self.contract else self.refuse(_("Contrat introuvable."))
+            )
+        try:
+            services.mark_contract_signed(self.gig, form.cleaned_data["signed_pdf"])
+        except services.ContractSigningError as error:
+            return self.refuse(error.args[0])
+        messages.success(request, _("Le contrat est marqué signé : son PDF est figé."))
+        return redirect("documents:contract-history", gig_id=self.gig.pk)
+
+
+class ContractSignedPdfView(TenantScopedMixin, View):
+    """Download the scan of the signed contract (GET) or add it afterwards (POST)."""
+
+    def get(self, request, gig_id):
+        gig = get_object_or_404(Gig, pk=gig_id, tenant=request.tenant)
+        contract = Contract.objects.filter(gig=gig, tenant=request.tenant).first()
+        if not (contract and contract.signed_pdf):
+            raise Http404
+        return FileResponse(
+            contract.signed_pdf.open("rb"),
+            content_type="application/pdf",
+            as_attachment=True,
+            filename=f"{contract.reference}-signe.pdf",
+        )
+
+    def post(self, request, gig_id):
+        gig = get_object_or_404(Gig, pk=gig_id, tenant=request.tenant)
+        form = SignedPdfForm(request.POST, request.FILES)
+        if not form.is_valid():
+            messages.error(request, " ".join(form.errors["signed_pdf"]))
+        elif not form.cleaned_data["signed_pdf"]:
+            messages.error(request, _("Choisissez le PDF signé à ajouter."))
+        else:
+            try:
+                services.attach_signed_pdf(gig, form.cleaned_data["signed_pdf"])
+            except services.ContractSigningError as error:
+                messages.error(request, error.args[0])
+            else:
+                messages.success(request, _("Le PDF signé est enregistré."))
+        return redirect("documents:contract-history", gig_id=gig.pk)
 
 
 class ContractGenerateView(TenantScopedMixin, View):
@@ -97,7 +175,7 @@ def no_contract_response(request, gig):
 
 
 def stored_contract_response(request, gig, contract):
-    version = contract.latest_version if contract else None
+    version = (contract.signed_version or contract.latest_version) if contract else None
     if version is None:
         return no_contract_response(request, gig)
     return FileResponse(version.pdf_file.open("rb"), content_type="application/pdf")

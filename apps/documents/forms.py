@@ -89,3 +89,24 @@ class ContractCompletionForm(forms.ModelForm):
         help_texts = {
             "signatory_name": _("À remplir seulement si le signataire n'est pas le représentant."),
         }
+
+
+MAX_SIGNED_PDF_SIZE = 10 * 1024 * 1024
+
+
+class SignedPdfForm(forms.Form):
+    """The scan of the signed contract: a real PDF of 10 Mo at most."""
+
+    signed_pdf = forms.FileField(label=_("PDF signé"), required=False)
+
+    def clean_signed_pdf(self):
+        file = self.cleaned_data["signed_pdf"]
+        if not file:
+            return None
+        if file.size > MAX_SIGNED_PDF_SIZE:
+            raise forms.ValidationError(_("Le fichier est trop lourd (10 Mo au maximum)."))
+        # The extension proves nothing: check that the content really is a PDF.
+        if file.read(5) != b"%PDF-":
+            raise forms.ValidationError(_("Le fichier doit être un PDF."))
+        file.seek(0)
+        return file

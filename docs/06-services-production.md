@@ -49,7 +49,7 @@
   2. créer une clé d'accès limitée à ce bucket ;
   3. renseigner dans Scalingo : nom du bucket, région, URL du service (endpoint), clé d'accès, clé secrète.
 - **Coût indicatif** : quelques centimes à quelques euros par mois pour ce volume.
-- **Côté code** : `django-storages` est déjà dans les dépendances. Je code le branchement au Sprint 3.4 (local en dev, S3 en prod).
+- **Côté code** : `django-storages` est déjà dans les dépendances. Le branchement est fait (Sprint 3.4) : disque local en dev, S3 privé en prod.
 
 ## 4. Envoi d'e-mails
 
@@ -123,7 +123,7 @@
 | `DJANGO_SECRET_KEY` | générée par toi, longue et aléatoire |
 | `DJANGO_ALLOWED_HOSTS` | ton domaine |
 | `DATABASE_URL` | addon PostgreSQL Scalingo |
-| variables du bucket (nom, région, endpoint, clé d'accès, clé secrète) | prestataire S3, noms définis au Sprint 3.4 |
+| `S3_BUCKET_NAME`, `S3_ENDPOINT_URL`, `S3_REGION_NAME`, `S3_ACCESS_KEY_ID`, `S3_SECRET_ACCESS_KEY` | prestataire S3 (noms définis, voir `.env.example`) |
 | variables d'e-mail (SMTP ou clé API) | prestataire d'e-mails, noms définis à la mise en place |
 | `SENTRY_DSN` | Sentry |
 

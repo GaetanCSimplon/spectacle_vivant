@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}Marquer le contrat signé — Spectacle Vivant{% endblock %}
+
+{% block page_content %}
+  <h1 class="mb-1 text-lg font-semibold">{% translate "Marquer le contrat signé" %}</h1>
+  <p class="mb-4 text-sm text-gray-600">
+    {{ gig.show.title }} — {{ gig.date|date:"d/m/Y" }} · {{ contract.reference }}
+  </p>
+
+  <div class="card mb-6 space-y-2 text-sm">
+    <p>
+      {% blocktranslate with number=contract.latest_version.number created=contract.latest_version.created_at|date:"d/m/Y H:i" %}
+        Vous allez figer la <strong>version {{ number }}</strong> du {{ created }}.
+        Elle ne pourra plus être modifiée ni régénérée.
+      {% endblocktranslate %}
+    </p>
+    <p>{% translate "Je confirme que ce contrat a été signé en dehors de l'application." %}</p>
+  </div>
+
+  <form method="post" enctype="multipart/form-data" class="space-y-4">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <p class="text-sm text-gray-600">
+      {% translate "Le PDF signé est facultatif : vous pourrez l'ajouter plus tard. PDF uniquement, 10 Mo au maximum." %}
+    </p>
+    <div class="flex flex-col gap-3">
+      <button type="submit" class="btn btn-primary btn-block">{% translate "Confirmer : le contrat est signé" %}</button>
+      <a href="{% url 'documents:contract-history' gig.pk %}" class="text-center text-sm text-gray-500 hover:text-gray-700">
+        {% translate "Annuler" %}
+      </a>
+    </div>
+  </form>
+{% endblock %}
