@@ -1,5 +1,5 @@
 {% load i18n %}
-<li>
+<li id="gig-{{ gig.pk }}">
   <a
     href="{% url 'gigs:detail' gig.pk %}"
     class="card card-link flex items-center justify-between gap-3"

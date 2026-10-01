@@ -11,6 +11,8 @@
     </a>
   </div>
 
+  {% include "gigs/_view_tabs.html" with active="list" %}
+
   {% if has_any_gig %}
     <p class="mb-4 text-sm text-gray-600">
       {% blocktranslate count counter=year_count %}{{ counter }} date en {{ year }}{% plural %}{{ counter }} dates en {{ year }}{% endblocktranslate %}

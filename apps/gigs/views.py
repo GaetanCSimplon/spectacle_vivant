@@ -3,9 +3,10 @@ import datetime
 from django.contrib import messages
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
+from django.utils.formats import date_format
 from django.utils.translation import gettext_lazy as _
 from django.views import View
-from django.views.generic import DetailView, ListView
+from django.views.generic import DetailView, ListView, TemplateView
 
 from apps.core.views import TenantScopedMixin, wants_fragment
 
@@ -294,6 +295,40 @@ class GigListView(TenantScopedMixin, ListView):
         context["has_any_gig"] = Gig.objects.filter(tenant=self.request.tenant).exists()
         context["year"] = today.year
         context["year_count"] = services.count_gigs_for_year(self.request.tenant, today.year)
+        return context
+
+
+class GigCalendarView(TenantScopedMixin, TemplateView):
+    """Monthly calendar of "Mes dates": a grid of the month plus the list of its gigs."""
+
+    template_name = "gigs/gig_calendar.html"
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        month_start = services.parse_month(self.request.GET.get("mois"))
+        gigs = (
+            Gig.objects.filter(
+                tenant=self.request.tenant,
+                date__year=month_start.year,
+                date__month=month_start.month,
+            )
+            .select_related("show", "venue", "promoter")
+            .order_by("date", "pk")
+        )
+        previous_month = (month_start - datetime.timedelta(days=1)).replace(day=1)
+        next_month = (month_start + datetime.timedelta(days=32)).replace(day=1)
+        monday = datetime.date(2024, 1, 1)  # a Monday: gives the localized weekday names
+        context.update(
+            month_start=month_start,
+            weeks=services.build_month_grid(month_start, gigs),
+            gigs=gigs,
+            weekdays=[date_format(monday + datetime.timedelta(days=i), "D") for i in range(7)],
+            previous_month=previous_month
+            if previous_month.year in services.CALENDAR_YEARS
+            else None,
+            next_month=next_month if next_month.year in services.CALENDAR_YEARS else None,
+            is_current_month=month_start == timezone.localdate().replace(day=1),
+        )
         return context
 
 

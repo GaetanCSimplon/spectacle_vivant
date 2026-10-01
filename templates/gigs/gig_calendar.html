@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}Calendrier — Spectacle Vivant{% endblock %}
+
+{% block page_content %}
+  <div class="mb-2 flex items-center justify-between">
+    <h1 class="text-xl font-semibold">{% translate "Mes dates" %}</h1>
+    <a href="{% url 'gigs:wizard-show' %}" class="btn btn-primary">
+      {% translate "+ Nouvelle date" %}
+    </a>
+  </div>
+
+  {% include "gigs/_view_tabs.html" with active="calendar" %}
+
+  <div class="mb-3 flex items-center justify-between">
+    {% if previous_month %}
+      <a href="?mois={{ previous_month|date:'Y-m' }}" class="btn btn-secondary" aria-label="{% translate 'Mois précédent' %}">‹</a>
+    {% else %}<span class="w-10"></span>{% endif %}
+    <div class="text-center">
+      <h2 class="text-base font-semibold">{{ month_start|date:"F Y"|capfirst }}</h2>
+      {% if not is_current_month %}
+        <a href="{% url 'gigs:calendar' %}" class="text-xs text-blue-600">{% translate "Revenir à aujourd'hui" %}</a>
+      {% endif %}
+    </div>
+    {% if next_month %}
+      <a href="?mois={{ next_month|date:'Y-m' }}" class="btn btn-secondary" aria-label="{% translate 'Mois suivant' %}">›</a>
+    {% else %}<span class="w-10"></span>{% endif %}
+  </div>
+
+  <div class="mb-2 grid grid-cols-7 gap-1 text-center text-xs font-medium text-gray-500">
+    {% for name in weekdays %}<span>{{ name }}</span>{% endfor %}
+  </div>
+  <div class="mb-3 grid grid-cols-7 gap-1 text-center text-sm">
+    {% for week in weeks %}
+      {% for day in week %}
+        {% if day.gigs %}
+          <a
+            href="{% if day.gigs|length == 1 %}{% url 'gigs:detail' day.gigs.0.pk %}{% else %}#gig-{{ day.gigs.0.pk }}{% endif %}"
+            class="flex min-h-12 flex-col items-center justify-start gap-1 rounded-md border border-gray-200 bg-white py-1 hover:bg-gray-50 {% if day.is_today %}ring-2 ring-blue-500{% endif %}"
+            {% if day.is_today %}aria-current="date"{% endif %}
+          >
+            <span class="font-medium text-gray-900">{{ day.date.day }}</span>
+            <span class="flex flex-wrap justify-center gap-0.5">
+              {% for gig in day.gigs %}{% include "gigs/_status_dot.html" %}{% endfor %}
+            </span>
+            <span class="sr-only">{% for gig in day.gigs %}{{ gig.show.title }}{% if not forloop.last %}, {% endif %}{% endfor %}</span>
+          </a>
+        {% else %}
+          <div
+            class="flex min-h-12 flex-col items-center justify-start rounded-md py-1 {% if day.in_month %}text-gray-700{% else %}text-gray-300{% endif %} {% if day.is_today %}ring-2 ring-blue-500{% endif %}"
+            {% if day.is_today %}aria-current="date"{% endif %}
+          >{{ day.date.day }}</div>
+        {% endif %}
+      {% endfor %}
+    {% endfor %}
+  </div>
+
+  <ul class="mb-6 flex flex-wrap gap-x-4 gap-y-1 text-xs text-gray-600" aria-label="{% translate 'Légende' %}">
+    <li class="flex items-center gap-1"><span class="inline-block h-2 w-2 rounded-full bg-amber-500"></span>{% translate "Option" %}</li>
+    <li class="flex items-center gap-1"><span class="inline-block h-2 w-2 rounded-full bg-blue-600"></span>{% translate "Confirmée" %}</li>
+    <li class="flex items-center gap-1"><span class="inline-block h-2 w-2 rounded-full bg-green-600"></span>{% translate "Signée" %}</li>
+    <li class="flex items-center gap-1"><span class="inline-block h-2 w-2 rounded-full bg-gray-400"></span>{% translate "Annulée" %}</li>
+  </ul>
+
+  {% if gigs %}
+    <h2 class="mb-2 text-sm font-semibold uppercase text-gray-500">{% translate "Dates du mois" %}</h2>
+    <ul class="flex flex-col gap-2">
+      {% for gig in gigs %}{% include "gigs/_gig_row.html" %}{% endfor %}
+    </ul>
+  {% else %}
+    <div class="card">
+      <p>{% blocktranslate with month=month_start|date:"F Y" %}Aucune date en {{ month }}.{% endblocktranslate %}</p>
+    </div>
+  {% endif %}
+{% endblock %}

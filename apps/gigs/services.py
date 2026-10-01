@@ -1,5 +1,10 @@
+import calendar
+import datetime
+from collections import defaultdict
+
 from django.db import transaction
 from django.shortcuts import get_object_or_404
+from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 
 from apps.addressbook.models import Promoter, Venue
@@ -37,6 +42,46 @@ def count_gigs_for_year(tenant, year):
         .exclude(status=Gig.Status.CANCELLED)
         .count()
     )
+
+
+CALENDAR_YEARS = range(2000, 2101)
+
+
+def parse_month(value, today=None):
+    """First day of the month in "YYYY-MM", or of the current month if it is missing or odd."""
+    today = today or timezone.localdate()
+    try:
+        month = datetime.datetime.strptime(value, "%Y-%m").date()
+    except (TypeError, ValueError):
+        return today.replace(day=1)
+    return month if month.year in CALENDAR_YEARS else today.replace(day=1)
+
+
+def build_month_grid(month_start, gigs):
+    """Weeks (Monday first) of `month_start`'s month, each day carrying its gigs.
+
+    Days of the neighbouring months only fill the first and last weeks: they are
+    marked `in_month=False` and never carry gigs.
+    """
+    by_day = defaultdict(list)
+    for gig in gigs:
+        by_day[gig.date].append(gig)
+    today = timezone.localdate()
+    weeks = calendar.Calendar(firstweekday=0).monthdatescalendar(
+        month_start.year, month_start.month
+    )
+    return [
+        [
+            {
+                "date": day,
+                "in_month": day.month == month_start.month,
+                "is_today": day == today,
+                "gigs": by_day.get(day, []) if day.month == month_start.month else [],
+            }
+            for day in week
+        ]
+        for week in weeks
+    ]
 
 
 class InvalidTransition(Exception):
