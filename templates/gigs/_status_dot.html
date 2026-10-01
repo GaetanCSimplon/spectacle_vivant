@@ -1,0 +1,2 @@
+{% comment %}Coloured dot for a gig on the calendar. The text keeps it readable without colours.{% endcomment %}
+<span class="inline-block h-2 w-2 rounded-full {% if gig.status == 'option' %}bg-amber-500{% elif gig.status == 'confirmed' %}bg-blue-600{% elif gig.status == 'signed' %}bg-green-600{% else %}bg-gray-400{% endif %}"><span class="sr-only">{{ gig.get_status_display }}</span></span>

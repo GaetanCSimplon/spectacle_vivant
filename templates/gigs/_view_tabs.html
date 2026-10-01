@@ -1,0 +1,14 @@
+{% load i18n %}
+{% comment %}Switch between the list and the calendar of "Mes dates". `active` = list | calendar.{% endcomment %}
+<div class="mb-4 flex gap-4 border-b border-gray-200 text-sm">
+  <a
+    href="{% url 'gigs:list' %}"
+    class="-mb-px border-b-2 pb-2 {% if active == 'list' %}border-blue-700 font-semibold text-blue-700{% else %}border-transparent text-gray-600 hover:text-gray-900{% endif %}"
+    {% if active == 'list' %}aria-current="true"{% endif %}
+  >{% translate "Liste" %}</a>
+  <a
+    href="{% url 'gigs:calendar' %}"
+    class="-mb-px border-b-2 pb-2 {% if active == 'calendar' %}border-blue-700 font-semibold text-blue-700{% else %}border-transparent text-gray-600 hover:text-gray-900{% endif %}"
+    {% if active == 'calendar' %}aria-current="true"{% endif %}
+  >{% translate "Calendrier" %}</a>
+</div>
