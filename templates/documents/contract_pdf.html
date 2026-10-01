@@ -290,6 +290,13 @@
       </p>
     </section>
 
+    {% if gig.conditions %}
+      <section>
+        <h2>Article 10 — Conditions particulières</h2>
+        <p>{{ gig.conditions|linebreaksbr }}</p>
+      </section>
+    {% endif %}
+
     <p style="margin-top: 30px;">
       Fait à {{ gig.signing_place|default:"……" }} en 2 exemplaires, le {{ today|date:"d F Y" }}.
     </p>
