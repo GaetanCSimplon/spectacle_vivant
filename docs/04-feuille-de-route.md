@@ -41,7 +41,7 @@ Avant de coder : propose un plan (fichiers, modèles, tests) et attends mon acco
 
 > **Renommage du 2026-09-25** : `Organization` → `Tenant` dans tout le projet (modèle, champ FK, middleware `request.tenant`, mixin, app `organizations` → `tenants`). Les tâches déjà cochées ci-dessous utilisaient l'ancien nom au moment où elles ont été faites ; le texte a été mis à jour pour refléter le nom actuel, sans que ça change ce qui a été livré.
 
-> **Mise à jour du 2026-09-30** : intégration de l'entretien du 28/09 avec le collègue, de sa note de cadrage technique (modèle d'abonnement à deux formules) et de sa proposition de modèle de données Projet/Spectacle. Les ajouts additifs (code APE, rôles de contact, lien EPK, idées v1/v2) sont intégrés directement ci-dessous, marqués *(28/09)*. Les décisions structurantes (modèle économique, hiérarchie Projet/Spectacle, clause TVA du contrat) sont marquées ⚠️ et **ne sont pas développées tant qu'elles ne sont pas tranchées** — voir le tableau « Décisions à prendre » et `docs/03-cahier-des-charges.md` §14 (Q8-Q13).
+> **Mise à jour du 2026-09-30** : intégration de l'entretien du 28/09 avec le collègue, de sa note de cadrage technique (modèle d'abonnement à deux formules) et de sa proposition de modèle de données Projet/Spectacle. Les ajouts additifs (code APE, rôles de contact, lien EPK, idées v1/v2) sont intégrés directement ci-dessous, marqués *(28/09)*. Les décisions structurantes (modèle économique, hiérarchie Projet/Spectacle, clause TVA du contrat) sont marquées ⚠️ et **ne sont pas développées tant qu'elles ne sont pas tranchées** — voir le tableau « Décisions à prendre » et `docs/03-cahier-des-charges.md` §14 (Q9-Q15 ; Q8 est tranchée depuis le 2026-10-01).
 
 ---
 
@@ -55,7 +55,7 @@ Avant de coder : propose un plan (fichiers, modèles, tests) et attends mon acco
 - [x] Récupérer des **exemples réels** : contrat de cession, document de logique métier, modèles de données de suivi (obtenus du collègue, 2026-09-25) ; entretien complémentaire, note de cadrage technique et modèle de données Projet/Spectacle (obtenus le 2026-09-28/29).
 - [ ] Repérer 2 à 3 **modèles de contrats de cession de référence** (organismes professionnels, syndicats) et vérifier **leurs conditions de réutilisation** — le modèle reçu du collègue n'a pas encore été validé par un professionnel, voir point suivant.
 - [ ] Identifier **un professionnel relecteur** (juriste, expert-comptable, CAE, association d'artistes) pour valider contrat et mentions de facture.
-- [ ] **Obtenir les réponses du collègue aux questions ouvertes Q1-Q13** (`docs/03-cahier-des-charges.md` §14) : CRM de prospection, types de contrat, suivi temps réel, paie des intermittents, déclarations SACEM, capitalisation, contrats multi-dates, **+ Q8-Q13 issues de l'entretien du 28/09** (clause TVA retirée par erreur possible, modèle économique à deux formules, hiérarchie Projet/Spectacle, etc.).
+- [ ] **Obtenir les réponses du collègue aux questions ouvertes restantes** (`docs/03-cahier-des-charges.md` §14) : CRM de prospection, types de contrat, suivi temps réel, paie des intermittents, déclarations SACEM, capitalisation, contrats multi-dates, **+ Q9-Q15 issues des échanges de fin septembre** (modèle économique à deux formules, hiérarchie Projet/Spectacle, ordre de livraison, etc.). *Q8 est tranchée depuis le 2026-10-01, voir ci-dessous.*
 - [x] **Q8 tranchée (2026-10-01)** : la mention « Nécitge 2000 et non assujetti à la TVA : article 293b du CGI » n'est pas conservée ; la suppression dans le contrat est confirmée.
 - [ ] Rédiger une synthèse d'une page : 3 problèmes principaux, 3 fonctionnalités les plus demandées, vocabulaire noté, prix acceptable.
 - [x] Mettre à jour `03-cahier-des-charges.md` si les entretiens changent le périmètre — *mis à jour au fil des documents reçus du collègue (contrat, logique métier, tableurs de suivi, entretien du 28/09, note de cadrage) ; à revoir une fois les 5 entretiens artistes réellement menés.*
@@ -219,15 +219,9 @@ Avant de coder : propose un plan (fichiers, modèles, tests) et attends mon acco
 - [x] **PR D2 — modèles et services (sans écran)** (2026-10-01) : `Invoice` (acompte / solde / totale / avoir), `Quote`, `DocumentLine`, `DocumentSequence` (migration `documents/0006`) ; services dans `documents/invoicing.py` : totaux en `Decimal` (TVA par taux sur la somme des lignes, arrondi au centime), suggestion d'acompte (`deposit_percent`) et de solde (reste à facturer), émission dans une transaction avec verrou (numéro `F-AAAA-NNNN` sans trou, par tenant et par année ; devis `D-AAAA-NNNN` en série séparée ; avoirs dans la série des factures), instantanés émetteur/client, contrôle des informations manquantes, immutabilité (modèle et lignes), avoirs (négatifs, jamais plus que la facture, annulation de la facture si crédit total). `paid` arrive avec les paiements (Sprint 3.7).
 - [x] **PR D3 — écrans de facturation** (2026-10-01, sans migration) : page « Devis et factures » d'une date (prévu / déjà facturé / reste à facturer HT), création d'une facture d'acompte, de solde ou totale et d'un devis avec lignes suggérées, brouillon éditable (ajout, modification, suppression de lignes en HTMX, totaux mis à jour ; champ TVA affiché seulement pour un tenant assujetti), liste de ce qu'il manque pour émettre, émission avec page de confirmation, suppression d'un brouillon, avoir depuis une facture émise (bouton absent s'il n'y a plus rien à créditer). Document émis en lecture seule, affichant les données figées. URLs de la date regroupées sous `dates/<id>/` (`contrat/…` et `facturation/…`, noms inchangés). Reste : PDF (D4), à tester à la main à 375 px.
 - ⚠️ **Les PDF de facture du MVP ne remplacent pas la plateforme agréée de facturation électronique** (obligation à vérifier avec le relecteur professionnel, calendrier prévu avant 09/2027 : Phase 5). On garde des données structurées (SIRET, TVA par ligne, instantanés) pour pouvoir ajouter le format Factur-X sans refonte. L'application ne doit pas se dire « conforme » avant cette connexion.
-- [ ] Modèles `Quote`, `Invoice`, `DocumentLine`, `InvoiceSequence`.
-- [ ] Création depuis une date avec **suggestion** acompte/solde (selon `deposit_percent`).
-- [ ] Émission : attribution du numéro dans une **transaction avec verrou** ; snapshot des infos légales ; statut `issued`.
-- [ ] **Immutabilité** d'une facture émise (formulaires et vues bloqués, test qui le prouve).
-- [ ] **Avoirs** liés à une facture d'origine.
-- [ ] Calcul des totaux et de la TVA en `Decimal`, arrondis testés.
-- [ ] Mentions légales selon le régime de TVA ; PDF de facture.
+- [ ] **PR D4 — PDF** : mentions légales selon le régime de TVA, PDF de facture, d'avoir et de devis, généré à l'émission et figé. *(à venir)*
 - [ ] **Relecture par le professionnel** (comptable) du PDF de facture.
-- [ ] Tests : numérotation sans trou (y compris concurrence simulée), immutabilité, totaux, avoir.
+- [x] Tests : numérotation sans trou (rollback simulé), immutabilité, totaux et arrondis, avoir, isolation, vues (fait avec D2 et D3). Reste à tester : le PDF (D4).
 
 ### Sprint 3.6 — Feuille de route
 - [ ] Modèles `Roadmap`, `RoadmapSlot`, `Lodging`, `Meal`, `GigMember`.
@@ -334,7 +328,7 @@ Avant de coder : propose un plan (fichiers, modèles, tests) et attends mon acco
 - [ ] Carte des dates et calcul des trajets (OpenStreetMap + service d'itinéraire).
 - [ ] Statistiques avancées, import de données, éventuelle app mobile.
 - [ ] Contrat couvrant plusieurs dates (tournée en un seul accord) — voir Q7, `docs/03-cahier-des-charges.md` §14.
-- [ ] *(à arbitrer — Q10, §14)* Refonte du modèle `Show` vers une hiérarchie `Projet` → `Spectacle` → `Spectacle_version` → `Representation` avec référentiel `Personne` réutilisable, si confirmée utile au-delà du MVP actuel.
+- [ ] *(à arbitrer — Q10, §14)* Refonte du modèle `Show` vers une hiérarchie `Projet` → `Spectacle` → `Spectacle_version` → `Representation` avec référentiel `Personne` réutilisable, si confirmée utile au-delà du MVP actuel — voir `docs/07-modele-spectacle.md` pour le détail des champs.
 
 ---
 
@@ -344,7 +338,7 @@ Avant de coder : propose un plan (fichiers, modèles, tests) et attends mon acco
 |---|---|---|
 | Nom du produit et nom de domaine | Avant Phase 1 (Scalingo, e-mails) | ☐ |
 | Modèle de contrat de cession (source, droits de réutilisation) | Phase 0 | ☑ *(reçu du collègue, 2026-09-25 ; relecture professionnelle encore à faire)* |
-| Réponses du collègue aux questions ouvertes Q1-Q13 (cahier des charges §14) | Phase 0 | ☐ |
+| Réponses du collègue aux questions ouvertes Q1-Q15 (cahier des charges §14) | Phase 0 | ☐ |
 | Clause « Nécitge 2000 / article 293B » retirée du contrat (Q8) — suppression confirmée le 2026-10-01 | — | ☑ |
 | Professionnel relecteur (juriste / comptable / CAE) | Phase 0 | ☐ |
 | Statut juridique de **ton** activité (facturation de l'app) | Avant la v1 payante | ☐ |
@@ -352,7 +346,7 @@ Avant de coder : propose un plan (fichiers, modèles, tests) et attends mon acco
 | Prestataire d'e-mails transactionnels | Phase 3.1 | ☐ |
 | Navigation principale limitée à 5 entrées : où loger le carnet d'adresses et les spectacles ? | Sprint 3.2 | ☑ *(2026-09-30 : Accueil · Mes dates · Contacts · Ma structure, puis + Spectacles ; « Nouvelle date » devient un bouton dans « Mes dates »)* — menu à 5 entrées depuis le CRUD `Show` |
 | Modèle économique : freemium (3 dates gratuites) ou formules Essentiel/Collectif (Q9) | Avant Phase 5.1 | ☐ |
-| Adoption ou non de la hiérarchie Projet/Spectacle/Version proposée le 29/09 (Q10) | Avant toute refonte du modèle `Show` | ☐ |
+| Adoption ou non de la hiérarchie Projet/Spectacle/Version proposée le 29/09 (Q10) — détail dans `docs/07-modele-spectacle.md` | Avant toute refonte du modèle `Show` | ☐ |
 | Bucket S3 européen (Scaleway, OVH…) | Phase 3.4 | ☐ |
 | Politique de conservation des données | Phase 3.8 | ☐ |
 | Grille tarifaire | Phase 4 | ☐ |
