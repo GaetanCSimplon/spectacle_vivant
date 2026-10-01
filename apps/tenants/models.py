@@ -1,6 +1,8 @@
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 
+from .validators import validate_iban
+
 
 class Tenant(models.Model):
     """The tenant: the artist, association or company using the app."""
@@ -36,6 +38,19 @@ class Tenant(models.Model):
             "vérifiez le taux qui s'applique à vos dates. Laissez vide pour l'indiquer "
             "à la main sur le contrat."
         ),
+    )
+    vat_number = models.CharField(
+        _("n° de TVA intracommunautaire"),
+        max_length=20,
+        blank=True,
+        help_text=_("Seulement si vous êtes assujetti à la TVA. Exemple : FR12345678901."),
+    )
+    iban = models.CharField(
+        _("IBAN"),
+        max_length=34,
+        blank=True,
+        validators=[validate_iban],
+        help_text=_("Affiché sur vos factures pour être payé par virement."),
     )
     licence_number = models.CharField(_("n° de licence"), max_length=50, blank=True)
     representative_name = models.CharField(_("représentant légal"), max_length=255, blank=True)

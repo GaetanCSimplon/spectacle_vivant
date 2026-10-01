@@ -1,6 +1,7 @@
 from collections import namedtuple
 from functools import cached_property
 
+from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
@@ -34,6 +35,14 @@ class Gig(TenantOwnedModel):
         _("statut"), max_length=20, choices=Status.choices, default=Status.OPTION
     )
     price = models.DecimalField(_("prix HT"), max_digits=8, decimal_places=2)
+    deposit_percent = models.DecimalField(
+        _("acompte (%)"),
+        max_digits=5,
+        decimal_places=2,
+        default=30,
+        validators=[MinValueValidator(0), MaxValueValidator(100)],
+        help_text=_("Part du prix proposée en facture d'acompte. 30 % par défaut."),
+    )
     conditions = models.TextField(_("conditions particulières"), blank=True)
     get_in_time = models.TimeField(_("heure de get in"), null=True, blank=True)
     soundcheck_time = models.TimeField(_("heure des balances"), null=True, blank=True)
