@@ -63,6 +63,9 @@
 
   <div class="mb-6 flex flex-col gap-3">
     {% if document.is_draft %}
+      <a href="{% url 'documents:document-pdf' gig.pk doc_type document.pk %}" target="_blank" class="btn btn-secondary btn-block">
+        {% translate "Aperçu PDF" %}
+      </a>
       {% if not missing and rows %}
         <a href="{% url 'documents:document-issue' gig.pk doc_type document.pk %}" class="btn btn-primary btn-block">
           {% translate "Émettre" %}
@@ -73,7 +76,12 @@
         {% csrf_token %}
         <button type="submit" class="btn btn-secondary btn-block">{% translate "Supprimer le brouillon" %}</button>
       </form>
-    {% elif is_invoice and can_credit %}
+    {% else %}
+      <a href="{% url 'documents:document-pdf' gig.pk doc_type document.pk %}" class="btn btn-primary btn-block">
+        {% translate "Télécharger le PDF" %}
+      </a>
+    {% endif %}
+    {% if not document.is_draft and is_invoice and can_credit %}
       <form method="post" action="{% url 'documents:credit-note-create' gig.pk document.pk %}">
         {% csrf_token %}
         <button type="submit" class="btn btn-secondary btn-block">{% translate "Créer un avoir" %}</button>
