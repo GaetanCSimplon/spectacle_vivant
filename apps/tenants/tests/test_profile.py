@@ -26,6 +26,8 @@ def _payload(**overrides):
         "address": "1 rue des Arts\n69001 Lyon",
         "vat_regime": "franchise",
         "vat_rate": "",
+        "vat_number": "",
+        "iban": "",
         "licence_number": "L-2",
         "representative_name": "Julie Martin",
         "representative_role": "Présidente",
@@ -188,3 +190,55 @@ def test_a_tenant_id_posted_in_the_form_is_ignored(client):
     other.refresh_from_db()
     assert other.name == "Compagnie B"
     assert Tenant.objects.get(pk=tenant.pk).name == "Compagnie du Soleil"
+
+
+def test_owner_can_set_vat_number_and_iban_which_are_cleaned_up(client):
+    tenant = _login(client)
+
+    response = client.post(
+        URL, _payload(vat_number=" fr 12 345678901 ", iban="fr14 2004 1010 0505 0001 3m02 606")
+    )
+
+    assert response.status_code == 302
+    tenant.refresh_from_db()
+    assert tenant.vat_number == "FR12345678901"
+    assert tenant.iban == "FR1420041010050500013M02606"
+
+
+def test_iban_is_optional(client):
+    tenant = _login(client)
+
+    response = client.post(URL, _payload(iban=""))
+
+    assert response.status_code == 302
+    tenant.refresh_from_db()
+    assert tenant.iban == ""
+
+
+@pytest.mark.parametrize(
+    "iban",
+    [
+        "FR1420041010050500013M02607",  # wrong key
+        "FR14",  # too short
+        "1420041010050500013M02606",  # no country
+        "FR14 2004 1010 0505 0001 3M02 606 !",
+    ],
+)
+def test_a_wrong_iban_is_rejected(client, iban):
+    tenant = _login(client)
+
+    response = client.post(URL, _payload(iban=iban))
+
+    assert response.status_code == 200
+    tenant.refresh_from_db()
+    assert tenant.iban == ""
+
+
+def test_vat_number_and_iban_are_not_leaked_to_another_tenant(client):
+    _login(client)
+    other = TenantFactory(vat_number="FR999", iban="FR1420041010050500013M02606")
+
+    content = client.get(URL).content.decode()
+
+    assert other.vat_number not in content
+    assert other.iban not in content

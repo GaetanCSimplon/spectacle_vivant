@@ -2,6 +2,7 @@ from django import forms
 from django.utils.translation import gettext_lazy as _
 
 from .models import Tenant
+from .validators import normalize_iban
 
 
 class OnboardingForm(forms.ModelForm):
@@ -23,6 +24,8 @@ class TenantProfileForm(forms.ModelForm):
             "address",
             "vat_regime",
             "vat_rate",
+            "vat_number",
+            "iban",
             "licence_number",
             "representative_name",
             "representative_role",
@@ -40,3 +43,9 @@ class TenantProfileForm(forms.ModelForm):
                 "Comment vous êtes nommé dans le contrat : « L'artiste » ou « Le producteur »."
             ),
         }
+
+    def clean_vat_number(self):
+        return "".join(self.cleaned_data["vat_number"].split()).upper()
+
+    def clean_iban(self):
+        return normalize_iban(self.cleaned_data["iban"])

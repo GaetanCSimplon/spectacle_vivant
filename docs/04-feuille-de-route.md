@@ -215,6 +215,8 @@ Avant de coder : propose un plan (fichiers, modèles, tests) et attends mon acco
 - [x] Tests : contenu du PDF, immutabilité après signature, accès protégé aux fichiers (pas d'URL publique devinable).
 
 ### Sprint 3.5 — Devis et factures
+- [x] **PR D1 — prérequis** (2026-10-01) : `Tenant.vat_number` et `Tenant.iban` (IBAN normalisé et contrôlé : format et clé modulo 97) dans « Ma structure » ; `Gig.deposit_percent` (30 % par défaut, modifiable à chaque date dans « Compléter la date ») ; le contrat affiche le n° de TVA pour un tenant assujetti. Migrations `tenants/0005` et `gigs/0005`.
+- ⚠️ **Les PDF de facture du MVP ne remplacent pas la plateforme agréée de facturation électronique** (obligation à vérifier avec le relecteur professionnel, calendrier prévu avant 09/2027 : Phase 5). On garde des données structurées (SIRET, TVA par ligne, instantanés) pour pouvoir ajouter le format Factur-X sans refonte. L'application ne doit pas se dire « conforme » avant cette connexion.
 - [ ] Modèles `Quote`, `Invoice`, `DocumentLine`, `InvoiceSequence`.
 - [ ] Création depuis une date avec **suggestion** acompte/solde (selon `deposit_percent`).
 - [ ] Émission : attribution du numéro dans une **transaction avec verrou** ; snapshot des infos légales ; statut `issued`.

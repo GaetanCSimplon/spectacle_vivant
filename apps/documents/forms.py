@@ -25,6 +25,7 @@ class GigCompletionForm(forms.ModelForm):
             "crew_headcount",
             "invitations_count",
             "signing_place",
+            "deposit_percent",
             "conditions",
             "is_free",
             "ticket_price",
@@ -44,9 +45,15 @@ class GigCompletionForm(forms.ModelForm):
         # A disabled input is not submitted: an empty price simply means 0.
         self.fields["ticket_price"].required = False
         self.fields["invitations_count"].required = False
+        self.fields["deposit_percent"].required = False
         # An option's validity only matters while the gig is still an option.
         if self.instance.status != Gig.Status.OPTION:
             del self.fields["option_expires_on"]
+
+    def clean_deposit_percent(self):
+        # Left empty: keep the current value (30 % for a new gig).
+        value = self.cleaned_data["deposit_percent"]
+        return self.instance.deposit_percent if value is None else value
 
     def clean_invitations_count(self):
         return self.cleaned_data["invitations_count"] or 0

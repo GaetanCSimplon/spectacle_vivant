@@ -35,6 +35,7 @@ def _payload(**overrides):
         "gig-invitations_count": "4",
         "gig-signing_place": "Lyon",
         "gig-ticket_price": "12.00",
+        "gig-deposit_percent": "30",
         "show-group_name": "Les Nocturnes",
         "show-sacem_number": "SAC-1",
         "show-sacem_object_number": "OBJ-2",
@@ -275,3 +276,36 @@ def test_complete_form_saves_the_special_conditions(client):
     assert response.status_code == 302
     gig.refresh_from_db()
     assert gig.conditions == "Repas chaud à l'arrivée"
+
+
+def test_deposit_percent_defaults_to_30_and_can_be_changed_per_gig(client):
+    tenant = _login(client)
+    gig = GigFactory(tenant=tenant)
+    assert gig.deposit_percent == 30
+
+    client.post(_url(gig), _payload(**{"gig-deposit_percent": "40.50"}))
+
+    gig.refresh_from_db()
+    assert gig.deposit_percent == Decimal("40.50")
+
+
+@pytest.mark.parametrize("value", ["-1", "100.01", "abc"])
+def test_invalid_deposit_percent_is_rejected(client, value):
+    tenant = _login(client)
+    gig = GigFactory(tenant=tenant)
+
+    response = client.post(_url(gig), _payload(**{"gig-deposit_percent": value}))
+
+    assert response.status_code == 200
+    gig.refresh_from_db()
+    assert gig.deposit_percent == 30
+
+
+def test_empty_deposit_percent_keeps_the_current_value(client):
+    tenant = _login(client)
+    gig = GigFactory(tenant=tenant, deposit_percent=Decimal("45"))
+
+    client.post(_url(gig), _payload(**{"gig-deposit_percent": ""}))
+
+    gig.refresh_from_db()
+    assert gig.deposit_percent == Decimal("45.00")
