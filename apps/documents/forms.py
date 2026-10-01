@@ -25,11 +25,13 @@ class GigCompletionForm(forms.ModelForm):
             "crew_headcount",
             "invitations_count",
             "signing_place",
+            "conditions",
             "is_free",
             "ticket_price",
         ]
         widgets = {
             "option_expires_on": forms.DateInput(attrs={"type": "date"}, format="%Y-%m-%d"),
+            "conditions": forms.Textarea(attrs={"rows": 4}),
             "get_in_time": _time_widget(),
             "soundcheck_time": _time_widget(),
             "performance_time": _time_widget(),

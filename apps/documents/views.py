@@ -1,6 +1,6 @@
 from django.contrib import messages
 from django.db import transaction
-from django.http import FileResponse
+from django.http import FileResponse, HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils.translation import gettext_lazy as _
 from django.views import View
@@ -20,22 +20,45 @@ from .models import Contract
 
 
 class ContractPreviewView(TenantScopedMixin, View):
+    """Show the contract as it would be generated now, without storing anything.
+
+    A signed or cancelled gig shows its stored PDF instead of a fresh rendering.
+    """
+
     def get(self, request, gig_id):
         gig = get_object_or_404(Gig, pk=gig_id, tenant=request.tenant)
-        contract = services.generate_contract_pdf(gig)
-        return FileResponse(contract.pdf_file.open("rb"), content_type="application/pdf")
+        contract = Contract.objects.filter(gig=gig, tenant=request.tenant).first()
+        frozen = contract and contract.status == Contract.Status.SIGNED
+        if frozen or gig.status == Gig.Status.CANCELLED:
+            return stored_contract_response(request, gig, contract)
+        pdf_bytes = services.render_contract_pdf(gig, contract)
+        return HttpResponse(pdf_bytes, content_type="application/pdf")
 
 
 class ContractDownloadView(TenantScopedMixin, View):
     def get(self, request, gig_id):
         gig = get_object_or_404(Gig, pk=gig_id, tenant=request.tenant)
-        contract = services.generate_contract_pdf(gig)
+        try:
+            contract = services.generate_contract_pdf(gig)
+        except services.ContractNotAvailable:
+            return no_contract_response(request, gig)
         return FileResponse(
             contract.pdf_file.open("rb"),
             content_type="application/pdf",
             as_attachment=True,
             filename=f"contrat-{gig.pk}.pdf",
         )
+
+
+def no_contract_response(request, gig):
+    messages.error(request, _("Cette date est annulée : aucun contrat n'a été généré."))
+    return redirect("gigs:detail", pk=gig.pk)
+
+
+def stored_contract_response(request, gig, contract):
+    if not (contract and contract.pdf_file):
+        return no_contract_response(request, gig)
+    return FileResponse(contract.pdf_file.open("rb"), content_type="application/pdf")
 
 
 class ContractCompleteView(TenantScopedMixin, View):

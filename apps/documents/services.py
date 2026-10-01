@@ -4,6 +4,7 @@ from django.core.files.base import ContentFile
 from django.utils import timezone
 
 from apps.core.services import render_pdf
+from apps.gigs.models import Gig
 from apps.tenants.models import Tenant
 
 from .models import Contract
@@ -24,6 +25,10 @@ PARTY_FORMS = {
         "of": "DE L'ARTISTE",
     },
 }
+
+
+class ContractNotAvailable(Exception):
+    """A contract cannot be produced for a cancelled gig."""
 
 
 def _compute_vat(gig, tenant):
@@ -54,16 +59,28 @@ def build_contract_context(gig, contract=None):
     }
 
 
+def render_contract_pdf(gig, contract=None):
+    """Render the contract PDF bytes without storing anything (used for the preview)."""
+    return render_pdf("documents/contract_pdf.html", build_contract_context(gig, contract))
+
+
 def generate_contract_pdf(gig):
     """Render the contract PDF for a gig and store it on its Contract.
 
     A signed contract keeps its figée PDF: it is never regenerated (RG-08).
+    A cancelled gig gets no new contract: an existing one stays as it is.
     """
-    contract, _created = Contract.objects.get_or_create(gig=gig, tenant=gig.tenant)
-    if contract.status == Contract.Status.SIGNED:
+    contract = Contract.objects.filter(gig=gig, tenant=gig.tenant).first()
+    if contract and contract.status == Contract.Status.SIGNED:
         return contract
+    if gig.status == Gig.Status.CANCELLED:
+        if contract and contract.pdf_file:
+            return contract
+        raise ContractNotAvailable
+    if contract is None:
+        contract = Contract.objects.create(gig=gig, tenant=gig.tenant)
 
-    pdf_bytes = render_pdf("documents/contract_pdf.html", build_contract_context(gig, contract))
+    pdf_bytes = render_contract_pdf(gig, contract)
     contract.pdf_file.save(f"contrat-{gig.pk}.pdf", ContentFile(pdf_bytes), save=False)
     contract.generated_at = timezone.now()
     contract.save()

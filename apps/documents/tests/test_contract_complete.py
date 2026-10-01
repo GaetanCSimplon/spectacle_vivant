@@ -264,3 +264,14 @@ def test_completed_values_end_up_in_the_contract(client):
     assert "numéro SACEM : SAC-1" in text
     assert "capacité de la salle est de 300 places" in text
     assert "Léa Roux, Trésorière" in text
+
+
+def test_complete_form_saves_the_special_conditions(client):
+    tenant = _login(client)
+    gig = GigFactory(tenant=tenant)
+
+    response = client.post(_url(gig), _payload(**{"gig-conditions": "Repas chaud à l'arrivée"}))
+
+    assert response.status_code == 302
+    gig.refresh_from_db()
+    assert gig.conditions == "Repas chaud à l'arrivée"

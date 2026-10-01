@@ -258,3 +258,106 @@ def test_contract_without_optional_fields_still_renders_and_generates_a_pdf():
     assert "N° de licence : ……" in html
     assert "tribunaux de ……" in html
     assert contract.pdf_file.read().startswith(b"%PDF-")
+
+
+def test_contract_shows_the_special_conditions():
+    html = _render(GigFactory(conditions="Loge chauffée\nParking réservé"))
+
+    assert "Conditions particulières" in html
+    assert "Loge chauffée" in html
+    assert "Parking réservé" in html
+
+
+def test_contract_hides_the_special_conditions_article_when_empty():
+    html = _render(GigFactory(conditions=""))
+
+    assert "Conditions particulières" not in html
+
+
+def test_contract_escapes_html_in_the_special_conditions():
+    gig = GigFactory(conditions="<script>alert(1)</script>")
+
+    html = render_to_string("documents/contract_pdf.html", build_contract_context(gig))
+
+    assert "<script>" not in html
+    assert "&lt;script&gt;" in html
+
+
+def _login(client):
+    membership = MembershipFactory()
+    client.force_login(membership.user)
+    return membership.tenant
+
+
+def test_contract_preview_does_not_store_anything(client):
+    tenant = _login(client)
+    gig = GigFactory(tenant=tenant)
+
+    response = client.get(reverse("documents:contract-preview", args=[gig.pk]))
+
+    assert response.content.startswith(b"%PDF-")
+    assert not Contract.objects.filter(gig=gig).exists()
+
+
+def test_contract_preview_leaves_an_existing_draft_file_untouched(client):
+    tenant = _login(client)
+    gig = GigFactory(tenant=tenant)
+    contract = generate_contract_pdf(gig)
+    stored_name = contract.pdf_file.name
+
+    client.get(reverse("documents:contract-preview", args=[gig.pk]))
+
+    contract.refresh_from_db()
+    assert contract.pdf_file.name == stored_name
+
+
+def test_contract_preview_of_a_signed_contract_serves_the_frozen_pdf(client):
+    tenant = _login(client)
+    gig = GigFactory(tenant=tenant)
+    contract = generate_contract_pdf(gig)
+    contract.status = Contract.Status.SIGNED
+    contract.save()
+    frozen_bytes = contract.pdf_file.read()
+    gig.conditions = "Ajoutée après la signature"
+    gig.save()
+
+    response = client.get(reverse("documents:contract-preview", args=[gig.pk]))
+
+    assert response.getvalue() == frozen_bytes
+
+
+def test_cancelled_gig_without_contract_gets_none(client):
+    tenant = _login(client)
+    gig = GigFactory(tenant=tenant, status="cancelled")
+
+    for name in ("contract-preview", "contract-download"):
+        response = client.get(reverse(f"documents:{name}", args=[gig.pk]))
+        assert response.status_code == 302
+
+    assert not Contract.objects.filter(gig=gig).exists()
+
+
+def test_cancelled_gig_keeps_its_existing_contract_downloadable(client):
+    tenant = _login(client)
+    gig = GigFactory(tenant=tenant)
+    contract = generate_contract_pdf(gig)
+    generated_at = contract.generated_at
+    gig.status = "cancelled"
+    gig.save()
+
+    response = client.get(reverse("documents:contract-download", args=[gig.pk]))
+
+    assert response.status_code == 200
+    assert "attachment" in response["Content-Disposition"]
+    contract.refresh_from_db()
+    assert contract.generated_at == generated_at
+
+
+def test_cancelled_gig_hides_the_contract_actions_when_there_is_no_contract(client):
+    tenant = _login(client)
+    gig = GigFactory(tenant=tenant, status="cancelled")
+
+    response = client.get(reverse("gigs:detail", args=[gig.pk]))
+
+    assert "Aperçu du contrat" not in response.content.decode()
+    assert "Compléter la date" not in response.content.decode()
