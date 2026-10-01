@@ -349,6 +349,9 @@ class GigTransitionView(TenantScopedMixin, View):
     def apply(self, gig):
         raise NotImplementedError
 
+    def get_success_message(self, gig):
+        return self.success_message
+
     def post(self, request, pk):
         gig = get_object_or_404(Gig, pk=pk, tenant=request.tenant)
         try:
@@ -356,7 +359,7 @@ class GigTransitionView(TenantScopedMixin, View):
         except services.InvalidTransition as error:
             messages.error(request, error.args[0])
         else:
-            messages.success(request, self.success_message)
+            messages.success(request, self.get_success_message(gig))
         return redirect("gigs:detail", pk=gig.pk)
 
 
@@ -368,10 +371,13 @@ class GigConfirmView(GigTransitionView):
 
 
 class GigReactivateView(GigTransitionView):
-    success_message = _("La date est réactivée : elle repasse en option.")
-
     def apply(self, gig):
         services.reactivate_gig(gig)
+
+    def get_success_message(self, gig):
+        if gig.status == Gig.Status.SIGNED:
+            return _("La date est réactivée : son contrat signé reste valable.")
+        return _("La date est réactivée : elle repasse en option.")
 
 
 class GigCancelView(GigTransitionView):
