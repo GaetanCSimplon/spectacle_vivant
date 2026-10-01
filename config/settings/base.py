@@ -153,8 +153,9 @@ STATICFILES_DIRS = [BASE_DIR / "static"]
 # define our own button/form/card styles instead of the plain "@import tailwindcss" default.
 TAILWIND_CLI_SRC_CSS = "css/source.css"
 
-# Media files (uploaded/generated documents) — local storage in dev,
-# S3 européen via django-storages à partir du Sprint 3.4.
+# Media files (uploaded/generated documents) — local disk in dev, private European
+# S3 bucket in production (see prod.py). They are never served by a /media/ URL:
+# only views that check the tenant send them.
 MEDIA_URL = "media/"
 MEDIA_ROOT = BASE_DIR / "media"
 

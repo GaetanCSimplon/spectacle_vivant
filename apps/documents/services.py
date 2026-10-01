@@ -3,8 +3,10 @@ from decimal import ROUND_HALF_UP, Decimal
 from django.core.files.base import ContentFile
 from django.db import transaction
 from django.utils import timezone
+from django.utils.translation import gettext_lazy as _
 
 from apps.core.services import render_pdf
+from apps.gigs import services as gig_services
 from apps.gigs.models import Gig
 from apps.tenants.models import Tenant
 
@@ -30,6 +32,10 @@ PARTY_FORMS = {
 
 class ContractNotAvailable(Exception):
     """A contract cannot be produced for a cancelled gig."""
+
+
+class ContractSigningError(Exception):
+    """The contract cannot be marked as signed (or get its signed PDF) right now."""
 
 
 def _compute_vat(gig, tenant):
@@ -107,4 +113,48 @@ def generate_contract_pdf(gig, user=None):
             tenant=gig.tenant, contract=contract, number=number, created_by=user
         )
         version.pdf_file.save(f"{contract.reference}-v{number}.pdf", ContentFile(pdf_bytes))
+    return contract
+
+
+def mark_contract_signed(gig, signed_pdf=None):
+    """Freeze the latest version as the signed contract and move the gig to `signed`.
+
+    The signature itself happens outside the app (RG-08: from now on the PDF never
+    changes). Everything happens in one transaction: either the contract and the
+    gig are both signed, or nothing is.
+    """
+    with transaction.atomic():
+        contract = Contract.objects.select_for_update().filter(gig=gig, tenant=gig.tenant).first()
+        if contract is None or contract.latest_version is None:
+            raise ContractSigningError(_("Générez d'abord le contrat avant de le marquer signé."))
+        if contract.status == Contract.Status.SIGNED:
+            raise ContractSigningError(_("Ce contrat est déjà signé."))
+        if gig.status != Gig.Status.CONFIRMED:
+            raise ContractSigningError(
+                _("La date doit être confirmée avant de marquer le contrat signé.")
+            )
+        try:
+            gig_services.change_status(gig, Gig.Status.SIGNED)
+        except gig_services.InvalidTransition as error:
+            raise ContractSigningError(error.args[0]) from error
+
+        contract.status = Contract.Status.SIGNED
+        contract.signed_at = timezone.now()
+        contract.signed_version = contract.latest_version
+        if signed_pdf:
+            contract.signed_pdf = signed_pdf
+        contract.save()
+    return contract
+
+
+def attach_signed_pdf(gig, signed_pdf):
+    """Add the scan of the signed contract afterwards. It is added once, never replaced."""
+    with transaction.atomic():
+        contract = Contract.objects.select_for_update().filter(gig=gig, tenant=gig.tenant).first()
+        if contract is None or contract.status != Contract.Status.SIGNED:
+            raise ContractSigningError(_("Le contrat n'est pas signé."))
+        if contract.signed_pdf:
+            raise ContractSigningError(_("Le PDF signé est déjà enregistré."))
+        contract.signed_pdf = signed_pdf
+        contract.save(update_fields=["signed_pdf"])
     return contract

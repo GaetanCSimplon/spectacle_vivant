@@ -9,6 +9,7 @@ from django.utils.translation import gettext_lazy as _
 
 from apps.addressbook.models import Promoter, Venue
 from apps.catalog.models import Show
+from apps.documents.models import Contract
 
 from .models import Gig
 
@@ -119,12 +120,19 @@ def change_status(gig, new_status):
 
 
 def reactivate_gig(gig):
-    """Explicit reactivation of a cancelled gig: it goes back to `option` (RG-04)."""
+    """Explicit reactivation of a cancelled gig: it goes back to `option` (RG-04).
+
+    Exception: a gig whose contract is signed goes back to `signed`, since the frozen
+    contract is still valid (RG-08).
+    """
     with transaction.atomic():
         locked = _lock_gig(gig)
         if locked.status != Gig.Status.CANCELLED:
             raise InvalidTransition(_("Seule une date annulée peut être réactivée."))
-        locked.status = Gig.Status.OPTION
+        has_signed_contract = Contract.objects.filter(
+            gig=locked, tenant=locked.tenant, status=Contract.Status.SIGNED
+        ).exists()
+        locked.status = Gig.Status.SIGNED if has_signed_contract else Gig.Status.OPTION
         locked.save(update_fields=["status"])
-    gig.status = Gig.Status.OPTION
+    gig.status = locked.status
     return gig

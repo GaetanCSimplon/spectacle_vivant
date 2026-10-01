@@ -65,3 +65,9 @@ jobs:
         run: python manage.py check --deploy
         env:
           DJANGO_SETTINGS_MODULE: config.settings.prod
+          # Dummy values: the check only needs the settings to load, nothing is contacted.
+          S3_BUCKET_NAME: ci-bucket
+          S3_ENDPOINT_URL: https://s3.example.com
+          S3_REGION_NAME: fr-par
+          S3_ACCESS_KEY_ID: ci-access-key
+          S3_SECRET_ACCESS_KEY: ci-secret-key

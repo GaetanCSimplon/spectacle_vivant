@@ -10,7 +10,31 @@
     {% if contract.reference %}· {{ contract.reference }}{% endif %}
   </p>
 
+  {% if contract.status == 'signed' %}
+    <div class="card mb-6 space-y-2 text-sm">
+      <p class="font-semibold">
+        {% blocktranslate with date=contract.signed_at|date:"d/m/Y" number=contract.signed_version.number %}Signé le {{ date }} — version {{ number }} figée{% endblocktranslate %}
+      </p>
+      {% if contract.signed_pdf %}
+        <a href="{% url 'documents:contract-signed-pdf' gig.pk %}" class="btn btn-secondary btn-block">
+          {% translate "Télécharger le PDF signé" %}
+        </a>
+      {% elif can_add_signed_pdf %}
+        <form method="post" action="{% url 'documents:contract-signed-pdf' gig.pk %}" enctype="multipart/form-data" class="space-y-2">
+          {% csrf_token %}
+          {{ signed_pdf_form.as_p }}
+          <button type="submit" class="btn btn-secondary btn-block">{% translate "Ajouter le PDF signé" %}</button>
+        </form>
+      {% endif %}
+    </div>
+  {% endif %}
+
   <div class="mb-6 flex flex-col gap-3">
+    {% if can_sign %}
+      <a href="{% url 'documents:contract-sign' gig.pk %}" class="btn btn-primary btn-block">
+        {% translate "Marquer comme signé" %}
+      </a>
+    {% endif %}
     {% if can_generate %}
       <form method="post" action="{% url 'documents:contract-generate' gig.pk %}">
         {% csrf_token %}
