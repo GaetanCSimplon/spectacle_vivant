@@ -9,7 +9,7 @@ from apps.gigs.factories import GigFactory
 from apps.tenants.factories import MembershipFactory
 
 from ..factories import ContractFactory
-from ..models import Contract
+from ..models import Contract, ContractVersion
 from ..services import build_contract_context, generate_contract_pdf
 
 pytestmark = pytest.mark.django_db
@@ -20,19 +20,20 @@ def test_generate_contract_pdf_creates_a_pdf_file():
 
     contract = generate_contract_pdf(gig)
 
-    assert contract.pdf_file.name
-    assert contract.pdf_file.read().startswith(b"%PDF-")
-    assert contract.generated_at is not None
+    version = contract.latest_version
+    assert version.number == 1
+    assert version.pdf_file.read().startswith(b"%PDF-")
     assert contract.status == Contract.Status.DRAFT
 
 
-def test_generate_contract_pdf_is_idempotent_for_a_draft_contract():
+def test_generate_contract_pdf_keeps_a_single_contract_with_one_version_per_call():
     gig = GigFactory()
 
     generate_contract_pdf(gig)
     generate_contract_pdf(gig)
 
     assert Contract.objects.filter(gig=gig).count() == 1
+    assert ContractVersion.objects.filter(contract__gig=gig).count() == 2
 
 
 def test_generate_contract_pdf_does_not_touch_a_signed_contract():
@@ -40,12 +41,10 @@ def test_generate_contract_pdf_does_not_touch_a_signed_contract():
     contract = generate_contract_pdf(gig)
     contract.status = Contract.Status.SIGNED
     contract.save()
-    signed_file_name = contract.pdf_file.name
 
     generate_contract_pdf(gig)
 
-    contract.refresh_from_db()
-    assert contract.pdf_file.name == signed_file_name
+    assert contract.versions.count() == 1
 
 
 def test_contract_html_contains_the_gig_details_in_french_format():
@@ -88,6 +87,7 @@ def test_contract_download_is_an_attachment(client):
     membership = MembershipFactory()
     client.force_login(membership.user)
     gig = GigFactory(tenant=membership.tenant)
+    generate_contract_pdf(gig)
 
     response = client.get(reverse("documents:contract-download", args=[gig.pk]))
 
@@ -257,7 +257,7 @@ def test_contract_without_optional_fields_still_renders_and_generates_a_pdf():
     assert "Fait à …… en 2 exemplaires" in html
     assert "N° de licence : ……" in html
     assert "tribunaux de ……" in html
-    assert contract.pdf_file.read().startswith(b"%PDF-")
+    assert contract.latest_version.pdf_file.read().startswith(b"%PDF-")
 
 
 def test_contract_shows_the_special_conditions():
@@ -303,12 +303,10 @@ def test_contract_preview_leaves_an_existing_draft_file_untouched(client):
     tenant = _login(client)
     gig = GigFactory(tenant=tenant)
     contract = generate_contract_pdf(gig)
-    stored_name = contract.pdf_file.name
 
     client.get(reverse("documents:contract-preview", args=[gig.pk]))
 
-    contract.refresh_from_db()
-    assert contract.pdf_file.name == stored_name
+    assert contract.versions.count() == 1
 
 
 def test_contract_preview_of_a_signed_contract_serves_the_frozen_pdf(client):
@@ -317,7 +315,7 @@ def test_contract_preview_of_a_signed_contract_serves_the_frozen_pdf(client):
     contract = generate_contract_pdf(gig)
     contract.status = Contract.Status.SIGNED
     contract.save()
-    frozen_bytes = contract.pdf_file.read()
+    frozen_bytes = contract.latest_version.pdf_file.read()
     gig.conditions = "Ajoutée après la signature"
     gig.save()
 
@@ -341,7 +339,7 @@ def test_cancelled_gig_keeps_its_existing_contract_downloadable(client):
     tenant = _login(client)
     gig = GigFactory(tenant=tenant)
     contract = generate_contract_pdf(gig)
-    generated_at = contract.generated_at
+    version_count = contract.versions.count()
     gig.status = "cancelled"
     gig.save()
 
@@ -349,8 +347,7 @@ def test_cancelled_gig_keeps_its_existing_contract_downloadable(client):
 
     assert response.status_code == 200
     assert "attachment" in response["Content-Disposition"]
-    contract.refresh_from_db()
-    assert contract.generated_at == generated_at
+    assert contract.versions.count() == version_count
 
 
 def test_cancelled_gig_hides_the_contract_actions_when_there_is_no_contract(client):
