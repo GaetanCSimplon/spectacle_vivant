@@ -7,5 +7,12 @@ app_name = "documents"
 urlpatterns = [
     path("completer/", views.ContractCompleteView.as_view(), name="contract-complete"),
     path("apercu/", views.ContractPreviewView.as_view(), name="contract-preview"),
+    path("versions/", views.ContractHistoryView.as_view(), name="contract-history"),
+    path("generer/", views.ContractGenerateView.as_view(), name="contract-generate"),
     path("telecharger/", views.ContractDownloadView.as_view(), name="contract-download"),
+    path(
+        "versions/<int:number>/",
+        views.ContractDownloadView.as_view(),
+        name="contract-version-download",
+    ),
 ]

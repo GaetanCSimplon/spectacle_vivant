@@ -45,8 +45,8 @@
       </form>
     {% elif gig.status == 'confirmed' %}
       <p>{% translate "Faites signer le contrat de cession à l'organisateur." %}</p>
-      <a href="{% url 'documents:contract-download' gig.pk %}" class="btn btn-primary btn-block">
-        {% translate "Télécharger le contrat" %}
+      <a href="{% url 'documents:contract-history' gig.pk %}" class="btn btn-primary btn-block">
+        {% translate "Contrat de cession" %}
       </a>
     {% elif gig.status == 'signed' %}
       <p>{% translate "Aucune action en attente pour cette date." %}</p>
@@ -66,12 +66,12 @@
         {% translate "Compléter la date" %}
       </a>
     {% endif %}
-    {% if gig.status != 'cancelled' or gig.contract.pdf_file %}
+    {% if gig.status != 'cancelled' or gig.contract.latest_version %}
       <a href="{% url 'documents:contract-preview' gig.pk %}" target="_blank" class="btn btn-secondary">
         {% translate "Aperçu du contrat" %}
       </a>
-      <a href="{% url 'documents:contract-download' gig.pk %}" class="btn btn-secondary">
-        {% translate "Télécharger le contrat" %}
+      <a href="{% url 'documents:contract-history' gig.pk %}" class="btn btn-secondary">
+        {% translate "Contrat et versions" %}
       </a>
     {% endif %}
   </div>

@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}Contrat de cession — Spectacle Vivant{% endblock %}
+
+{% block page_content %}
+  <h1 class="mb-1 text-lg font-semibold">{% translate "Contrat de cession" %}</h1>
+  <p class="mb-6 text-sm text-gray-600">
+    {{ gig.show.title }} — {{ gig.date|date:"d/m/Y" }}
+    {% if contract.reference %}· {{ contract.reference }}{% endif %}
+  </p>
+
+  <div class="mb-6 flex flex-col gap-3">
+    {% if can_generate %}
+      <form method="post" action="{% url 'documents:contract-generate' gig.pk %}">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-primary btn-block">
+          {% if versions %}{% translate "Générer une nouvelle version" %}{% else %}{% translate "Générer le contrat" %}{% endif %}
+        </button>
+      </form>
+      <a href="{% url 'documents:contract-preview' gig.pk %}" target="_blank" class="btn btn-secondary">
+        {% translate "Aperçu avant génération" %}
+      </a>
+      <a href="{% url 'documents:contract-complete' gig.pk %}" class="btn btn-secondary">
+        {% translate "Compléter la date" %}
+      </a>
+    {% endif %}
+  </div>
+
+  <h2 class="mb-2 text-sm font-semibold uppercase text-gray-500">{% translate "Versions générées" %}</h2>
+  {% if versions %}
+    <ul class="mb-6 space-y-2">
+      {% for version in versions %}
+        <li class="card flex items-center justify-between text-sm">
+          <span>
+            {% blocktranslate with number=version.number %}Version {{ number }}{% endblocktranslate %}
+            {% if forloop.first %}<span class="text-gray-500">({% translate "la plus récente" %})</span>{% endif %}
+            <br>
+            <span class="text-gray-500">{{ version.created_at|date:"d/m/Y H:i" }}</span>
+          </span>
+          <a href="{% url 'documents:contract-version-download' gig.pk version.number %}" class="text-blue-700 underline">
+            {% translate "Télécharger" %}
+          </a>
+        </li>
+      {% endfor %}
+    </ul>
+  {% else %}
+    <p class="mb-6 text-sm text-gray-600">{% translate "Aucune version générée pour l'instant." %}</p>
+  {% endif %}
+
+  <a href="{% url 'gigs:detail' gig.pk %}" class="text-sm text-gray-500 hover:text-gray-700">
+    {% translate "Retour à la date" %}
+  </a>
+{% endblock %}

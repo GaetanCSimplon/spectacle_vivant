@@ -208,8 +208,8 @@ Avant de coder : propose un plan (fichiers, modèles, tests) et attends mon acco
 ### Sprint 3.4 — Contrats
 - [x] Modèle de contrat finalisé avec **conditions particulières** éditables. — Fait (PR A) : `Gig.conditions` éditable dans « Compléter la date », affiché en « Article 10 — Conditions particulières » seulement s'il est rempli.
 - [x] Formulation adaptée selon `Tenant.contract_party_label` (« producteur » vs « artiste »), invitations et lieu de signature variables (voir §2.3 pour la mise à jour du template déjà en place).
-- [ ] Aperçu avant génération ; historique des versions générées. — Aperçu fait (PR A) : rendu à la volée, rien n'est enregistré ; un contrat signé ou d'une date annulée affiche son PDF enregistré ; pas de génération pour une date annulée sans contrat. Historique des versions : PR B.
-- [ ] Numérotation des contrats par tenant.
+- [x] Aperçu avant génération ; historique des versions générées. — Aperçu fait (PR A) : rendu à la volée, rien n'est enregistré ; un contrat signé ou d'une date annulée affiche son PDF enregistré ; pas de génération pour une date annulée sans contrat. Historique fait (PR B) : modèle `ContractVersion` (une ligne par PDF généré, jamais écrasée), page « Contrat de cession » (`documents:contract-history`) avec « Générer une nouvelle version » et téléchargement de chaque version ; `Contract.pdf_file`/`generated_at` supprimés (migrations `documents/0003` et `0004`).
+- [x] Numérotation des contrats par tenant. — Fait (PR B) : `Contract.reference` (ex. `C-2026-007`), attribuée à la première génération via `ContractSequence` (tenant + année) sous `select_for_update`, dans la transaction de création : sans trou, repart à 001 chaque année.
 - [ ] Marquage « signé » : figeage du PDF, passage de la date à `signed`, upload optionnel du PDF signé.
 - [ ] Stockage des PDF figés : bucket S3 européen via `django-storages` (dev = stockage local).
 - [ ] Tests : contenu du PDF, immutabilité après signature, accès protégé aux fichiers (pas d'URL publique devinable).

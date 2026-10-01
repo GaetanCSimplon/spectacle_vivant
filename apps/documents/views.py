@@ -16,7 +16,7 @@ from .forms import (
     ShowCompletionForm,
     VenueCompletionForm,
 )
-from .models import Contract
+from .models import Contract, ContractVersion
 
 
 class ContractPreviewView(TenantScopedMixin, View):
@@ -35,18 +35,59 @@ class ContractPreviewView(TenantScopedMixin, View):
         return HttpResponse(pdf_bytes, content_type="application/pdf")
 
 
-class ContractDownloadView(TenantScopedMixin, View):
+class ContractHistoryView(TenantScopedMixin, View):
+    """The contract page of a gig: its reference, its versions, and the "generate" button."""
+
+    template_name = "documents/contract_history.html"
+
     def get(self, request, gig_id):
         gig = get_object_or_404(Gig, pk=gig_id, tenant=request.tenant)
+        contract = Contract.objects.filter(gig=gig, tenant=request.tenant).first()
+        versions = contract.versions.select_related("created_by") if contract else []
+        context = {
+            "gig": gig,
+            "contract": contract,
+            "versions": versions,
+            "can_generate": gig.status != Gig.Status.CANCELLED
+            and not (contract and contract.status == Contract.Status.SIGNED),
+        }
+        return render(request, self.template_name, context)
+
+
+class ContractGenerateView(TenantScopedMixin, View):
+    def post(self, request, gig_id):
+        gig = get_object_or_404(Gig, pk=gig_id, tenant=request.tenant)
         try:
-            contract = services.generate_contract_pdf(gig)
+            contract = services.generate_contract_pdf(gig, user=request.user)
         except services.ContractNotAvailable:
             return no_contract_response(request, gig)
+        if contract.status == Contract.Status.SIGNED:
+            messages.error(request, _("Ce contrat est signé : il ne peut plus être régénéré."))
+        else:
+            messages.success(request, _("Une nouvelle version du contrat a été générée."))
+        return redirect("documents:contract-history", gig_id=gig.pk)
+
+
+class ContractDownloadView(TenantScopedMixin, View):
+    """Download the latest version, or the one given by its number."""
+
+    def get(self, request, gig_id, number=None):
+        gig = get_object_or_404(Gig, pk=gig_id, tenant=request.tenant)
+        versions = ContractVersion.objects.filter(
+            contract__gig=gig, tenant=request.tenant
+        ).select_related("contract")
+        if number is None:
+            version = versions.first()
+        else:
+            version = get_object_or_404(versions, number=number)
+        if version is None:
+            messages.error(request, _("Aucun contrat n'a encore été généré pour cette date."))
+            return redirect("documents:contract-history", gig_id=gig.pk)
         return FileResponse(
-            contract.pdf_file.open("rb"),
+            version.pdf_file.open("rb"),
             content_type="application/pdf",
             as_attachment=True,
-            filename=f"contrat-{gig.pk}.pdf",
+            filename=f"{version.contract.reference}-v{version.number}.pdf",
         )
 
 
@@ -56,9 +97,10 @@ def no_contract_response(request, gig):
 
 
 def stored_contract_response(request, gig, contract):
-    if not (contract and contract.pdf_file):
+    version = contract.latest_version if contract else None
+    if version is None:
         return no_contract_response(request, gig)
-    return FileResponse(contract.pdf_file.open("rb"), content_type="application/pdf")
+    return FileResponse(version.pdf_file.open("rb"), content_type="application/pdf")
 
 
 class ContractCompleteView(TenantScopedMixin, View):
