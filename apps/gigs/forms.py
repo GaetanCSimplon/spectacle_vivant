@@ -49,6 +49,46 @@ class VenueQuickCreateForm(forms.ModelForm):
         fields = ["name", "address"]
 
 
+class GigFilterForm(forms.Form):
+    """Filters of "Mes dates". Every field is optional; an invalid value is simply ignored."""
+
+    status = forms.ChoiceField(
+        label=_("Statut"),
+        required=False,
+        choices=[("", _("Tous les statuts")), *Gig.Status.choices],
+    )
+    month = forms.DateField(
+        label=_("Mois"),
+        required=False,
+        input_formats=["%Y-%m"],
+        widget=forms.DateInput(attrs={"type": "month"}, format="%Y-%m"),
+    )
+    show = forms.ModelChoiceField(
+        label=_("Spectacle"),
+        required=False,
+        queryset=Show.objects.none(),
+        empty_label=_("Tous les spectacles"),
+    )
+
+    def __init__(self, *args, tenant=None, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Only this tenant's shows can be chosen: another tenant's id is an invalid value.
+        self.fields["show"].queryset = Show.objects.filter(tenant=tenant).order_by("title")
+
+    def apply(self, queryset):
+        self.is_valid()  # fills cleaned_data with the valid fields, drops the invalid ones
+        data = self.cleaned_data
+        if data.get("status"):
+            queryset = queryset.filter(status=data["status"])
+        if data.get("month"):
+            queryset = queryset.filter(
+                date__year=data["month"].year, date__month=data["month"].month
+            )
+        if data.get("show"):
+            queryset = queryset.filter(show=data["show"])
+        return queryset
+
+
 class GigDetailsStepForm(forms.ModelForm):
     class Meta:
         model = Gig

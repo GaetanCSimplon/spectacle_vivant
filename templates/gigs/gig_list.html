@@ -4,33 +4,36 @@
 {% block title %}Mes dates — Spectacle Vivant{% endblock %}
 
 {% block page_content %}
-  <div class="mb-6 flex items-center justify-between">
+  <div class="mb-2 flex items-center justify-between">
     <h1 class="text-xl font-semibold">{% translate "Mes dates" %}</h1>
     <a href="{% url 'gigs:wizard-show' %}" class="btn btn-primary">
       {% translate "+ Nouvelle date" %}
     </a>
   </div>
 
-  {% if not object_list %}
-    <div class="card">
-      <p>{% translate "Vous n'avez pas encore de date. Créez la première !" %}</p>
-      <a href="{% url 'gigs:wizard-show' %}" class="btn btn-primary mt-4">
-        {% translate "+ Nouvelle date" %}
-      </a>
-    </div>
+  {% if has_any_gig %}
+    <p class="mb-4 text-sm text-gray-600">
+      {% blocktranslate count counter=year_count %}{{ counter }} date en {{ year }}{% plural %}{{ counter }} dates en {{ year }}{% endblocktranslate %}
+    </p>
+
+    <form
+      method="get"
+      action="{% url 'gigs:list' %}"
+      class="mb-4 grid grid-cols-2 gap-2 sm:grid-cols-3"
+      hx-get="{% url 'gigs:list' %}"
+      hx-trigger="change"
+      hx-target="#results"
+      hx-swap="innerHTML"
+      hx-push-url="true"
+    >
+      <div>{{ filter_form.status.label_tag }} {{ filter_form.status }}</div>
+      <div>{{ filter_form.month.label_tag }} {{ filter_form.month }}</div>
+      <div class="col-span-2 sm:col-span-1">{{ filter_form.show.label_tag }} {{ filter_form.show }}</div>
+      <noscript><button type="submit" class="btn btn-secondary">{% translate "Filtrer" %}</button></noscript>
+    </form>
   {% endif %}
 
-  {% if upcoming_gigs %}
-    <h2 class="mb-2 text-sm font-semibold uppercase text-gray-500">{% translate "À venir" %}</h2>
-    <ul class="mb-6 flex flex-col gap-2">
-      {% for gig in upcoming_gigs %}{% include "gigs/_gig_row.html" %}{% endfor %}
-    </ul>
-  {% endif %}
-
-  {% if past_gigs %}
-    <h2 class="mb-2 text-sm font-semibold uppercase text-gray-500">{% translate "Passées" %}</h2>
-    <ul class="flex flex-col gap-2">
-      {% for gig in past_gigs %}{% include "gigs/_gig_row.html" %}{% endfor %}
-    </ul>
-  {% endif %}
+  <div id="results">
+    {% include "gigs/_gig_results.html" %}
+  </div>
 {% endblock %}

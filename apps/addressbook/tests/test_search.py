@@ -131,3 +131,13 @@ def test_search_requires_login(client):
     response = client.get(reverse("addressbook:promoter-list"), {"q": "a"})
 
     assert response.status_code == 302
+
+
+def test_history_restore_gets_the_full_page(client):
+    _login(client)
+
+    content = _get(
+        client, "addressbook:promoter-list", "", **HTMX, HTTP_HX_HISTORY_RESTORE_REQUEST="true"
+    )
+
+    assert "<html" in content
