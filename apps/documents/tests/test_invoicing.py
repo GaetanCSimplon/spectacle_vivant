@@ -305,17 +305,17 @@ def test_invoices_and_quotes_have_separate_series():
 def test_a_failure_while_issuing_gives_the_number_back():
     gig = _gig()
     first = invoicing.create_invoice(gig, Invoice.Kind.FULL)
-    original = invoicing._customer_snapshot
+    original = invoicing.build_customer_snapshot
 
     def boom(promoter):
         raise RuntimeError
 
-    invoicing._customer_snapshot = boom
+    invoicing.build_customer_snapshot = boom
     try:
         with pytest.raises(RuntimeError):
             invoicing.issue_invoice(first)
     finally:
-        invoicing._customer_snapshot = original
+        invoicing.build_customer_snapshot = original
 
     first.refresh_from_db()
     assert first.number == ""

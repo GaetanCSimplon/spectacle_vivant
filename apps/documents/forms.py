@@ -1,3 +1,5 @@
+from decimal import Decimal
+
 from django import forms
 from django.utils.translation import gettext_lazy as _
 
@@ -117,3 +119,46 @@ class SignedPdfForm(forms.Form):
             raise forms.ValidationError(_("Le fichier doit être un PDF."))
         file.seek(0)
         return file
+
+
+class DocumentLineForm(forms.Form):
+    """A line of a draft quote or invoice. The VAT rate only matters to a taxable tenant."""
+
+    label = forms.CharField(label=_("Désignation"), max_length=255)
+    quantity = forms.DecimalField(
+        label=_("Quantité"),
+        max_digits=8,
+        decimal_places=2,
+        min_value=Decimal("0.01"),
+        initial=1,
+    )
+    unit_price_excl_tax = forms.DecimalField(
+        label=_("Prix unitaire HT (€)"), max_digits=10, decimal_places=2
+    )
+    vat_rate = forms.DecimalField(
+        label=_("TVA (%)"),
+        max_digits=5,
+        decimal_places=2,
+        min_value=Decimal("0"),
+        max_value=Decimal("100"),
+        required=False,
+    )
+
+    def __init__(self, *args, show_vat=False, **kwargs):
+        super().__init__(*args, **kwargs)
+        if not show_vat:
+            del self.fields["vat_rate"]
+        for name in ("quantity", "unit_price_excl_tax", "vat_rate"):
+            if name in self.fields:
+                self.fields[name].widget.attrs["step"] = "0.01"
+                self.fields[name].widget.attrs["inputmode"] = "decimal"
+
+    @classmethod
+    def from_line(cls, line, data=None, show_vat=False):
+        initial = {
+            "label": line.label,
+            "quantity": line.quantity,
+            "unit_price_excl_tax": line.unit_price_excl_tax,
+            "vat_rate": line.vat_rate,
+        }
+        return cls(data, initial=initial, show_vat=show_vat, prefix=f"line{line.pk}")

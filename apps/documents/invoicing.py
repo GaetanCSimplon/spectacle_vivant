@@ -94,6 +94,19 @@ def add_line(document, label, unit_price_excl_tax, quantity=1, vat_rate=None):
     return line
 
 
+def update_line(line, label, unit_price_excl_tax, quantity=1, vat_rate=None):
+    document = line.parent
+    _require_draft(document)
+    with transaction.atomic():
+        line.label = label
+        line.quantity = Decimal(quantity)
+        line.unit_price_excl_tax = money(unit_price_excl_tax)
+        line.vat_rate = vat_rate_for(document.tenant, vat_rate)
+        line.save()
+        refresh_totals(document)
+    return line
+
+
 def remove_line(line):
     document = line.parent
     _require_draft(document)
@@ -222,7 +235,7 @@ def missing_issue_requirements(document):
     return missing
 
 
-def _issuer_snapshot(tenant):
+def build_issuer_snapshot(tenant):
     return {
         "name": tenant.name,
         "legal_form": tenant.legal_form,
@@ -237,7 +250,7 @@ def _issuer_snapshot(tenant):
     }
 
 
-def _customer_snapshot(promoter):
+def build_customer_snapshot(promoter):
     return {
         "name": promoter.name,
         "billing_address": promoter.billing_address,
@@ -262,8 +275,8 @@ def _issue(document):
             _("Complétez d'abord : %(items)s.") % {"items": ", ".join(str(m) for m in missing)}
         )
     refresh_totals(document)
-    document.issuer_snapshot = _issuer_snapshot(document.tenant)
-    document.customer_snapshot = _customer_snapshot(document.gig.promoter)
+    document.issuer_snapshot = build_issuer_snapshot(document.tenant)
+    document.customer_snapshot = build_customer_snapshot(document.gig.promoter)
     document.issue_date = timezone.localdate()
 
 
@@ -295,6 +308,13 @@ def _credited(original):
     """Sum (negative) of the issued credit notes of an invoice."""
     notes = original.credit_notes.filter(status=Invoice.Status.ISSUED)
     return sum((note.total_incl_tax for note in notes), ZERO)
+
+
+def creditable_amount(invoice):
+    """What a new credit note could still give back (incl. tax), zero if nothing."""
+    if invoice.kind == Invoice.Kind.CREDIT_NOTE or invoice.status != Invoice.Status.ISSUED:
+        return ZERO
+    return invoice.total_incl_tax + _credited(invoice)
 
 
 def _check_credit_note(note, original):
