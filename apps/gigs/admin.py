@@ -1,5 +1,5 @@
 from django.contrib import admin
 
-from .models import Gig
+from .models import Gig, GigMember
 
-admin.site.register(Gig)
+admin.site.register([Gig, GigMember])

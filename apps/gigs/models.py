@@ -80,3 +80,19 @@ class Gig(TenantOwnedModel):
 
     def __str__(self):
         return f"{self.show} — {self.date}"
+
+
+class GigMember(TenantOwnedModel):
+    """A person travelling for a gig (musician, technician…), shown on the roadmap."""
+
+    gig = models.ForeignKey(Gig, on_delete=models.CASCADE, related_name="members")
+    name = models.CharField(_("nom"), max_length=255)
+    role = models.CharField(_("fonction"), max_length=255, blank=True)
+    phone = models.CharField(_("téléphone"), max_length=50, blank=True)
+    email = models.EmailField(_("e-mail"), blank=True)
+
+    class Meta:
+        ordering = ["id"]
+
+    def __str__(self):
+        return self.name

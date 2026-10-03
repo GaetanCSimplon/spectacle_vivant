@@ -224,7 +224,7 @@ Avant de coder : propose un plan (fichiers, modèles, tests) et attends mon acco
 - [x] Tests : numérotation sans trou (rollback simulé), immutabilité, totaux et arrondis, avoir, isolation, vues (fait avec D2 et D3). Reste à tester : le PDF (D4).
 
 ### Sprint 3.6 — Feuille de route
-- [ ] Modèles `Roadmap`, `RoadmapSlot`, `Lodging`, `Meal`, `GigMember`.
+- [x] Modèles `Roadmap`, `RoadmapSlot`, `Lodging`, `Meal`, `GigMember` (app `roadmaps`, migrations `roadmaps/0001` et `gigs/0006`) ; services `get_or_create_roadmap` (pré-remplissage des créneaux Arrivée/Balances/Concert depuis la date), `publish` (nouveau jeton à chaque activation), `revoke`. Pas encore d'écran (PR 2 et 3).
 - [ ] Éditeur de feuille de route (ajout/suppression de créneaux en HTMX).
 - [ ] **Pré-remplissage** depuis la date (lieu, contacts, heure du concert).
 - [ ] **Lien secret** : génération, activation/révocation, page publique sans compte.
