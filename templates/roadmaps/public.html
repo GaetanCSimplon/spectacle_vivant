@@ -1,0 +1,94 @@
+{% load static tailwind_cli i18n %}
+<!DOCTYPE html>
+<html lang="fr">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="robots" content="noindex, nofollow">
+    <meta name="referrer" content="no-referrer">
+    <title>{{ show_title }} — {{ date|date:"d/m/Y" }}</title>
+    {% tailwind_css %}
+  </head>
+  <body class="min-h-screen bg-gray-50 text-gray-900">
+    <main class="mx-auto max-w-xl px-4 py-6">
+      <h1 class="text-xl font-semibold">{{ show_title }}</h1>
+      {% if group_name %}<p class="text-gray-600">{{ group_name }}</p>{% endif %}
+      <p class="mb-5 text-gray-600">{{ date|date:"l j F Y" }}</p>
+
+      <h2 class="mb-2 text-sm font-semibold uppercase text-gray-500">{% translate "Lieu" %}</h2>
+      <div class="card mb-6 space-y-3 text-sm">
+        <p class="font-medium">{{ venue.name }}</p>
+        {% if venue.address %}<p class="text-gray-600">{{ venue.address|linebreaksbr }}</p>{% endif %}
+        {% if venue.access_info %}<p class="text-gray-600">{{ venue.access_info|linebreaksbr }}</p>{% endif %}
+        <div class="grid grid-cols-2 gap-3">
+          {% if venue.tel %}<a href="tel:{{ venue.tel }}" class="btn btn-primary btn-block">{% translate "Appeler" %}</a>{% endif %}
+          {% if venue.address %}
+            <a href="https://www.openstreetmap.org/search?query={{ venue.address|urlencode }}" rel="noopener noreferrer" class="btn btn-secondary btn-block">{% translate "Itinéraire" %}</a>
+          {% endif %}
+        </div>
+      </div>
+
+      {% if slots %}
+        <h2 class="mb-2 text-sm font-semibold uppercase text-gray-500">{% translate "Programme de la journée" %}</h2>
+        <ul class="mb-6 space-y-2">
+          {% for slot in slots %}
+            <li class="card text-sm">
+              <p class="font-medium">{{ slot.time|time:"H:i" }} · {{ slot.label|default:slot.get_kind_display }}</p>
+              {% if slot.note %}<p class="text-gray-600">{{ slot.note|linebreaksbr }}</p>{% endif %}
+            </li>
+          {% endfor %}
+        </ul>
+      {% endif %}
+
+      {% if lodgings %}
+        <h2 class="mb-2 text-sm font-semibold uppercase text-gray-500">{% translate "Hébergement" %}</h2>
+        <ul class="mb-6 space-y-2">
+          {% for lodging in lodgings %}
+            <li class="card space-y-2 text-sm">
+              <p class="font-medium">{{ lodging.name }}{% if lodging.arrival_time %} · {% translate "arrivée" %} {{ lodging.arrival_time|time:"H:i" }}{% endif %}</p>
+              {% if lodging.address %}
+                <p class="text-gray-600">{{ lodging.address }}</p>
+                <a href="https://www.openstreetmap.org/search?query={{ lodging.address|urlencode }}" rel="noopener noreferrer" class="btn btn-secondary btn-block">{% translate "Itinéraire" %}</a>
+              {% endif %}
+              {% if lodging.notes %}<p class="text-gray-600">{{ lodging.notes|linebreaksbr }}</p>{% endif %}
+            </li>
+          {% endfor %}
+        </ul>
+      {% endif %}
+
+      {% if meals or crew_headcount %}
+        <h2 class="mb-2 text-sm font-semibold uppercase text-gray-500">{% translate "Repas" %}</h2>
+        <ul class="mb-6 space-y-2">
+          {% if crew_headcount %}<li class="card text-sm">{% blocktranslate count n=crew_headcount %}{{ n }} personne{% plural %}{{ n }} personnes{% endblocktranslate %}</li>{% endif %}
+          {% for meal in meals %}
+            <li class="card text-sm">
+              <p class="font-medium">{{ meal.place }}{% if meal.time %} · {{ meal.time|time:"H:i" }}{% endif %}</p>
+              {% if meal.notes %}<p class="text-gray-600">{{ meal.notes|linebreaksbr }}</p>{% endif %}
+            </li>
+          {% endfor %}
+        </ul>
+      {% endif %}
+
+      {% if notes %}
+        <h2 class="mb-2 text-sm font-semibold uppercase text-gray-500">{% translate "Notes" %}</h2>
+        <div class="card mb-6 text-sm">{{ notes|linebreaksbr }}</div>
+      {% endif %}
+
+      {% if members %}
+        <h2 class="mb-2 text-sm font-semibold uppercase text-gray-500">{% translate "Équipe" %}</h2>
+        <ul class="mb-6 space-y-2">
+          {% for person in members %}{% include "roadmaps/_public_person.html" %}{% endfor %}
+        </ul>
+      {% endif %}
+
+      {% if venue_contacts %}
+        <h2 class="mb-2 text-sm font-semibold uppercase text-gray-500">{% translate "Contacts du lieu" %}</h2>
+        <ul class="mb-6 space-y-2">
+          {% for person in venue_contacts %}{% include "roadmaps/_public_person.html" %}{% endfor %}
+        </ul>
+      {% endif %}
+
+      <a href="{% url 'roadmap-public-pdf' token %}" class="btn btn-secondary btn-block">{% translate "Télécharger en PDF" %}</a>
+    </main>
+  </body>
+</html>

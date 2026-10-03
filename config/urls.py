@@ -19,6 +19,7 @@ from django.contrib import admin
 from django.urls import include, path
 
 from apps.core.views import HelloPdfView, HomeView
+from apps.roadmaps import views as roadmap_views
 from apps.tenants.views import OnboardingView
 
 urlpatterns = [
@@ -31,6 +32,16 @@ urlpatterns = [
     path("dates/", include("apps.gigs.urls")),
     path("dates/<int:gig_id>/feuille-de-route/", include("apps.roadmaps.urls")),
     path("dates/<int:gig_id>/", include("apps.documents.urls")),
+    path(
+        "feuille-de-route/<str:token>/",
+        roadmap_views.PublicRoadmapView.as_view(),
+        name="roadmap-public",
+    ),
+    path(
+        "feuille-de-route/<str:token>/pdf/",
+        roadmap_views.PublicRoadmapPdfView.as_view(),
+        name="roadmap-public-pdf",
+    ),
     path("admin/", admin.site.urls),
     path("accounts/", include("allauth.urls")),
 ]

@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="fr">
+  <head>
+    <meta charset="utf-8">
+    <style>
+      @page { size: A4; margin: 2cm; }
+      body { font-family: sans-serif; font-size: 11px; color: #111; line-height: 1.45; }
+      h1 { font-size: 20px; margin: 0 0 2px; }
+      h2 { font-size: 10px; text-transform: uppercase; color: #555; margin: 16px 0 4px; }
+      p { margin: 0 0 3px; }
+      table { width: 100%; border-collapse: collapse; }
+      td { padding: 4px 3px; border-bottom: 1px solid #ddd; vertical-align: top; }
+      .time { width: 50px; white-space: nowrap; font-weight: bold; }
+      .muted { color: #555; }
+    </style>
+  </head>
+  <body>
+    <h1>{{ show_title }}</h1>
+    {% if group_name %}<p class="muted">{{ group_name }}</p>{% endif %}
+    <p>Feuille de route — {{ date|date:"l j F Y" }}</p>
+
+    <h2>Lieu</h2>
+    <p><strong>{{ venue.name }}</strong></p>
+    {% if venue.address %}<p>{{ venue.address|linebreaksbr }}</p>{% endif %}
+    {% if venue.access_info %}<p class="muted">{{ venue.access_info|linebreaksbr }}</p>{% endif %}
+    {% if venue.phone %}<p>Tél. {{ venue.phone }}</p>{% endif %}
+
+    {% if slots %}
+      <h2>Programme de la journée</h2>
+      <table>
+        {% for slot in slots %}
+          <tr>
+            <td class="time">{{ slot.time|time:"H:i" }}</td>
+            <td>{{ slot.label|default:slot.get_kind_display }}{% if slot.note %}<br><span class="muted">{{ slot.note|linebreaksbr }}</span>{% endif %}</td>
+          </tr>
+        {% endfor %}
+      </table>
+    {% endif %}
+
+    {% if lodgings %}
+      <h2>Hébergement</h2>
+      {% for lodging in lodgings %}
+        <p><strong>{{ lodging.name }}</strong>{% if lodging.arrival_time %} — arrivée {{ lodging.arrival_time|time:"H:i" }}{% endif %}</p>
+        {% if lodging.address %}<p>{{ lodging.address }}</p>{% endif %}
+        {% if lodging.notes %}<p class="muted">{{ lodging.notes|linebreaksbr }}</p>{% endif %}
+      {% endfor %}
+    {% endif %}
+
+    {% if meals or crew_headcount %}
+      <h2>Repas</h2>
+      {% if crew_headcount %}<p>{{ crew_headcount }} personne{{ crew_headcount|pluralize }}</p>{% endif %}
+      {% for meal in meals %}
+        <p><strong>{{ meal.place }}</strong>{% if meal.time %} — {{ meal.time|time:"H:i" }}{% endif %}</p>
+        {% if meal.notes %}<p class="muted">{{ meal.notes|linebreaksbr }}</p>{% endif %}
+      {% endfor %}
+    {% endif %}
+
+    {% if notes %}
+      <h2>Notes</h2>
+      <p>{{ notes|linebreaksbr }}</p>
+    {% endif %}
+
+    {% if members %}
+      <h2>Équipe</h2>
+      {% for person in members %}
+        <p><strong>{{ person.name }}</strong>{% if person.role %} — {{ person.role }}{% endif %}{% if person.phone %} — {{ person.phone }}{% endif %}</p>
+      {% endfor %}
+    {% endif %}
+
+    {% if venue_contacts %}
+      <h2>Contacts du lieu</h2>
+      {% for person in venue_contacts %}
+        <p><strong>{{ person.name }}</strong>{% if person.role %} — {{ person.role }}{% endif %}{% if person.phone %} — {{ person.phone }}{% endif %}</p>
+      {% endfor %}
+    {% endif %}
+  </body>
+</html>

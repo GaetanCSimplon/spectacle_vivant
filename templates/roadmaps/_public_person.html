@@ -1,0 +1,7 @@
+<li class="card flex items-center justify-between gap-3 text-sm">
+  <div class="min-w-0">
+    <p class="font-medium">{{ person.name }}</p>
+    {% if person.role %}<p class="text-gray-600">{{ person.role }}</p>{% endif %}
+  </div>
+  {% if person.tel %}<a href="tel:{{ person.tel }}" class="btn btn-primary shrink-0">{{ person.phone }}</a>{% endif %}
+</li>

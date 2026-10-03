@@ -227,10 +227,10 @@ Avant de coder : propose un plan (fichiers, modèles, tests) et attends mon acco
 - [x] Modèles `Roadmap`, `RoadmapSlot`, `Lodging`, `Meal`, `GigMember` (app `roadmaps`, migrations `roadmaps/0001` et `gigs/0006`) ; services `get_or_create_roadmap` (pré-remplissage des créneaux Arrivée/Balances/Concert depuis la date), `publish` (nouveau jeton à chaque activation), `revoke`. Pas encore d'écran (PR 2 et 3).
 - [x] Éditeur de feuille de route (`dates/<id>/feuille-de-route/` : créneaux, hébergement, repas, équipe, notes ; ajout/modification/suppression en HTMX avec repli sans JavaScript ; bloc « Feuille de route » sur la fiche de la date).
 - [x] **Pré-remplissage** depuis la date (créneaux Arrivée / Balances / Concert ; lieu et contacts du lieu seront lus dans la date à l'affichage public).
-- [ ] **Lien secret** : génération, activation/révocation, page publique sans compte. — **Fait côté éditeur** (panneau « Partage » : activer, copier, arrêter) ; page publique restante (PR 3).
-- [ ] Vue mobile-first (gros boutons appeler / itinéraire), testée à 375 px.
-- [ ] Export PDF.
-- [ ] Tests : lien valide/révoqué/inexistant, absence de fuite d'infos sensibles (prix, contrat), isolation.
+- [x] **Lien secret** : génération (`token_urlsafe(32)`), activation/révocation (réactiver crée un nouveau lien, l'ancien reste 404), page publique `feuille-de-route/<jeton>/` sans compte.
+- [ ] Vue mobile-first (gros boutons appeler / itinéraire), testée à 375 px. — Boutons « Appeler » (`tel:`) et « Itinéraire » (OpenStreetMap) faits ; **test à 375 px à faire à la main**.
+- [x] Export PDF (rendu à la volée, depuis l'éditeur et depuis le lien public ; mise en page jamais contrôlée à l'œil).
+- [x] Tests : lien valide/révoqué/inexistant/réactivé, absence de fuite (liste blanche `public_context`, HTML et PDF), en-têtes `no-store`/`noindex`/`no-referrer`, isolation.
 
 ### Sprint 3.7 — Finances
 - [ ] `Payment` et `Expense` avec formulaires rapides (HTMX).

@@ -3,7 +3,7 @@
 from dataclasses import dataclass
 
 from django.contrib import messages
-from django.http import Http404
+from django.http import Http404, HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils.translation import gettext_lazy as _
 from django.views import View
@@ -13,7 +13,7 @@ from apps.gigs.models import Gig, GigMember
 
 from . import services
 from .forms import LodgingForm, MealForm, MemberForm, NotesForm, SlotForm
-from .models import Lodging, Meal, RoadmapSlot
+from .models import Lodging, Meal, Roadmap, RoadmapSlot
 
 
 @dataclass(frozen=True)
@@ -203,3 +203,46 @@ class ItemDeleteView(RoadmapMixin, View):
         self.load(gig_id, section)
         self.get_item(pk).delete()
         return self.done()
+
+
+class PdfView(RoadmapMixin, View):
+    """The roadmap as a PDF, for the signed-in owner (same content as the public link)."""
+
+    def get(self, request, gig_id):
+        self.load(gig_id)
+        return pdf_response(self.roadmap)
+
+
+def pdf_response(roadmap):
+    response = HttpResponse(services.render_roadmap_pdf(roadmap), content_type="application/pdf")
+    response["Content-Disposition"] = f'inline; filename="feuille-de-route-{roadmap.gig.date}.pdf"'
+    return response
+
+
+def _protect(response):
+    """The token is in the URL: keep these pages out of caches, search engines and Referer."""
+    response["Cache-Control"] = "no-store"
+    response["X-Robots-Tag"] = "noindex, nofollow"
+    response["Referrer-Policy"] = "no-referrer"
+    return response
+
+
+def _shared_roadmap(token):
+    """A roadmap reached by its secret link; unknown token or sharing off = 404 (same answer)."""
+    queryset = Roadmap.objects.select_related("gig__show", "gig__venue")
+    return get_object_or_404(queryset, token=token, is_published=True)
+
+
+class PublicRoadmapView(View):
+    """No account needed, so no TenantScopedMixin: the token alone gives access."""
+
+    def get(self, request, token):
+        roadmap = _shared_roadmap(token)
+        context = services.public_context(roadmap)
+        context["token"] = token
+        return _protect(render(request, "roadmaps/public.html", context))
+
+
+class PublicRoadmapPdfView(View):
+    def get(self, request, token):
+        return _protect(pdf_response(_shared_roadmap(token)))
