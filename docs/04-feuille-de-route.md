@@ -236,11 +236,11 @@ Avant de coder : propose un plan (fichiers, modèles, tests) et attends mon acco
 ### Sprint 3.7 — Finances
 > **Décisions (2026-10-03)** : un paiement ne peut pas dépasser le reste à payer ; pas de paiement sur un avoir ni sur une facture annulée ; un paiement peut être modifié ou supprimé (le statut de la facture est recalculé, `paid` ↔ `issued`) ; bilan par date en **TTC** (prévu, facturé, encaissé comparables, prix HT rappelé), résultat = encaissé − dépensé. Découpage : PR 1 modèles et services, PR 2 écrans, PR 3 tableau de bord, PR 4 export CSV.
 
-- [ ] `Payment` et `Expense` avec formulaires rapides (HTMX). — **Modèles et services faits** (app `finance`, migrations `finance/0001` et `documents/0007`) ; écrans en PR 2.
+- [x] `Payment` et `Expense` avec formulaires rapides (HTMX) : page `dates/<id>/finances/` (paiements par facture, dépenses avec justificatif PDF/JPEG/PNG de 10 Mo max servi par une vue protégée, modification et suppression), bloc « Paiements et dépenses » sur la fiche de la date. Migrations `finance/0001`, `finance/0002` (validateurs) et `documents/0007`.
 - [x] Mise à jour automatique du statut de facture selon les paiements (`paid` ↔ `issued`, sous verrou ; une facture payée reste créditable).
 - [x] Catégories de dépenses (cachets, transport, hébergement, technique, communication, autres).
-- [ ] Bilan par date (facturé / encaissé / dépensé / résultat) — **distinguer recette prévue (prix du contrat) / facturée / encaissée** (F-57, `docs/03-cahier-des-charges.md` §4.8, demandé le 29/09), pas un chiffre unique.
-- [ ] Affichage des montants de synthèse en euros entiers arrondis, stockage et calculs au centime près (F-58, demandé le 29/09).
+- [x] Bilan par date (facturé / encaissé / dépensé / résultat) — **distinguer recette prévue (prix du contrat) / facturée / encaissée** (F-57, `docs/03-cahier-des-charges.md` §4.8, demandé le 29/09), pas un chiffre unique.
+- [x] Affichage des montants de synthèse en euros entiers arrondis, stockage et calculs au centime près (F-58, demandé le 29/09).
 - [ ] Tableau de bord global : totaux annuels, factures en retard, dates sans contrat, prochaines dates.
 - [ ] **Export CSV** (`;`, UTF-8 BOM) : recettes, dépenses, factures ; test d'ouverture dans Excel.
 - [ ] Tests : calculs, exports, isolation, cas limites (paiement partiel, surpaiement).

@@ -141,3 +141,24 @@ def gig_balance(gig):
         received=_total(Payment.objects.filter(invoice__gig=gig, tenant=gig.tenant)),
         spent=_total(Expense.objects.filter(gig=gig, tenant=gig.tenant)),
     )
+
+
+# --- expenses --------------------------------------------------------------
+
+
+def _delete_file(name):
+    if name:
+        Expense._meta.get_field("receipt_file").storage.delete(name)
+
+
+def save_expense(expense, previous_receipt=""):
+    """Save an expense; a receipt it no longer uses is removed from the storage."""
+    expense.save()
+    if previous_receipt and previous_receipt != expense.receipt_file.name:
+        _delete_file(previous_receipt)
+
+
+def delete_expense(expense):
+    name = expense.receipt_file.name
+    expense.delete()
+    _delete_file(name)

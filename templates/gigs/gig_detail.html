@@ -70,6 +70,18 @@
     </a>
   </div>
 
+  <h2 class="mb-2 text-sm font-semibold uppercase text-gray-500">{% translate "Paiements et dépenses" %}</h2>
+  <div class="card mb-6 space-y-3 text-sm">
+    <div class="space-y-1">
+      <p class="flex justify-between"><span>{% translate "Encaissé" %}</span><span>{{ balance.received|floatformat:"0g" }} €</span></p>
+      <p class="flex justify-between"><span>{% translate "Dépensé" %}</span><span>{{ balance.spent|floatformat:"0g" }} €</span></p>
+      <p class="flex justify-between font-semibold"><span>{% translate "Résultat" %}</span><span>{{ balance.result|floatformat:"0g" }} €</span></p>
+    </div>
+    <a href="{% url 'finance:page' gig.pk %}" class="btn btn-secondary btn-block">
+      {% translate "Paiements et dépenses" %}
+    </a>
+  </div>
+
   <h2 class="mb-2 text-sm font-semibold uppercase text-gray-500">{% translate "Documents" %}</h2>
   <div class="mb-6 flex flex-col gap-3">
     {% if gig.status != 'cancelled' %}

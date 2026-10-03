@@ -81,6 +81,9 @@
         {% translate "Télécharger le PDF" %}
       </a>
     {% endif %}
+    {% if not document.is_draft and is_invoice and not is_credit_note and document.status != 'cancelled' %}
+      <a href="{% url 'finance:page' gig.pk %}" class="btn btn-secondary btn-block">{% translate "Paiements" %}</a>
+    {% endif %}
     {% if not document.is_draft and is_invoice and can_credit %}
       <form method="post" action="{% url 'documents:credit-note-create' gig.pk document.pk %}">
         {% csrf_token %}

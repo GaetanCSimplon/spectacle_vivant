@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}Paiements et dépenses — Spectacle Vivant{% endblock %}
+
+{% block page_content %}
+  <h1 class="mb-1 text-lg font-semibold">{% translate "Paiements et dépenses" %}</h1>
+  <p class="mb-4 text-sm text-gray-600">{{ gig.show.title }} — {{ gig.date|date:"d/m/Y" }}</p>
+
+  {% include "finance/_body.html" %}
+
+  <a href="{% url 'gigs:detail' gig.pk %}" class="text-sm text-gray-500 hover:text-gray-700">{% translate "Retour à la date" %}</a>
+{% endblock %}
