@@ -32,6 +32,7 @@ register_converter(ShareActionConverter, "shareaction")
 
 urlpatterns = [
     path("", views.EditorView.as_view(), name="editor"),
+    path("pdf/", views.PdfView.as_view(), name="pdf"),
     path("notes/", views.NotesView.as_view(), name="notes"),
     path("partage/<shareaction:action>/", views.ShareView.as_view(), name="share"),
     path("<section:section>/ajouter/", views.ItemAddView.as_view(), name="item-add"),

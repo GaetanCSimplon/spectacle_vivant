@@ -1,5 +1,9 @@
 import secrets
 
+from django.urls import reverse
+
+from apps.core.services import render_pdf
+
 from .models import Roadmap, RoadmapSlot
 
 
@@ -36,4 +40,50 @@ def revoke(roadmap):
 
 def public_path(token):
     """Path of the public page of a shared roadmap."""
-    return f"/feuille-de-route/{token}/"
+    return reverse("roadmap-public", args=[token])
+
+
+def _tel(phone):
+    """A phone number as a tel: link wants it: digits and a leading +, no spaces."""
+    return "".join(c for i, c in enumerate(phone.strip()) if c.isdigit() or (c == "+" and i == 0))
+
+
+def _people(people):
+    return [
+        {"name": p.name, "role": p.role, "phone": p.phone, "tel": _tel(p.phone)} for p in people
+    ]
+
+
+def public_context(roadmap):
+    """Everything a roadmap may show to someone who only has the link.
+
+    This is a whitelist, on purpose: prices, conditions, contract, invoices, the billed
+    promoter, the gig status and e-mail addresses never go through here. Both the public
+    page and the PDF are built from it only.
+    """
+    gig = roadmap.gig
+    venue = gig.venue
+    return {
+        "show_title": gig.show.title,
+        "group_name": gig.show.group_name,
+        "date": gig.date,
+        "venue": {
+            "name": venue.name,
+            "address": venue.address,
+            "access_info": venue.access_info,
+            "phone": venue.phone,
+            "tel": _tel(venue.phone),
+        },
+        "crew_headcount": gig.crew_headcount,
+        "slots": list(roadmap.slots.all()),
+        "lodgings": list(roadmap.lodgings.all()),
+        "meals": list(roadmap.meals.all()),
+        "notes": roadmap.notes,
+        "members": _people(gig.members.all()),
+        "venue_contacts": _people(venue.contacts.all()),
+    }
+
+
+def render_roadmap_pdf(roadmap):
+    """PDF bytes of the roadmap, rendered on the fly (nothing is stored)."""
+    return render_pdf("roadmaps/roadmap_pdf.html", public_context(roadmap))

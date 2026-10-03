@@ -124,12 +124,13 @@ flowchart TD
     H --> I[Marquer le contrat signé<br/>PDF figé, statut : signée]
     I --> J[Facture d'acompte<br/>F-2026-0001]
     J --> K[Facture de solde<br/>F-2026-0002]
-    K --> L[("À venir : paiements,<br/>feuille de route, bilan")]
+    K --> M[Feuille de route<br/>partagée par lien secret]
+    M --> L[("À venir : paiements, bilan")]
     X --> R[Réactiver si besoin]
     R --> B
 ```
 
-Les blocs « paiements », « feuille de route » et « bilan » correspondent aux Sprints 3.6 et 3.7, pas encore réalisés.
+Les blocs « paiements » et « bilan » correspondent au Sprint 3.7, pas encore réalisé.
 
 ---
 
@@ -335,6 +336,29 @@ sequenceDiagram
 ```
 
 ---
+
+### 4.8 Lien secret de la feuille de route
+
+```mermaid
+sequenceDiagram
+    actor Artiste
+    actor Equipe as Équipe (sans compte)
+    participant App as Application
+    participant DB as Base de données
+
+    Artiste->>App: Activer le partage
+    App->>DB: nouveau jeton (token_urlsafe 32), is_published = vrai
+    App-->>Artiste: lien à copier
+    Equipe->>App: GET /feuille-de-route/jeton/
+    App->>DB: feuille publiée avec ce jeton ?
+    alt trouvée
+        App-->>Equipe: page limitée à la liste blanche (pas de prix, contrat, factures)
+    else inconnue ou partage arrêté
+        App-->>Equipe: 404
+    end
+    Artiste->>App: Arrêter le partage
+    App->>DB: jeton vidé, is_published = faux
+```
 
 ## 5. Cycles de vie (diagrammes d'états)
 

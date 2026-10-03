@@ -65,4 +65,4 @@ Plus tard (version payante) : la signature électronique par un prestataire, la 
 
 ## Et ensuite ?
 
-La prochaine étape est la **feuille de route** (le document du jour J), puis les **paiements et dépenses**, puis les pages légales et la mise en ligne. Une fois ces trois étapes terminées, le produit sera prêt pour une première série de testeurs réels.
+La feuille de route est faite. La prochaine étape est les **paiements et dépenses**, puis les pages légales et la mise en ligne. Une fois ces étapes terminées, le produit sera prêt pour une première série de testeurs réels.
