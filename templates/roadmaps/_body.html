@@ -1,0 +1,105 @@
+{% load i18n %}
+{% comment %}
+  Everything editable on a roadmap: the block HTMX swaps after each change (#roadmap-body).
+  Needs: gig, roadmap, sections, notes_form, share_url.
+{% endcomment %}
+<div id="roadmap-body">
+  <h2 class="mb-2 text-sm font-semibold uppercase text-gray-500">{% translate "Partage" %}</h2>
+  <div class="card mb-6 space-y-3 text-sm">
+    {% if roadmap.is_published %}
+      <p>{% translate "Toute personne qui a ce lien peut voir la feuille de route, sans compte." %}</p>
+      <div x-data="{ copied: false }" class="space-y-2">
+        <input type="text" readonly value="{{ share_url }}" class="w-full" onfocus="this.select()">
+        <button type="button" class="btn btn-secondary btn-block"
+                @click="navigator.clipboard.writeText('{{ share_url|escapejs }}').then(() => copied = true)">
+          <span x-show="!copied">{% translate "Copier le lien" %}</span>
+          <span x-show="copied" x-cloak>{% translate "Lien copié" %}</span>
+        </button>
+      </div>
+      <form method="post" action="{% url 'roadmaps:share' gig.pk 'arreter' %}">
+        {% csrf_token %}
+        <button type="submit" class="text-red-600 underline">{% translate "Arrêter le partage" %}</button>
+        <p class="mt-1 text-gray-500">{% translate "Le lien actuel ne marchera plus. Réactiver le partage crée un nouveau lien." %}</p>
+      </form>
+    {% else %}
+      <p>{% translate "Le partage est désactivé : personne ne peut voir cette feuille de route avec un lien." %}</p>
+      <form method="post" action="{% url 'roadmaps:share' gig.pk 'activer' %}">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-primary btn-block">{% translate "Activer le partage" %}</button>
+      </form>
+    {% endif %}
+  </div>
+
+  {% for section in sections %}
+    <h2 class="mb-2 text-sm font-semibold uppercase text-gray-500">{{ section.title }}</h2>
+    <ul class="mb-3 space-y-2">
+      {% for item in section.items %}
+        <li class="card text-sm">
+          {% if section.editing_pk == item.pk %}
+            <form method="post" action="{% url 'roadmaps:item-edit' gig.pk section.key item.pk %}"
+                  hx-post="{% url 'roadmaps:item-edit' gig.pk section.key item.pk %}"
+                  hx-target="#roadmap-body" hx-swap="outerHTML" class="space-y-3">
+              {% csrf_token %}
+              {{ section.edit_form.as_p }}
+              <div class="flex gap-3">
+                <button type="submit" class="btn btn-primary">{% translate "Enregistrer" %}</button>
+                <a href="{% url 'roadmaps:editor' gig.pk %}" class="btn btn-secondary">{% translate "Annuler" %}</a>
+              </div>
+            </form>
+          {% else %}
+            {% include section.item_template %}
+            <div class="mt-2 flex gap-4">
+              <a href="{% url 'roadmaps:item-edit' gig.pk section.key item.pk %}"
+                 hx-get="{% url 'roadmaps:item-edit' gig.pk section.key item.pk %}"
+                 hx-target="#roadmap-body" hx-swap="outerHTML"
+                 class="text-blue-700 underline">{% translate "Modifier" %}</a>
+              <form method="post" action="{% url 'roadmaps:item-delete' gig.pk section.key item.pk %}"
+                    hx-post="{% url 'roadmaps:item-delete' gig.pk section.key item.pk %}"
+                    hx-target="#roadmap-body" hx-swap="outerHTML">
+                {% csrf_token %}
+                <button type="submit" class="text-red-600 underline">{% translate "Supprimer" %}</button>
+              </form>
+            </div>
+          {% endif %}
+        </li>
+      {% empty %}
+        <li class="card text-sm text-gray-600">{% translate "Rien pour l'instant." %}</li>
+      {% endfor %}
+    </ul>
+    {% if section.add_form %}
+      <form method="post" action="{% url 'roadmaps:item-add' gig.pk section.key %}"
+            hx-post="{% url 'roadmaps:item-add' gig.pk section.key %}"
+            hx-target="#roadmap-body" hx-swap="outerHTML" class="card mb-6 space-y-3">
+        {% csrf_token %}
+        <h3 class="text-sm font-semibold">{{ section.add_label }}</h3>
+        {{ section.add_form.as_p }}
+        <button type="submit" class="btn btn-secondary btn-block">{% translate "Ajouter" %}</button>
+      </form>
+    {% else %}
+      <div class="mb-6"></div>
+    {% endif %}
+  {% endfor %}
+
+  <datalist id="member-roles">
+    <option value="Chant"></option>
+    <option value="Guitare"></option>
+    <option value="Batterie"></option>
+    <option value="Régie son"></option>
+    <option value="Régie lumière"></option>
+    <option value="Régie plateau"></option>
+    <option value="Tour management"></option>
+    <option value="Production"></option>
+    <option value="Technicien"></option>
+    <option value="Artiste"></option>
+  </datalist>
+
+  <h2 class="mb-2 text-sm font-semibold uppercase text-gray-500">{% translate "Notes" %}</h2>
+  <form method="post" action="{% url 'roadmaps:notes' gig.pk %}"
+        hx-post="{% url 'roadmaps:notes' gig.pk %}"
+        hx-target="#roadmap-body" hx-swap="outerHTML" class="card mb-6 space-y-3">
+    {% csrf_token %}
+    <p class="text-sm text-gray-600">{% translate "Ces notes sont visibles par toute personne qui a le lien." %}</p>
+    {{ notes_form.as_p }}
+    <button type="submit" class="btn btn-secondary btn-block">{% translate "Enregistrer les notes" %}</button>
+  </form>
+</div>
