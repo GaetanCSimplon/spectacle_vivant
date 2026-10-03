@@ -193,6 +193,7 @@ class Invoice(BillingDocument):
     class Status(models.TextChoices):
         DRAFT = "draft", _("Brouillon")
         ISSUED = "issued", _("Émise")
+        PAID = "paid", _("Payée")
         CANCELLED = "cancelled", _("Annulée par avoir")
 
     kind = models.CharField(_("type"), max_length=20, choices=Kind.choices)

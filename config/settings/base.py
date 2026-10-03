@@ -46,6 +46,7 @@ INSTALLED_APPS = [
     "apps.gigs",
     "apps.documents",
     "apps.roadmaps",
+    "apps.finance",
 ]
 
 MIDDLEWARE = [
