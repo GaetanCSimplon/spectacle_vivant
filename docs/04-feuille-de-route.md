@@ -234,6 +234,8 @@ Avant de coder : propose un plan (fichiers, modèles, tests) et attends mon acco
 - [x] Tests : lien valide/révoqué/inexistant/réactivé, absence de fuite (liste blanche `public_context`, HTML et PDF), en-têtes `no-store`/`noindex`/`no-referrer`, isolation.
 
 ### Sprint 3.7 — Finances
+> **Décisions (2026-10-03)** : un paiement ne peut pas dépasser le reste à payer ; pas de paiement sur un avoir ni sur une facture annulée ; un paiement peut être modifié ou supprimé (le statut de la facture est recalculé, `paid` ↔ `issued`) ; bilan par date en **TTC** (prévu, facturé, encaissé comparables, prix HT rappelé), résultat = encaissé − dépensé. Découpage : PR 1 modèles et services, PR 2 écrans, PR 3 tableau de bord, PR 4 export CSV.
+
 - [ ] `Payment` et `Expense` avec formulaires rapides (HTMX).
 - [ ] Mise à jour automatique du statut de facture selon les paiements.
 - [ ] Catégories de dépenses.
