@@ -1,6 +1,6 @@
 # Synthèse des fonctionnalités réalisées
 
-> **Situation au 2026-10-01.** Phase 3 (MVP), Sprints 3.1 à 3.5 réalisés, hors quelques restes listés au §7.
+> **Situation au 2026-10-03.** Phase 3 (MVP), Sprints 3.1 à 3.7 réalisés, hors quelques restes listés au §7.
 > Ce document décrit **ce qui existe dans le code** ; les intentions et le périmètre complet restent dans `03-cahier-des-charges.md` et `04-feuille-de-route.md`.
 > Pour les schémas : `09-cas-d-usage-et-diagrammes.md`. Pour une version non technique : `10-resume-simple.md`.
 
@@ -20,10 +20,10 @@ Légende : ✅ fait · 🟡 partiel · ⬜ pas encore fait.
 | M4 — Contrat de cession | Génération PDF, versions, numérotation, signature, PDF signé | ✅ |
 | M5 — Devis et factures | Devis, factures (acompte, solde, totale), avoirs, PDF | ✅ (relecture professionnelle ⬜) |
 | M6 — Feuille de route | Créneaux, lien secret, vue mobile, PDF | ✅ (test à 375 px et rendu du PDF à contrôler à la main) |
-| M7 — Finances | Paiements, dépenses, tableau de bord, export CSV | ✅ (ouverture des CSV dans Excel à contrôler à la main) |
+| M7 — Finances | Paiements, dépenses, bilan par date, tableau de bord, export CSV | ✅ (ouverture des CSV dans Excel à contrôler à la main) |
 | M9 — Légal et RGPD | Pages légales, export et suppression de compte | ⬜ (Sprint 3.8) |
 
-**Le parcours central fonctionne de bout en bout** : créer une date → la compléter → générer le contrat → le faire signer → facturer l'acompte puis le solde → télécharger les PDF. Il s'y ajoute la feuille de route partagée par lien secret ; le maillon suivant (paiements) n'est pas encore là.
+**Le parcours central fonctionne de bout en bout** : créer une date → la compléter → générer le contrat → le faire signer → facturer l'acompte puis le solde → télécharger les PDF. Il se prolonge par la feuille de route partagée par lien secret, puis par les paiements reçus, les dépenses, le bilan de la date, le tableau de bord de l'accueil et les exports CSV. Il ne manque au MVP que la partie légale (Sprint 3.8) et la mise en ligne.
 
 ---
 
@@ -59,7 +59,7 @@ Légende : ✅ fait · 🟡 partiel · ⬜ pas encore fait.
 - **Fin d'option** : alerte orange à 7 jours ou moins, rouge si expirée. Rien n'est annulé automatiquement.
 - **Liste** filtrable (statut, mois, spectacle) en direct, avec section « Annulées » et comptage « N dates en 2026 » (annulées exclues).
 - **Calendrier mensuel** : grille côté serveur, pastilles colorées par statut, navigation de mois en mois.
-- **Page de détail** : infos, statut, « prochaine action », documents.
+- **Page de détail** : infos, statut, « prochaine action », feuille de route, paiements et dépenses (encaissé, dépensé, résultat), documents.
 - **Annulation** (avec confirmation, historique conservé) et **réactivation**.
 - **Compléter la date** : une page pour renseigner tout ce que les documents demandent (horaires, invitations, lieu de signature, acompte, conditions particulières, SACEM, jauge, signataire…). Un champ vide s'affiche en pointillés dans le contrat.
 
@@ -81,6 +81,24 @@ Légende : ✅ fait · 🟡 partiel · ⬜ pas encore fait.
 - **Avoirs** : négatifs, liés à la facture d'origine, jamais plus que son montant ; un avoir total marque la facture « Annulée par avoir ». Même série de numéros que les factures.
 - **Devis** : série de numéros séparée (`D-2026-0001`), validité 30 jours, cadre « Bon pour accord ».
 - **PDF** : mentions légales (voir réserves au §7), TVA par taux, IBAN, conditions de paiement sur les factures.
+- **Statut « Payée »** : posé automatiquement quand les paiements atteignent le total (voir M7). Une facture payée reste créditable.
+
+### M6 — Feuille de route
+- **Éditeur** (`dates/<id>/feuille-de-route/`) : programme de la journée (créneaux triés par heure : arrivée, balances, repas, concert, départ, autre), hébergement, repas, équipe (nom, fonction, téléphone, e-mail), notes. Ajout, modification, suppression en direct (HTMX), avec repli sans JavaScript.
+- **Pré-remplissage** : à la première ouverture, les créneaux Arrivée, Balances et Concert sont créés d'après les horaires de la date.
+- **Partage par lien secret** : « Activer le partage » crée un jeton de 43 caractères (`token_urlsafe(32)`), « Copier le lien », « Arrêter le partage » le détruit. Réactiver crée un **nouveau** lien : l'ancien reste introuvable.
+- **Page publique** (`feuille-de-route/<jeton>/`, **sans compte**) : lisible à 375 px, gros boutons « Appeler » (`tel:`), « Itinéraire » (lien OpenStreetMap, pas de service de cartes intégré) et « Copier l'adresse » (lieu et hébergements), export PDF. Jeton inconnu ou partage arrêté : 404.
+- **Ce qui est exposé** : seulement une liste blanche (`public_context`) : spectacle et groupe, date, lieu (nom, adresse, accès, téléphone), programme, hébergement, repas, nombre de personnes, notes, équipe et contacts du lieu (nom, fonction, téléphone). **Jamais** : prix, conditions, contrat, factures, organisateur facturé, statut de la date, e-mails.
+- **Protections** : en-têtes `Cache-Control: no-store`, `X-Robots-Tag: noindex`, `Referrer-Policy: no-referrer` (le jeton est dans l'adresse).
+- **PDF** de la feuille de route : généré à la volée, depuis l'éditeur ou depuis le lien, jamais stocké.
+- ⬜ Plan des lieux (aperçu d'un plan joint) : idée notée pour plus tard (Q16).
+
+### M7 — Finances
+- **Paiements** (page `dates/<id>/finances/`) : montant, date, mode (virement, chèque, espèces, carte, autre) sur une facture émise. Refusés : montant nul ou négatif, dépassement du reste à payer, paiement sur un avoir, un brouillon ou une facture annulée. Modifiables et supprimables ; le statut de la facture est recalculé sous verrou (`payée` ↔ `émise`).
+- **Dépenses** : catégorie (cachets, transport, hébergement, technique, communication, autres), libellé, montant, date, justificatif facultatif (PDF, JPEG ou PNG vérifié sur le contenu, 10 Mo maximum, servi par une vue protégée, supprimé avec la dépense).
+- **Bilan d'une date** : prévu, facturé, encaissé, reste à encaisser, dépensé, résultat (encaissé moins dépensé). Trois montants distincts (prévu / facturé / encaissé), en TTC pour être comparables, en euros entiers à l'affichage, au centime dans les calculs.
+- **Tableau de bord** (page d'accueil) : facturé et encaissé de l'année en cours, factures à encaisser (reste dû, en retard ou échéance, total), dates confirmées à venir sans contrat généré, cinq prochaines dates.
+- **Exports CSV** (`exports/`) : factures et avoirs émis, recettes, dépenses, sur la période choisie ; `;`, UTF-8 avec BOM, virgule décimale, dates jj/mm/aaaa ; les textes qui commenceraient par `=`, `+`, `-` ou `@` sont neutralisés contre les formules de tableur.
 
 ---
 
@@ -95,8 +113,12 @@ Légende : ✅ fait · 🟡 partiel · ⬜ pas encore fait.
 | RG-06 Facture émise immuable | refus au niveau du modèle (document et lignes), pas seulement dans l'interface |
 | RG-07 Données légales figées à l'émission | `issuer_snapshot` / `customer_snapshot`, PDF construit depuis ces copies |
 | RG-08 Contrat signé : PDF figé | `signed_version` protégée contre la suppression, génération refusée |
-| RG-10 Montants en `Decimal`, deux décimales | partout ; TVA par taux, arrondi « moitié au-dessus », avoir symétrique |
+| RG-09 « Payée » seulement si paiements ≥ total | `finance/services.py`, sous verrou ; un surpaiement est même refusé |
+| RG-10 Montants en `Decimal`, deux décimales | partout ; TVA par taux, arrondi « moitié au-dessus », avoir symétrique ; contrainte en base « montant > 0 » sur paiements et dépenses |
+| RG-11 Le lien secret n'expose que la feuille de route | liste blanche `public_context`, testée sur le HTML et le PDF |
 | RG-12 Concert gratuit : prix des places à 0 | calculé à l'enregistrement |
+| F-57 Prévu / facturé / encaissé séparés | `gig_balance` : trois montants distincts, jamais fusionnés |
+| F-58 Euros entiers à l'affichage seulement | arrondi dans les gabarits de synthèse, stockage et calculs au centime |
 
 ⚠️ RG-02 (lieu facultatif en option) n'est pas appliquée : `Gig.venue` est obligatoire. Écart connu, non traité.
 
@@ -107,9 +129,10 @@ Légende : ✅ fait · 🟡 partiel · ⬜ pas encore fait.
 - **Principe** : toute vue qui lit ou modifie des données filtre sur la structure de l'utilisateur ; le formulaire ne laisse jamais choisir la structure.
 - **Tests d'isolation** : chaque modèle métier en a au moins un ; `test_tenant_coverage.py` échoue sinon. Pour la facturation, chaque route est testée avec une autre structure (404).
 - **Accès croisés** : un document n'est joignable que par sa propre date ; une ligne que par son propre document.
-- **Fichiers** : contrats, PDF signés, PDF de factures, fiches techniques et riders sont envoyés par des vues protégées. Aucune adresse `/media/` n'est servie, même en développement. Chemins non devinables (`<dossier>/<uuid>/…`).
+- **Fichiers** : contrats, PDF signés, PDF de factures, fiches techniques, riders et justificatifs de dépense sont envoyés par des vues protégées. Aucune adresse `/media/` n'est servie, même en développement. Chemins non devinables (`<dossier>/<uuid>/…`).
 - **Stockage** : disque local en développement ; bucket S3 européen **privé** en production (réglage prêt, bucket à créer).
-- **Sans connexion** : toutes les pages exigent la connexion (sauf inscription et connexion).
+- **Sans connexion** : toutes les pages exigent la connexion, sauf inscription, connexion et **la page publique de la feuille de route**, qui ne s'ouvre qu'avec son jeton secret (révocable, jamais un numéro). Pas de limitation de débit sur cette page (jeton de 256 bits) : à reconsidérer à la mise en ligne.
+- **Jeton dans l'adresse** : il apparaîtra dans les journaux du serveur ; à filtrer au branchement de Sentry (Phase 1.7).
 - **Secrets** : uniquement par variables d'environnement.
 
 ---
@@ -118,26 +141,27 @@ Légende : ✅ fait · 🟡 partiel · ⬜ pas encore fait.
 
 | Élément | État |
 |---|---|
-| Tests automatisés | **535** (471 sur `main` + ceux des PR en attente), tous verts |
+| Tests automatisés | **717**, tous verts |
 | Qualité du code | `ruff` (contrôle et format), `pre-commit` |
 | Intégration continue | GitHub Actions : `ruff`, `pytest` avec PostgreSQL, absence de migration manquante, `check --deploy` |
 | Branche `main` | protégée, une PR par sujet, CI verte avant fusion |
-| Taille | environ 3 750 lignes de code applicatif et 6 200 lignes de tests (hors migrations) |
-| Historique | 94 commits, 34 PR fusionnées entre le 21/09 et le 01/10/2026 |
-| Migrations | `tenants` 5 · `catalog` 4 · `addressbook` 4 · `gigs` 5 · `documents` 6 |
+| Taille | environ 5 200 lignes de code Python applicatif, 8 300 lignes de tests et 2 800 lignes de gabarits (hors migrations) |
+| Historique | 116 commits, 46 PR fusionnées entre le 21/09 et le 03/10/2026 |
+| Migrations | `tenants` 5 · `catalog` 4 · `addressbook` 4 · `gigs` 6 · `documents` 7 · `roadmaps` 1 · `finance` 2 |
 
-PR en attente de fusion : **#112** (écrans de facturation) et **#113** (PDF de facture), cette dernière empilée sur la première.
+Aucune PR en attente : tout est fusionné dans `main`.
 
 ---
 
 ## 6. Modèle de données réalisé
 
 `User`, `Membership`, `Tenant` · `Show`, `Promoter`, `Venue`, `Contact` · `Gig` ·
-`Contract`, `ContractVersion`, `ContractSequence` · `Invoice`, `Quote`, `DocumentLine`, `DocumentSequence`.
+`Contract`, `ContractVersion`, `ContractSequence` · `Invoice`, `Quote`, `DocumentLine`, `DocumentSequence` ·
+`Roadmap`, `RoadmapSlot`, `Lodging`, `Meal`, `GigMember` · `Payment`, `Expense`.
 
 Schéma des relations : voir `09-cas-d-usage-et-diagrammes.md` §6. La description champ par champ est dans le cahier des charges §9 (aligné sur le code le 01/10).
 
-**Écarts avec le cahier des charges initial** (déjà reportés dans le §9) : `ContractVersion` et `reference` remplacent `Contract.pdf_file`/`number` ; `DocumentSequence` remplace `InvoiceSequence` ; un avoir est un type de facture ; la TVA est portée par `Tenant.vat_rate`.
+**Écarts avec le cahier des charges initial** (déjà reportés dans le §9) : `ContractVersion` et `reference` remplacent `Contract.pdf_file`/`number` ; `DocumentSequence` remplace `InvoiceSequence` ; un avoir est un type de facture ; la TVA est portée par `Tenant.vat_rate` ; `Invoice` a un statut « payée » ; `Meal` n'a pas de champ adresse (seulement un lieu en texte).
 
 ---
 
@@ -145,16 +169,18 @@ Schéma des relations : voir `09-cas-d-usage-et-diagrammes.md` §6. La descripti
 
 **Reste du MVP**
 - Sprint 3.8 — Pages légales, export et suppression de compte, audit d'isolation complet, sauvegardes, recette.
+- À contrôler **à la main** (non vérifié par les tests) : le rendu à 375 px des écrans de paiements, dépenses, tableau de bord et exports ; l'ouverture des CSV dans Excel ; la mise en page des PDF (facture et feuille de route).
 - Restes du 3.1 : confirmation d'e-mail, logo, code APE.
 
 **Avant d'utiliser de vraies factures**
 - Relecture par un professionnel (comptable) du PDF de facture et du contrat. Les PDF portent un bandeau « Modèle provisoire — non relu par un professionnel » (un seul réglage à retirer ensuite).
 - Conditions de paiement (pénalités, indemnité de 40 €) à discuter avec l'associé puis à faire valider.
 - Mention de TVA du cas « non assujetti » : texte provisoire (questions Q13 / F-56).
+- Le bilan et le tableau de bord sont en TTC ; si la TVA concerne l'utilisateur, faire valider la présentation (résultat = encaissé − dépensé, sans distinguer la TVA).
 - ⚠️ **Les PDF du MVP ne remplacent pas la plateforme agréée de facturation électronique** (obligation à vérifier, prévue en Phase 5). L'application ne doit pas se dire « conforme » avant cette connexion.
 
 **Déploiement** (rien n'est en ligne à ce jour) : compte Scalingo, bucket S3 privé, prestataire d'e-mails, domaine, Sentry. Liste complète : `06-services-production.md`.
 
-**Questions de fond ouvertes** (cahier des charges §14) : Q9 modèle économique, Q10 hiérarchie Projet/Spectacle (détail : `07-modele-spectacle.md`), Q12, Q13, Q14, Q15 (sens du mot « Structure »).
+**Questions de fond ouvertes** (cahier des charges §14) : Q9 modèle économique, Q10 hiérarchie Projet/Spectacle (détail : `07-modele-spectacle.md`), Q12, Q13, Q14, Q15 (sens du mot « Structure »), Q16 (plan des lieux dans la feuille de route).
 
-**Points techniques notés** : `Gig.venue` obligatoire (RG-02) ; un test de liste de dates utilise `date.today()` au lieu de `timezone.localdate()` (risque de test instable passé minuit UTC) ; avertissement de dépréciation Django 6 sur `FORMS_URLFIELD_ASSUME_HTTPS` (sans effet sous Django 5.2) ; la mise en page des PDF de facture reste à vérifier à l'œil.
+**Points techniques notés** : `Gig.venue` obligatoire (RG-02) ; un test de liste de dates utilise `date.today()` au lieu de `timezone.localdate()` (risque de test instable passé minuit UTC) ; avertissement de dépréciation Django 6 sur `FORMS_URLFIELD_ASSUME_HTTPS` (sans effet sous Django 5.2) ; la mise en page des PDF de facture et de feuille de route reste à vérifier à l'œil ; un brouillon de facture n'apparaît pas sur la page des paiements (il ne peut pas être payé) ; une feuille de route n'a pas encore de plan des lieux ni d'adresse pour les repas.
