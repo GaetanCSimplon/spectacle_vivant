@@ -19,6 +19,7 @@ from django.contrib import admin
 from django.urls import include, path
 
 from apps.core.views import HelloPdfView, HomeView
+from apps.finance import views as finance_views
 from apps.roadmaps import views as roadmap_views
 from apps.tenants.views import OnboardingView
 
@@ -43,6 +44,8 @@ urlpatterns = [
         roadmap_views.PublicRoadmapPdfView.as_view(),
         name="roadmap-public-pdf",
     ),
+    path("exports/", finance_views.ExportView.as_view(), name="export"),
+    path("exports/<str:kind>.csv", finance_views.ExportCsvView.as_view(), name="export-csv"),
     path("admin/", admin.site.urls),
     path("accounts/", include("allauth.urls")),
 ]

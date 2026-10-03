@@ -47,3 +47,17 @@ class ExpenseForm(forms.ModelForm):
         if not head.startswith(RECEIPT_SIGNATURES):
             raise forms.ValidationError(_("Le justificatif doit être un PDF, un JPEG ou un PNG."))
         return file
+
+
+class PeriodForm(forms.Form):
+    """The period of an export: both days included."""
+
+    start = forms.DateField(label=_("Du"), widget=_date_widget())
+    end = forms.DateField(label=_("Au"), widget=_date_widget())
+
+    def clean(self):
+        cleaned = super().clean()
+        start, end = cleaned.get("start"), cleaned.get("end")
+        if start and end and start > end:
+            raise forms.ValidationError(_("La date de fin doit être après la date de début."))
+        return cleaned

@@ -14,7 +14,7 @@ TENANT_FIELDS = {
 }
 
 
-def make_gig(tenant=None, price="1000.00", **tenant_fields):
+def make_gig(tenant=None, price="1000.00", gig_fields=None, **tenant_fields):
     fields = {**TENANT_FIELDS, **tenant_fields}
     extra = {"tenant": tenant} if tenant else {f"tenant__{k}": v for k, v in fields.items()}
     gig = GigFactory(
@@ -22,6 +22,7 @@ def make_gig(tenant=None, price="1000.00", **tenant_fields):
         promoter__name="Mairie de Nîmes",
         promoter__billing_address="3 place de la Mairie, 30000 Nîmes",
         **extra,
+        **(gig_fields or {}),
     )
     gig.refresh_from_db()
     return gig

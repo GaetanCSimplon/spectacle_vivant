@@ -20,7 +20,7 @@ Légende : ✅ fait · 🟡 partiel · ⬜ pas encore fait.
 | M4 — Contrat de cession | Génération PDF, versions, numérotation, signature, PDF signé | ✅ |
 | M5 — Devis et factures | Devis, factures (acompte, solde, totale), avoirs, PDF | ✅ (relecture professionnelle ⬜) |
 | M6 — Feuille de route | Créneaux, lien secret, vue mobile, PDF | ✅ (test à 375 px et rendu du PDF à contrôler à la main) |
-| M7 — Finances | Paiements, dépenses, tableau de bord, export CSV | 🟡 paiements, dépenses, bilan par date et tableau de bord faits ; export CSV restant (Sprint 3.7) |
+| M7 — Finances | Paiements, dépenses, tableau de bord, export CSV | ✅ (ouverture des CSV dans Excel à contrôler à la main) |
 | M9 — Légal et RGPD | Pages légales, export et suppression de compte | ⬜ (Sprint 3.8) |
 
 **Le parcours central fonctionne de bout en bout** : créer une date → la compléter → générer le contrat → le faire signer → facturer l'acompte puis le solde → télécharger les PDF. Il s'y ajoute la feuille de route partagée par lien secret ; le maillon suivant (paiements) n'est pas encore là.
@@ -144,7 +144,6 @@ Schéma des relations : voir `09-cas-d-usage-et-diagrammes.md` §6. La descripti
 ## 7. Ce qui reste à faire et points d'attention
 
 **Reste du MVP**
-- Sprint 3.7 — Paiements, dépenses, bilan par date (prévu / facturé / encaissé), tableau de bord, export CSV. Le statut « payée » arrive ici.
 - Sprint 3.8 — Pages légales, export et suppression de compte, audit d'isolation complet, sauvegardes, recette.
 - Restes du 3.1 : confirmation d'e-mail, logo, code APE.
 
