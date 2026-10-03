@@ -45,6 +45,7 @@ INSTALLED_APPS = [
     "apps.addressbook",
     "apps.gigs",
     "apps.documents",
+    "apps.roadmaps",
 ]
 
 MIDDLEWARE = [
