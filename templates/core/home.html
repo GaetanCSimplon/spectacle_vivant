@@ -6,7 +6,7 @@
 {% block page_content %}
   {% if tenant %}
     <h1 class="mb-4 text-xl font-semibold">{{ tenant.name }}</h1>
-    <div class="flex flex-wrap gap-3">
+    <div class="mb-6 flex flex-wrap gap-3">
       <a href="{% url 'gigs:wizard-show' %}" class="btn btn-primary">
         {% translate "+ Nouvelle date" %}
       </a>
@@ -14,6 +14,55 @@
         {% translate "Voir mes dates" %}
       </a>
     </div>
+
+    {% if has_gigs %}
+      <h2 class="mb-2 text-sm font-semibold uppercase text-gray-500">{% blocktranslate %}Année {{ year }}{% endblocktranslate %}</h2>
+      <div class="card mb-6 space-y-1 text-sm">
+        <p class="flex justify-between"><span>{% translate "Facturé" %} (TTC)</span><span>{{ invoiced_year|floatformat:"0g" }} €</span></p>
+        <p class="flex justify-between"><span>{% translate "Encaissé" %}</span><span>{{ received_year|floatformat:"0g" }} €</span></p>
+      </div>
+
+      {% if awaiting %}
+        <h2 class="mb-2 text-sm font-semibold uppercase text-gray-500">
+          {% translate "Factures à encaisser" %}
+          {% if overdue_count %}<span class="badge ml-1 bg-red-100 text-red-800">{% blocktranslate count n=overdue_count %}{{ n }} en retard{% plural %}{{ n }} en retard{% endblocktranslate %}</span>{% endif %}
+        </h2>
+        <ul class="mb-2 flex flex-col gap-2">
+          {% for row in awaiting %}
+            <li>
+              <a href="{% url 'finance:page' row.gig.pk %}" class="card card-link flex items-center justify-between gap-3 text-sm">
+                <span class="min-w-0">
+                  <span class="block font-medium">{{ row.invoice.number }} · {{ row.gig.show.title }}</span>
+                  {% if row.overdue %}
+                    <span class="block text-red-700">{% blocktranslate with n=row.late_days %}En retard de {{ n }} j{% endblocktranslate %} · {% translate "échéance" %} {{ row.invoice.due_date|date:"d/m/Y" }}</span>
+                  {% elif row.invoice.due_date %}
+                    <span class="block text-gray-600">{% translate "Échéance" %} {{ row.invoice.due_date|date:"d/m/Y" }}</span>
+                  {% endif %}
+                </span>
+                <span class="shrink-0 font-medium">{{ row.remaining|floatformat:"0g" }} €</span>
+              </a>
+            </li>
+          {% endfor %}
+        </ul>
+        <p class="mb-6 text-right text-sm text-gray-600">{% translate "Total à encaisser" %} : <strong>{{ awaiting_total|floatformat:"0g" }} €</strong></p>
+      {% endif %}
+
+      {% if gigs_without_contract %}
+        <h2 class="mb-2 text-sm font-semibold uppercase text-gray-500">{% translate "Dates sans contrat" %}</h2>
+        <ul class="mb-6 flex flex-col gap-2">
+          {% for gig in gigs_without_contract %}{% include "gigs/_gig_row.html" %}{% endfor %}
+        </ul>
+      {% endif %}
+
+      {% if next_gigs %}
+        <h2 class="mb-2 text-sm font-semibold uppercase text-gray-500">{% translate "Prochaines dates" %}</h2>
+        <ul class="mb-6 flex flex-col gap-2">
+          {% for gig in next_gigs %}{% include "gigs/_gig_row.html" %}{% endfor %}
+        </ul>
+      {% endif %}
+    {% else %}
+      <p class="card text-sm">{% translate "Vous n'avez pas encore de date. Créez la première !" %}</p>
+    {% endif %}
   {% else %}
     <p>Aucune structure associée à ce compte pour l'instant.</p>
   {% endif %}
