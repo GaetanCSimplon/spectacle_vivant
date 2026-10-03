@@ -16,6 +16,7 @@ from apps.core.tests import (
     test_tenant_isolation,  # noqa: F401
 )
 from apps.documents.tests import test_isolation as documents_test_isolation  # noqa: F401
+from apps.finance.tests import test_isolation as finance_test_isolation  # noqa: F401
 from apps.gigs.tests import test_isolation as gigs_test_isolation  # noqa: F401
 from apps.roadmaps.tests import test_isolation as roadmaps_test_isolation  # noqa: F401
 

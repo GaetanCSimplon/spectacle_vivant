@@ -24,6 +24,8 @@ ZERO = Decimal("0.00")
 PDF_PROVISIONAL = True
 PAYMENT_DELAY_DAYS = 30
 QUOTE_VALIDITY_DAYS = 30
+# An invoice that is already fully paid can still be credited.
+CREDITABLE = (Invoice.Status.ISSUED, Invoice.Status.PAID)
 
 
 class InvoicingError(Exception):
@@ -131,7 +133,7 @@ def remove_line(line):
 def invoiced_excl_tax(gig):
     """Excl. tax total already invoiced for a gig (credit notes count as negative)."""
     issued = Invoice.objects.filter(
-        gig=gig, tenant=gig.tenant, status__in=[Invoice.Status.ISSUED, Invoice.Status.CANCELLED]
+        gig=gig, tenant=gig.tenant, status__in=[*CREDITABLE, Invoice.Status.CANCELLED]
     )
     return sum((invoice.total_excl_tax for invoice in issued), ZERO)
 
@@ -193,7 +195,7 @@ def create_credit_note(invoice):
 
     It can be edited before issuing, for example to credit only part of the invoice.
     """
-    if invoice.kind == Invoice.Kind.CREDIT_NOTE or invoice.status != Invoice.Status.ISSUED:
+    if invoice.kind == Invoice.Kind.CREDIT_NOTE or invoice.status not in CREDITABLE:
         raise InvoicingError(_("Seule une facture émise peut recevoir un avoir."))
     lines = [
         {
@@ -323,13 +325,13 @@ def _credited(original):
 
 def creditable_amount(invoice):
     """What a new credit note could still give back (incl. tax), zero if nothing."""
-    if invoice.kind == Invoice.Kind.CREDIT_NOTE or invoice.status != Invoice.Status.ISSUED:
+    if invoice.kind == Invoice.Kind.CREDIT_NOTE or invoice.status not in CREDITABLE:
         return ZERO
     return invoice.total_incl_tax + _credited(invoice)
 
 
 def _check_credit_note(note, original):
-    if original.status != Invoice.Status.ISSUED:
+    if original.status not in CREDITABLE:
         raise InvoicingError(_("La facture d'origine n'est plus créditable."))
     if note.total_incl_tax >= ZERO:
         raise InvoicingError(_("Le montant d'un avoir doit être négatif."))

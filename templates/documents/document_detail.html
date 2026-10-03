@@ -12,7 +12,7 @@
       </h1>
       <p class="text-sm text-gray-600">{{ gig.show.title }} — {{ gig.date|date:"d/m/Y" }}</p>
     </div>
-    <span class="badge shrink-0 {% if document.is_draft %}bg-amber-100 text-amber-800{% elif document.status == 'issued' %}bg-green-100 text-green-800{% else %}bg-gray-200 text-gray-600{% endif %}">
+    <span class="badge shrink-0 {% if document.is_draft %}bg-amber-100 text-amber-800{% elif document.status == 'issued' or document.status == 'paid' %}bg-green-100 text-green-800{% else %}bg-gray-200 text-gray-600{% endif %}">
       {{ document.get_status_display }}
     </span>
   </div>
