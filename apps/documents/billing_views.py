@@ -1,7 +1,7 @@
 """Screens for the quotes and invoices of a gig (the money rules are in invoicing.py)."""
 
 from django.contrib import messages
-from django.http import Http404
+from django.http import FileResponse, Http404, HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils.translation import gettext_lazy as _
 from django.views import View
@@ -263,4 +263,23 @@ class CreditNoteView(DocumentMixin, View):
             return self.refuse(error.args[0])
         return redirect(
             "documents:document-detail", gig_id=self.gig.pk, doc_type="factures", pk=note.pk
+        )
+
+
+class DocumentPdfView(DocumentMixin, View):
+    """A draft shows a preview that is stored nowhere; an issued document sends its stored PDF."""
+
+    def get(self, request, gig_id, doc_type, pk):
+        self.load(gig_id, doc_type, pk)
+        document = self.document
+        if document.is_draft:
+            return HttpResponse(
+                invoicing.render_billing_pdf(document), content_type="application/pdf"
+            )
+        invoicing.ensure_pdf(document)
+        return FileResponse(
+            document.pdf_file.open("rb"),
+            content_type="application/pdf",
+            as_attachment=True,
+            filename=f"{document.number}.pdf",
         )

@@ -161,13 +161,13 @@ class BillingDocument(TenantOwnedModel):
 
     def save(self, *args, **kwargs):
         if not self._state.adding:
-            stored = type(self).objects.filter(pk=self.pk).values_list("status", flat=True).first()
-            if stored is not None and stored != self.Status.DRAFT:
+            stored = type(self).objects.filter(pk=self.pk).values_list("status", "pdf_file").first()
+            if stored is not None and stored[0] != self.Status.DRAFT:
+                # The PDF may be stored once if the document has none yet, never replaced.
+                allowed = set(self.MUTABLE_AFTER_ISSUE) | ({"pdf_file"} if not stored[1] else set())
                 update_fields = kwargs.get("update_fields")
-                only_status = update_fields is not None and set(update_fields) <= (
-                    self.MUTABLE_AFTER_ISSUE
-                )
-                if not only_status or self.status == self.Status.DRAFT:
+                only_allowed = update_fields is not None and set(update_fields) <= allowed
+                if not only_allowed or self.status == self.Status.DRAFT:
                     raise ImmutableDocument(_("Un document émis ne peut plus être modifié."))
         super().save(*args, **kwargs)
 

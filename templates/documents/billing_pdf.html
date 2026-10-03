@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="fr">
+  <head>
+    <meta charset="utf-8">
+    <style>
+      @page {
+        size: A4;
+        margin: 2cm;
+
+        @bottom-center {
+          content: "{% if document.number %}{{ document.number }} — {% endif %}Page " counter(page) " / " counter(pages);
+          font-size: 9px;
+          color: #666;
+        }
+      }
+
+      body { font-family: sans-serif; font-size: 11px; color: #111; line-height: 1.45; }
+      h1 { font-size: 20px; margin: 0 0 2px; }
+      h2 { font-size: 10px; text-transform: uppercase; color: #555; margin: 0 0 4px; }
+      p { margin: 0 0 4px; }
+
+      .banner { padding: 6px; text-align: center; font-size: 10px; margin-bottom: 14px; }
+      .banner-draft { background: #fef3c7; border: 1px solid #f59e0b; color: #92400e; }
+      .banner-provisional { background: #f3f4f6; border: 1px solid #9ca3af; color: #374151; }
+
+      .head { display: flex; justify-content: space-between; margin-bottom: 18px; }
+      .head .meta { text-align: right; }
+      .parties { display: flex; justify-content: space-between; margin-bottom: 18px; }
+      .party { width: 48%; }
+
+      table { width: 100%; border-collapse: collapse; margin-bottom: 10px; }
+      th { text-align: left; font-size: 10px; color: #555; border-bottom: 1px solid #999; padding: 4px 3px; }
+      td { padding: 5px 3px; border-bottom: 1px solid #ddd; vertical-align: top; }
+      .num { text-align: right; white-space: nowrap; }
+
+      .totals { width: 55%; margin-left: 45%; }
+      .totals td { border-bottom: none; padding: 2px 3px; }
+      .totals .grand td { border-top: 1px solid #111; font-weight: bold; font-size: 12px; }
+
+      .mentions { margin-top: 18px; font-size: 9.5px; color: #333; }
+      .approval { margin-top: 24px; border: 1px solid #999; padding: 8px; min-height: 70px; }
+    </style>
+  </head>
+  <body>
+    {% if is_draft %}
+      <div class="banner banner-draft">BROUILLON — ce document n'est pas émis et n'a pas de numéro.</div>
+    {% elif provisional %}
+      <div class="banner banner-provisional">Modèle provisoire — non relu par un professionnel.</div>
+    {% endif %}
+
+    <div class="head">
+      <div>
+        <h1>{% if is_credit_note %}AVOIR{% elif is_invoice %}FACTURE{% else %}DEVIS{% endif %}{% if document.number %} {{ document.number }}{% endif %}</h1>
+        <p>
+          {{ gig.show.title }} — {{ gig.date|date:"d/m/Y" }}
+        </p>
+        {% if is_credit_note and document.credit_note_of %}
+          <p>Avoir sur la facture n° {{ document.credit_note_of.number }} du {{ document.credit_note_of.issue_date|date:"d/m/Y" }}.</p>
+        {% endif %}
+      </div>
+      <div class="meta">
+        {% if document.issue_date %}<p>Émis le {{ document.issue_date|date:"d/m/Y" }}</p>{% endif %}
+        {% if is_invoice and not is_credit_note and document.due_date %}<p>Échéance : {{ document.due_date|date:"d/m/Y" }}</p>{% endif %}
+        {% if not is_invoice and document.valid_until %}<p>Valable jusqu'au {{ document.valid_until|date:"d/m/Y" }}</p>{% endif %}
+        <p>Date de la prestation : {{ gig.date|date:"d/m/Y" }}</p>
+      </div>
+    </div>
+
+    <div class="parties">
+      <div class="party">
+        <h2>Émetteur</h2>
+        <p><strong>{{ issuer.name }}</strong>{% if issuer.legal_form %} — {{ issuer.legal_form }}{% endif %}</p>
+        <p>{{ issuer.address|linebreaksbr }}</p>
+        <p>SIRET : {{ issuer.siret|default:"……" }}</p>
+        {% if show_vat %}<p>N° de TVA : {{ issuer.vat_number|default:"……" }}</p>{% endif %}
+        {% if issuer.licence_number %}<p>Licence d'entrepreneur de spectacles : {{ issuer.licence_number }}</p>{% endif %}
+      </div>
+      <div class="party">
+        <h2>Client</h2>
+        <p><strong>{{ customer.name }}</strong></p>
+        <p>{{ customer.billing_address|linebreaksbr }}</p>
+        {% if customer.siret %}<p>SIRET : {{ customer.siret }}</p>{% endif %}
+      </div>
+    </div>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Désignation</th>
+          <th class="num">Qté</th>
+          <th class="num">Prix unitaire HT</th>
+          {% if show_vat %}<th class="num">TVA</th>{% endif %}
+          <th class="num">Total HT</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for row in rows %}
+          <tr>
+            <td>{{ row.line.label }}</td>
+            <td class="num">{{ row.line.quantity }}</td>
+            <td class="num">{{ row.line.unit_price_excl_tax }} €</td>
+            {% if show_vat %}<td class="num">{{ row.line.vat_rate }} %</td>{% endif %}
+            <td class="num">{{ row.total }} €</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+
+    <table class="totals">
+      {% if show_vat %}
+        <tr><td>Total HT</td><td class="num">{{ total_excl_tax }} €</td></tr>
+        {% for group in vat_groups %}
+          <tr><td>TVA {{ group.rate }} % (sur {{ group.base }} €)</td><td class="num">{{ group.vat }} €</td></tr>
+        {% endfor %}
+        <tr class="grand"><td>Total TTC</td><td class="num">{{ total_incl_tax }} €</td></tr>
+      {% else %}
+        <tr class="grand"><td>Total</td><td class="num">{{ total_incl_tax }} €</td></tr>
+      {% endif %}
+    </table>
+
+    <div class="mentions">
+      {% for mention in mentions %}<p>{{ mention }}</p>{% endfor %}
+      {% if is_invoice and not is_credit_note and issuer.iban %}
+        <p>Règlement par virement : IBAN {{ issuer.iban }}</p>
+      {% endif %}
+    </div>
+
+    {% if not is_invoice %}
+      <div class="approval">
+        <p><strong>Bon pour accord</strong> — date, signature et mention « lu et approuvé » :</p>
+      </div>
+    {% endif %}
+  </body>
+</html>
