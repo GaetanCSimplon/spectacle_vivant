@@ -229,6 +229,7 @@ Avant de coder : propose un plan (fichiers, modèles, tests) et attends mon acco
 - [x] **Pré-remplissage** depuis la date (créneaux Arrivée / Balances / Concert ; lieu et contacts du lieu seront lus dans la date à l'affichage public).
 - [x] **Lien secret** : génération (`token_urlsafe(32)`), activation/révocation (réactiver crée un nouveau lien, l'ancien reste 404), page publique `feuille-de-route/<jeton>/` sans compte.
 - [ ] Vue mobile-first (gros boutons appeler / itinéraire), testée à 375 px. — Boutons « Appeler » (`tel:`) et « Itinéraire » (OpenStreetMap) faits ; **test à 375 px à faire à la main**.
+- [x] Bouton « Copier l'adresse » (lieu et hébergements) sur la page publique, sans service externe.
 - [x] Export PDF (rendu à la volée, depuis l'éditeur et depuis le lien public ; mise en page jamais contrôlée à l'œil).
 - [x] Tests : lien valide/révoqué/inexistant/réactivé, absence de fuite (liste blanche `public_context`, HTML et PDF), en-têtes `no-store`/`noindex`/`no-referrer`, isolation.
 

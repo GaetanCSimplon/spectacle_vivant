@@ -8,6 +8,7 @@
     <meta name="referrer" content="no-referrer">
     <title>{{ show_title }} — {{ date|date:"d/m/Y" }}</title>
     {% tailwind_css %}
+    <script defer src="{% static 'vendor/alpine.min.js' %}"></script>
   </head>
   <body class="min-h-screen bg-gray-50 text-gray-900">
     <main class="mx-auto max-w-xl px-4 py-6">
@@ -26,6 +27,7 @@
             <a href="https://www.openstreetmap.org/search?query={{ venue.address|urlencode }}" rel="noopener noreferrer" class="btn btn-secondary btn-block">{% translate "Itinéraire" %}</a>
           {% endif %}
         </div>
+        {% if venue.address %}{% include "roadmaps/_copy_address.html" with address=venue.address %}{% endif %}
       </div>
 
       {% if slots %}
@@ -49,6 +51,7 @@
               {% if lodging.address %}
                 <p class="text-gray-600">{{ lodging.address }}</p>
                 <a href="https://www.openstreetmap.org/search?query={{ lodging.address|urlencode }}" rel="noopener noreferrer" class="btn btn-secondary btn-block">{% translate "Itinéraire" %}</a>
+                {% include "roadmaps/_copy_address.html" with address=lodging.address %}
               {% endif %}
               {% if lodging.notes %}<p class="text-gray-600">{{ lodging.notes|linebreaksbr }}</p>{% endif %}
             </li>
