@@ -1,4 +1,5 @@
 import uuid
+from decimal import Decimal
 
 from django.core.validators import MinValueValidator
 from django.db import models
@@ -6,7 +7,7 @@ from django.utils.translation import gettext_lazy as _
 
 from apps.core.models import TenantOwnedModel
 
-MIN_AMOUNT = "0.01"
+MIN_AMOUNT = Decimal("0.01")
 
 
 def receipt_upload_to(instance, filename):

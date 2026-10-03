@@ -31,6 +31,7 @@ urlpatterns = [
     path("spectacles/", include("apps.catalog.urls")),
     path("dates/", include("apps.gigs.urls")),
     path("dates/<int:gig_id>/feuille-de-route/", include("apps.roadmaps.urls")),
+    path("dates/<int:gig_id>/finances/", include("apps.finance.urls")),
     path("dates/<int:gig_id>/", include("apps.documents.urls")),
     path(
         "feuille-de-route/<str:token>/",

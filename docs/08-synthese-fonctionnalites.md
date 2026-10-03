@@ -20,7 +20,7 @@ Légende : ✅ fait · 🟡 partiel · ⬜ pas encore fait.
 | M4 — Contrat de cession | Génération PDF, versions, numérotation, signature, PDF signé | ✅ |
 | M5 — Devis et factures | Devis, factures (acompte, solde, totale), avoirs, PDF | ✅ (relecture professionnelle ⬜) |
 | M6 — Feuille de route | Créneaux, lien secret, vue mobile, PDF | ✅ (test à 375 px et rendu du PDF à contrôler à la main) |
-| M7 — Finances | Paiements, dépenses, tableau de bord, export CSV | ⬜ (Sprint 3.7) |
+| M7 — Finances | Paiements, dépenses, tableau de bord, export CSV | 🟡 paiements, dépenses et bilan par date faits ; tableau de bord et export CSV restants (Sprint 3.7) |
 | M9 — Légal et RGPD | Pages légales, export et suppression de compte | ⬜ (Sprint 3.8) |
 
 **Le parcours central fonctionne de bout en bout** : créer une date → la compléter → générer le contrat → le faire signer → facturer l'acompte puis le solde → télécharger les PDF. Il s'y ajoute la feuille de route partagée par lien secret ; le maillon suivant (paiements) n'est pas encore là.

@@ -9,6 +9,7 @@ from django.views import View
 from django.views.generic import DetailView, ListView, TemplateView
 
 from apps.core.views import TenantScopedMixin, wants_fragment
+from apps.finance import services as finance_services
 
 from . import services
 from .forms import (
@@ -338,6 +339,11 @@ class GigDetailView(TenantScopedMixin, DetailView):
 
     def get_queryset(self):
         return super().get_queryset().select_related("show", "promoter", "venue")
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["balance"] = finance_services.gig_balance(self.object)
+        return context
 
 
 class GigTransitionView(TenantScopedMixin, View):
