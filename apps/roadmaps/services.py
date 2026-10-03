@@ -32,3 +32,8 @@ def revoke(roadmap):
     roadmap.token = ""
     roadmap.is_published = False
     roadmap.save(update_fields=["token", "is_published"])
+
+
+def public_path(token):
+    """Path of the public page of a shared roadmap."""
+    return f"/feuille-de-route/{token}/"

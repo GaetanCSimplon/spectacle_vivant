@@ -29,6 +29,7 @@ urlpatterns = [
     path("", include("apps.addressbook.urls")),
     path("spectacles/", include("apps.catalog.urls")),
     path("dates/", include("apps.gigs.urls")),
+    path("dates/<int:gig_id>/feuille-de-route/", include("apps.roadmaps.urls")),
     path("dates/<int:gig_id>/", include("apps.documents.urls")),
     path("admin/", admin.site.urls),
     path("accounts/", include("allauth.urls")),

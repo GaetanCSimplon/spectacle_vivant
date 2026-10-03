@@ -59,6 +59,17 @@
     {% endif %}
   </div>
 
+  <h2 class="mb-2 text-sm font-semibold uppercase text-gray-500">{% translate "Feuille de route" %}</h2>
+  <div class="card mb-6 space-y-3 text-sm">
+    <p>
+      {% if gig.roadmap.is_published %}{% translate "Partage activé : le lien est actif." %}
+      {% else %}{% translate "Horaires, hébergement, repas et équipe, à partager avec les musiciens." %}{% endif %}
+    </p>
+    <a href="{% url 'roadmaps:editor' gig.pk %}" class="btn btn-secondary btn-block">
+      {% translate "Feuille de route" %}
+    </a>
+  </div>
+
   <h2 class="mb-2 text-sm font-semibold uppercase text-gray-500">{% translate "Documents" %}</h2>
   <div class="mb-6 flex flex-col gap-3">
     {% if gig.status != 'cancelled' %}
