@@ -238,3 +238,31 @@ def test_owner_pdf_needs_login_and_the_right_tenant(client):
     assert client.get(url).status_code == 302
     client.force_login(MembershipFactory().user)
     assert client.get(url).status_code == 404
+
+
+# --- copy address -----------------------------------------------------------------
+
+
+def test_every_address_has_a_copy_button(client, roadmap):
+    text = client.get(_url(roadmap)).content.decode()
+
+    assert 'data-text="12 rue des Lilas 69000 Lyon"' in text
+    assert 'data-text="3 quai du Lac"' in text
+    assert text.count("Copier l'adresse") >= 2
+    assert "alpine.min.js" in text
+
+
+def test_no_copy_button_without_an_address(client, roadmap):
+    roadmap.gig.venue.address = ""
+    roadmap.gig.venue.save()
+    roadmap.lodgings.update(address="")
+
+    assert "Copier l" not in client.get(_url(roadmap)).content.decode()
+
+
+def test_an_address_cannot_inject_html_through_the_button(client, roadmap):
+    roadmap.lodgings.update(address='"><script>alert(1)</script>')
+
+    text = client.get(_url(roadmap)).content.decode()
+
+    assert "<script>alert(1)" not in text

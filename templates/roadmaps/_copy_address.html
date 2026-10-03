@@ -1,0 +1,13 @@
+{% load i18n %}
+{% comment %}One-tap copy of an address. Needs: address. Alpine only; falls back when the clipboard API is missing (non-HTTPS).{% endcomment %}
+<button type="button" data-text="{{ address }}"
+        x-data="{ copied: false, async copy(text) {
+          try { await navigator.clipboard.writeText(text) } catch (e) {
+            const box = document.createElement('textarea'); box.value = text;
+            document.body.appendChild(box); box.select(); document.execCommand('copy'); box.remove()
+          }
+          this.copied = true; setTimeout(() => this.copied = false, 2000)
+        } }"
+        @click="copy($el.dataset.text)"
+        x-text="copied ? '{% translate "Adresse copiée" %}' : '{% translate "Copier l'adresse" %}'"
+        class="btn btn-secondary btn-block">{% translate "Copier l'adresse" %}</button>
