@@ -66,6 +66,9 @@
         {% translate "Compléter la date" %}
       </a>
     {% endif %}
+    <a href="{% url 'documents:billing' gig.pk %}" class="btn btn-secondary">
+      {% translate "Devis et factures" %}
+    </a>
     {% if gig.status != 'cancelled' or gig.contract.latest_version %}
       <a href="{% url 'documents:contract-preview' gig.pk %}" target="_blank" class="btn btn-secondary">
         {% translate "Aperçu du contrat" %}

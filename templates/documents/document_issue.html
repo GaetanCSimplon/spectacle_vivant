@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}Émettre — Spectacle Vivant{% endblock %}
+
+{% block page_content %}
+  <h1 class="mb-4 text-lg font-semibold">{% translate "Émettre ce document ?" %}</h1>
+  <div class="card mb-4 space-y-1 text-sm">
+    <p>{{ gig.show.title }} — {{ gig.date|date:"d/m/Y" }}</p>
+    <p>{% translate "Client" %} : {{ customer.name }}</p>
+    <p class="font-semibold">{% translate "Total" %} : {{ document.total_incl_tax }} €</p>
+  </div>
+  <p class="mb-6 text-sm">
+    {% translate "Un numéro lui sera attribué et ses informations seront figées. Une fois émis, il ne pourra plus être modifié ni supprimé : une erreur se corrige par un avoir." %}
+  </p>
+  <form method="post" class="flex flex-col gap-3">
+    {% csrf_token %}
+    <button type="submit" class="btn btn-primary btn-block">{% translate "Émettre définitivement" %}</button>
+    <a href="{% url 'documents:document-detail' gig.pk doc_type document.pk %}" class="text-center text-sm text-gray-500 hover:text-gray-700">
+      {% translate "Retour au brouillon" %}
+    </a>
+  </form>
+{% endblock %}

@@ -1,0 +1,100 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{% if is_credit_note %}Avoir{% elif is_invoice %}Facture{% else %}Devis{% endif %} — Spectacle Vivant{% endblock %}
+
+{% block page_content %}
+  <div class="mb-4 flex items-start justify-between gap-3">
+    <div class="min-w-0">
+      <h1 class="text-xl font-semibold">
+        {% if is_credit_note %}{% translate "Avoir" %}{% elif is_invoice %}{% translate "Facture" %} — {{ document.get_kind_display|lower }}{% else %}{% translate "Devis" %}{% endif %}
+        {% if document.number %}{{ document.number }}{% endif %}
+      </h1>
+      <p class="text-sm text-gray-600">{{ gig.show.title }} — {{ gig.date|date:"d/m/Y" }}</p>
+    </div>
+    <span class="badge shrink-0 {% if document.is_draft %}bg-amber-100 text-amber-800{% elif document.status == 'issued' %}bg-green-100 text-green-800{% else %}bg-gray-200 text-gray-600{% endif %}">
+      {{ document.get_status_display }}
+    </span>
+  </div>
+
+  {% if is_credit_note and document.credit_note_of %}
+    <p class="mb-4 text-sm text-gray-600">
+      {% translate "Avoir sur la facture" %}
+      <a href="{% url 'documents:document-detail' gig.pk 'factures' document.credit_note_of.pk %}" class="text-blue-700 underline">{{ document.credit_note_of.number }}</a>
+    </p>
+  {% endif %}
+
+  <div class="card mb-4 grid gap-4 text-sm sm:grid-cols-2">
+    <div>
+      <h2 class="mb-1 text-xs font-semibold uppercase text-gray-500">{% translate "Émetteur" %}</h2>
+      <p>{{ issuer.name }}</p>
+      <p class="text-gray-600">{{ issuer.address|linebreaksbr }}</p>
+      {% if issuer.siret %}<p class="text-gray-600">SIRET {{ issuer.siret }}</p>{% endif %}
+    </div>
+    <div>
+      <h2 class="mb-1 text-xs font-semibold uppercase text-gray-500">{% translate "Client" %}</h2>
+      <p>{{ customer.name }}</p>
+      <p class="text-gray-600">{{ customer.billing_address|linebreaksbr }}</p>
+      {% if customer.siret %}<p class="text-gray-600">SIRET {{ customer.siret }}</p>{% endif %}
+    </div>
+    {% if not document.is_draft %}
+      <p class="text-gray-600 sm:col-span-2">
+        {% translate "Émis le" %} {{ document.issue_date|date:"d/m/Y" }}
+        {% if is_invoice and document.due_date %} · {% translate "échéance" %} {{ document.due_date|date:"d/m/Y" }}{% endif %}
+        {% if not is_invoice and document.valid_until %} · {% translate "valable jusqu'au" %} {{ document.valid_until|date:"d/m/Y" }}{% endif %}
+      </p>
+    {% endif %}
+  </div>
+
+  {% if document.is_draft and missing %}
+    <div class="mb-4 rounded-md bg-amber-50 px-4 py-3 text-sm text-amber-900">
+      <p class="font-medium">{% translate "Pour pouvoir émettre ce document, complétez :" %}</p>
+      <ul class="ml-5 list-disc">
+        {% for item in missing %}<li>{{ item }}</li>{% endfor %}
+      </ul>
+      <p class="mt-1">
+        <a href="{% url 'tenants:profile' %}" class="underline">{% translate "Ma structure" %}</a> ·
+        <a href="{% url 'addressbook:promoter-update' gig.promoter.pk %}" class="underline">{% translate "L'organisateur" %}</a>
+      </p>
+    </div>
+  {% endif %}
+
+  {% include "documents/_document_lines.html" %}
+
+  <div class="mb-6 flex flex-col gap-3">
+    {% if document.is_draft %}
+      {% if not missing and rows %}
+        <a href="{% url 'documents:document-issue' gig.pk doc_type document.pk %}" class="btn btn-primary btn-block">
+          {% translate "Émettre" %}
+        </a>
+      {% endif %}
+      <form method="post" action="{% url 'documents:document-delete' gig.pk doc_type document.pk %}"
+            onsubmit="return confirm('{% translate "Supprimer ce brouillon ?" %}')">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-secondary btn-block">{% translate "Supprimer le brouillon" %}</button>
+      </form>
+    {% elif is_invoice and can_credit %}
+      <form method="post" action="{% url 'documents:credit-note-create' gig.pk document.pk %}">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-secondary btn-block">{% translate "Créer un avoir" %}</button>
+      </form>
+    {% endif %}
+  </div>
+
+  {% if credit_notes %}
+    <h2 class="mb-2 text-sm font-semibold uppercase text-gray-500">{% translate "Avoirs" %}</h2>
+    <ul class="mb-6 space-y-2">
+      {% for note in credit_notes %}
+        <li>
+          <a href="{% url 'documents:document-detail' gig.pk 'factures' note.pk %}" class="card card-link flex justify-between text-sm">
+            <span>{{ note.number|default:_("Brouillon") }}</span><span>{{ note.total_incl_tax }} €</span>
+          </a>
+        </li>
+      {% endfor %}
+    </ul>
+  {% endif %}
+
+  <a href="{% url 'documents:billing' gig.pk %}" class="text-sm text-gray-500 hover:text-gray-700">
+    {% translate "Retour aux devis et factures" %}
+  </a>
+{% endblock %}
