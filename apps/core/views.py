@@ -1,8 +1,11 @@
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db.models import Q
 from django.http import Http404, HttpResponse
+from django.utils import timezone
 from django.views import View
 from django.views.generic import TemplateView
+
+from apps.finance.dashboard import build_dashboard
 
 from .services import render_pdf
 
@@ -82,6 +85,8 @@ class HomeView(LoginRequiredMixin, TemplateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context["tenant"] = self.request.tenant
+        if self.request.tenant is not None:
+            context.update(build_dashboard(self.request.tenant, timezone.localdate()))
         return context
 
 
