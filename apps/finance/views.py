@@ -11,8 +11,8 @@ from apps.core.views import TenantScopedMixin, wants_fragment
 from apps.documents.models import Invoice
 from apps.gigs.models import Gig
 
-from . import services
-from .forms import ExpenseForm, PaymentForm
+from . import exports, services
+from .forms import ExpenseForm, PaymentForm, PeriodForm
 from .models import Expense, Payment
 
 
@@ -203,4 +203,31 @@ class ExpenseReceiptView(FinanceMixin, View):
             expense.receipt_file.open("rb"),
             as_attachment=True,
             filename=os.path.basename(expense.receipt_file.name),
+        )
+
+
+# --- exports -----------------------------------------------------------------
+
+
+class ExportView(TenantScopedMixin, View):
+    """The "Exporter" page: pick a period, then download one of the CSV files."""
+
+    def get(self, request):
+        today = datetime.date.today()
+        initial = {
+            "start": datetime.date(today.year, 1, 1),
+            "end": datetime.date(today.year, 12, 31),
+        }
+        return render(request, "finance/export.html", {"form": PeriodForm(initial=initial)})
+
+
+class ExportCsvView(TenantScopedMixin, View):
+    def get(self, request, kind):
+        if kind not in exports.EXPORTS:
+            raise Http404
+        form = PeriodForm(request.GET)
+        if not form.is_valid():
+            return render(request, "finance/export.html", {"form": form})
+        return exports.csv_response(
+            kind, request.tenant, form.cleaned_data["start"], form.cleaned_data["end"]
         )

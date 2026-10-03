@@ -242,8 +242,8 @@ Avant de coder : propose un plan (fichiers, modèles, tests) et attends mon acco
 - [x] Bilan par date (facturé / encaissé / dépensé / résultat) — **distinguer recette prévue (prix du contrat) / facturée / encaissée** (F-57, `docs/03-cahier-des-charges.md` §4.8, demandé le 29/09), pas un chiffre unique.
 - [x] Affichage des montants de synthèse en euros entiers arrondis, stockage et calculs au centime près (F-58, demandé le 29/09).
 - [x] Tableau de bord global (page d'accueil, `finance/dashboard.py`) : facturé et encaissé de l'année en cours (TTC, euros entiers à l'affichage), factures à encaisser avec reste dû et retard, dates confirmées à venir sans contrat généré, 5 prochaines dates.
-- [ ] **Export CSV** (`;`, UTF-8 BOM) : recettes, dépenses, factures ; test d'ouverture dans Excel.
-- [ ] Tests : calculs, exports, isolation, cas limites (paiement partiel, surpaiement).
+- [x] **Export CSV** (`;`, UTF-8 BOM, virgule décimale, dates jj/mm/aaaa, période au choix) : factures et avoirs, recettes, dépenses, page `exports/` ; textes neutralisés contre les formules de tableur. **Test d'ouverture dans Excel à faire à la main** (vérifié seulement avec le module `csv` de Python).
+- [x] Tests : calculs, exports, isolation, cas limites (paiement partiel, surpaiement).
 
 ### Sprint 3.8 — Légal, sécurité, finition, recette
 - [ ] Pages : mentions légales, CGU, confidentialité (à faire relire).

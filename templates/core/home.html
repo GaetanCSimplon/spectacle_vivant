@@ -20,6 +20,7 @@
       <div class="card mb-6 space-y-1 text-sm">
         <p class="flex justify-between"><span>{% translate "Facturé" %} (TTC)</span><span>{{ invoiced_year|floatformat:"0g" }} €</span></p>
         <p class="flex justify-between"><span>{% translate "Encaissé" %}</span><span>{{ received_year|floatformat:"0g" }} €</span></p>
+        <a href="{% url 'export' %}" class="inline-block pt-1 text-blue-700 underline">{% translate "Exporter (CSV)" %}</a>
       </div>
 
       {% if awaiting %}
