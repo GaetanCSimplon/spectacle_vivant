@@ -1,0 +1,63 @@
+{% extends "legal/_base.html" %}
+{% block legal_title %}Confidentialité{% endblock %}
+{% block legal_heading %}Politique de confidentialité{% endblock %}
+{% block legal_body %}
+  <h2 class="font-semibold text-gray-900">Qui est responsable de vos données ?</h2>
+  <p>
+    [À compléter : identité de l'éditeur, voir les
+    <a class="underline" href="{% url 'legal-notice' %}">mentions légales</a>] est responsable
+    du traitement de vos données de compte. Pour les données de vos organisateurs, contacts
+    et dates, c'est vous qui décidez de leur usage : nous ne les utilisons que pour faire
+    fonctionner le service.
+  </p>
+
+  <h2 class="font-semibold text-gray-900">Quelles données ?</h2>
+  <ul class="list-disc space-y-1 pl-5">
+    <li>Votre compte : adresse e-mail, mot de passe (stocké chiffré, jamais lisible).</li>
+    <li>Votre structure : nom, SIRET, adresse, coordonnées bancaires si vous les saisissez.</li>
+    <li>Vos données de travail : spectacles, organisateurs, lieux, contacts, dates, documents,
+      paiements, dépenses et justificatifs.</li>
+  </ul>
+
+  <h2 class="font-semibold text-gray-900">Pourquoi ?</h2>
+  <p>
+    Pour fournir le service (exécution du contrat) et respecter nos obligations légales.
+    Nous ne vendons pas vos données, nous ne faisons pas de publicité et n'utilisons pas
+    de traceurs publicitaires.
+  </p>
+
+  <h2 class="font-semibold text-gray-900">Cookies</h2>
+  <p>
+    Le service utilise uniquement des cookies techniques indispensables (connexion et
+    sécurité des formulaires). Aucun cookie de mesure d'audience ou de publicité.
+  </p>
+
+  <h2 class="font-semibold text-gray-900">Où et chez qui ?</h2>
+  <p>
+    Données hébergées dans l'Union européenne : [À compléter : hébergeur, stockage de
+    fichiers, service d'envoi d'e-mails, suivi des erreurs — à confirmer au déploiement].
+    Ces prestataires n'agissent que sur nos instructions.
+  </p>
+
+  <h2 class="font-semibold text-gray-900">Combien de temps ?</h2>
+  <ul class="list-disc space-y-1 pl-5">
+    <li>Tant que votre compte est actif.</li>
+    <li>À la suppression du compte, vos données sont effacées après un délai de [À compléter :
+      30 jours] pendant lequel vous pouvez annuler.</li>
+    <li>Les factures émises doivent être conservées 10 ans (obligation légale) :
+      [À compléter : modalités de conservation après suppression, à valider avec un comptable].</li>
+  </ul>
+
+  <h2 class="font-semibold text-gray-900">Vos droits</h2>
+  <p>
+    Vous pouvez accéder à vos données, les corriger, les exporter et les supprimer depuis
+    l'application, ou en faire la demande à [À compléter : adresse e-mail]. Vous pouvez aussi
+    saisir la CNIL (<span class="whitespace-nowrap">cnil.fr</span>).
+  </p>
+
+  <h2 class="font-semibold text-gray-900">Feuille de route partagée</h2>
+  <p>
+    La page publique d'une feuille de route ne montre ni prix, ni contrat, ni facture, et
+    n'est pas indexée par les moteurs de recherche.
+  </p>
+{% endblock %}

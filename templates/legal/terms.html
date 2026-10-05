@@ -1,0 +1,61 @@
+{% extends "legal/_base.html" %}
+{% block legal_title %}Conditions d'utilisation{% endblock %}
+{% block legal_heading %}Conditions générales d'utilisation{% endblock %}
+{% block legal_body %}
+  <h2 class="font-semibold text-gray-900">1. Objet</h2>
+  <p>
+    Spectacle Vivant est un outil en ligne qui aide les artistes, compagnies et associations
+    à gérer leurs dates de concert : contrat de cession, devis, facture, feuille de route,
+    paiements et dépenses. Ces conditions décrivent les règles d'usage du service.
+  </p>
+
+  <h2 class="font-semibold text-gray-900">2. Compte</h2>
+  <p>
+    Vous créez un compte avec votre adresse e-mail et un mot de passe que vous gardez
+    confidentiel. Vous êtes responsable de l'usage fait de votre compte et de l'exactitude
+    des informations saisies (identité de votre structure, SIRET, mentions de TVA, etc.).
+  </p>
+
+  <h2 class="font-semibold text-gray-900">3. Ce que le service fait — et ne fait pas</h2>
+  <ul class="list-disc space-y-1 pl-5">
+    <li>Les modèles de contrat, de devis et de facture sont fournis comme une aide. Ils ne
+      constituent ni un conseil juridique, ni un conseil comptable ou fiscal.</li>
+    <li>Vous restez responsable du contenu des documents que vous émettez. Faites-les relire
+      par un professionnel en cas de doute.</li>
+    <li>Les factures au format PDF produites par le service ne remplacent pas, à ce stade,
+      une plateforme agréée de facturation électronique.</li>
+    <li>Le service ne réalise pas la signature électronique : le contrat est signé en dehors
+      de l'application, puis marqué « signé ».</li>
+  </ul>
+
+  <h2 class="font-semibold text-gray-900">4. Vos données</h2>
+  <p>
+    Vos données vous appartiennent. Vous pouvez les exporter et supprimer votre compte à tout
+    moment depuis l'application. Les factures émises sont soumises à une obligation légale de
+    conservation de 10 ans : les modalités sont détaillées dans la
+    <a class="underline" href="{% url 'legal-privacy' %}">politique de confidentialité</a>.
+  </p>
+
+  <h2 class="font-semibold text-gray-900">5. Feuille de route partagée par lien</h2>
+  <p>
+    Le lien d'une feuille de route donne accès à son contenu à toute personne qui le possède,
+    sans compte. Ne le transmettez qu'aux personnes concernées ; vous pouvez le désactiver à
+    tout moment.
+  </p>
+
+  <h2 class="font-semibold text-gray-900">6. Disponibilité et responsabilité</h2>
+  <p>
+    Nous faisons de notre mieux pour que le service soit disponible et vos données
+    sauvegardées, sans pouvoir garantir l'absence d'interruption ou d'erreur. Dans les limites
+    permises par la loi, notre responsabilité ne couvre pas les pertes indirectes
+    (manque à gagner, date perdue…). [À compléter : tarifs, durée, résiliation, une fois le
+    modèle économique défini.]
+  </p>
+
+  <h2 class="font-semibold text-gray-900">7. Évolution des conditions et droit applicable</h2>
+  <p>
+    Ces conditions peuvent évoluer ; vous serez prévenu des changements importants. Elles sont
+    soumises au droit français. [À compléter : tribunal compétent, médiation de la
+    consommation si applicable.]
+  </p>
+{% endblock %}

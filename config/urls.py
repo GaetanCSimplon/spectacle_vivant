@@ -27,6 +27,7 @@ urlpatterns = [
     path("", HomeView.as_view(), name="home"),
     path("pdf-test/", HelloPdfView.as_view(), name="pdf-test"),
     path("bienvenue/", OnboardingView.as_view(), name="tenants-onboarding"),
+    path("infos/", include("apps.core.urls")),
     path("ma-structure/", include("apps.tenants.urls")),
     path("", include("apps.addressbook.urls")),
     path("spectacles/", include("apps.catalog.urls")),
