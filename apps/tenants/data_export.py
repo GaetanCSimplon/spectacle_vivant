@@ -164,7 +164,7 @@ def _safe(name):
     return re.sub(r"[^A-Za-z0-9._-]+", "-", name).strip("-") or "fichier"
 
 
-def _stored_files(tenant):
+def stored_files(tenant):
     """Yield (zip path, FieldFile) for every file the tenant stored."""
     for show in Show.objects.filter(tenant=tenant):
         for field in (show.rider_file, show.tech_sheet_file):
@@ -210,7 +210,7 @@ def build_export_zip(tenant):
         for name, builder in TABLES.items():
             header, rows = builder(tenant)
             zf.writestr(f"{name}.csv", _csv_bytes(header, rows))
-        for path, field in _stored_files(tenant):
+        for path, field in stored_files(tenant):
             try:
                 with field.open("rb") as source:
                     zf.writestr(f"fichiers/{path}", source.read())

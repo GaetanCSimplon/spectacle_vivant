@@ -13,6 +13,13 @@
   <body class="min-h-screen bg-gray-50 text-gray-900">
     {% include "components/_header.html" %}
 
+    {% if pending_deletion_date %}
+      <div class="bg-red-50 px-4 py-2 text-center text-sm text-red-800">
+        {% blocktranslate with date=pending_deletion_date|date:"d/m/Y" %}Suppression de votre structure prévue le {{ date }}.{% endblocktranslate %}
+        <a href="{% url 'tenants:profile' %}" class="underline">{% translate "Annuler" %}</a>
+      </div>
+    {% endif %}
+
     <main class="mx-auto max-w-3xl px-4 py-6 {% if user.is_authenticated %}pb-24 sm:pb-6{% endif %}">
       {% for message in messages %}
         <p class="mb-4 rounded-md bg-blue-50 px-4 py-2 text-sm text-blue-800">{{ message }}</p>

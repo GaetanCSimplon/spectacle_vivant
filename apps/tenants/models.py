@@ -65,5 +65,10 @@ class Tenant(models.Model):
         default=ContractPartyLabel.ARTIST,
     )
 
+    # Set when the owner asks to delete the structure; the data is purged after a grace period.
+    deletion_requested_at = models.DateTimeField(
+        _("suppression demandée le"), null=True, blank=True
+    )
+
     def __str__(self):
         return self.name

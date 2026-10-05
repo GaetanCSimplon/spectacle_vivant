@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}Supprimer ma structure — Spectacle Vivant{% endblock %}
+
+{% block page_content %}
+  <h1 class="mb-2 text-lg font-semibold text-red-700">{% translate "Supprimer ma structure" %}</h1>
+  <div class="mb-4 space-y-2 rounded-md bg-red-50 px-4 py-3 text-sm text-red-900">
+    <p>{% translate "Toutes les données seront effacées : spectacles, organisateurs, lieux, dates, contrats, devis, factures, paiements, dépenses et fichiers. Les comptes qui n'appartiennent à aucune autre structure seront supprimés aussi." %}</p>
+    <p>{% translate "Vous avez 30 jours pour changer d'avis : la suppression peut être annulée pendant ce délai." %}</p>
+    <p>{% translate "Attention : les factures émises doivent en principe être conservées 10 ans. Téléchargez vos données avant de continuer." %}</p>
+  </div>
+  <p class="mb-4 text-sm">
+    <a href="{% url 'tenants:data-export' %}" class="text-blue-700 underline">{% translate "Télécharger mes données" %}</a>
+  </p>
+
+  <form method="post" class="card mb-6 space-y-4">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit" class="btn btn-block bg-red-700 text-white">{% translate "Demander la suppression" %}</button>
+  </form>
+
+  <a href="{% url 'tenants:profile' %}" class="text-sm text-gray-500 hover:text-gray-700">{% translate "Retour à Ma structure" %}</a>
+{% endblock %}
