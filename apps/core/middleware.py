@@ -29,14 +29,15 @@ class OnboardingRequiredMiddleware:
     Must run after TenantMiddleware, which sets `request.tenant`. Only acts
     on GET requests, so tenant-scoped views (TenantScopedMixin) keep
     rejecting POST/other writes with a 404, as before. Exempts admin,
-    allauth (login, logout, e-mail confirmation...), the public roadmap link, static/media files,
-    and the onboarding screen itself, to avoid redirect loops.
+    allauth (login, logout, e-mail confirmation...), the public roadmap link, the legal
+    pages, static/media files, and the onboarding screen itself, to avoid redirect loops.
     """
 
     ONBOARDING_PATH = "/bienvenue/"
     EXEMPT_PREFIXES = (
         "/admin/",
         "/accounts/",
+        "/infos/",  # legal pages: public
         "/feuille-de-route/",  # public roadmap link: it needs no account nor tenant
         settings.STATIC_URL,
         settings.MEDIA_URL,

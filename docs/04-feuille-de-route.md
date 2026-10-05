@@ -246,7 +246,7 @@ Avant de coder : propose un plan (fichiers, modèles, tests) et attends mon acco
 - [x] Tests : calculs, exports, isolation, cas limites (paiement partiel, surpaiement).
 
 ### Sprint 3.8 — Légal, sécurité, finition, recette
-- [ ] Pages : mentions légales, CGU, confidentialité (à faire relire).
+- [x] Pages : mentions légales, CGU, confidentialité (gabarits à compléter et à faire relire avant la mise en ligne).
 - [ ] Export des données et suppression de compte (F-81).
 - [ ] **Audit d'isolation complet** : parcourir chaque URL et chaque vue avec 2 tenants.
 - [ ] Revue sécurité : en-têtes, cookies, CSRF, `check --deploy`, dépendances à jour, secrets.

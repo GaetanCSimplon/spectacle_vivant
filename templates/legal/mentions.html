@@ -1,0 +1,31 @@
+{% extends "legal/_base.html" %}
+{% block legal_title %}Mentions légales{% endblock %}
+{% block legal_heading %}Mentions légales{% endblock %}
+{% block legal_body %}
+  <h2 class="font-semibold text-gray-900">Éditeur du site</h2>
+  <p>
+    Spectacle Vivant est édité par [À compléter : nom de la société ou de l'association,
+    forme juridique, capital, SIRET, adresse du siège].<br>
+    Directeur de la publication : [À compléter].<br>
+    Contact : [À compléter : adresse e-mail].
+  </p>
+
+  <h2 class="font-semibold text-gray-900">Hébergement</h2>
+  <p>
+    Le site est hébergé par [À compléter : Scalingo SAS, 3 place de Haguenau, 67000 Strasbourg,
+    France — à confirmer au moment du déploiement]. Les fichiers (contrats, justificatifs)
+    sont stockés chez [À compléter : prestataire de stockage, Union européenne].
+  </p>
+
+  <h2 class="font-semibold text-gray-900">Propriété intellectuelle</h2>
+  <p>
+    Le logiciel, son interface et ses textes sont protégés. Les documents que vous créez
+    (contrats, devis, factures, feuilles de route) et les données que vous saisissez
+    restent les vôtres.
+  </p>
+
+  <h2 class="font-semibold text-gray-900">Données personnelles</h2>
+  <p>
+    Voir la <a class="underline" href="{% url 'legal-privacy' %}">politique de confidentialité</a>.
+  </p>
+{% endblock %}

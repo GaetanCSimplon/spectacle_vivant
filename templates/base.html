@@ -20,6 +20,11 @@
 
       {% block page_content %}{% endblock %}
     </main>
+    <footer class="mx-auto max-w-3xl px-4 pb-6 text-xs text-gray-500 {% if user.is_authenticated %}mb-16 sm:mb-0{% endif %}">
+      <a href="{% url 'legal-notice' %}" class="underline">{% translate "Mentions légales" %}</a>
+      · <a href="{% url 'legal-terms' %}" class="underline">{% translate "Conditions d'utilisation" %}</a>
+      · <a href="{% url 'legal-privacy' %}" class="underline">{% translate "Confidentialité" %}</a>
+    </footer>
     {% if user.is_authenticated %}
       <nav
         aria-label="{% translate 'Navigation principale' %}"

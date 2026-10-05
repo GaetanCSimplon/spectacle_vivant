@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+
+{% block title %}{% block legal_title %}{% endblock %} — Spectacle Vivant{% endblock %}
+
+{% block page_content %}
+  <article class="space-y-4 text-sm leading-relaxed text-gray-800">
+    <p class="rounded-md bg-amber-50 px-4 py-2 text-amber-900">
+      Texte provisoire : les passages entre crochets [À compléter] et l'ensemble du document
+      doivent être relus avant la mise en ligne.
+    </p>
+    <h1 class="text-xl font-semibold text-gray-900">{% block legal_heading %}{% endblock %}</h1>
+    {% block legal_body %}{% endblock %}
+  </article>
+{% endblock %}
