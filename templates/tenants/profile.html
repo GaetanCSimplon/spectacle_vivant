@@ -24,4 +24,11 @@
       </button>
     {% endif %}
   </form>
+
+  <section class="mt-8 border-t border-gray-200 pt-4">
+    <h2 class="mb-1 text-base font-semibold">{% translate "Mes données" %}</h2>
+    <a href="{% url 'tenants:data-export' %}" class="text-sm text-blue-700 underline">
+      {% translate "Télécharger toutes mes données" %}
+    </a>
+  </section>
 {% endblock %}

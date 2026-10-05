@@ -247,7 +247,8 @@ Avant de coder : propose un plan (fichiers, modèles, tests) et attends mon acco
 
 ### Sprint 3.8 — Légal, sécurité, finition, recette
 - [x] Pages : mentions légales, CGU, confidentialité (gabarits à compléter et à faire relire avant la mise en ligne).
-- [ ] Export des données et suppression de compte (F-81).
+- [x] Export des données (F-81) : ZIP de CSV et de fichiers, page `ma-structure/export-donnees/`.
+- [ ] Suppression de compte (F-82) : demande, délai de 30 jours, purge.
 - [ ] **Audit d'isolation complet** : parcourir chaque URL et chaque vue avec 2 tenants.
 - [ ] Revue sécurité : en-têtes, cookies, CSRF, `check --deploy`, dépendances à jour, secrets.
 - [ ] Vérifier les téléchargements de fichiers (contrôle d'accès).
