@@ -249,7 +249,7 @@ Avant de coder : propose un plan (fichiers, modèles, tests) et attends mon acco
 - [x] Pages : mentions légales, CGU, confidentialité (gabarits à compléter et à faire relire avant la mise en ligne).
 - [x] Export des données (F-81) : ZIP de CSV et de fichiers, page `ma-structure/export-donnees/`.
 - [x] Suppression de compte (F-82) : demande (nom + mot de passe), délai de 30 jours annulable, commande `purge_deleted_tenants` (à planifier en prod), départ d'un membre.
-- [ ] **Audit d'isolation complet** : parcourir chaque URL et chaque vue avec 2 tenants.
+- [x] **Audit d'isolation complet** : `apps/core/tests/test_isolation_audit.py` parcourt chaque URL avec 2 tenants ; une nouvelle URL à identifiant doit y être déclarée, sinon le test échoue.
 - [ ] Revue sécurité : en-têtes, cookies, CSRF, `check --deploy`, dépendances à jour, secrets.
 - [ ] Vérifier les téléchargements de fichiers (contrôle d'accès).
 - [ ] Passage d'accessibilité de base (contrastes, labels, clavier).
