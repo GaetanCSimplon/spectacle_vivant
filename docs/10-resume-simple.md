@@ -1,7 +1,7 @@
 # Où en est le projet ? — Résumé simple
 
 > Un texte pour comprendre l'essentiel sans connaître la technique.
-> État au **1er octobre 2026**, onze jours après le premier commit (21 septembre).
+> État au **3 octobre 2026**, douze jours après le premier commit (21 septembre).
 > Pour le détail : `08-synthese-fonctionnalites.md` (ce qui existe) et `09-cas-d-usage-et-diagrammes.md` (les schémas).
 
 ## L'idée en une phrase
@@ -21,15 +21,20 @@ Prenons Julie, qui chante dans un groupe et vient de se faire proposer un concer
 7. **Elle facture** : une facture d'acompte (30 % du prix par défaut), puis une facture de solde. Les lignes sont proposées automatiquement, elle les ajuste, puis elle **émet** la facture. À ce moment elle reçoit un numéro (F-2026-0001), et la facture est figée avec les informations du jour. Elle peut aussi faire un devis.
 8. **Une erreur sur une facture ?** On ne la modifie pas, on émet un **avoir** qui l'annule, comme le veut la règle comptable.
 9. **Elle télécharge les PDF** et les envoie à l'organisateur.
+10. **Elle prépare la feuille de route** du jour J : horaires (déjà pré-remplis), hébergement, repas, équipe, notes. Elle active le partage, copie le lien et l'envoie au groupe : chacun l'ouvre sur son téléphone **sans compte**, appelle le lieu en un geste, ouvre l'itinéraire ou copie l'adresse. Le lien ne montre jamais le prix, le contrat ni les factures, et elle peut l'arrêter quand elle veut.
+11. **Elle note les paiements reçus** : quand le total d'une facture est atteint, elle passe automatiquement à « Payée ». L'application refuse un paiement plus gros que ce qui reste à payer.
+12. **Elle note ses dépenses** (essence, hôtel, cachets…) avec la photo du ticket si elle le souhaite.
+13. **Elle voit où elle en est** : pour chaque date, ce qui était prévu, ce qui a été facturé, ce qui a été encaissé, ce qui a été dépensé et le résultat. La page d'accueil résume l'année, les factures à encaisser (celles en retard sont signalées), les dates qui attendent encore un contrat et les prochains concerts.
+14. **Elle exporte ses chiffres** en fichiers Excel (factures, recettes, dépenses) pour son comptable, sur la période de son choix.
 
 Tout cela fonctionne déjà, sur ordinateur comme sur téléphone.
 
 ## Ce qui reste à faire
 
-- **La feuille de route** : un document pratique pour le jour J (horaires, contacts, hébergement, repas), partagé par un lien secret que l'équipe ouvre sur son téléphone, sans compte.
-- **Les paiements et les dépenses** : savoir ce qui est encaissé, ce qui est dépensé, le résultat de chaque date, un tableau de bord, un export pour le comptable.
 - **Les pages légales** (mentions légales, conditions d'utilisation, confidentialité) et la possibilité d'exporter ou de supprimer ses données.
 - **La mise en ligne** : pour l'instant l'application tourne uniquement sur l'ordinateur du développeur. Il faut encore l'héberger, choisir un service d'e-mails et un nom de domaine.
+
+Une envie notée pour plus tard : joindre à la feuille de route un **plan des lieux** (salle, accès, scène), sans passer par un service de cartes externe.
 
 Plus tard (version payante) : la signature électronique par un prestataire, la facture électronique obligatoire, les relances automatiques, le paiement des abonnements.
 
@@ -43,21 +48,22 @@ Plus tard (version payante) : la signature électronique par un prestataire, la 
 ## Comment le travail est organisé
 
 - Le développeur travaille avec un assistant (Claude Code) : l'assistant propose un **plan**, le développeur l'approuve, puis l'assistant code **avec les tests**. Le développeur relit et applique lui-même tout ce qui touche à la base de données.
-- Le travail avance par **petites étapes** : une idée, une branche, une relecture (« pull request »), puis la fusion. Il y en a eu **34 de fusionnées** en onze jours, et deux sont en cours de relecture.
-- **535 tests automatiques** vérifient le fonctionnement à chaque modification. Une vérification automatique sur GitHub les rejoue avant toute fusion.
+- Le travail avance par **petites étapes** : une idée, une branche, une relecture (« pull request »), puis la fusion. Il y en a eu **46 de fusionnées** en douze jours, et aucune n'est en attente.
+- **717 tests automatiques** vérifient le fonctionnement à chaque modification. Une vérification automatique sur GitHub les rejoue avant toute fusion.
 
 ## Les chiffres
 
 | | |
 |---|---|
 | Premier commit | 21 septembre 2026 |
-| Modules du MVP terminés | 7 sur 10 (comptes, structure, carnet d'adresses, spectacles, dates, contrats, devis et factures) |
-| Tests automatiques | 535, tous verts |
-| Lignes de code | environ 3 750 (et 6 200 lignes de tests) |
+| Modules du MVP terminés | 9 sur 10 (comptes, structure, carnet d'adresses, spectacles, dates, contrats, devis et factures, feuille de route, finances) ; reste la partie légale |
+| Tests automatiques | 717, tous verts |
+| Lignes de code | environ 5 200 (et 8 300 lignes de tests) |
 | En ligne | pas encore |
 
 ## Ce qui demande une décision ou une validation humaine
 
+- **Tester à la main sur téléphone** les nouveaux écrans (paiements, dépenses, accueil, exports) et ouvrir un export dans Excel : les tests automatiques ne remplacent pas un vrai essai.
 - **Faire relire les documents par un professionnel** : le contrat et surtout les factures (mentions légales, TVA, conditions de paiement). Les PDF portent pour l'instant la mention « Modèle provisoire — non relu par un professionnel ».
 - **Choisir le modèle économique** : gratuit jusqu'à trois dates par an, ou deux formules payantes proposées par le collègue.
 - **Trancher la structure des spectacles** (projets, spectacles, versions) proposée par le collègue : à décider avant de la construire.
@@ -65,4 +71,4 @@ Plus tard (version payante) : la signature électronique par un prestataire, la 
 
 ## Et ensuite ?
 
-La feuille de route est faite. La prochaine étape est les **paiements et dépenses**, puis les pages légales et la mise en ligne. Une fois ces étapes terminées, le produit sera prêt pour une première série de testeurs réels.
+Les fonctions principales du produit sont faites : de la date au contrat, aux factures, à la feuille de route et au suivi de l'argent. La prochaine étape est la **partie légale** (pages légales, export et suppression des données, vérification finale de l'isolation, sauvegardes, essai complet), puis la **mise en ligne**. Une fois ces étapes terminées, le produit sera prêt pour une première série de testeurs réels.

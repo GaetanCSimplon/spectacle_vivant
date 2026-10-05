@@ -1,8 +1,8 @@
 # Cas d'usage et diagrammes
 
-> Illustration des fonctionnalités réalisées au 2026-10-01 (voir `08-synthese-fonctionnalites.md`).
+> Illustration des fonctionnalités réalisées au 2026-10-03 (voir `08-synthese-fonctionnalites.md`).
 > Les schémas sont écrits en **Mermaid** : ils s'affichent directement sur GitHub, et dans VS Code avec une extension d'aperçu Markdown qui gère Mermaid.
-> Ils décrivent ce que fait le code. Les 14 schémas ont été validés par l'analyseur syntaxique de Mermaid ; leur rendu visuel n'a pas été contrôlé à l'œil, signalez tout schéma qui s'affiche mal.
+> Ils décrivent ce que fait le code. Les 16 schémas ont été validés par l'analyseur syntaxique de Mermaid le 03/10 ; leur rendu visuel n'a pas été contrôlé à l'œil, signalez tout schéma qui s'affiche mal.
 
 Sommaire : 1. Acteurs · 2. Cas d'usage · 3. Parcours complet d'une date · 4. Diagrammes de séquence · 5. Cycles de vie (états) · 6. Modèle de données · 7. Architecture.
 
@@ -15,6 +15,7 @@ Sommaire : 1. Acteurs · 2. Cas d'usage · 3. Parcours complet d'une date · 4. 
 | **Artiste / propriétaire** | Utilise l'application pour gérer ses dates | Accès complet, seul à modifier « Ma structure » |
 | **Membre** | Autre personne de la même structure | Accès aux données, consulte « Ma structure » sans la modifier |
 | **Organisateur** | Le client (mairie, festival, salle, association…) | **N'a pas de compte** : reçoit les PDF par l'artiste, signe hors de l'application |
+| **Équipe sur la route** | Musiciens, techniciens, accompagnants | **N'a pas de compte** : ouvre la feuille de route avec le lien secret que l'artiste lui envoie |
 | **Système** | L'application elle-même | Numérote, fige, génère les PDF, contrôle l'accès |
 
 ---
@@ -28,6 +29,7 @@ flowchart LR
     artiste(["Artiste / propriétaire"])
     membre(["Membre"])
     orga(["Organisateur<br/>(sans compte)"])
+    equipe(["Équipe<br/>(sans compte)"])
 
     subgraph app["Application Spectacle Vivant"]
         direction TB
@@ -45,6 +47,10 @@ flowchart LR
         UC12(["Émettre un document"])
         UC13(["Corriger par un avoir"])
         UC14(["Télécharger les PDF"])
+        UC15(["Préparer et partager<br/>la feuille de route"])
+        UC16(["Enregistrer un paiement"])
+        UC17(["Noter une dépense"])
+        UC18(["Suivre ses finances<br/>bilan, tableau de bord, export CSV"])
     end
 
     artiste --- UC1
@@ -61,15 +67,22 @@ flowchart LR
     artiste --- UC12
     artiste --- UC13
     artiste --- UC14
+    artiste --- UC15
+    artiste --- UC16
+    artiste --- UC17
+    artiste --- UC18
     membre --- UC3
     membre --- UC5
     membre --- UC6
+    membre --- UC16
+    membre --- UC17
     UC9 -.->|"PDF envoyé"| orga
     orga -.->|"signe hors de l'application"| UC10
     UC12 -.->|"PDF envoyé"| orga
+    UC15 -.->|"lien secret"| equipe
 ```
 
-Le membre fait tout ce que fait l'artiste **sauf modifier « Ma structure »** (il la consulte). Il est représenté sur les cas principaux pour la lisibilité.
+Le membre fait tout ce que fait l'artiste **sauf modifier « Ma structure »** (il la consulte). Il est représenté sur les cas principaux pour la lisibilité (le diagramme n'en montre qu'une partie).
 
 ### 2.2 Fiches des cas d'usage principaux
 
@@ -107,6 +120,25 @@ Le membre fait tout ce que fait l'artiste **sauf modifier « Ma structure »** (
 - *Scénario* : « Créer un avoir » → brouillon qui reprend les lignes en négatif (modifiable pour un avoir partiel) → « Émettre ».
 - *Règles* : un avoir ne dépasse jamais la facture ; un avoir total marque la facture « Annulée par avoir ».
 
+**UC15 — Préparer et partager la feuille de route**
+- *Scénario* : sur la fiche de la date, « Feuille de route » → les créneaux Arrivée, Balances et Concert sont pré-remplis avec les horaires de la date → l'artiste ajoute des créneaux, l'hébergement, les repas, l'équipe et des notes → « Activer le partage » → il copie le lien et l'envoie à l'équipe.
+- *Ce que voit l'équipe* : une page lisible sur téléphone, sans compte : lieu, programme, hébergement, repas, équipe, contacts du lieu, boutons « Appeler », « Itinéraire » et « Copier l'adresse », export PDF. **Jamais** le prix, les conditions, le contrat, les factures, l'organisateur facturé ni les e-mails.
+- *Cas d'erreur* : lien inconnu ou partage arrêté → page introuvable (404). « Arrêter le partage » tue le lien pour de bon ; réactiver en crée un nouveau.
+
+**UC16 — Enregistrer un paiement**
+- *Précondition* : facture émise (ni brouillon, ni avoir, ni annulée).
+- *Scénario* : « Paiements et dépenses » → sur la facture, saisir montant, date et mode (le reste à payer est proposé) → la facture passe à « Payée » quand le total est atteint.
+- *Cas d'erreur* : un paiement qui dépasse le reste à payer est refusé ; un montant nul ou négatif aussi. Un paiement peut être modifié ou supprimé : la facture revient alors à « Émise » si le total n'est plus atteint.
+
+**UC17 — Noter une dépense**
+- *Scénario* : « Paiements et dépenses » → catégorie, libellé, montant, date, justificatif facultatif (PDF, JPEG ou PNG, 10 Mo maximum).
+- *Cas d'erreur* : un fichier qui n'est pas un vrai PDF ou une vraie image est refusé, même avec la bonne extension.
+
+**UC18 — Suivre ses finances**
+- *Bilan d'une date* : prévu, facturé, encaissé, reste à encaisser, dépensé, résultat (encaissé moins dépensé), en TTC et en euros entiers à l'affichage.
+- *Tableau de bord* (page d'accueil) : facturé et encaissé de l'année, factures à encaisser (avec le retard), dates confirmées sans contrat, prochaines dates.
+- *Export CSV* : factures et avoirs, recettes, dépenses, sur la période choisie, prêts pour Excel ou le comptable.
+
 ---
 
 ## 3. Parcours complet d'une date
@@ -125,12 +157,14 @@ flowchart TD
     I --> J[Facture d'acompte<br/>F-2026-0001]
     J --> K[Facture de solde<br/>F-2026-0002]
     K --> M[Feuille de route<br/>partagée par lien secret]
-    M --> L[("À venir : paiements, bilan")]
+    K --> P[Paiements reçus<br/>facture payée]
+    P --> Q[Bilan de la date et<br/>tableau de bord]
+    Q --> L[("Export CSV<br/>pour le comptable")]
     X --> R[Réactiver si besoin]
     R --> B
 ```
 
-Les blocs « paiements » et « bilan » correspondent au Sprint 3.7, pas encore réalisé.
+La feuille de route se prépare dès que la date existe ; elle est placée ici par commodité. Les dépenses se saisissent à tout moment et alimentent le bilan.
 
 ---
 
@@ -335,8 +369,6 @@ sequenceDiagram
     Note over U,ST: Aucune adresse /media/ n'existe :<br/>le fichier ne sort que par cette vue
 ```
 
----
-
 ### 4.8 Lien secret de la feuille de route
 
 ```mermaid
@@ -359,6 +391,41 @@ sequenceDiagram
     Artiste->>App: Arrêter le partage
     App->>DB: jeton vidé, is_published = faux
 ```
+
+Le lien ne montre que les données d'une liste blanche (`public_context`). La page est servie avec `no-store`, `noindex` et `no-referrer`, parce que le jeton est dans l'adresse.
+
+### 4.9 Enregistrement d'un paiement
+
+```mermaid
+sequenceDiagram
+    actor U as Artiste
+    participant V as Vue PaymentAdd
+    participant SV as Service finance
+    participant DB as Base de données
+
+    U->>V: POST montant, date, mode (sur une facture)
+    V->>DB: Cherche la date ET la facture dans MA structure
+    alt Introuvable
+        V-->>U: 404
+    else Trouvée
+        V->>SV: record_payment(facture, montant, date, mode)
+        SV->>DB: Début de transaction, verrouille la facture
+        SV->>SV: Facture émise ? Montant positif ? Montant ≤ reste à payer ?
+        alt Refusé
+            SV-->>V: Erreur (dépasse le reste à payer...)
+            V-->>U: Formulaire avec le message, rien d'enregistré
+        else Accepté
+            SV->>DB: Enregistre le paiement
+            SV->>DB: Total payé ≥ total de la facture ? statut payée, sinon émise
+            SV->>DB: Fin de transaction
+            V-->>U: Page rafraîchie (bloc HTMX ou redirection)
+        end
+    end
+```
+
+Modifier ou supprimer un paiement passe par le même verrou et recalcule le statut : une facture « payée » revient à « émise » si le total n'est plus atteint.
+
+---
 
 ## 5. Cycles de vie (diagrammes d'états)
 
@@ -397,11 +464,14 @@ stateDiagram-v2
     [*] --> brouillon : création
     brouillon --> emise : émettre (numéro, figeage, PDF)
     brouillon --> [*] : supprimer le brouillon
+    emise --> payee : paiements = total
+    payee --> emise : paiement modifié ou supprimé
     emise --> annulee : avoirs = montant total
+    payee --> annulee : avoirs = montant total
     emise --> emise : avoir partiel
 ```
 
-Une facture émise ne peut ni être modifiée ni supprimée. Le statut « payée » arrivera avec les paiements (Sprint 3.7). Un devis suit le même cycle, sans avoir.
+Une facture émise ne peut ni être modifiée ni supprimée ; seul son statut bouge, avec les paiements. Une facture payée reste créditable. Un devis suit le même cycle, sans avoir ni paiement.
 
 ---
 
@@ -432,6 +502,15 @@ erDiagram
     INVOICE ||--o{ INVOICE : "avoirs sur la facture"
     INVOICE ||--o{ DOCUMENT_LINE : "lignes"
     QUOTE ||--o{ DOCUMENT_LINE : "lignes"
+
+    GIG ||--o| ROADMAP : "a une feuille de route"
+    ROADMAP ||--o{ ROADMAP_SLOT : "creneaux"
+    ROADMAP ||--o{ LODGING : "hebergements"
+    ROADMAP ||--o{ MEAL : "repas"
+    GIG ||--o{ GIG_MEMBER : "equipe"
+
+    INVOICE ||--o{ PAYMENT : "paiements recus"
+    GIG ||--o{ EXPENSE : "depenses"
 
     TENANT ||--o{ CONTRACT_SEQUENCE : "numerotation des contrats"
     TENANT ||--o{ DOCUMENT_SEQUENCE : "numerotation factures et devis"
@@ -467,6 +546,23 @@ erDiagram
         decimal total_incl_tax
         file pdf_file
     }
+    ROADMAP {
+        string token
+        bool is_published
+        text notes
+    }
+    PAYMENT {
+        decimal amount
+        date date
+        string method
+    }
+    EXPENSE {
+        string category
+        string label
+        decimal amount
+        date date
+        file receipt_file
+    }
     DOCUMENT_LINE {
         string label
         decimal quantity
@@ -475,7 +571,7 @@ erDiagram
     }
 ```
 
-Règle d'or : **tous** les modèles métier (tout sauf `USER`) portent une clé vers `TENANT` (via `TenantOwnedModel`). C'est ce qui garantit l'isolation des structures. Les contraintes en base : un contact a un seul parent, un avoir est lié à sa facture (et seulement lui), une ligne a un seul document, un numéro est unique par structure.
+Règle d'or : **tous** les modèles métier (tout sauf `USER`) portent une clé vers `TENANT` (via `TenantOwnedModel`). C'est ce qui garantit l'isolation des structures. Les contraintes en base : un contact a un seul parent, un avoir est lié à sa facture (et seulement lui), une ligne a un seul document, un numéro est unique par structure, le jeton d'une feuille de route est unique, un montant de paiement ou de dépense est strictement positif.
 
 ---
 
@@ -492,6 +588,7 @@ flowchart LR
         pdf["WeasyPrint<br/>HTML vers PDF"]
     end
 
+    public(["Équipe<br/>(lien secret, sans compte)"])
     pg[("PostgreSQL")]
     st[("Stockage privé<br/>disque en dev<br/>S3 européen en prod")]
 
@@ -503,6 +600,9 @@ flowchart LR
     pdf --> st
     vues -->|"fichiers après contrôle"| st
     st -.->|"jamais d'URL directe"| nav
+    public -->|"page publique de la feuille de route"| vues
 ```
+
+La page publique de la feuille de route est la seule vue sans connexion (hors inscription et connexion) : elle ne passe que par le jeton, et n'expose qu'une liste blanche de données.
 
 Choix assumés : un seul programme (pas d'API séparée), des pages rendues par le serveur avec de petits échanges HTMX, la logique métier dans des services testables, et les fichiers servis uniquement par des vues qui vérifient la structure.
