@@ -31,4 +31,24 @@
       {% translate "Télécharger toutes mes données" %}
     </a>
   </section>
+
+  <section class="mt-8 border-t border-gray-200 pt-4">
+    <h2 class="mb-2 text-base font-semibold text-red-700">{% translate "Zone sensible" %}</h2>
+    {% if pending_deletion_date %}
+      <p class="mb-2 text-sm text-gray-700">
+        {% blocktranslate with date=pending_deletion_date|date:"d/m/Y" %}La suppression est prévue le {{ date }}. Toutes les données seront alors effacées.{% endblocktranslate %}
+      </p>
+      {% if is_owner %}
+        <form method="post" action="{% url 'tenants:cancel-deletion' %}">
+          {% csrf_token %}
+          <button type="submit" class="btn btn-secondary btn-block">{% translate "Annuler la suppression" %}</button>
+        </form>
+      {% endif %}
+    {% elif is_owner %}
+      <a href="{% url 'tenants:delete' %}" class="text-sm text-red-700 underline">{% translate "Supprimer ma structure et mes données" %}</a>
+    {% endif %}
+    {% if not is_owner %}
+      <a href="{% url 'tenants:leave' %}" class="text-sm text-red-700 underline">{% translate "Quitter cette structure" %}</a>
+    {% endif %}
+  </section>
 {% endblock %}

@@ -248,7 +248,7 @@ Avant de coder : propose un plan (fichiers, modèles, tests) et attends mon acco
 ### Sprint 3.8 — Légal, sécurité, finition, recette
 - [x] Pages : mentions légales, CGU, confidentialité (gabarits à compléter et à faire relire avant la mise en ligne).
 - [x] Export des données (F-81) : ZIP de CSV et de fichiers, page `ma-structure/export-donnees/`.
-- [ ] Suppression de compte (F-82) : demande, délai de 30 jours, purge.
+- [x] Suppression de compte (F-82) : demande (nom + mot de passe), délai de 30 jours annulable, commande `purge_deleted_tenants` (à planifier en prod), départ d'un membre.
 - [ ] **Audit d'isolation complet** : parcourir chaque URL et chaque vue avec 2 tenants.
 - [ ] Revue sécurité : en-têtes, cookies, CSRF, `check --deploy`, dépendances à jour, secrets.
 - [ ] Vérifier les téléchargements de fichiers (contrôle d'accès).
@@ -352,7 +352,7 @@ Avant de coder : propose un plan (fichiers, modèles, tests) et attends mon acco
 | Modèle économique : freemium (3 dates gratuites) ou formules Essentiel/Collectif (Q9) | Avant Phase 5.1 | ☐ |
 | Adoption ou non de la hiérarchie Projet/Spectacle/Version proposée le 29/09 (Q10) — détail dans `docs/07-modele-spectacle.md` | Avant toute refonte du modèle `Show` | ☐ |
 | Bucket S3 européen (Scaleway, OVH…) | Phase 3.4 | ☐ |
-| Politique de conservation des données | Phase 3.8 | ☐ |
+| Politique de conservation des données | Phase 3.8 | ◐ *(suppression complète après 30 jours, factures émises comprises ; conservation légale de 10 ans à valider avec un comptable)* |
 | Grille tarifaire | Phase 4 | ☐ |
 | Prestataire de signature électronique | Phase 5 | ☐ |
 | Plateforme agréée de facturation électronique | Phase 5 (avant 09/2027) | ☐ |

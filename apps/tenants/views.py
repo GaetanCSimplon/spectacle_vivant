@@ -6,14 +6,22 @@ from django.shortcuts import redirect
 from django.urls import reverse_lazy
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
+from django.views import View
 from django.views.generic import FormView, TemplateView, UpdateView
 
 from apps.accounts.services import is_tenant_owner
 from apps.core.views import TenantScopedMixin
 
 from .data_export import build_export_zip
-from .forms import OnboardingForm, TenantProfileForm
-from .services import create_tenant_for_user
+from .forms import DeleteTenantForm, OnboardingForm, TenantProfileForm
+from .services import (
+    CannotLeave,
+    cancel_deletion,
+    create_tenant_for_user,
+    deletion_date,
+    leave_tenant,
+    request_deletion,
+)
 
 
 class OnboardingView(LoginRequiredMixin, FormView):
@@ -90,3 +98,55 @@ class DataExportView(TenantScopedMixin, TemplateView):
         archive = build_export_zip(request.tenant)
         filename = f"export-{timezone.localdate()}.zip"
         return FileResponse(archive, as_attachment=True, filename=filename)
+
+
+class OwnerRequiredMixin(TenantScopedMixin):
+    """Only the tenant's owner may go on (a plain member gets a 403)."""
+
+    def dispatch(self, request, *args, **kwargs):
+        if request.user.is_authenticated and request.tenant is not None:
+            if not is_tenant_owner(request.user, request.tenant):
+                raise PermissionDenied
+        return super().dispatch(request, *args, **kwargs)
+
+
+class DeleteTenantView(OwnerRequiredMixin, FormView):
+    form_class = DeleteTenantForm
+    template_name = "tenants/delete.html"
+    success_url = reverse_lazy("tenants:profile")
+
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        return {**kwargs, "user": self.request.user, "tenant": self.request.tenant}
+
+    def form_valid(self, form):
+        request_deletion(self.request.tenant)
+        messages.success(
+            self.request,
+            _("La suppression est demandée. Vous pouvez l'annuler jusqu'au %(date)s.")
+            % {"date": deletion_date(self.request.tenant).strftime("%d/%m/%Y")},
+        )
+        return super().form_valid(form)
+
+
+class CancelDeletionView(OwnerRequiredMixin, View):
+    def post(self, request):
+        cancel_deletion(request.tenant)
+        messages.success(request, _("La suppression est annulée."))
+        return redirect("tenants:profile")
+
+
+class LeaveTenantView(TenantScopedMixin, TemplateView):
+    template_name = "tenants/leave.html"
+
+    def post(self, request, *args, **kwargs):
+        try:
+            leave_tenant(request.user, request.tenant)
+        except CannotLeave:
+            messages.error(
+                request,
+                _("Vous êtes le seul propriétaire : supprimez la structure pour la quitter."),
+            )
+            return redirect("tenants:profile")
+        messages.success(request, _("Vous avez quitté la structure."))
+        return redirect("home")

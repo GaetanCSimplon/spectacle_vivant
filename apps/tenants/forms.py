@@ -49,3 +49,27 @@ class TenantProfileForm(forms.ModelForm):
 
     def clean_iban(self):
         return normalize_iban(self.cleaned_data["iban"])
+
+
+class DeleteTenantForm(forms.Form):
+    """Asks for the structure's name and the user's password before a deletion."""
+
+    name = forms.CharField(label=_("Nom de la structure"))
+    password = forms.CharField(label=_("Votre mot de passe"), widget=forms.PasswordInput)
+
+    def __init__(self, *args, user, tenant, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.user = user
+        self.tenant = tenant
+
+    def clean_name(self):
+        name = self.cleaned_data["name"].strip()
+        if name != self.tenant.name:
+            raise forms.ValidationError(_("Ce n'est pas le nom exact de votre structure."))
+        return name
+
+    def clean_password(self):
+        password = self.cleaned_data["password"]
+        if not self.user.check_password(password):
+            raise forms.ValidationError(_("Mot de passe incorrect."))
+        return password

@@ -78,6 +78,10 @@
 - **À faire** : vérifier que l'offre PostgreSQL choisie inclut des sauvegardes quotidiennes et une durée de conservation ; **tester une restauration au moins une fois** avant d'avoir de vrais utilisateurs. Prévoir aussi la sauvegarde du bucket (versionnage ou copie).
 - **Lié à** : politique de conservation des données (Sprint 3.8, RGPD).
 
+## 7 bis. Tâche planifiée — purge des comptes supprimés
+
+La suppression d'une structure est effective 30 jours après la demande. Il faut donc planifier chaque jour la commande `python manage.py purge_deleted_tenants` (cron Scalingo, fichier `cron.json`, par exemple `0 3 * * *`). Sans elle, les données demandées à la suppression ne sont jamais effacées.
+
 ## 8. Supervision de disponibilité
 
 - **À quoi ça sert** : être alerté par e-mail si le site ne répond plus.
