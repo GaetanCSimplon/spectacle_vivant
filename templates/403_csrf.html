@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}Formulaire expiré — Spectacle Vivant{% endblock %}
+
+{% block page_content %}
+  <h1>{% translate "Le formulaire a expiré" %}</h1>
+  <p class="mb-4">{% translate "Pour votre sécurité, ce formulaire n'est plus valable (page restée ouverte trop longtemps, ou cookies bloqués). Rechargez la page et recommencez : rien n'a été enregistré." %}</p>
+  <a href="{% url 'home' %}" class="btn btn-primary">{% translate "Retour à l'accueil" %}</a>
+{% endblock %}

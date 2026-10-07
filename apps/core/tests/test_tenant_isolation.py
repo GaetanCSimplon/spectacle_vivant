@@ -1,6 +1,6 @@
 import pytest
 from django.http import JsonResponse
-from django.urls import path, reverse
+from django.urls import include, path, reverse
 from django.views.generic import CreateView, DeleteView, DetailView, ListView
 
 from apps.accounts.factories import UserFactory
@@ -48,6 +48,8 @@ urlpatterns = [
     path("__test__/notes/new/", NoteCreateView.as_view(), name="test-note-create"),
     path("__test__/notes/<int:pk>/", NoteDetailView.as_view(), name="test-note-detail"),
     path("__test__/notes/<int:pk>/delete/", NoteDeleteView.as_view(), name="test-note-delete"),
+    # The real URLs too: the error pages (404...) extend the base layout, which links to them.
+    path("", include("config.urls")),
 ]
 
 

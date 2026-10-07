@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}Accès refusé — Spectacle Vivant{% endblock %}
+
+{% block page_content %}
+  <h1>{% translate "Accès refusé" %}</h1>
+  <p class="mb-4">{% translate "Vous n'avez pas le droit d'effectuer cette action. Seul le propriétaire de la structure peut le faire." %}</p>
+  <a href="{% url 'home' %}" class="btn btn-primary">{% translate "Retour à l'accueil" %}</a>
+{% endblock %}

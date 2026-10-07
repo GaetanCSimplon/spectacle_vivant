@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}Page introuvable — Spectacle Vivant{% endblock %}
+
+{% block page_content %}
+  <h1>{% translate "Page introuvable" %}</h1>
+  <p class="mb-4">{% translate "Cette page n'existe pas, ou vous n'y avez pas accès. Vérifiez l'adresse, ou revenez à l'accueil." %}</p>
+  <a href="{% url 'home' %}" class="btn btn-primary">{% translate "Retour à l'accueil" %}</a>
+{% endblock %}
