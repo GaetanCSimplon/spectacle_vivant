@@ -250,7 +250,7 @@ Avant de coder : propose un plan (fichiers, modèles, tests) et attends mon acco
 - [x] Export des données (F-81) : ZIP de CSV et de fichiers, page `ma-structure/export-donnees/`.
 - [x] Suppression de compte (F-82) : demande (nom + mot de passe), délai de 30 jours annulable, commande `purge_deleted_tenants` (à planifier en prod), départ d'un membre.
 - [x] **Audit d'isolation complet** : `apps/core/tests/test_isolation_audit.py` parcourt chaque URL avec 2 tenants ; une nouvelle URL à identifiant doit y être déclarée, sinon le test échoue.
-- [ ] Revue sécurité : en-têtes, cookies, CSRF, `check --deploy`, dépendances à jour, secrets.
+- [x] Revue sécurité (réglages de prod) : en-têtes et cookies vérifiés, proxy HTTPS, WhiteNoise, origines CSRF, journaux, Sentry sans données personnelles ; `check --deploy` propre. Reste : audit des dépendances (`pip-audit`, Dependabot) à brancher avec le déploiement.
 - [ ] Vérifier les téléchargements de fichiers (contrôle d'accès).
 - [ ] Passage d'accessibilité de base (contrastes, labels, clavier).
 - [ ] Textes d'aide, tooltips, messages d'erreur en français.

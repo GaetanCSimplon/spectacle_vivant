@@ -2,6 +2,19 @@ from .base import *  # noqa: F403
 
 DEBUG = False
 
+# Scalingo ends HTTPS at its proxy and forwards plain HTTP: without this header Django
+# would see every request as insecure and redirect forever.
+SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+CSRF_TRUSTED_ORIGINS = env.list("DJANGO_CSRF_TRUSTED_ORIGINS", default=[])  # noqa: F405
+
+# WhiteNoise serves the collected static files (CSS, JS), right after SecurityMiddleware.
+# A new list: inserting in place would also change the list shared with the other settings.
+MIDDLEWARE = [  # noqa: F405
+    MIDDLEWARE[0],  # noqa: F405
+    "whitenoise.middleware.WhiteNoiseMiddleware",
+    *MIDDLEWARE[1:],  # noqa: F405
+]
+
 SECURE_SSL_REDIRECT = True
 SESSION_COOKIE_SECURE = True
 CSRF_COOKIE_SECURE = True
@@ -25,5 +38,31 @@ STORAGES = {
             "querystring_auth": True,
         },
     },
-    "staticfiles": {"BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage"},
+    "staticfiles": {"BACKEND": "whitenoise.storage.CompressedStaticFilesStorage"},
 }
+
+# Logs: console only (Scalingo collects it). Django's own messages never include form data
+# or user details; the roadmap link token is hidden in Sentry (see apps/core/sentry.py).
+LOGGING = {
+    "version": 1,
+    "disable_existing_loggers": False,
+    "formatters": {"plain": {"format": "%(levelname)s %(name)s %(message)s"}},
+    "handlers": {"console": {"class": "logging.StreamHandler", "formatter": "plain"}},
+    "root": {"handlers": ["console"], "level": "WARNING"},
+}
+
+# Error tracking (Sentry, EU): only when a DSN is given, with no personal data (CLAUDE.md 6.3).
+SENTRY_DSN = env("SENTRY_DSN", default="")  # noqa: F405
+if SENTRY_DSN:
+    import sentry_sdk
+
+    from apps.core.sentry import scrub_event
+
+    sentry_sdk.init(
+        dsn=SENTRY_DSN,
+        send_default_pii=False,  # no user e-mail, no IP, no cookies
+        include_local_variables=False,  # variables of a crashed page may hold personal data
+        before_send=scrub_event,
+        before_breadcrumb=scrub_event,
+        traces_sample_rate=0,
+    )

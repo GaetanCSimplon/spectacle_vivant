@@ -69,7 +69,8 @@
 
 - **À quoi ça sert** : être prévenu avec le détail technique quand une page plante chez un utilisateur.
 - **À faire** : créer un compte Sentry avec **hébergement des données dans l'UE**, créer un projet Django, renseigner `SENTRY_DSN`.
-- **Règle** : aucune donnée personnelle dans les rapports (CLAUDE.md §6.3), réglage à vérifier au branchement.
+- **Règle** : aucune donnée personnelle dans les rapports (CLAUDE.md §6.3). Déjà réglé dans `config/settings/prod.py` : Sentry n'est actif que si `SENTRY_DSN` est défini ; e-mail, IP et variables locales ne sont pas envoyés ; le jeton du lien de feuille de route est masqué (`apps/core/sentry.py`).
+- **Journaux du serveur** : ne pas activer le journal d'accès de gunicorn (`--access-logfile`), car il contiendrait le jeton des feuilles de route.
 - **Coût indicatif** : offre gratuite suffisante au départ.
 
 ## 7. Sauvegardes
@@ -118,6 +119,7 @@ La suppression d'une structure est effective 30 jours après la demande. Il faut
 - [ ] Restauration d'une sauvegarde testée
 - [ ] Contrôle de disponibilité créé
 - [ ] `python manage.py check --deploy` propre
+- [ ] `collectstatic` exécuté au déploiement (commande de build Scalingo) : les fichiers statiques sont servis par WhiteNoise
 
 ## Variables d'environnement prévues en production
 
@@ -129,6 +131,7 @@ La suppression d'une structure est effective 30 jours après la demande. Il faut
 | `DATABASE_URL` | addon PostgreSQL Scalingo |
 | `S3_BUCKET_NAME`, `S3_ENDPOINT_URL`, `S3_REGION_NAME`, `S3_ACCESS_KEY_ID`, `S3_SECRET_ACCESS_KEY` | prestataire S3 (noms définis, voir `.env.example`) |
 | variables d'e-mail (SMTP ou clé API) | prestataire d'e-mails, noms définis à la mise en place |
-| `SENTRY_DSN` | Sentry |
+| `SENTRY_DSN` | Sentry (facultatif : sans valeur, rien n'est envoyé) |
+| `DJANGO_CSRF_TRUSTED_ORIGINS` | ton domaine avec `https://` (ex. `https://mon-domaine.fr`) |
 
 *Cette liste évoluera avec les sprints. Les noms exacts des variables seront ajoutés ici quand le code les utilisera.*
