@@ -30,7 +30,6 @@ class TenantProfileForm(forms.ModelForm):
             "representative_name",
             "representative_role",
             "jurisdiction_city",
-            "contract_party_label",
         ]
         widgets = {"address": forms.Textarea(attrs={"rows": 3})}
         help_texts = {
@@ -39,9 +38,6 @@ class TenantProfileForm(forms.ModelForm):
                 "Numéro de licence d'entrepreneur de spectacles, si vous en avez un."
             ),
             "jurisdiction_city": _("Ville dont les tribunaux sont compétents en cas de litige."),
-            "contract_party_label": _(
-                "Comment vous êtes nommé dans le contrat : « L'artiste » ou « Le producteur »."
-            ),
         }
 
     def clean_vat_number(self):

@@ -32,7 +32,6 @@ def _payload(**overrides):
         "representative_name": "Julie Martin",
         "representative_role": "Présidente",
         "jurisdiction_city": "Montpellier",
-        "contract_party_label": "producteur",
     }
     data.update(overrides)
     return data
@@ -70,7 +69,6 @@ def test_owner_can_update_the_tenant(client):
     assert tenant.siret == "12345678900012"
     assert tenant.vat_regime == "franchise"
     assert tenant.jurisdiction_city == "Montpellier"
-    assert tenant.contract_party_label == "producteur"
 
 
 def test_name_is_required(client):
@@ -86,11 +84,11 @@ def test_name_is_required(client):
 def test_unknown_choice_values_are_rejected(client):
     tenant = _login(client)
 
-    response = client.post(URL, _payload(contract_party_label="cedant", vat_regime="inconnu"))
+    response = client.post(URL, _payload(vat_regime="inconnu"))
 
     assert response.status_code == 200
     tenant.refresh_from_db()
-    assert tenant.contract_party_label == "artiste"
+    assert tenant.vat_regime != "inconnu"
     assert tenant.name == "Compagnie A"
 
 

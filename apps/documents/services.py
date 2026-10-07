@@ -14,19 +14,12 @@ from .models import Contract, ContractSequence, ContractVersion
 
 TWO_PLACES = Decimal("0.01")
 
-# How the tenant is named in the contract body, with the article each
+# The tenant is always "LE PRODUCTEUR" in the contract body, with the article each
 # grammatical use needs (subject / "à" / "de").
 PARTY_FORMS = {
-    Tenant.ContractPartyLabel.PRODUCER: {
-        "subject": "LE PRODUCTEUR",
-        "to": "AU PRODUCTEUR",
-        "of": "DU PRODUCTEUR",
-    },
-    Tenant.ContractPartyLabel.ARTIST: {
-        "subject": "L'ARTISTE",
-        "to": "À L'ARTISTE",
-        "of": "DE L'ARTISTE",
-    },
+    "subject": "LE PRODUCTEUR",
+    "to": "AU PRODUCTEUR",
+    "of": "DU PRODUCTEUR",
 }
 
 
@@ -53,7 +46,7 @@ def build_contract_context(gig, contract=None):
     vat_amount, total_with_vat = _compute_vat(gig, gig.tenant)
     return {
         "contract": contract,
-        "party": PARTY_FORMS[gig.tenant.contract_party_label],
+        "party": PARTY_FORMS,
         "vat_exempt": gig.tenant.vat_regime != Tenant.VatRegime.TAXABLE,
         "vat_amount": vat_amount,
         "total_with_vat": total_with_vat,

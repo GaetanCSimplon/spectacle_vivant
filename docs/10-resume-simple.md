@@ -1,7 +1,7 @@
 # Où en est le projet ? — Résumé simple
 
 > Un texte pour comprendre l'essentiel sans connaître la technique.
-> État au **3 octobre 2026**, douze jours après le premier commit (21 septembre).
+> État au **7 octobre 2026**, seize jours après le premier commit (21 septembre).
 > Pour le détail : `08-synthese-fonctionnalites.md` (ce qui existe) et `09-cas-d-usage-et-diagrammes.md` (les schémas).
 
 ## L'idée en une phrase
@@ -27,12 +27,16 @@ Prenons Julie, qui chante dans un groupe et vient de se faire proposer un concer
 13. **Elle voit où elle en est** : pour chaque date, ce qui était prévu, ce qui a été facturé, ce qui a été encaissé, ce qui a été dépensé et le résultat. La page d'accueil résume l'année, les factures à encaisser (celles en retard sont signalées), les dates qui attendent encore un contrat et les prochains concerts.
 14. **Elle exporte ses chiffres** en fichiers Excel (factures, recettes, dépenses) pour son comptable, sur la période de son choix.
 
-Tout cela fonctionne déjà, sur ordinateur comme sur téléphone.
+15. **Elle garde la main sur ses données** : elle peut télécharger tout ce qu'elle a saisi (un fichier ZIP avec des tableaux et ses documents). Si elle veut partir, elle peut demander la suppression de sa structure : elle a **30 jours** pour changer d'avis, puis tout est effacé. Les pages légales (mentions, conditions, confidentialité) sont accessibles à tous.
+
+Tout cela fonctionne déjà, sur ordinateur comme sur téléphone. Les pages d'erreur sont aussi en français.
 
 ## Ce qui reste à faire
 
-- **Les pages légales** (mentions légales, conditions d'utilisation, confidentialité) et la possibilité d'exporter ou de supprimer ses données.
-- **La mise en ligne** : pour l'instant l'application tourne uniquement sur l'ordinateur du développeur. Il faut encore l'héberger, choisir un service d'e-mails et un nom de domaine.
+- **Compléter les textes légaux** : les trois pages existent, mais ce sont des gabarits avec des « [À compléter] » ; il faut les remplir et les faire relire.
+- **L'essai complet (« recette »)**, la **sauvegarde** de la base avec un test de restauration, et la vérification des composants utilisés pour détecter d'éventuelles failles connues.
+- **La mise en ligne** : pour l'instant l'application tourne uniquement sur l'ordinateur du développeur. Il faut encore créer les comptes d'hébergement, choisir un service d'e-mails et un nom de domaine. Tout est préparé côté réglages ; c'est la création des comptes qui bloque.
+- **Quelques finitions** : vraie confirmation d'adresse e-mail, logo de la structure, code APE, forme juridique en liste.
 
 Une envie notée pour plus tard : joindre à la feuille de route un **plan des lieux** (salle, accès, scène), sans passer par un service de cartes externe.
 
@@ -43,27 +47,29 @@ Plus tard (version payante) : la signature électronique par un prestataire, la 
 - **Chaque structure ne voit que ses données.** C'est la règle numéro un : une fuite entre deux utilisateurs serait fatale au produit. Chaque donnée est rattachée à sa structure, chaque page vérifie ce lien, et des tests automatiques le contrôlent partout.
 - **Ce qui est émis est figé.** Une facture émise ne peut plus être modifiée ni supprimée. Les numéros se suivent sans jamais sauter, même si une génération échoue en cours de route. Les informations légales sont copiées dans le document au moment de l'émission : changer son adresse demain ne modifie pas les factures d'hier.
 - **Les fichiers sont protégés.** Un contrat ou une facture n'a pas d'adresse web qu'on pourrait deviner : on ne peut les télécharger qu'en étant connecté et seulement les siens.
+- **La sécurité a été passée en revue.** Un test automatique parcourt chaque page de l'application avec deux utilisateurs différents pour vérifier que l'un ne voit jamais les données de l'autre : aucune faille trouvée. Les réglages de production (connexion chiffrée, suivi des erreurs sans données personnelles) sont prêts.
 - **Les calculs sont exacts au centime.** Pas d'arrondi caché : la TVA est calculée taux par taux, et un avoir reprend exactement les montants de sa facture.
 
 ## Comment le travail est organisé
 
 - Le développeur travaille avec un assistant (Claude Code) : l'assistant propose un **plan**, le développeur l'approuve, puis l'assistant code **avec les tests**. Le développeur relit et applique lui-même tout ce qui touche à la base de données.
-- Le travail avance par **petites étapes** : une idée, une branche, une relecture (« pull request »), puis la fusion. Il y en a eu **46 de fusionnées** en douze jours, et aucune n'est en attente.
-- **717 tests automatiques** vérifient le fonctionnement à chaque modification. Une vérification automatique sur GitHub les rejoue avant toute fusion.
+- Le travail avance par **petites étapes** : une idée, une branche, une relecture (« pull request »), puis la fusion. Il y en a eu **53 de fusionnées** en seize jours, et aucune n'est en attente.
+- **833 tests automatiques** vérifient le fonctionnement à chaque modification. Une vérification automatique sur GitHub les rejoue avant toute fusion.
 
 ## Les chiffres
 
 | | |
 |---|---|
 | Premier commit | 21 septembre 2026 |
-| Modules du MVP terminés | 9 sur 10 (comptes, structure, carnet d'adresses, spectacles, dates, contrats, devis et factures, feuille de route, finances) ; reste la partie légale |
-| Tests automatiques | 717, tous verts |
-| Lignes de code | environ 5 200 (et 8 300 lignes de tests) |
+| Modules du MVP terminés | 10 sur 10 (comptes, structure, carnet d'adresses, spectacles, dates, contrats, devis et factures, feuille de route, finances, légal et données personnelles) ; textes légaux encore provisoires |
+| Tests automatiques | 833, tous verts |
+| Lignes de code | environ 6 000 (et 9 300 lignes de tests) |
 | En ligne | pas encore |
 
 ## Ce qui demande une décision ou une validation humaine
 
-- **Tester à la main sur téléphone** les nouveaux écrans (paiements, dépenses, accueil, exports) et ouvrir un export dans Excel : les tests automatiques ne remplacent pas un vrai essai.
+- **Tester à la main sur téléphone** les écrans récents (paiements, dépenses, accueil, exports, suppression de compte, pages d'erreur) et ouvrir un export dans Excel : les tests automatiques ne remplacent pas un vrai essai. Un guide de test pas à pas est prévu pour cela ; c'est l'étape en cours, avant de présenter l'application à l'associé.
+- **Faire relire les textes légaux** (mentions, conditions, confidentialité) et **valider avec un comptable** la durée de conservation des factures : aujourd'hui, la suppression d'une structure efface aussi ses factures émises, alors qu'elles doivent en principe être gardées 10 ans.
 - **Faire relire les documents par un professionnel** : le contrat et surtout les factures (mentions légales, TVA, conditions de paiement). Les PDF portent pour l'instant la mention « Modèle provisoire — non relu par un professionnel ».
 - **Choisir le modèle économique** : gratuit jusqu'à trois dates par an, ou deux formules payantes proposées par le collègue.
 - **Trancher la structure des spectacles** (projets, spectacles, versions) proposée par le collègue : à décider avant de la construire.
@@ -71,4 +77,4 @@ Plus tard (version payante) : la signature électronique par un prestataire, la 
 
 ## Et ensuite ?
 
-Les fonctions principales du produit sont faites : de la date au contrat, aux factures, à la feuille de route et au suivi de l'argent. La prochaine étape est la **partie légale** (pages légales, export et suppression des données, vérification finale de l'isolation, sauvegardes, essai complet), puis la **mise en ligne**. Une fois ces étapes terminées, le produit sera prêt pour une première série de testeurs réels.
+Les fonctions principales du produit sont faites : de la date au contrat, aux factures, à la feuille de route et au suivi de l'argent. La partie légale est maintenant codée (pages, export et suppression des données, vérification de l'isolation, réglages de production). La prochaine étape est le **test complet à la main**, puis, une fois les comptes d'hébergement créés, les **sauvegardes**, l'essai complet (« recette ») et la **mise en ligne**. Une fois ces étapes terminées, le produit sera prêt pour une première série de testeurs réels.

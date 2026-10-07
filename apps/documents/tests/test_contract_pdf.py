@@ -111,31 +111,25 @@ def _render(gig, contract=None):
     return " ".join(html_lib.unescape(html).split())
 
 
-def test_contract_names_the_tenant_as_the_artist_by_default():
-    gig = GigFactory()
-
-    html = _render(gig)
-
-    assert "L'ARTISTE fournira le spectacle" in html
-    assert "LE PRODUCTEUR" not in html
-
-
-def test_contract_names_the_tenant_as_the_producer_when_configured():
-    gig = GigFactory(tenant__contract_party_label="producteur")
+def test_contract_always_names_the_tenant_as_the_producer():
+    gig = GigFactory(invitations_count=5)
 
     html = _render(gig)
 
     assert "LE PRODUCTEUR fournira le spectacle" in html
     assert "fournie par LE PRODUCTEUR" in html
+    assert "AU PRODUCTEUR ou à son représentant" in html
+    assert "verser AU PRODUCTEUR, en contrepartie" in html
+    assert "Obligations du producteur" in html
 
 
-def test_contract_uses_the_right_grammatical_form_for_the_artist():
-    gig = GigFactory(invitations_count=5)
+def test_contract_keeps_the_performers_mention_of_article_4():
+    gig = GigFactory()
 
     html = _render(gig)
 
-    assert "À L'ARTISTE ou à son représentant" in html
-    assert "verser À L'ARTISTE, en contrepartie" in html
+    assert "le meilleur accueil au public et à L'ARTISTE" in html
+    assert "L'ARTISTE fournira" not in html
 
 
 def test_contract_shows_the_signing_place():
