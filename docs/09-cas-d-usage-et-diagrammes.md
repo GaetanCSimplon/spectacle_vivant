@@ -1,8 +1,8 @@
 # Cas d'usage et diagrammes
 
-> Illustration des fonctionnalités réalisées au 2026-10-03 (voir `08-synthese-fonctionnalites.md`).
+> Illustration des fonctionnalités réalisées au 2026-10-07 (voir `08-synthese-fonctionnalites.md`).
 > Les schémas sont écrits en **Mermaid** : ils s'affichent directement sur GitHub, et dans VS Code avec une extension d'aperçu Markdown qui gère Mermaid.
-> Ils décrivent ce que fait le code. Les 16 schémas ont été validés par l'analyseur syntaxique de Mermaid le 03/10 ; leur rendu visuel n'a pas été contrôlé à l'œil, signalez tout schéma qui s'affiche mal.
+> Ils décrivent ce que fait le code. Les 16 premiers schémas ont été validés par l'analyseur syntaxique de Mermaid le 03/10 ; ceux ajoutés le 07/10 (cas d'usage UC19 à UC22, séquence 4.10, états 5.4, architecture) ne l'ont pas été. Le rendu visuel n'a pas été contrôlé à l'œil, signalez tout schéma qui s'affiche mal.
 
 Sommaire : 1. Acteurs · 2. Cas d'usage · 3. Parcours complet d'une date · 4. Diagrammes de séquence · 5. Cycles de vie (états) · 6. Modèle de données · 7. Architecture.
 
@@ -16,7 +16,8 @@ Sommaire : 1. Acteurs · 2. Cas d'usage · 3. Parcours complet d'une date · 4. 
 | **Membre** | Autre personne de la même structure | Accès aux données, consulte « Ma structure » sans la modifier |
 | **Organisateur** | Le client (mairie, festival, salle, association…) | **N'a pas de compte** : reçoit les PDF par l'artiste, signe hors de l'application |
 | **Équipe sur la route** | Musiciens, techniciens, accompagnants | **N'a pas de compte** : ouvre la feuille de route avec le lien secret que l'artiste lui envoie |
-| **Système** | L'application elle-même | Numérote, fige, génère les PDF, contrôle l'accès |
+| **Visiteur** | Toute personne sur le site | Lit les pages légales sans compte |
+| **Système** | L'application elle-même | Numérote, fige, génère les PDF, contrôle l'accès, purge les comptes supprimés après 30 jours |
 
 ---
 
@@ -30,6 +31,7 @@ flowchart LR
     membre(["Membre"])
     orga(["Organisateur<br/>(sans compte)"])
     equipe(["Équipe<br/>(sans compte)"])
+    visiteur(["Visiteur<br/>(sans compte)"])
 
     subgraph app["Application Spectacle Vivant"]
         direction TB
@@ -51,6 +53,10 @@ flowchart LR
         UC16(["Enregistrer un paiement"])
         UC17(["Noter une dépense"])
         UC18(["Suivre ses finances<br/>bilan, tableau de bord, export CSV"])
+        UC19(["Exporter ses données"])
+        UC20(["Demander ou annuler la suppression<br/>de la structure"])
+        UC21(["Quitter la structure"])
+        UC22(["Lire les pages légales"])
     end
 
     artiste --- UC1
@@ -71,6 +77,11 @@ flowchart LR
     artiste --- UC16
     artiste --- UC17
     artiste --- UC18
+    artiste --- UC19
+    artiste --- UC20
+    membre --- UC21
+    visiteur --- UC22
+    artiste --- UC22
     membre --- UC3
     membre --- UC5
     membre --- UC6
@@ -82,7 +93,7 @@ flowchart LR
     UC15 -.->|"lien secret"| equipe
 ```
 
-Le membre fait tout ce que fait l'artiste **sauf modifier « Ma structure »** (il la consulte). Il est représenté sur les cas principaux pour la lisibilité (le diagramme n'en montre qu'une partie).
+Le membre fait tout ce que fait l'artiste **sauf modifier « Ma structure »** (il la consulte), exporter les données ou demander la suppression (réservés au propriétaire) ; il peut en revanche quitter la structure. Il est représenté sur les cas principaux pour la lisibilité (le diagramme n'en montre qu'une partie).
 
 ### 2.2 Fiches des cas d'usage principaux
 
@@ -138,6 +149,23 @@ Le membre fait tout ce que fait l'artiste **sauf modifier « Ma structure »** (
 - *Bilan d'une date* : prévu, facturé, encaissé, reste à encaisser, dépensé, résultat (encaissé moins dépensé), en TTC et en euros entiers à l'affichage.
 - *Tableau de bord* (page d'accueil) : facturé et encaissé de l'année, factures à encaisser (avec le retard), dates confirmées sans contrat, prochaines dates.
 - *Export CSV* : factures et avoirs, recettes, dépenses, sur la période choisie, prêts pour Excel ou le comptable.
+
+**UC19 — Exporter ses données**
+- *Scénario* : « Ma structure » → « Exporter mes données » → un ZIP est téléchargé : CSV (spectacles, organisateurs, lieux, contacts, dates, finances) et fichiers stockés (contrats, PDF, justificatifs).
+- *Isolation* : le ZIP ne contient que les données de sa propre structure.
+
+**UC20 — Demander ou annuler la suppression de la structure**
+- *Précondition* : être propriétaire.
+- *Scénario* : « Supprimer ma structure » → l'utilisateur saisit le nom de la structure et son mot de passe → la suppression est **programmée à 30 jours** ; elle peut être annulée pendant ce délai. Passé le délai, la commande `purge_deleted_tenants` efface les données et les fichiers.
+- *Cas d'erreur* : nom ou mot de passe faux → refus ; un simple membre → accès refusé ; demander deux fois garde la première date.
+- ⚠️ Les factures émises sont supprimées avec le reste : conservation légale de 10 ans à valider avec un comptable.
+
+**UC21 — Quitter la structure**
+- *Scénario* : un membre clique sur « Quitter » et perd l'accès aux données de la structure.
+- *Cas d'erreur* : le dernier propriétaire ne peut pas partir (il doit supprimer la structure ou la confier).
+
+**UC22 — Lire les pages légales**
+- *Scénario* : sans compte, ouvrir mentions légales, conditions d'utilisation ou confidentialité. Les textes sont des gabarits provisoires (« [À compléter] ») avant relecture.
 
 ---
 
@@ -425,6 +453,36 @@ sequenceDiagram
 
 Modifier ou supprimer un paiement passe par le même verrou et recalcule le statut : une facture « payée » revient à « émise » si le total n'est plus atteint.
 
+### 4.10 Suppression de la structure
+
+```mermaid
+sequenceDiagram
+    actor U as Propriétaire
+    participant V as Vue DeleteTenant
+    participant SV as Service tenants
+    participant DB as Base de données
+    participant C as Commande purge_deleted_tenants
+
+    U->>V: POST nom de la structure + mot de passe
+    alt Nom ou mot de passe faux
+        V-->>U: Formulaire avec message, rien ne change
+    else Valide
+        V->>SV: request_deletion(structure)
+        SV->>DB: deletion_requested_at = maintenant
+        V-->>U: Suppression programmée dans 30 jours
+    end
+    opt Le propriétaire change d'avis
+        U->>V: POST annuler la suppression
+        V->>SV: cancel_deletion(structure)
+        SV->>DB: deletion_requested_at = vide
+    end
+    Note over C,DB: Tâche planifiée en production (à configurer)
+    C->>DB: Structures dont la demande a plus de 30 jours
+    C->>DB: Supprime données et fichiers, dans un ordre explicite (liens protégés)
+```
+
+La suppression n'est jamais immédiate : le délai de 30 jours laisse le temps de se rétracter ou d'exporter ses données.
+
 ---
 
 ## 5. Cycles de vie (diagrammes d'états)
@@ -472,6 +530,18 @@ stateDiagram-v2
 ```
 
 Une facture émise ne peut ni être modifiée ni supprimée ; seul son statut bouge, avec les paiements. Une facture payée reste créditable. Un devis suit le même cycle, sans avoir ni paiement.
+
+### 5.4 Une structure
+
+```mermaid
+stateDiagram-v2
+    [*] --> active : onboarding
+    active --> suppression_programmee : propriétaire demande (nom + mot de passe)
+    suppression_programmee --> active : annulation dans les 30 jours
+    suppression_programmee --> [*] : purge après 30 jours
+```
+
+Pendant le délai, la structure existe encore et l'export reste possible.
 
 ---
 
@@ -522,6 +592,7 @@ erDiagram
         decimal vat_rate
         string vat_number
         string iban
+        datetime deletion_requested_at
     }
     GIG {
         date date
@@ -588,6 +659,7 @@ flowchart LR
         pdf["WeasyPrint<br/>HTML vers PDF"]
     end
 
+    cron(["Tâche planifiée<br/>purge des comptes supprimés"])
     public(["Équipe<br/>(lien secret, sans compte)"])
     pg[("PostgreSQL")]
     st[("Stockage privé<br/>disque en dev<br/>S3 européen en prod")]
@@ -600,9 +672,10 @@ flowchart LR
     pdf --> st
     vues -->|"fichiers après contrôle"| st
     st -.->|"jamais d'URL directe"| nav
+    cron -->|"commande de purge"| svc
     public -->|"page publique de la feuille de route"| vues
 ```
 
-La page publique de la feuille de route est la seule vue sans connexion (hors inscription et connexion) : elle ne passe que par le jeton, et n'expose qu'une liste blanche de données.
+Les pages légales et la page publique de la feuille de route sont les seules vues sans connexion (hors inscription et connexion). La feuille de route ne passe que par le jeton, et n'expose qu'une liste blanche de données.
 
 Choix assumés : un seul programme (pas d'API séparée), des pages rendues par le serveur avec de petits échanges HTMX, la logique métier dans des services testables, et les fichiers servis uniquement par des vues qui vérifient la structure.

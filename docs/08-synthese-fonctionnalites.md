@@ -1,6 +1,6 @@
 # Synthèse des fonctionnalités réalisées
 
-> **Situation au 2026-10-03.** Phase 3 (MVP), Sprints 3.1 à 3.7 réalisés, hors quelques restes listés au §7.
+> **Situation au 2026-10-07.** Phase 3 (MVP) : Sprints 3.1 à 3.7 réalisés, et le code du Sprint 3.8 (légal, sécurité, finition) aussi. Il reste la recette, les sauvegardes et la mise en ligne, qui attendent les comptes d'hébergement (§7).
 > Ce document décrit **ce qui existe dans le code** ; les intentions et le périmètre complet restent dans `03-cahier-des-charges.md` et `04-feuille-de-route.md`.
 > Pour les schémas : `09-cas-d-usage-et-diagrammes.md`. Pour une version non technique : `10-resume-simple.md`.
 
@@ -21,9 +21,9 @@ Légende : ✅ fait · 🟡 partiel · ⬜ pas encore fait.
 | M5 — Devis et factures | Devis, factures (acompte, solde, totale), avoirs, PDF | ✅ (relecture professionnelle ⬜) |
 | M6 — Feuille de route | Créneaux, lien secret, vue mobile, PDF | ✅ (test à 375 px et rendu du PDF à contrôler à la main) |
 | M7 — Finances | Paiements, dépenses, bilan par date, tableau de bord, export CSV | ✅ (ouverture des CSV dans Excel à contrôler à la main) |
-| M9 — Légal et RGPD | Pages légales, export et suppression de compte | ⬜ (Sprint 3.8) |
+| M9 — Légal et RGPD | Pages légales, export et suppression de compte | ✅ (textes légaux provisoires, à compléter et à faire relire) |
 
-**Le parcours central fonctionne de bout en bout** : créer une date → la compléter → générer le contrat → le faire signer → facturer l'acompte puis le solde → télécharger les PDF. Il se prolonge par la feuille de route partagée par lien secret, puis par les paiements reçus, les dépenses, le bilan de la date, le tableau de bord de l'accueil et les exports CSV. Il ne manque au MVP que la partie légale (Sprint 3.8) et la mise en ligne.
+**Le parcours central fonctionne de bout en bout** : créer une date → la compléter → générer le contrat → le faire signer → facturer l'acompte puis le solde → télécharger les PDF. Il se prolonge par la feuille de route partagée par lien secret, puis par les paiements reçus, les dépenses, le bilan de la date, le tableau de bord de l'accueil et les exports CSV. La partie légale (pages, export et suppression des données) est faite, ainsi que l'audit d'isolation, les réglages de production et les pages d'erreur en français. Il ne manque au MVP que la recette complète, les sauvegardes et la mise en ligne.
 
 ---
 
@@ -33,11 +33,13 @@ Légende : ✅ fait · 🟡 partiel · ⬜ pas encore fait.
 - **Inscription / connexion** par e-mail (`django-allauth`), modèle `User` personnalisé.
 - **Onboarding en un écran** (nom, forme juridique, régime de TVA) : crée la structure (`Tenant`) et le lien propriétaire (`Membership`). Tout utilisateur connecté sans structure y est redirigé automatiquement.
 - **Isolation des structures** : chaque donnée métier appartient à une structure et n'est jamais visible d'une autre (voir §4).
-- **Navigation** : 5 entrées (Accueil · Mes dates · Spectacles · Contacts · Ma structure), barre basse sur mobile.
+- **Navigation** : 5 entrées (Accueil · Mes dates · Spectacles · Contacts · Ma structure), barre basse sur mobile, lien « Aller au contenu » pour le clavier.
+- **Pages d'erreur en français** : 404, 403, 500 et formulaire expiré (CSRF).
 - 🟡 Mot de passe oublié non testé à la main ; confirmation d'e-mail non activée (prestataire d'e-mails à choisir).
 
 ### M8 — Ma structure
-- Nom, forme juridique, adresse, SIRET, régime de TVA (assujetti / franchise en base / non assujetti), **taux de TVA**, **numéro de TVA**, **IBAN** (normalisé et contrôlé : format et clé de contrôle), licence d'entrepreneur de spectacles, représentant légal et qualité, ville du tribunal compétent, désignation dans le contrat (« L'artiste » ou « Le producteur »).
+- Nom, forme juridique, adresse, SIRET, régime de TVA (assujetti / franchise en base / non assujetti), **taux de TVA**, **numéro de TVA**, **IBAN** (normalisé et contrôlé : format et clé de contrôle), licence d'entrepreneur de spectacles, représentant légal et qualité, ville du tribunal compétent.
+- Dans le contrat, la structure est **toujours** désignée « Le producteur » (plus de choix depuis le 2026-10-07).
 - Le propriétaire modifie ; un simple membre consulte seulement.
 - ⬜ Logo, code APE, forme juridique en liste de choix.
 
@@ -64,7 +66,7 @@ Légende : ✅ fait · 🟡 partiel · ⬜ pas encore fait.
 - **Compléter la date** : une page pour renseigner tout ce que les documents demandent (horaires, invitations, lieu de signature, acompte, conditions particulières, SACEM, jauge, signataire…). Un champ vide s'affiche en pointillés dans le contrat.
 
 ### M4 — Contrat de cession
-- **PDF** aligné sur le modèle du métier (9 articles, plus un article « Conditions particulières » s'il est rempli). Formulation adaptée (« l'artiste » ou « le producteur »), mention de TVA selon le régime.
+- **PDF** aligné sur le modèle du métier (9 articles, plus un article « Conditions particulières » s'il est rempli). Structure toujours désignée « LE PRODUCTEUR » (« L'ARTISTE » reste utilisé à l'article 4 pour les interprètes), mention de TVA selon le régime.
 - **Aperçu** à tout moment, sans rien enregistrer.
 - **Versions** : « Générer une nouvelle version » ajoute un PDF, les anciens sont conservés et téléchargeables.
 - **Référence** de contrat unique, sans trou, par structure et par année (`C-2026-007`).
@@ -100,6 +102,13 @@ Légende : ✅ fait · 🟡 partiel · ⬜ pas encore fait.
 - **Tableau de bord** (page d'accueil) : facturé et encaissé de l'année en cours, factures à encaisser (reste dû, en retard ou échéance, total), dates confirmées à venir sans contrat généré, cinq prochaines dates.
 - **Exports CSV** (`exports/`) : factures et avoirs émis, recettes, dépenses, sur la période choisie ; `;`, UTF-8 avec BOM, virgule décimale, dates jj/mm/aaaa ; les textes qui commenceraient par `=`, `+`, `-` ou `@` sont neutralisés contre les formules de tableur.
 
+### M9 — Légal et RGPD
+- **Pages légales** (`infos/mentions-legales/`, `infos/cgu/`, `infos/confidentialite/`) : accessibles sans connexion. Les textes sont des **gabarits provisoires** avec des « [À compléter] » ; ils doivent être renseignés et relus avant la mise en ligne.
+- **Export des données** (`ma-structure/export-donnees/`) : un ZIP contenant des CSV (spectacles, organisateurs, lieux, contacts, dates, finances) et les fichiers stockés (contrats, PDF, justificatifs…).
+- **Suppression de compte** (`ma-structure/supprimer/`) : réservée au propriétaire, qui confirme avec le nom de la structure et son mot de passe. **Délai de 30 jours**, pendant lequel la suppression peut être annulée (`ma-structure/annuler-suppression/`). Passé ce délai, la commande `purge_deleted_tenants` supprime tout (données et fichiers) ; elle est **à planifier en production** (`06-services-production.md`).
+- **Départ d'un membre** (`ma-structure/quitter/`) : un membre peut quitter la structure ; le dernier propriétaire ne peut pas, il doit la supprimer ou la confier.
+- ⚠️ La suppression emporte aussi les factures émises : la conservation légale de 10 ans reste à valider avec un comptable.
+
 ---
 
 ## 3. Règles de gestion appliquées
@@ -119,6 +128,7 @@ Légende : ✅ fait · 🟡 partiel · ⬜ pas encore fait.
 | RG-12 Concert gratuit : prix des places à 0 | calculé à l'enregistrement |
 | F-57 Prévu / facturé / encaissé séparés | `gig_balance` : trois montants distincts, jamais fusionnés |
 | F-58 Euros entiers à l'affichage seulement | arrondi dans les gabarits de synthèse, stockage et calculs au centime |
+| Suppression de compte différée | `Tenant.deletion_requested_at`, délai de 30 jours, purge en ordre explicite (liens `PROTECT`) par `purge_deleted_tenants` |
 
 ⚠️ RG-02 (lieu facultatif en option) n'est pas appliquée : `Gig.venue` est obligatoire. Écart connu, non traité.
 
@@ -128,11 +138,13 @@ Légende : ✅ fait · 🟡 partiel · ⬜ pas encore fait.
 
 - **Principe** : toute vue qui lit ou modifie des données filtre sur la structure de l'utilisateur ; le formulaire ne laisse jamais choisir la structure.
 - **Tests d'isolation** : chaque modèle métier en a au moins un ; `test_tenant_coverage.py` échoue sinon. Pour la facturation, chaque route est testée avec une autre structure (404).
+- **Audit d'isolation de toutes les URL** (`test_isolation_audit.py`) : chaque route est parcourue avec deux structures ; aucune faille trouvée. Une nouvelle route à identifiant doit y être déclarée, sinon le test échoue.
 - **Accès croisés** : un document n'est joignable que par sa propre date ; une ligne que par son propre document.
 - **Fichiers** : contrats, PDF signés, PDF de factures, fiches techniques, riders et justificatifs de dépense sont envoyés par des vues protégées. Aucune adresse `/media/` n'est servie, même en développement. Chemins non devinables (`<dossier>/<uuid>/…`).
 - **Stockage** : disque local en développement ; bucket S3 européen **privé** en production (réglage prêt, bucket à créer).
-- **Sans connexion** : toutes les pages exigent la connexion, sauf inscription, connexion et **la page publique de la feuille de route**, qui ne s'ouvre qu'avec son jeton secret (révocable, jamais un numéro). Pas de limitation de débit sur cette page (jeton de 256 bits) : à reconsidérer à la mise en ligne.
-- **Jeton dans l'adresse** : il apparaîtra dans les journaux du serveur ; à filtrer au branchement de Sentry (Phase 1.7).
+- **Sans connexion** : toutes les pages exigent la connexion, sauf inscription, connexion, les pages légales et **la page publique de la feuille de route**, qui ne s'ouvre qu'avec son jeton secret (révocable, jamais un numéro). Pas de limitation de débit sur cette page (jeton de 256 bits) : à reconsidérer à la mise en ligne.
+- **Jeton dans l'adresse** : Sentry est configuré sans données personnelles et masque le jeton ; au déploiement, ne pas activer le journal d'accès de gunicorn (le jeton y apparaîtrait).
+- **Réglages de production** : proxy HTTPS, WhiteNoise, origines CSRF, journaux ; `check --deploy` propre.
 - **Secrets** : uniquement par variables d'environnement.
 
 ---
@@ -141,13 +153,13 @@ Légende : ✅ fait · 🟡 partiel · ⬜ pas encore fait.
 
 | Élément | État |
 |---|---|
-| Tests automatisés | **717**, tous verts |
+| Tests automatisés | **833**, tous verts |
 | Qualité du code | `ruff` (contrôle et format), `pre-commit` |
 | Intégration continue | GitHub Actions : `ruff`, `pytest` avec PostgreSQL, absence de migration manquante, `check --deploy` |
 | Branche `main` | protégée, une PR par sujet, CI verte avant fusion |
-| Taille | environ 5 200 lignes de code Python applicatif, 8 300 lignes de tests et 2 800 lignes de gabarits (hors migrations) |
-| Historique | 116 commits, 46 PR fusionnées entre le 21/09 et le 03/10/2026 |
-| Migrations | `tenants` 5 · `catalog` 4 · `addressbook` 4 · `gigs` 6 · `documents` 7 · `roadmaps` 1 · `finance` 2 |
+| Taille | environ 6 000 lignes de code Python applicatif, 9 300 lignes de tests et 3 100 lignes de gabarits (hors migrations) |
+| Historique | 130 commits, 53 PR fusionnées entre le 21/09 et le 07/10/2026 |
+| Migrations | `tenants` 7 · `catalog` 4 · `addressbook` 4 · `gigs` 6 · `documents` 7 · `roadmaps` 1 · `finance` 2 |
 
 Aucune PR en attente : tout est fusionné dans `main`.
 
@@ -168,9 +180,10 @@ Schéma des relations : voir `09-cas-d-usage-et-diagrammes.md` §6. La descripti
 ## 7. Ce qui reste à faire et points d'attention
 
 **Reste du MVP**
-- Sprint 3.8 — Pages légales, export et suppression de compte, audit d'isolation complet, sauvegardes, recette.
-- À contrôler **à la main** (non vérifié par les tests) : le rendu à 375 px des écrans de paiements, dépenses, tableau de bord et exports ; l'ouverture des CSV dans Excel ; la mise en page des PDF (facture et feuille de route).
-- Restes du 3.1 : confirmation d'e-mail, logo, code APE.
+- Sprint 3.8, ce qui reste (bloqué par les comptes à créer) : recette complète (cahier des charges §11), sauvegarde avec test de restauration, déploiement en production, audit des dépendances (`pip-audit`, Dependabot). Fait : pages légales, export et suppression de compte, audit d'isolation, réglages de production, pages d'erreur.
+- À contrôler **à la main** (non vérifié par les tests) : le rendu à 375 px des écrans de paiements, dépenses, tableau de bord, exports, suppression de compte et pages d'erreur ; l'ouverture des CSV dans Excel ; la mise en page des PDF (facture et feuille de route) ; la navigation au clavier et au lecteur d'écran. Un guide de test pas à pas existe (`11-guide-de-test.md`, pas encore commité) ; il sert à un test complet en local avant de présenter l'application à l'associé.
+- Restes du 3.1 : confirmation d'e-mail, logo, code APE, forme juridique en liste.
+- Textes légaux (mentions, CGU, confidentialité) à compléter et à faire relire ; conservation de 10 ans des factures à valider avant d'autoriser la suppression complète.
 
 **Avant d'utiliser de vraies factures**
 - Relecture par un professionnel (comptable) du PDF de facture et du contrat. Les PDF portent un bandeau « Modèle provisoire — non relu par un professionnel » (un seul réglage à retirer ensuite).
@@ -179,7 +192,7 @@ Schéma des relations : voir `09-cas-d-usage-et-diagrammes.md` §6. La descripti
 - Le bilan et le tableau de bord sont en TTC ; si la TVA concerne l'utilisateur, faire valider la présentation (résultat = encaissé − dépensé, sans distinguer la TVA).
 - ⚠️ **Les PDF du MVP ne remplacent pas la plateforme agréée de facturation électronique** (obligation à vérifier, prévue en Phase 5). L'application ne doit pas se dire « conforme » avant cette connexion.
 
-**Déploiement** (rien n'est en ligne à ce jour) : compte Scalingo, bucket S3 privé, prestataire d'e-mails, domaine, Sentry. Liste complète : `06-services-production.md`.
+**Déploiement** (rien n'est en ligne à ce jour) : compte Scalingo, bucket S3 privé, prestataire d'e-mails, domaine, Sentry, tâche planifiée de purge des comptes supprimés, `collectstatic` au build. Liste complète : `06-services-production.md`.
 
 **Questions de fond ouvertes** (cahier des charges §14) : Q9 modèle économique, Q10 hiérarchie Projet/Spectacle (détail : `07-modele-spectacle.md`), Q12, Q13, Q14, Q15 (sens du mot « Structure »), Q16 (plan des lieux dans la feuille de route).
 
