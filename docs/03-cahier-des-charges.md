@@ -223,7 +223,7 @@ Multi-tenant par **base partagée avec clé `tenant`**. Détails : `01-guide-arc
 > Tous les modèles marqués (T) héritent de `TenantOwnedModel` (FK `tenant`).
 
 **User** : email (login), first_name, last_name.
-**Tenant** *(anciennement `Organization`)* : name, legal_form, address, siret, **code_ape** (code APE/INSEE — nouveau champ demandé le 28/09, distinct de l'ancien champ ambigu « APA », voir Q11), licence_number, representative_name, representative_role, jurisdiction_city (ville du tribunal compétent, art. 8 du contrat), vat_rate (taux de TVA par défaut, structure assujettie), contract_party_label (`producteur`/`artiste` — détermine la formulation utilisée dans le contrat), vat_regime, vat_number, iban, logo, plan, created_at.
+**Tenant** *(anciennement `Organization`)* : name, legal_form, address, siret, **code_ape** (code APE/INSEE — nouveau champ demandé le 28/09, distinct de l'ancien champ ambigu « APA », voir Q11), licence_number, representative_name, representative_role, jurisdiction_city (ville du tribunal compétent, art. 8 du contrat), vat_rate (taux de TVA par défaut, structure assujettie), vat_regime, vat_number, iban, logo, plan, created_at.
 **Membership** : user, tenant, role (`owner`/`member`). Unique (user, tenant).
 
 **Show (T)** : title, group_name (nom du groupe/artiste, distinct du titre du spectacle), description, performers (distribution, texte libre), duration_minutes (« Durée du Set »), crew_size, tech_sheet_text, tech_sheet_file, rider_file (fiche d'exigences artiste/hospitalité, distincte de la fiche technique), epk_url (lien vers le press-kit électronique — demandé le 28/09), indicative_price, sacem_number (« N° SACEM »), sacem_object_number (« N° d'objet »).
