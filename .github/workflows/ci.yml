@@ -61,6 +61,16 @@ jobs:
       - name: Run tests
         run: pytest
 
+      - name: Collect static files (production settings)
+        run: python manage.py collectstatic --noinput
+        env:
+          DJANGO_SETTINGS_MODULE: config.settings.prod
+          S3_BUCKET_NAME: ci-bucket
+          S3_ENDPOINT_URL: https://s3.example.com
+          S3_REGION_NAME: fr-par
+          S3_ACCESS_KEY_ID: ci-access-key
+          S3_SECRET_ACCESS_KEY: ci-secret-key
+
       - name: Deployment checks
         run: python manage.py check --deploy
         env:

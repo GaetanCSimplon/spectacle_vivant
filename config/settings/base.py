@@ -151,6 +151,7 @@ FORMS_URLFIELD_ASSUME_HTTPS = True
 
 STATIC_URL = "static/"
 STATICFILES_DIRS = [BASE_DIR / "static"]
+STATIC_ROOT = BASE_DIR / "staticfiles"  # filled by collectstatic, served by WhiteNoise in prod
 
 # django-tailwind-cli: custom source (outside STATICFILES_DIRS, see its docs) so we can
 # define our own button/form/card styles instead of the plain "@import tailwindcss" default.
