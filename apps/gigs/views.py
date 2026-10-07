@@ -2,6 +2,7 @@ import datetime
 
 from django.contrib import messages
 from django.shortcuts import get_object_or_404, redirect, render
+from django.urls import reverse
 from django.utils import timezone
 from django.utils.formats import date_format
 from django.utils.translation import gettext_lazy as _
@@ -35,6 +36,16 @@ WIZARD_STEP_LABELS = [
 ]
 
 
+# URL name of each step, in order: "Précédent" on step N goes to step N-1.
+WIZARD_STEP_URLS = [
+    "gigs:wizard-show",
+    "gigs:wizard-promoter",
+    "gigs:wizard-venue",
+    "gigs:wizard-details",
+    "gigs:wizard-recap",
+]
+
+
 class GigWizardMixin(TenantScopedMixin):
     """Shared session handling for the gig creation wizard steps."""
 
@@ -55,7 +66,13 @@ class GigWizardMixin(TenantScopedMixin):
         return None
 
     def wizard_context(self, step, **extra):
-        return {"step": step, "wizard_steps": WIZARD_STEP_LABELS, **extra}
+        previous_url = reverse(WIZARD_STEP_URLS[step - 2]) if step > 1 else None
+        return {
+            "step": step,
+            "wizard_steps": WIZARD_STEP_LABELS,
+            "previous_url": previous_url,
+            **extra,
+        }
 
 
 class GigWizardShowStepView(GigWizardMixin, View):

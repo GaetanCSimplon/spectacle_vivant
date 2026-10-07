@@ -252,6 +252,7 @@ Avant de coder : propose un plan (fichiers, modèles, tests) et attends mon acco
 - [x] **Audit d'isolation complet** : `apps/core/tests/test_isolation_audit.py` parcourt chaque URL avec 2 tenants ; une nouvelle URL à identifiant doit y être déclarée, sinon le test échoue.
 - [x] Revue sécurité (réglages de prod) : en-têtes et cookies vérifiés, proxy HTTPS, WhiteNoise, origines CSRF, journaux, Sentry sans données personnelles ; `check --deploy` propre. Reste : audit des dépendances (`pip-audit`, Dependabot) à brancher avec le déploiement.
 - [x] **Désignation fixe dans le contrat** (2026-10-07, retour métier) : le tenant est toujours « LE PRODUCTEUR » ; champ `Tenant.contract_party_label` supprimé (migration `tenants/0007`), choix retiré de « Ma structure ». La mention « L'ARTISTE » de l'article 4 (les interprètes) est conservée.
+- [x] Bouton « Précédent » dans l'assistant de création d'une date (2026-10-07, retour de test) ; « Annuler » à la première étape. Les réponses déjà saisies sont conservées.
 - [ ] Vérifier les téléchargements de fichiers (contrôle d'accès).
 - [x] Passage d'accessibilité de base : lien « Aller au contenu », focus visible, contrastes du calendrier et de l'assistant, label du lien de partage (à compléter par un test manuel au clavier et sur lecteur d'écran).
 - [x] Messages d'erreur en français : pages 404, 403, 500 et formulaire expiré (CSRF) ; chaîne non traduite de l'accueil corrigée.

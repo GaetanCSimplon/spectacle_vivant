@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% load i18n %}
 
 {% block page_content %}
   <div id="wizard" hx-boost="true" hx-target="this" hx-select="#wizard" hx-swap="outerHTML">
@@ -10,5 +11,12 @@
       {% endfor %}
     </ol>
     {% block wizard_content %}{% endblock %}
+    <div class="mt-4">
+      {% if previous_url %}
+        <a href="{{ previous_url }}" class="btn btn-secondary btn-block">← {% translate "Précédent" %}</a>
+      {% else %}
+        <a href="{% url 'gigs:list' %}" hx-boost="false" class="btn btn-secondary btn-block">{% translate "Annuler" %}</a>
+      {% endif %}
+    </div>
   </div>
 {% endblock %}
