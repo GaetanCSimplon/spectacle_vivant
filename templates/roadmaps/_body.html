@@ -9,7 +9,7 @@
     {% if roadmap.is_published %}
       <p>{% translate "Toute personne qui a ce lien peut voir la feuille de route, sans compte." %}</p>
       <div x-data="{ copied: false }" class="space-y-2">
-        <input type="text" readonly value="{{ share_url }}" class="w-full" onfocus="this.select()">
+        <input type="text" readonly aria-label="{% translate 'Adresse du lien de partage' %}" value="{{ share_url }}" class="w-full" onfocus="this.select()">
         <button type="button" class="btn btn-secondary btn-block"
                 @click="navigator.clipboard.writeText('{{ share_url|escapejs }}').then(() => copied = true)">
           <span x-show="!copied">{% translate "Copier le lien" %}</span>

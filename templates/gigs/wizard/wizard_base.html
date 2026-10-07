@@ -2,7 +2,7 @@
 
 {% block page_content %}
   <div id="wizard" hx-boost="true" hx-target="this" hx-select="#wizard" hx-swap="outerHTML">
-    <ol class="mb-6 flex justify-between text-xs font-medium text-gray-400">
+    <ol class="mb-6 flex justify-between text-xs font-medium text-gray-500">
       {% for label in wizard_steps %}
         <li class="{% if forloop.counter == step %}text-blue-700{% elif forloop.counter < step %}text-gray-600{% endif %}">
           {{ forloop.counter }}. {{ label }}

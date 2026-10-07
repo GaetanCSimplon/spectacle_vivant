@@ -252,9 +252,9 @@ Avant de coder : propose un plan (fichiers, modèles, tests) et attends mon acco
 - [x] **Audit d'isolation complet** : `apps/core/tests/test_isolation_audit.py` parcourt chaque URL avec 2 tenants ; une nouvelle URL à identifiant doit y être déclarée, sinon le test échoue.
 - [x] Revue sécurité (réglages de prod) : en-têtes et cookies vérifiés, proxy HTTPS, WhiteNoise, origines CSRF, journaux, Sentry sans données personnelles ; `check --deploy` propre. Reste : audit des dépendances (`pip-audit`, Dependabot) à brancher avec le déploiement.
 - [ ] Vérifier les téléchargements de fichiers (contrôle d'accès).
-- [ ] Passage d'accessibilité de base (contrastes, labels, clavier).
-- [ ] Textes d'aide, tooltips, messages d'erreur en français.
-- [ ] États vides (« Aucune date pour l'instant — créez la première ») et messages de succès.
+- [x] Passage d'accessibilité de base : lien « Aller au contenu », focus visible, contrastes du calendrier et de l'assistant, label du lien de partage (à compléter par un test manuel au clavier et sur lecteur d'écran).
+- [x] Messages d'erreur en français : pages 404, 403, 500 et formulaire expiré (CSRF) ; chaîne non traduite de l'accueil corrigée.
+- [x] États vides et messages de succès : relus, déjà présents sur les listes, fiches, finances et accueil.
 - [ ] **Recette** : dérouler la liste de la section 11 du cahier des charges sur staging.
 - [ ] Sauvegarde de la base + **test de restauration**.
 - [ ] Déploiement en **production** (déclenchement manuel).

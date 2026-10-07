@@ -16,6 +16,13 @@
     @apply text-sm text-gray-600;
   }
 
+  /* Keyboard users must always see where they are. */
+  a:focus-visible,
+  button:focus-visible,
+  summary:focus-visible {
+    @apply outline-2 outline-offset-2 outline-blue-600;
+  }
+
   form p {
     @apply mb-4;
   }

@@ -48,7 +48,7 @@
           </a>
         {% else %}
           <div
-            class="flex min-h-12 flex-col items-center justify-start rounded-md py-1 {% if day.in_month %}text-gray-700{% else %}text-gray-300{% endif %} {% if day.is_today %}ring-2 ring-blue-500{% endif %}"
+            class="flex min-h-12 flex-col items-center justify-start rounded-md py-1 {% if day.in_month %}text-gray-700{% else %}text-gray-500{% endif %} {% if day.is_today %}ring-2 ring-blue-500{% endif %}"
             {% if day.is_today %}aria-current="date"{% endif %}
           >{{ day.date.day }}</div>
         {% endif %}
