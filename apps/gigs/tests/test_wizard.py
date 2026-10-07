@@ -182,3 +182,57 @@ def test_wizard_cannot_reuse_another_tenants_show(client):
 
     assert response.status_code == 404
     assert Gig.objects.count() == 0
+
+
+def _fill_until_recap(client, tenant):
+    show = ShowFactory(tenant=tenant)
+    promoter = PromoterFactory(tenant=tenant)
+    venue = VenueFactory(tenant=tenant)
+    gig_date = datetime.date.today() + datetime.timedelta(days=10)
+    client.post(reverse("gigs:wizard-show"), {"mode": "existing", "show": show.pk})
+    client.post(reverse("gigs:wizard-promoter"), {"mode": "existing", "promoter": promoter.pk})
+    client.post(reverse("gigs:wizard-venue"), {"mode": "existing", "venue": venue.pk})
+    client.post(reverse("gigs:wizard-details"), {"date": gig_date.isoformat(), "price": "800.00"})
+    return show, promoter, venue, gig_date
+
+
+@pytest.mark.parametrize(
+    ("step", "previous"),
+    [
+        ("wizard-promoter", "wizard-show"),
+        ("wizard-venue", "wizard-promoter"),
+        ("wizard-details", "wizard-venue"),
+        ("wizard-recap", "wizard-details"),
+    ],
+)
+def test_each_step_links_to_the_previous_one(client, step, previous):
+    tenant = _login(client)
+    _fill_until_recap(client, tenant)
+
+    response = client.get(reverse(f"gigs:{step}"))
+
+    assert response.status_code == 200
+    assert f'href="{reverse(f"gigs:{previous}")}"' in response.content.decode()
+    assert "Précédent" in response.content.decode()
+
+
+def test_first_step_offers_to_cancel_instead_of_previous(client):
+    _login(client)
+
+    content = client.get(reverse("gigs:wizard-show")).content.decode()
+
+    assert "Précédent" not in content
+    assert "Annuler" in content
+    assert f'href="{reverse("gigs:list")}"' in content
+
+
+def test_going_back_keeps_the_previous_answers(client):
+    tenant = _login(client)
+    _, _, venue, gig_date = _fill_until_recap(client, tenant)
+
+    details = client.get(reverse("gigs:wizard-details")).content.decode()
+    venue_page = client.get(reverse("gigs:wizard-venue")).content.decode()
+
+    assert gig_date.isoformat() in details
+    assert "800" in details
+    assert f'value="{venue.pk}" selected' in venue_page
