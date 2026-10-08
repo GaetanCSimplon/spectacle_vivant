@@ -1,14 +1,14 @@
 {% load i18n %}
-<header class="bg-white border-b border-gray-200">
+<header class="border-t-4 border-blue-700 border-b border-b-stone-200 bg-white">
   <div class="mx-auto max-w-3xl px-4 py-3 flex items-center justify-between gap-4">
-    <a href="{% url 'home' %}" class="font-semibold text-gray-900">Spectacle Vivant</a>
+    <a href="{% url 'home' %}" class="text-xl font-bold tracking-tight text-blue-800">Spectacle Vivant</a>
     {% if user.is_authenticated %}
       <nav aria-label="{% translate 'Navigation principale' %}" class="hidden sm:flex sm:flex-1 sm:gap-4 text-sm">
-        {% include "components/_nav.html" with link_class="text-gray-600 hover:text-gray-900" active_class="font-semibold text-blue-700" %}
+        {% include "components/_nav.html" with link_class="nav-link" active_class="" %}
       </nav>
       <form method="post" action="{% url 'account_logout' %}">
         {% csrf_token %}
-        <button type="submit" class="text-sm text-gray-600 hover:text-gray-900">
+        <button type="submit" class="min-h-11 px-2 text-sm font-medium text-stone-600 hover:text-stone-900">
           {% translate "Se déconnecter" %}
         </button>
       </form>

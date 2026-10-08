@@ -69,9 +69,9 @@
       {% if row.form %}
         <form method="post" action="{% url 'finance:payment-add' gig.pk row.invoice.pk %}"
               hx-post="{% url 'finance:payment-add' gig.pk row.invoice.pk %}"
-              hx-target="#finance-body" hx-swap="outerHTML" class="space-y-3">
+              hx-target="#finance-body" hx-swap="outerHTML" class="form-highlight space-y-3">
           {% csrf_token %}
-          <h3 class="font-semibold">{% translate "Enregistrer un paiement" %}</h3>
+          <h3 class="text-base font-bold text-blue-900">{% translate "Enregistrer un paiement" %}</h3>
           {{ row.form.as_p }}
           <button type="submit" class="btn btn-secondary btn-block">{% translate "Ajouter le paiement" %}</button>
         </form>
@@ -132,9 +132,9 @@
   <form method="post" action="{% url 'finance:expense-add' gig.pk %}"
         hx-post="{% url 'finance:expense-add' gig.pk %}" hx-encoding="multipart/form-data"
         hx-target="#finance-body" hx-swap="outerHTML" enctype="multipart/form-data"
-        class="card mb-6 space-y-3">
+        class="card form-highlight mb-6 space-y-3">
     {% csrf_token %}
-    <h3 class="text-sm font-semibold">{% translate "Ajouter une dépense" %}</h3>
+    <h3 class="text-base font-bold text-blue-900">{% translate "Ajouter une dépense" %}</h3>
     {{ expense_form.as_p }}
     <button type="submit" class="btn btn-secondary btn-block">{% translate "Ajouter" %}</button>
   </form>
