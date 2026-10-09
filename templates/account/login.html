@@ -1,0 +1,32 @@
+{% extends "account/base_entrance.html" %}
+{% load i18n %}
+{% load allauth account %}
+{% block head_title %}
+    {% trans "Sign In" %}
+{% endblock head_title %}
+{% block content %}
+    {% element h1 %}
+        {% trans "Sign In" %}
+    {% endelement %}
+    {% url 'account_login' as login_url %}
+    {% element form form=form method="post" action=login_url tags="entrance,login" %}
+        {% slot body %}
+            {% csrf_token %}
+            {% element fields form=form unlabeled=True %}
+            {% endelement %}
+            {{ redirect_field }}
+        {% endslot %}
+        {% slot actions %}
+            {% element button type="submit" tags="prominent,login" %}
+                {% trans "Sign In" %}
+            {% endelement %}
+        {% endslot %}
+    {% endelement %}
+    {# Visible signup button: a plain sentence was too easy to miss (test feedback). #}
+    <div class="mt-6 border-t border-stone-200 pt-6 text-center">
+        <p class="mb-3 text-sm text-stone-600">Vous n'avez pas encore de compte ?</p>
+        {% element button href=signup_url tags="prominent,outline" %}
+            Créer un compte
+        {% endelement %}
+    </div>
+{% endblock content %}
