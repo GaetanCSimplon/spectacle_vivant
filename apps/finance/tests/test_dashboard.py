@@ -12,6 +12,7 @@ from apps.gigs.models import Gig
 from apps.tenants.factories import MembershipFactory
 
 from .. import dashboard, services
+from ..factories import ExpenseFactory
 from ..models import Payment
 from .helpers import TENANT_FIELDS, issued_invoice, make_gig
 
@@ -355,3 +356,63 @@ def test_home_cards_show_the_lines_of_upcoming_gigs(client):
     assert "Acompte" in content
     assert "300 € ·" in content
     assert "à facturer" in content
+
+
+# --- year overview: planned against real (F-76) ---------------------------------------
+
+
+def test_overview_compares_planned_invoiced_received_and_spent():
+    gig = make_gig(price="1000.00", gig_fields={"date": datetime.date(2026, 11, 5)})
+    invoice = issued_invoice(gig, Invoice.Kind.DEPOSIT)
+    services.record_payment(invoice, "100.00", TODAY, CASH)
+    ExpenseFactory(gig=gig, amount="40.00")
+
+    overview = dashboard.year_overview(gig.tenant, 2026)
+
+    assert overview["gig_count"] == 1
+    assert overview["planned"] == D("1000.00")
+    assert overview["invoiced"] == D("300.00")
+    assert overview["to_invoice"] == D("700.00")
+    assert overview["received"] == D("100.00")
+    assert overview["to_collect"] == D("200.00")
+    assert overview["spent"] == D("40.00")
+    assert overview["result"] == D("60.00")
+
+
+def test_overview_ignores_other_years_cancelled_gigs_and_other_tenants():
+    gig = make_gig(price="1000.00", gig_fields={"date": datetime.date(2026, 11, 5)})
+    tenant = gig.tenant
+    make_gig(tenant=tenant, price="500.00", gig_fields={"date": datetime.date(2027, 1, 5)})
+    cancelled = make_gig(
+        tenant=tenant,
+        price="700.00",
+        gig_fields={"date": datetime.date(2026, 12, 5), "status": Gig.Status.CANCELLED},
+    )
+    ExpenseFactory(gig=cancelled, amount="90.00")
+    other = make_gig(price="9999.00", gig_fields={"date": datetime.date(2026, 11, 6)})
+    ExpenseFactory(gig=other, amount="500.00")
+
+    overview = dashboard.year_overview(tenant, 2026)
+
+    assert overview["gig_count"] == 1
+    assert overview["planned"] == D("1000.00")
+    assert overview["spent"] == D("0.00")
+
+
+def test_overview_of_an_empty_year_is_all_zero():
+    overview = dashboard.year_overview(make_gig().tenant, 1999)
+    assert overview["gig_count"] == 0
+    assert overview["planned"] == overview["result"] == D("0.00")
+
+
+def test_overview_is_shown_on_the_home_page(client):
+    membership = MembershipFactory(
+        **{f"tenant__{k}": v for k, v in TENANT_FIELDS.items() if k != "name"}
+    )
+    client.force_login(membership.user)
+    GigFactory(tenant=membership.tenant, price="1000.00", date=datetime.date.today())
+
+    content = client.get(reverse("home")).content.decode()
+
+    assert "prévu et réel" in content
+    assert "Reste à facturer" in content

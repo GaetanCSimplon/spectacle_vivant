@@ -23,6 +23,18 @@
         <a href="{% url 'export' %}" class="inline-block pt-1 text-blue-700 underline">{% translate "Exporter (CSV)" %}</a>
       </div>
 
+      <h2 class="mb-2 text-sm font-semibold uppercase text-gray-500">{% blocktranslate with n=overview.gig_count %}Dates {{ year }} : prévu et réel ({{ n }}){% endblocktranslate %}</h2>
+      <div class="card mb-6 space-y-1 text-sm">
+        <p class="flex justify-between"><span>{% translate "Prévu" %} (TTC)</span><span>{{ overview.planned|floatformat:"0g" }} €</span></p>
+        <p class="flex justify-between"><span>{% translate "Facturé" %}</span><span>{{ overview.invoiced|floatformat:"0g" }} €</span></p>
+        <p class="flex justify-between text-gray-600"><span>{% translate "Reste à facturer" %}</span><span>{{ overview.to_invoice|floatformat:"0g" }} €</span></p>
+        <p class="flex justify-between"><span>{% translate "Encaissé" %}</span><span>{{ overview.received|floatformat:"0g" }} €</span></p>
+        <p class="flex justify-between text-gray-600"><span>{% translate "Reste à encaisser" %}</span><span>{{ overview.to_collect|floatformat:"0g" }} €</span></p>
+        <p class="flex justify-between"><span>{% translate "Dépensé" %}</span><span>{{ overview.spent|floatformat:"0g" }} €</span></p>
+        <p class="flex justify-between border-t border-gray-200 pt-1 font-semibold"><span>{% translate "Résultat" %} ({% translate "encaissé − dépensé" %})</span><span>{{ overview.result|floatformat:"0g" }} €</span></p>
+        <p class="pt-1 text-gray-500">{% translate "Les dates annulées ne sont pas comptées." %}</p>
+      </div>
+
       {% if awaiting %}
         <h2 class="mb-2 text-sm font-semibold uppercase text-gray-500">
           {% translate "Factures à encaisser" %}

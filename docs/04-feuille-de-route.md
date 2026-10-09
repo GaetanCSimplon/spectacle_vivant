@@ -250,7 +250,7 @@ Ajouts demandés après un rendez-vous métier (voir `docs/03` : F-06, F-15, F-5
 - [x] Code APE dans « Ma structure », après le SIRET (et dans les contrats et factures émis). — Fait (2026-10-09) : `Tenant.code_ape` (migration `tenants/0008`), normalisé (« 90.01 z » devient 9001Z), copié dans les factures émises (snapshot) et affiché dans le contrat s'il est rempli.
 - [x] Nom facultatif (interne) des devis et des factures, modifiable après émission (F-59). — Fait (2026-10-09) : `title` sur `Quote` et `Invoice` (migration `documents/0008`), formulaire sur la fiche du document, affiché dans la page de facturation et les factures à encaisser, absent du PDF.
 - [x] Cartes des prochaines dates à l'accueil : acompte et solde (F-76). — Fait (2026-10-09) : `dashboard.gig_payment_lines` (TTC, sans migration) ; « à facturer » (montant prévu selon les conditions de la date), « à encaisser » (reste dû) ou « encaissé » ; une facture totale remplace les deux lignes.
-- [ ] Vue d'ensemble de l'accueil : prévu, facturé, encaissé, dépensé, résultat (F-76). Budget de dépenses prévu : en attente de la réponse du métier.
+- [x] Vue d'ensemble de l'accueil : prévu, facturé, encaissé, dépensé, résultat (F-76). — Fait (2026-10-09) : `dashboard.year_overview` (dates de l'année hors annulées, TTC, sans migration). Budget de dépenses prévu : toujours en attente de la réponse du métier.
 - [ ] Qualification des organisateurs : étiquette de suivi, type d'évènement, esthétique, filtres (F-15).
 - [ ] Onglet « Équipe » de « Ma structure » et choix d'une personne dans la feuille de route (F-06). Numéro de sécurité sociale : repoussé.
 
