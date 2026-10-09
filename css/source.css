@@ -9,11 +9,20 @@
 
 @layer base {
   h1 {
-    @apply mb-4 text-lg font-semibold text-gray-900;
+    @apply mb-5 text-2xl font-bold tracking-tight text-stone-900;
+  }
+
+  /* Titles that carry no classes of their own (e.g. a form heading inside a card). */
+  h2 {
+    @apply text-lg font-bold text-stone-900;
+  }
+
+  h3 {
+    @apply text-base font-bold text-stone-900;
   }
 
   p {
-    @apply text-sm text-gray-600;
+    @apply text-sm text-stone-600;
   }
 
   /* Keyboard users must always see where they are. */
@@ -28,15 +37,15 @@
   }
 
   form label {
-    @apply mb-1 block text-sm font-medium text-gray-700;
+    @apply mb-1.5 block text-sm font-semibold text-stone-800;
   }
 
   form .helptext {
-    @apply mt-1 block text-xs text-gray-500;
+    @apply mt-1 block text-xs text-stone-500;
   }
 
   form ul.errorlist {
-    @apply mt-1 list-none space-y-0.5 text-sm text-red-600;
+    @apply mt-1 list-none space-y-0.5 text-sm font-medium text-red-700;
   }
 
   input[type="text"],
@@ -49,35 +58,48 @@
   input[type="url"],
   select,
   textarea {
-    @apply block w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900
-      shadow-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none;
+    /* 16px text: phones do not zoom in on focus; 44px tall: easy to touch. */
+    @apply block min-h-11 w-full rounded-lg border-2 border-stone-300 bg-white px-3 py-2.5 text-base
+      text-stone-900 shadow-sm focus:border-blue-600 focus:ring-2 focus:ring-blue-200
+      focus:outline-none;
   }
 
   textarea {
-    @apply min-h-24;
+    @apply min-h-28;
+  }
+
+  input[type="checkbox"],
+  input[type="radio"] {
+    @apply size-5 align-middle accent-blue-700;
+  }
+
+  input[type="file"] {
+    @apply block w-full text-sm text-stone-700 file:mr-3 file:cursor-pointer file:rounded-lg
+      file:border-0 file:bg-blue-50 file:px-4 file:py-2.5 file:text-sm file:font-semibold
+      file:text-blue-800 hover:file:bg-blue-100;
   }
 
   input:disabled,
   select:disabled,
   textarea:disabled {
-    @apply cursor-not-allowed bg-gray-100 text-gray-500;
+    @apply cursor-not-allowed bg-stone-100 text-stone-500;
   }
 }
 
 @layer components {
   .btn {
-    @apply inline-flex items-center justify-center gap-2 rounded-md px-4 py-2 text-sm font-medium
-      transition-colors;
+    @apply inline-flex min-h-11 items-center justify-center gap-2 rounded-lg px-5 py-2.5 text-base
+      font-semibold transition-colors active:translate-y-px;
   }
 
   /* Combine with `.btn`: class="btn btn-primary". Tailwind v4 can't @apply a custom
      class inside another custom class, so these only add color/border, not layout. */
   .btn-primary {
-    @apply bg-blue-600 text-white hover:bg-blue-700;
+    @apply bg-blue-700 text-white shadow-sm hover:bg-blue-800;
   }
 
   .btn-secondary {
-    @apply border border-gray-300 bg-white text-gray-700 hover:bg-gray-50;
+    @apply border-2 border-blue-700 bg-white text-blue-800 hover:bg-blue-50;
   }
 
   .btn-block {
@@ -85,15 +107,52 @@
   }
 
   .card {
-    @apply rounded-lg border border-gray-200 bg-white p-4 shadow-sm;
+    @apply rounded-xl border border-stone-200 bg-white p-4 shadow-sm;
   }
 
   /* Combine with `.card`: class="card card-link". */
   .card-link {
-    @apply block transition-colors hover:border-gray-300 hover:bg-gray-50;
+    @apply block transition hover:border-blue-300 hover:shadow-md;
   }
 
   .badge {
-    @apply inline-flex items-center rounded-full bg-gray-100 px-2 py-0.5 text-xs font-medium text-gray-700;
+    @apply inline-flex items-center rounded-full bg-stone-100 px-2.5 py-1 text-xs font-semibold
+      text-stone-700;
+  }
+
+  /* Main navigation links; the current page is marked by aria-current (see _nav.html). */
+  .nav-link {
+    @apply rounded-lg px-3 py-2 text-sm font-medium text-stone-600 transition-colors
+      hover:bg-stone-100 hover:text-stone-900;
+  }
+
+  .nav-link[aria-current="page"] {
+    @apply bg-blue-50 font-bold text-blue-800;
+  }
+
+  /* A form that is the main thing to do in its card (e.g. "Enregistrer un paiement"). */
+  .form-highlight {
+    @apply rounded-lg border border-blue-200 bg-blue-50 p-3;
+  }
+
+  /* Flash messages, by level (success / error / warning / info). */
+  .message {
+    @apply mb-4 rounded-lg border-l-4 px-4 py-3 text-sm font-medium;
+  }
+
+  .message-success {
+    @apply border-green-600 bg-green-50 text-green-900;
+  }
+
+  .message-error {
+    @apply border-red-600 bg-red-50 text-red-900;
+  }
+
+  .message-warning {
+    @apply border-amber-500 bg-amber-50 text-amber-900;
+  }
+
+  .message-info {
+    @apply border-blue-600 bg-blue-50 text-blue-900;
   }
 }
