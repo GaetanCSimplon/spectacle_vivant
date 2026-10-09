@@ -8,6 +8,19 @@
       <span class="block font-medium text-gray-900">{{ gig.date|date:"d/m/Y" }} — {{ gig.show.title }}</span>
       <span class="block truncate text-sm text-gray-600">{{ gig.venue.name }} · {{ gig.promoter.name }}</span>
       {% include "gigs/_option_expiry.html" %}
+      {% if gig.payment_lines %}
+        <span class="mt-1 block space-y-0.5 border-t border-stone-200 pt-1 text-xs">
+          {% for line in gig.payment_lines %}
+            <span class="flex justify-between gap-4">
+              <span class="text-gray-600">{{ line.label }}</span>
+              <span class="{% if line.state == 'paid' %}text-green-700{% elif line.state == 'to_collect' %}text-amber-700{% else %}text-gray-500{% endif %}">
+                {{ line.amount|floatformat:"0g" }} € ·
+                {% if line.state == 'paid' %}{% translate "encaissé" %}{% elif line.state == 'to_collect' %}{% translate "à encaisser" %}{% else %}{% translate "à facturer" %}{% endif %}
+              </span>
+            </span>
+          {% endfor %}
+        </span>
+      {% endif %}
     </span>
     {% include "gigs/_status_badge.html" %}
   </a>

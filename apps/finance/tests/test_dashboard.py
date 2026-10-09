@@ -278,3 +278,80 @@ def test_home_never_shows_another_tenants_data(client, tenant):
 
     assert "Secret d'un autre" not in text
     assert "Factures à encaisser" not in text
+
+
+# --- deposit and balance lines of a gig (F-76) ----------------------------------------
+
+
+def _lines(gig):
+    return {line["label"]: line for line in dashboard.gig_payment_lines(gig)}
+
+
+def test_a_gig_with_no_invoice_shows_the_planned_deposit_and_balance():
+    gig = make_gig(price="1000.00")  # 30 % deposit, franchise: no VAT
+
+    lines = _lines(gig)
+
+    assert lines["Acompte"] == {"label": "Acompte", "state": "to_invoice", "amount": D("300.00")}
+    assert lines["Solde"]["amount"] == D("700.00")
+    assert lines["Solde"]["state"] == "to_invoice"
+
+
+def test_planned_amounts_include_vat_for_a_taxable_tenant():
+    gig = make_gig(price="1000.00", vat_regime="taxable", vat_rate="20.00")
+
+    lines = _lines(gig)
+
+    assert lines["Acompte"]["amount"] == D("360.00")
+    assert lines["Solde"]["amount"] == D("840.00")
+
+
+def test_an_issued_deposit_is_to_collect_then_paid():
+    gig = make_gig(price="1000.00")
+    deposit = issued_invoice(gig, Invoice.Kind.DEPOSIT)
+
+    assert _lines(gig)["Acompte"]["state"] == "to_collect"
+    assert _lines(gig)["Acompte"]["amount"] == D("300.00")
+
+    services.record_payment(deposit, "100.00", TODAY, CASH)
+    assert _lines(gig)["Acompte"]["amount"] == D("200.00")  # what is left to collect
+
+    services.record_payment(deposit, "200.00", TODAY, CASH)
+    assert _lines(gig)["Acompte"] == {"label": "Acompte", "state": "paid", "amount": D("300.00")}
+    assert _lines(gig)["Solde"]["state"] == "to_invoice"
+
+
+def test_a_full_invoice_replaces_deposit_and_balance_by_one_line():
+    gig = make_gig(price="1000.00")
+    issued_invoice(gig, Invoice.Kind.FULL)
+
+    lines = dashboard.gig_payment_lines(gig)
+
+    assert [line["label"] for line in lines] == ["Facture totale"]
+    assert lines[0]["state"] == "to_collect"
+    assert lines[0]["amount"] == D("1000.00")
+
+
+def test_a_draft_invoice_does_not_count_as_invoiced():
+    gig = make_gig(price="1000.00")
+    invoicing.create_invoice(gig, Invoice.Kind.DEPOSIT)
+
+    assert _lines(gig)["Acompte"]["state"] == "to_invoice"
+
+
+def test_home_cards_show_the_lines_of_upcoming_gigs(client):
+    membership = MembershipFactory(
+        **{f"tenant__{k}": v for k, v in TENANT_FIELDS.items() if k != "name"}
+    )
+    client.force_login(membership.user)
+    GigFactory(
+        tenant=membership.tenant,
+        price="1000.00",
+        date=datetime.date.today() + datetime.timedelta(days=5),
+    )
+
+    content = client.get(reverse("home")).content.decode()
+
+    assert "Acompte" in content
+    assert "300 € ·" in content
+    assert "à facturer" in content
