@@ -47,3 +47,10 @@ def test_unverified_user_cannot_log_in(client):
     )
 
     assert response.wsgi_request.user.is_authenticated is False
+
+
+def test_login_page_has_a_visible_signup_button(client):
+    response = client.get(reverse("account_login"))
+    html = response.content.decode()
+    assert "Créer un compte" in html
+    assert f'href="{reverse("account_signup")}"' in html
