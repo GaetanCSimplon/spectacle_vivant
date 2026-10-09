@@ -10,6 +10,7 @@ from django.views import View
 from django.views.generic import DetailView, ListView, TemplateView
 
 from apps.core.views import TenantScopedMixin, wants_fragment
+from apps.documents.models import Invoice
 from apps.finance import services as finance_services
 
 from . import services
@@ -411,7 +412,16 @@ class GigCancelView(GigTransitionView):
 
     def get(self, request, pk):
         gig = get_object_or_404(Gig, pk=pk, tenant=request.tenant)
-        return render(request, "gigs/gig_confirm_cancel.html", {"gig": gig})
+        open_invoices = (
+            Invoice.objects.filter(tenant=request.tenant, gig=gig, status=Invoice.Status.ISSUED)
+            .exclude(kind=Invoice.Kind.CREDIT_NOTE)
+            .order_by("number")
+        )
+        return render(
+            request,
+            "gigs/gig_confirm_cancel.html",
+            {"gig": gig, "open_invoices": open_invoices},
+        )
 
     def apply(self, gig):
         services.change_status(gig, Gig.Status.CANCELLED)

@@ -6,6 +6,9 @@
 {% endcomment %}
 <div id="finance-body">
   <h2 class="mb-2 text-sm font-semibold uppercase text-gray-500">{% translate "Bilan de la date" %}</h2>
+  {% if gig.status == 'cancelled' %}
+    <p class="rounded-lg bg-amber-50 p-3 text-sm text-amber-900 mb-4">{% translate "Cette date est annulée : le « Prévu » ci-dessous n'est plus attendu." %}</p>
+  {% endif %}
   <div class="card mb-6 space-y-1 text-sm">
     <p class="flex justify-between"><span>{% translate "Prévu" %} (TTC)</span><span>{{ balance.planned_incl_tax|floatformat:"0g" }} €</span></p>
     <p class="flex justify-between"><span>{% translate "Facturé" %} (TTC)</span><span>{{ balance.invoiced|floatformat:"0g" }} €</span></p>

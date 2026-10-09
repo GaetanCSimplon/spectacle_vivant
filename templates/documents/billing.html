@@ -7,6 +7,9 @@
   <h1 class="mb-1 text-lg font-semibold">{% translate "Devis et factures" %}</h1>
   <p class="mb-4 text-sm text-gray-600">{{ gig.show.title }} — {{ gig.date|date:"d/m/Y" }}</p>
 
+  {% if gig.status == 'cancelled' %}
+    <p class="rounded-lg bg-amber-50 p-3 text-sm text-amber-900 mb-4">{% translate "Cette date est annulée : le prix prévu n'est plus attendu. Si des factures ont été émises, annulez-les par un avoir." %}</p>
+  {% endif %}
   <div class="card mb-6 space-y-1 text-sm">
     <p class="flex justify-between"><span>{% translate "Prix prévu" %} (HT)</span><span>{{ gig.price }} €</span></p>
     <p class="flex justify-between"><span>{% translate "Déjà facturé" %} (HT)</span><span>{{ invoiced }} €</span></p>
