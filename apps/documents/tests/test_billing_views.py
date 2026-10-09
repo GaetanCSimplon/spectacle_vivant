@@ -1,6 +1,7 @@
 from decimal import Decimal
 
 import pytest
+from django.template.loader import render_to_string
 from django.urls import reverse
 
 from apps.gigs.factories import GigFactory
@@ -541,3 +542,86 @@ def test_a_quote_url_does_not_open_an_invoice(client):
     invoice = _draft(gig)
 
     assert client.get(_url("document-detail", gig, "devis", invoice.pk)).status_code == 404
+
+
+# --- internal title ---------------------------------------------------------
+
+
+def _title_url(gig, document):
+    doc_type = "factures" if isinstance(document, Invoice) else "devis"
+    return _url("document-title", gig, doc_type, document.pk)
+
+
+def test_a_draft_can_be_named_and_the_name_is_listed(client):
+    gig = _gig(_login(client))
+    quote = invoicing.create_quote(gig)
+
+    response = client.post(_title_url(gig, quote), {"title": "  Devis   tournée automne "})
+
+    assert response.status_code == 302
+    quote.refresh_from_db()
+    assert quote.title == "Devis tournée automne"
+    assert "Devis tournée automne" in client.get(_url("billing", gig)).content.decode()
+    assert "Devis tournée automne" in client.get(_detail(gig, quote)).content.decode()
+
+
+def test_an_issued_invoice_can_still_be_renamed_but_nothing_else_changes(client):
+    gig = _gig(_login(client, siret="12345678900012"))
+    invoice = _issued(gig)
+    before = Invoice.objects.get(pk=invoice.pk)
+
+    client.post(_title_url(gig, invoice), {"title": "Acompte Mairie"})
+
+    after = Invoice.objects.get(pk=invoice.pk)
+    assert after.title == "Acompte Mairie"
+    assert (after.number, after.total_incl_tax, after.issuer_snapshot, after.status) == (
+        before.number,
+        before.total_incl_tax,
+        before.issuer_snapshot,
+        before.status,
+    )
+
+
+def test_the_title_is_not_printed_on_the_pdf_page(client):
+    gig = _gig(_login(client))
+    invoice = _issued(gig)
+    client.post(_title_url(gig, invoice), {"title": "Nom très interne"})
+
+    html = render_to_string("documents/billing_pdf.html", invoicing.build_pdf_context(invoice))
+
+    assert "Nom très interne" not in html
+
+
+def test_the_name_can_be_cleared_and_a_too_long_one_is_refused(client):
+    gig = _gig(_login(client))
+    quote = invoicing.create_quote(gig)
+    client.post(_title_url(gig, quote), {"title": "Un nom"})
+
+    client.post(_title_url(gig, quote), {"title": "x" * 101})
+    quote.refresh_from_db()
+    assert quote.title == "Un nom"
+
+    client.post(_title_url(gig, quote), {"title": ""})
+    quote.refresh_from_db()
+    assert quote.title == ""
+
+
+def test_naming_is_post_only_and_needs_login(client):
+    gig = _gig(_login(client))
+    quote = invoicing.create_quote(gig)
+    assert client.get(_title_url(gig, quote)).status_code == 405
+    client.logout()
+    response = client.post(_title_url(gig, quote), {"title": "x"})
+    assert response.url.startswith(reverse("account_login"))
+    quote.refresh_from_db()
+    assert quote.title == ""
+
+
+def test_another_tenant_cannot_rename_a_document(client):
+    gig = _gig(_login(client))
+    quote = invoicing.create_quote(gig)
+    _login(client)
+
+    assert client.post(_title_url(gig, quote), {"title": "pirate"}).status_code == 404
+    quote.refresh_from_db()
+    assert quote.title == ""

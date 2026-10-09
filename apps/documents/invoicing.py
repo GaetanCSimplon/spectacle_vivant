@@ -24,6 +24,7 @@ ZERO = Decimal("0.00")
 PDF_PROVISIONAL = True
 PAYMENT_DELAY_DAYS = 30
 QUOTE_VALIDITY_DAYS = 30
+TITLE_MAX_LENGTH = 100
 # An invoice that is already fully paid can still be credited.
 CREDITABLE = (Invoice.Status.ISSUED, Invoice.Status.PAID)
 
@@ -444,4 +445,16 @@ def ensure_pdf(document):
             _attach_pdf(locked)
             locked.save(update_fields=["pdf_file"])
     document.pdf_file = locked.pdf_file
+    return document
+
+
+def set_title(document, title):
+    """Rename a quote or an invoice, drafts and issued ones alike (the title is internal)."""
+    title = " ".join((title or "").split())
+    if len(title) > TITLE_MAX_LENGTH:
+        raise InvoicingError(
+            _("Le nom ne peut pas dépasser %(n)s caractères.") % {"n": TITLE_MAX_LENGTH}
+        )
+    document.title = title
+    document.save(update_fields=["title"])
     return document

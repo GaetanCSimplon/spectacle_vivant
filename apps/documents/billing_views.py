@@ -236,6 +236,23 @@ class DocumentIssueView(DocumentMixin, View):
         )
 
 
+class DocumentTitleView(DocumentMixin, View):
+    """Rename a document, even an issued one: the title is internal, never on the PDF."""
+
+    http_method_names = ["post"]
+
+    def post(self, request, gig_id, doc_type, pk):
+        self.load(gig_id, doc_type, pk)
+        try:
+            invoicing.set_title(self.document, request.POST.get("title", ""))
+        except invoicing.InvoicingError as error:
+            return self.refuse(error.args[0])
+        messages.success(request, _("Le nom est enregistré."))
+        return redirect(
+            "documents:document-detail", gig_id=self.gig.pk, doc_type=doc_type, pk=self.document.pk
+        )
+
+
 class DocumentDeleteView(DocumentMixin, View):
     """Throw a draft away (an issued document can never be deleted)."""
 

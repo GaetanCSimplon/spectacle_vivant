@@ -35,7 +35,8 @@
         <a href="{% url 'documents:document-detail' gig.pk 'factures' invoice.pk %}" class="card card-link flex items-center justify-between gap-3 text-sm">
           <span class="min-w-0">
             <span class="font-medium">{{ invoice.number|default:_("Brouillon") }}</span>
-            <span class="text-gray-600">· {{ invoice.get_kind_display }}</span><br>
+            <span class="text-gray-600">· {{ invoice.get_kind_display }}</span>{% if invoice.title %}<br>
+            <span>{{ invoice.title }}</span>{% endif %}<br>
             <span class="text-gray-500">{{ invoice.get_status_display }}</span>
           </span>
           <span class="shrink-0 font-medium">{{ invoice.total_incl_tax }} €</span>
@@ -52,7 +53,8 @@
       <li>
         <a href="{% url 'documents:document-detail' gig.pk 'devis' quote.pk %}" class="card card-link flex items-center justify-between gap-3 text-sm">
           <span class="min-w-0">
-            <span class="font-medium">{{ quote.number|default:_("Brouillon") }}</span><br>
+            <span class="font-medium">{{ quote.number|default:_("Brouillon") }}</span>{% if quote.title %}<br>
+            <span>{{ quote.title }}</span>{% endif %}<br>
             <span class="text-gray-500">{{ quote.get_status_display }}</span>
           </span>
           <span class="shrink-0 font-medium">{{ quote.total_incl_tax }} €</span>

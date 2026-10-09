@@ -34,6 +34,7 @@
               <a href="{% url 'finance:page' row.gig.pk %}" class="card card-link flex items-center justify-between gap-3 text-sm">
                 <span class="min-w-0">
                   <span class="block font-medium">{{ row.invoice.number }} · {{ row.gig.show.title }}</span>
+                  {% if row.invoice.title %}<span class="block text-gray-600">{{ row.invoice.title }}</span>{% endif %}
                   {% if row.gig.status == 'cancelled' %}
                     <span class="block text-amber-700">{% translate "Date annulée : créez un avoir si elle n'aura pas lieu" %}</span>
                   {% endif %}

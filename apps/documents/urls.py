@@ -60,6 +60,11 @@ urlpatterns = [
         name="line-remove",
     ),
     path(
+        "<doctype:doc_type>/<int:pk>/nom/",
+        billing_views.DocumentTitleView.as_view(),
+        name="document-title",
+    ),
+    path(
         "<doctype:doc_type>/<int:pk>/pdf/",
         billing_views.DocumentPdfView.as_view(),
         name="document-pdf",
