@@ -77,6 +77,7 @@ ROUTES = [
     ("gigs:delete", {"pk": "gig"}),
     ("roadmaps:editor", {"gig_id": "gig"}),
     ("roadmaps:pdf", {"gig_id": "gig"}),
+    ("roadmaps:team-add", {"gig_id": "gig"}),
     ("roadmaps:notes", {"gig_id": "gig"}),
     ("roadmaps:share", {"gig_id": "gig", "action": "=activer"}),
     ("roadmaps:share", {"gig_id": "gig", "action": "=arreter"}),

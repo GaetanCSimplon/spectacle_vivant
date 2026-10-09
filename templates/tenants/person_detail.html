@@ -18,6 +18,15 @@
     {% if person.notes %}<p class="text-gray-600">{{ person.notes|linebreaksbr }}</p>{% endif %}
   </div>
 
+  <h2 class="mb-2 text-sm font-semibold uppercase text-gray-500">{% blocktranslate count n=gigs|length %}{{ n }} date{% plural %}{{ n }} dates{% endblocktranslate %}</h2>
+  {% if gigs %}
+    <ul class="mb-6 flex flex-col gap-2">
+      {% for gig in gigs %}{% include "gigs/_gig_row.html" %}{% endfor %}
+    </ul>
+  {% else %}
+    <p class="card mb-6 text-sm text-gray-600">{% translate "Cette personne n'est encore sur aucune date. Ajoutez-la depuis la feuille de route d'une date." %}</p>
+  {% endif %}
+
   <div class="flex items-center justify-between text-sm">
     <a href="{% url 'tenants:person-list' %}" class="text-gray-500 hover:text-gray-700">{% translate "Retour à l'équipe" %}</a>
     <a href="{% url 'tenants:person-delete' person.pk %}" class="text-red-700 underline">{% translate "Supprimer" %}</a>

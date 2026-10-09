@@ -70,6 +70,13 @@
       {% if gig.roadmap.is_published %}{% translate "Partage activé : le lien est actif." %}
       {% else %}{% translate "Horaires, hébergement, repas et équipe, à partager avec les musiciens." %}{% endif %}
     </p>
+    {% if crew %}
+      <p>
+        <span class="font-medium">{% translate "Équipe" %} :</span>
+        {% for member in crew %}{{ member.name }}{% if not forloop.last %}, {% endif %}{% endfor %}
+        {% if team_total %}<span class="text-gray-500">({% blocktranslate with on=team_on_gig total=team_total %}{{ on }} sur {{ total }} de votre équipe{% endblocktranslate %})</span>{% endif %}
+      </p>
+    {% endif %}
     <a href="{% url 'roadmaps:editor' gig.pk %}" class="btn btn-secondary btn-block">
       {% translate "Feuille de route" %}
     </a>

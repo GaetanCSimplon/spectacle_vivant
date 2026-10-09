@@ -86,6 +86,15 @@ class GigMember(TenantOwnedModel):
     """A person travelling for a gig (musician, technician…), shown on the roadmap."""
 
     gig = models.ForeignKey(Gig, on_delete=models.CASCADE, related_name="members")
+    # Set when the person was picked from the team. The fields below are copies, so the
+    # roadmap stays as it was if the team card changes or is deleted (F-06).
+    person = models.ForeignKey(
+        "tenants.Person",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="participations",
+    )
     name = models.CharField(_("nom"), max_length=255)
     role = models.CharField(_("fonction"), max_length=255, blank=True)
     phone = models.CharField(_("téléphone"), max_length=50, blank=True)
@@ -93,6 +102,13 @@ class GigMember(TenantOwnedModel):
 
     class Meta:
         ordering = ["id"]
+        constraints = [
+            models.UniqueConstraint(
+                fields=["gig", "person"],
+                condition=models.Q(person__isnull=False),
+                name="unique_person_per_gig",
+            ),
+        ]
 
     def __str__(self):
         return self.name

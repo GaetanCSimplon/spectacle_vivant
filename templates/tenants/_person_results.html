@@ -16,6 +16,7 @@
       <li>
         <a href="{% url 'tenants:person-detail' person.pk %}" class="card card-link block">
           <span class="block font-medium text-gray-900">{{ person.full_name }}</span>
+          <span class="block text-sm text-gray-500">{% blocktranslate count n=person.year_gigs %}{{ n }} date en {{ year }}{% plural %}{{ n }} dates en {{ year }}{% endblocktranslate %}</span>
           {% if person.role or person.status %}
             <span class="block text-sm text-gray-600">{{ person.role }}{% if person.role and person.status %} · {% endif %}{{ person.status }}</span>
           {% endif %}

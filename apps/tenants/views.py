@@ -1,6 +1,7 @@
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.exceptions import PermissionDenied
+from django.db.models import Count, Q
 from django.http import FileResponse, Http404
 from django.shortcuts import redirect
 from django.urls import reverse, reverse_lazy
@@ -19,6 +20,7 @@ from django.views.generic import (
 
 from apps.accounts.services import is_tenant_owner
 from apps.core.views import SearchListMixin, TenantScopedMixin
+from apps.gigs.models import Gig
 
 from .data_export import build_export_zip
 from .forms import DeleteTenantForm, OnboardingForm, PersonForm, TenantProfileForm
@@ -167,10 +169,36 @@ class PersonListView(TenantScopedMixin, SearchListMixin, ListView):
     results_template_name = "tenants/_person_results.html"
     search_fields = ["first_name", "last_name", "role", "status", "email"]
 
+    def get_queryset(self):
+        # How many live dates of this year each person is on (cancelled ones do not count).
+        year = timezone.localdate().year
+        counted = Q(participations__gig__date__year=year) & ~Q(
+            participations__gig__status=Gig.Status.CANCELLED
+        )
+        return (
+            super()
+            .get_queryset()
+            .annotate(year_gigs=Count("participations__gig", filter=counted, distinct=True))
+        )
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["year"] = timezone.localdate().year
+        return context
+
 
 class PersonDetailView(TenantScopedMixin, DetailView):
     model = Person
     template_name = "tenants/person_detail.html"
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["gigs"] = (
+            Gig.objects.filter(tenant=self.request.tenant, members__person=self.object)
+            .select_related("show", "venue")
+            .order_by("-date")
+        )
+        return context
 
 
 class PersonFormMixin:
