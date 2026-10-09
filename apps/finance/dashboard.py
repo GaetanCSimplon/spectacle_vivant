@@ -13,7 +13,7 @@ from apps.documents import invoicing
 from apps.documents.models import Invoice
 from apps.gigs.models import Gig
 
-from .models import Payment
+from .models import Expense, Payment
 from .services import INVOICED, ZERO
 
 NEXT_GIGS_LIMIT = 5
@@ -135,11 +135,48 @@ def gig_payment_lines(gig):
     ]
 
 
+def year_overview(tenant, year):
+    """Planned against real money for the live gigs dated in `year`, all incl. tax (F-76).
+
+    Cancelled gigs are left out. There is no planned expense yet: spent is what was recorded.
+    """
+    gigs = Gig.objects.filter(tenant=tenant, date__year=year).exclude(status=Gig.Status.CANCELLED)
+    rate = invoicing.vat_rate_for(tenant)
+    planned = sum(
+        (
+            invoicing.money(price * (100 + rate) / 100)
+            for price in gigs.values_list("price", flat=True)
+        ),
+        ZERO,
+    )
+    invoiced = Invoice.objects.filter(tenant=tenant, gig__in=gigs, status__in=INVOICED).aggregate(
+        total=Sum("total_incl_tax")
+    )["total"]
+    received = Payment.objects.filter(tenant=tenant, invoice__gig__in=gigs).aggregate(
+        total=Sum("amount")
+    )["total"]
+    spent = Expense.objects.filter(tenant=tenant, gig__in=gigs).aggregate(total=Sum("amount"))[
+        "total"
+    ]
+    invoiced, received, spent = invoiced or ZERO, received or ZERO, spent or ZERO
+    return {
+        "gig_count": gigs.count(),
+        "planned": planned,
+        "invoiced": invoiced,
+        "received": received,
+        "spent": spent,
+        "to_invoice": planned - invoiced,
+        "to_collect": invoiced - received,
+        "result": received - spent,
+    }
+
+
 def build_dashboard(tenant, today):
     invoiced, received = year_totals(tenant, today.year)
     awaiting = awaiting_payment(tenant, today)
     return {
         "year": today.year,
+        "overview": year_overview(tenant, today.year),
         "invoiced_year": invoiced,
         "received_year": received,
         "awaiting": awaiting,
