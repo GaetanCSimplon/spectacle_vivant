@@ -7,7 +7,7 @@ from django.views.generic import CreateView, DeleteView, DetailView, ListView, U
 
 from apps.core.views import SearchListMixin, TenantScopedMixin
 
-from .forms import ContactForm, PromoterForm, VenueForm
+from .forms import ContactForm, PromoterFilterForm, PromoterForm, VenueForm
 from .models import Contact, Promoter, Venue
 
 
@@ -26,8 +26,21 @@ class PromoterListView(TenantScopedMixin, SearchListMixin, ListView):
     results_template_name = "addressbook/_promoter_results.html"
     search_fields = ["name", "email"]
 
+    def get_filter_form(self):
+        if not hasattr(self, "_filter_form"):
+            self._filter_form = PromoterFilterForm(self.request.GET, tenant=self.request.tenant)
+        return self._filter_form
+
     def get_queryset(self):
-        return super().get_queryset().order_by("name")
+        queryset = super().get_queryset().order_by("name")
+        return self.get_filter_form().apply(queryset)
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        form = self.get_filter_form()
+        context["filter_form"] = form
+        context["filtered"] = bool(context["q"]) or form.is_active
+        return context
 
 
 class PromoterDetailView(TenantScopedMixin, DetailView):
@@ -43,7 +56,16 @@ class PromoterDetailView(TenantScopedMixin, DetailView):
         return context
 
 
-class PromoterCreateView(DetailRedirectMixin, TenantScopedMixin, CreateView):
+class PromoterFormMixin:
+    """The promoter form proposes the values this tenant already uses."""
+
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs["tenant"] = self.request.tenant
+        return kwargs
+
+
+class PromoterCreateView(PromoterFormMixin, DetailRedirectMixin, TenantScopedMixin, CreateView):
     model = Promoter
     form_class = PromoterForm
     template_name = "addressbook/promoter_form.html"
@@ -55,7 +77,7 @@ class PromoterCreateView(DetailRedirectMixin, TenantScopedMixin, CreateView):
         return response
 
 
-class PromoterUpdateView(DetailRedirectMixin, TenantScopedMixin, UpdateView):
+class PromoterUpdateView(PromoterFormMixin, DetailRedirectMixin, TenantScopedMixin, UpdateView):
     model = Promoter
     form_class = PromoterForm
     template_name = "addressbook/promoter_form.html"
