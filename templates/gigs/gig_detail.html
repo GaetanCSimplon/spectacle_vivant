@@ -21,7 +21,11 @@
       {% translate "Lieu" %} :
       <a href="{% url 'addressbook:venue-detail' gig.venue.pk %}" class="text-blue-600">{{ gig.venue.name }}</a>
     </p>
-    <p>{% translate "Prix de cession" %} : {{ gig.price }} € HT</p>
+    {% if gig.status == 'cancelled' %}
+      <p class="text-gray-500"><s>{% translate "Prix de cession" %} : {{ gig.price }} € HT</s> · {% translate "date annulée" %}</p>
+    {% else %}
+      <p>{% translate "Prix de cession" %} : {{ gig.price }} € HT</p>
+    {% endif %}
     {% if gig.status == 'option' and gig.option_expires_on %}
       <p>
         {% translate "Option valable jusqu'au" %} {{ gig.option_expires_on|date:"d/m/Y" }}
