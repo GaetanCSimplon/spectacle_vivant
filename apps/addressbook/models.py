@@ -17,6 +17,13 @@ class Promoter(TenantOwnedModel):
         BAR = "bar", _("Bar / café-concert")
         OTHER = "other", _("Autre")
 
+    class FollowUp(models.TextChoices):
+        PROSPECT = "prospect", _("Prospect")
+        NEGOTIATING = "negotiating", _("En négociation")
+        SIGNING = "signing", _("En signature")
+        ACTIVE = "active", _("Client actif")
+        DROPPED = "dropped", _("Sans suite")
+
     name = models.CharField(_("nom"), max_length=255)
     siret = models.CharField(_("SIRET"), max_length=14, blank=True)
     licence_number = models.CharField(_("n° de licence"), max_length=50, blank=True)
@@ -26,6 +33,10 @@ class Promoter(TenantOwnedModel):
     email = models.EmailField(_("e-mail"), blank=True)
     phone = models.CharField(_("téléphone"), max_length=30, blank=True)
     kind = models.CharField(_("type d'organisateur"), max_length=20, choices=Kind, blank=True)
+    # Prospecting: set by hand, it is only a visual landmark (F-15).
+    follow_up = models.CharField(_("suivi"), max_length=20, choices=FollowUp, blank=True)
+    event_type = models.CharField(_("type d'évènement"), max_length=100, blank=True)
+    aesthetic = models.CharField(_("esthétique"), max_length=100, blank=True)
     notes = models.TextField(_("notes"), blank=True)
 
     def __str__(self):

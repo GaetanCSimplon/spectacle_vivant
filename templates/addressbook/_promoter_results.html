@@ -1,8 +1,8 @@
 {% load i18n %}
 {% if not object_list %}
   <div class="card">
-    {% if q %}
-      <p>{% blocktranslate %}Aucun organisateur ne correspond à « {{ q }} ».{% endblocktranslate %}</p>
+    {% if filtered %}
+      <p>{% translate "Aucun organisateur ne correspond à cette recherche." %}</p>
     {% else %}
       <p>{% translate "Vous n'avez pas encore d'organisateur." %}</p>
       <a href="{% url 'addressbook:promoter-create' %}" class="btn btn-primary mt-4">
@@ -15,11 +15,17 @@
     {% for promoter in object_list %}
       <li>
         <a href="{% url 'addressbook:promoter-detail' promoter.pk %}" class="card card-link block">
-          <span class="block font-medium text-gray-900">{{ promoter.name }}</span>
+          <span class="flex items-start justify-between gap-2">
+            <span class="block font-medium text-gray-900">{{ promoter.name }}</span>
+            {% include "addressbook/_follow_up_badge.html" %}
+          </span>
           {% if promoter.kind or promoter.email %}
             <span class="block text-sm text-gray-600">
               {{ promoter.get_kind_display }}{% if promoter.kind and promoter.email %} · {% endif %}{{ promoter.email }}
             </span>
+          {% endif %}
+          {% if promoter.event_type or promoter.aesthetic %}
+            <span class="block text-sm text-gray-500">{{ promoter.event_type }}{% if promoter.event_type and promoter.aesthetic %} · {% endif %}{{ promoter.aesthetic }}</span>
           {% endif %}
         </a>
       </li>

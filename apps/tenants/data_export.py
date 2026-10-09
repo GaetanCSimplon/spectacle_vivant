@@ -47,7 +47,17 @@ def shows_rows(tenant):
 
 
 def promoters_rows(tenant):
-    header = ["Nom", "SIRET", "Représentant", "Adresse de facturation", "E-mail", "Téléphone"]
+    header = [
+        "Nom",
+        "SIRET",
+        "Représentant",
+        "Adresse de facturation",
+        "E-mail",
+        "Téléphone",
+        "Suivi",
+        "Type d'évènement",
+        "Esthétique",
+    ]
     rows = [
         [
             text(p.name),
@@ -56,6 +66,9 @@ def promoters_rows(tenant):
             text(p.billing_address),
             text(p.email),
             text(p.phone),
+            text(p.get_follow_up_display()),
+            text(p.event_type),
+            text(p.aesthetic),
         ]
         for p in Promoter.objects.filter(tenant=tenant).order_by("name")
     ]

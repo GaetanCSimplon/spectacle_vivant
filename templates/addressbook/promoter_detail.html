@@ -12,7 +12,10 @@
   </div>
 
   <div class="card mb-6 space-y-1 text-sm">
+    {% if promoter.follow_up %}<p>{% include "addressbook/_follow_up_badge.html" %}</p>{% endif %}
     {% if promoter.kind %}<p class="text-gray-600">{{ promoter.get_kind_display }}</p>{% endif %}
+    {% if promoter.event_type %}<p class="text-gray-600">{% translate "Évènement" %} : {{ promoter.event_type }}</p>{% endif %}
+    {% if promoter.aesthetic %}<p class="text-gray-600">{% translate "Esthétique" %} : {{ promoter.aesthetic }}</p>{% endif %}
     {% if promoter.email %}<p><a href="mailto:{{ promoter.email }}" class="text-blue-600">{{ promoter.email }}</a></p>{% endif %}
     {% if promoter.phone %}<p><a href="tel:{{ promoter.phone }}" class="text-blue-600">{{ promoter.phone }}</a></p>{% endif %}
     {% if promoter.siret %}<p>SIRET : {{ promoter.siret }}</p>{% endif %}
