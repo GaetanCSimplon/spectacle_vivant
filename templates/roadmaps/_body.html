@@ -67,6 +67,19 @@
         <li class="card text-sm text-gray-600">{% translate "Rien pour l'instant." %}</li>
       {% endfor %}
     </ul>
+    {% if section.key == 'equipe' and team_choices %}
+      <form method="post" action="{% url 'roadmaps:team-add' gig.pk %}"
+            hx-post="{% url 'roadmaps:team-add' gig.pk %}"
+            hx-target="#roadmap-body" hx-swap="outerHTML" class="card mb-3 space-y-3">
+        {% csrf_token %}
+        <h3 class="text-sm font-semibold">{% translate "Ajouter depuis mon équipe" %}</h3>
+        <select name="person" aria-label="{% translate 'Personne de mon équipe' %}" class="w-full" required>
+          <option value="">{% translate "Choisir une personne…" %}</option>
+          {% for person in team_choices %}<option value="{{ person.pk }}">{{ person.full_name }}{% if person.role %} · {{ person.role }}{% endif %}</option>{% endfor %}
+        </select>
+        <button type="submit" class="btn btn-secondary btn-block">{% translate "Ajouter à la date" %}</button>
+      </form>
+    {% endif %}
     {% if section.add_form %}
       <form method="post" action="{% url 'roadmaps:item-add' gig.pk section.key %}"
             hx-post="{% url 'roadmaps:item-add' gig.pk section.key %}"

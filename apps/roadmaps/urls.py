@@ -35,6 +35,7 @@ urlpatterns = [
     path("pdf/", views.PdfView.as_view(), name="pdf"),
     path("notes/", views.NotesView.as_view(), name="notes"),
     path("partage/<shareaction:action>/", views.ShareView.as_view(), name="share"),
+    path("equipe/depuis-mon-equipe/", views.TeamMemberAddView.as_view(), name="team-add"),
     path("<section:section>/ajouter/", views.ItemAddView.as_view(), name="item-add"),
     path("<section:section>/<int:pk>/modifier/", views.ItemEditView.as_view(), name="item-edit"),
     path(

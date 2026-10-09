@@ -1,10 +1,45 @@
 import secrets
 
 from django.urls import reverse
+from django.utils.translation import gettext_lazy as _
 
 from apps.core.services import render_pdf
+from apps.gigs.models import GigMember
+from apps.tenants.models import Person
 
 from .models import Roadmap, RoadmapSlot
+
+
+class AlreadyOnTheGig(Exception):
+    """The person is already part of this gig's team."""
+
+
+def available_team(gig):
+    """The structure's people who are not yet on this gig."""
+    taken = gig.members.exclude(person=None).values_list("person_id", flat=True)
+    return Person.objects.filter(tenant=gig.tenant).exclude(pk__in=taken)
+
+
+def add_team_member(gig, person):
+    """Put a person of the team on the gig, copying what the roadmap shows.
+
+    The average fee is never copied: a roadmap can be shared with a public link.
+    """
+    if person.tenant_id != gig.tenant_id:
+        raise ValueError("A person of another tenant cannot join this gig.")
+    if gig.members.filter(person=person).exists():
+        raise AlreadyOnTheGig(
+            _("%(name)s fait déjà partie de cette date.") % {"name": person.full_name}
+        )
+    return GigMember.objects.create(
+        tenant=gig.tenant,
+        gig=gig,
+        person=person,
+        name=person.full_name,
+        role=person.role,
+        phone=person.phone,
+        email=person.email,
+    )
 
 
 def get_or_create_roadmap(gig):

@@ -12,6 +12,7 @@ from django.views.generic import DetailView, ListView, TemplateView
 from apps.core.views import TenantScopedMixin, wants_fragment
 from apps.documents.models import Invoice
 from apps.finance import services as finance_services
+from apps.tenants.models import Person
 
 from . import services
 from .forms import (
@@ -361,6 +362,9 @@ class GigDetailView(TenantScopedMixin, DetailView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context["balance"] = finance_services.gig_balance(self.object)
+        context["crew"] = list(self.object.members.all())
+        context["team_total"] = Person.objects.filter(tenant=self.request.tenant).count()
+        context["team_on_gig"] = sum(1 for member in context["crew"] if member.person_id)
         return context
 
 

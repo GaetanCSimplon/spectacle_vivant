@@ -10,6 +10,7 @@ from django.views import View
 
 from apps.core.views import TenantScopedMixin, wants_fragment
 from apps.gigs.models import Gig, GigMember
+from apps.tenants.models import Person
 
 from . import services
 from .forms import LodgingForm, MealForm, MemberForm, NotesForm, SlotForm
@@ -111,6 +112,7 @@ class RoadmapMixin(TenantScopedMixin):
             "roadmap": self.roadmap,
             "sections": sections,
             "notes_form": forms.get("notes") or NotesForm(instance=self.roadmap),
+            "team_choices": services.available_team(self.gig),
             "share_url": self.request.build_absolute_uri(public_path) if public_path else "",
         }
 
@@ -174,6 +176,26 @@ class ItemAddView(RoadmapMixin, View):
         item.tenant = request.tenant
         setattr(item, self.section.parent, self.parent_of(self.section))
         item.save()
+        return self.done()
+
+
+class TeamMemberAddView(RoadmapMixin, View):
+    """POST only: put a person of the structure's team on this gig."""
+
+    http_method_names = ["post"]
+
+    def post(self, request, gig_id):
+        self.load(gig_id)
+        try:
+            person_pk = int(request.POST.get("person", ""))
+        except ValueError:
+            raise Http404 from None
+        person = get_object_or_404(Person, pk=person_pk, tenant=request.tenant)
+        try:
+            services.add_team_member(self.gig, person)
+        except services.AlreadyOnTheGig as error:
+            messages.error(request, error.args[0])
+            return redirect("roadmaps:editor", gig_id=self.gig.pk)
         return self.done()
 
 
