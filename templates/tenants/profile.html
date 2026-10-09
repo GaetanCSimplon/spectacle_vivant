@@ -5,6 +5,7 @@
 
 {% block page_content %}
   <h1 class="mb-2 text-xl font-semibold">{% translate "Ma structure" %}</h1>
+  {% include "tenants/_tabs.html" with active="info" %}
   <p class="mb-4 text-sm text-gray-600">
     {% translate "Ces informations apparaissent dans vos contrats. Tout champ laissé vide s'affiche en pointillés à compléter à la main." %}
   </p>

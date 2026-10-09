@@ -3,17 +3,26 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.exceptions import PermissionDenied
 from django.http import FileResponse, Http404
 from django.shortcuts import redirect
-from django.urls import reverse_lazy
+from django.urls import reverse, reverse_lazy
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 from django.views import View
-from django.views.generic import FormView, TemplateView, UpdateView
+from django.views.generic import (
+    CreateView,
+    DeleteView,
+    DetailView,
+    FormView,
+    ListView,
+    TemplateView,
+    UpdateView,
+)
 
 from apps.accounts.services import is_tenant_owner
-from apps.core.views import TenantScopedMixin
+from apps.core.views import SearchListMixin, TenantScopedMixin
 
 from .data_export import build_export_zip
-from .forms import DeleteTenantForm, OnboardingForm, TenantProfileForm
+from .forms import DeleteTenantForm, OnboardingForm, PersonForm, TenantProfileForm
+from .models import Person
 from .services import (
     CannotLeave,
     cancel_deletion,
@@ -150,3 +159,56 @@ class LeaveTenantView(TenantScopedMixin, TemplateView):
             return redirect("tenants:profile")
         messages.success(request, _("Vous avez quitté la structure."))
         return redirect("home")
+
+
+class PersonListView(TenantScopedMixin, SearchListMixin, ListView):
+    model = Person
+    template_name = "tenants/person_list.html"
+    results_template_name = "tenants/_person_results.html"
+    search_fields = ["first_name", "last_name", "role", "status", "email"]
+
+
+class PersonDetailView(TenantScopedMixin, DetailView):
+    model = Person
+    template_name = "tenants/person_detail.html"
+
+
+class PersonFormMixin:
+    """Proposes the roles and statuses this structure already uses."""
+
+    model = Person
+    form_class = PersonForm
+    template_name = "tenants/person_form.html"
+
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs["tenant"] = self.request.tenant
+        return kwargs
+
+    def get_success_url(self):
+        return reverse("tenants:person-detail", args=[self.object.pk])
+
+
+class PersonCreateView(PersonFormMixin, TenantScopedMixin, CreateView):
+    def form_valid(self, form):
+        response = super().form_valid(form)
+        messages.success(self.request, _("La personne a été ajoutée à votre équipe."))
+        return response
+
+
+class PersonUpdateView(PersonFormMixin, TenantScopedMixin, UpdateView):
+    def form_valid(self, form):
+        response = super().form_valid(form)
+        messages.success(self.request, _("La fiche a été modifiée."))
+        return response
+
+
+class PersonDeleteView(TenantScopedMixin, DeleteView):
+    model = Person
+    template_name = "tenants/person_confirm_delete.html"
+    success_url = reverse_lazy("tenants:person-list")
+
+    def form_valid(self, form):
+        response = super().form_valid(form)
+        messages.success(self.request, _("La fiche est supprimée."))
+        return response

@@ -1,5 +1,8 @@
 from django.db import models
+from django.urls import reverse
 from django.utils.translation import gettext_lazy as _
+
+from apps.core.models import TenantOwnedModel
 
 from .validators import validate_iban
 
@@ -63,3 +66,34 @@ class Tenant(models.Model):
 
     def __str__(self):
         return self.name
+
+
+class Person(TenantOwnedModel):
+    """A member of the structure's team (artist, musician, technician...). Tracking only:
+    nothing here is used to compute pay or social contributions (F-06)."""
+
+    first_name = models.CharField(_("prénom"), max_length=100)
+    last_name = models.CharField(_("nom"), max_length=100)
+    role = models.CharField(_("fonction"), max_length=100, blank=True)
+    status = models.CharField(_("statut"), max_length=100, blank=True)
+    phone = models.CharField(_("téléphone"), max_length=30, blank=True)
+    email = models.EmailField(_("e-mail"), blank=True)
+    average_fee = models.DecimalField(
+        _("cachet moyen (€)"), max_digits=10, decimal_places=2, null=True, blank=True
+    )
+    notes = models.TextField(_("notes"), blank=True)
+
+    class Meta:
+        ordering = ["last_name", "first_name"]
+        verbose_name = _("personne")
+        verbose_name_plural = _("personnes")
+
+    def __str__(self):
+        return self.full_name
+
+    @property
+    def full_name(self):
+        return f"{self.first_name} {self.last_name}".strip()
+
+    def get_absolute_url(self):
+        return reverse("tenants:person-detail", args=[self.pk])

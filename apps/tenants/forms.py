@@ -1,7 +1,8 @@
 from django import forms
 from django.utils.translation import gettext_lazy as _
 
-from .models import Tenant
+from . import services
+from .models import Person, Tenant
 from .validators import normalize_code_ape, normalize_iban, validate_code_ape
 
 
@@ -84,3 +85,51 @@ class DeleteTenantForm(forms.Form):
         if not self.user.check_password(password):
             raise forms.ValidationError(_("Mot de passe incorrect."))
         return password
+
+
+class PersonForm(forms.ModelForm):
+    class Meta:
+        model = Person
+        fields = [
+            "last_name",
+            "first_name",
+            "role",
+            "status",
+            "phone",
+            "email",
+            "average_fee",
+            "notes",
+        ]
+        widgets = {
+            "role": forms.TextInput(attrs={"list": "person-roles"}),
+            "status": forms.TextInput(attrs={"list": "person-statuses"}),
+            "average_fee": forms.NumberInput(attrs={"step": "0.01", "min": "0"}),
+            "notes": forms.Textarea(attrs={"rows": 3}),
+        }
+        help_texts = {
+            "role": _("Choisissez une proposition ou écrivez la vôtre."),
+            "status": _("Choisissez une proposition ou écrivez la vôtre."),
+            "average_fee": _(
+                "Facultatif, pour votre suivi. Il n'apparaît jamais dans vos documents."
+            ),
+            "notes": _("N'y notez pas de numéro de sécurité sociale."),
+        }
+
+    def __init__(self, *args, tenant=None, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.role_options = services.team_suggestions(tenant, "role", services.ROLE_SUGGESTIONS)
+        self.status_options = services.team_suggestions(
+            tenant, "status", services.STATUS_SUGGESTIONS
+        )
+
+    def clean_role(self):
+        return " ".join(self.cleaned_data["role"].split())
+
+    def clean_status(self):
+        return " ".join(self.cleaned_data["status"].split())
+
+    def clean_average_fee(self):
+        fee = self.cleaned_data["average_fee"]
+        if fee is not None and fee < 0:
+            raise forms.ValidationError(_("Le cachet ne peut pas être négatif."))
+        return fee

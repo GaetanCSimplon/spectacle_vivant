@@ -20,6 +20,8 @@ from apps.finance import exports as finance_exports
 from apps.finance.models import Expense
 from apps.gigs.models import Gig
 
+from .models import Person
+
 # Wide enough to cover every invoice, payment and expense.
 FIRST_DAY, LAST_DAY = date(2000, 1, 1), date(2100, 12, 31)
 
@@ -147,6 +149,24 @@ def gigs_rows(tenant):
     return header, rows
 
 
+def team_rows(tenant):
+    header = ["Nom", "Prénom", "Fonction", "Statut", "Téléphone", "E-mail", "Cachet moyen", "Notes"]
+    rows = [
+        [
+            text(p.last_name),
+            text(p.first_name),
+            text(p.role),
+            text(p.status),
+            text(p.phone),
+            text(p.email),
+            amount(p.average_fee) if p.average_fee is not None else "",
+            text(p.notes),
+        ]
+        for p in Person.objects.filter(tenant=tenant)
+    ]
+    return header, rows
+
+
 def _finance(builder):
     return lambda tenant: builder(tenant, FIRST_DAY, LAST_DAY)
 
@@ -158,6 +178,7 @@ TABLES = {
     "organisateurs": promoters_rows,
     "lieux": venues_rows,
     "contacts": contacts_rows,
+    "equipe": team_rows,
     "factures-et-avoirs": _finance(finance_exports.invoices_rows),
     "recettes": _finance(finance_exports.payments_rows),
     "depenses": _finance(finance_exports.expenses_rows),
@@ -206,7 +227,8 @@ Généré le {today}.
 
 Ce dossier contient :
 - les fichiers .csv (à ouvrir avec Excel ou LibreOffice, séparateur « ; », encodage UTF-8) :
-  dates, spectacles, organisateurs, lieux, contacts, factures et avoirs, recettes, dépenses ;
+  dates, spectacles, organisateurs, lieux, contacts, équipe, factures et avoirs, recettes,
+  dépenses ;
 - le dossier « fichiers » : vos contrats (toutes les versions et le PDF signé), devis,
   factures, justificatifs de dépenses, ainsi que les fiches techniques et riders.
 

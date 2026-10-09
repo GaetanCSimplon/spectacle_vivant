@@ -1,0 +1,14 @@
+{% load i18n %}
+{% comment %}Switch between the two parts of "Ma structure". `active` = info | team.{% endcomment %}
+<div class="mb-4 flex gap-4 border-b border-gray-200 text-sm">
+  <a
+    href="{% url 'tenants:profile' %}"
+    class="-mb-px border-b-2 pb-2 {% if active == 'info' %}border-blue-700 font-semibold text-blue-700{% else %}border-transparent text-gray-600 hover:text-gray-900{% endif %}"
+    {% if active == 'info' %}aria-current="true"{% endif %}
+  >{% translate "Informations" %}</a>
+  <a
+    href="{% url 'tenants:person-list' %}"
+    class="-mb-px border-b-2 pb-2 {% if active == 'team' %}border-blue-700 font-semibold text-blue-700{% else %}border-transparent text-gray-600 hover:text-gray-900{% endif %}"
+    {% if active == 'team' %}aria-current="true"{% endif %}
+  >{% translate "Équipe" %}</a>
+</div>

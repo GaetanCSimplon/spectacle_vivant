@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{% if object %}Modifier une fiche{% else %}Nouvelle personne{% endif %} — Spectacle Vivant{% endblock %}
+
+{% block page_content %}
+  <h1 class="mb-4 text-lg font-semibold">
+    {% if object %}{% translate "Modifier la fiche" %}{% else %}{% translate "Ajouter une personne à l'équipe" %}{% endif %}
+  </h1>
+
+  <form method="post" class="space-y-4">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <datalist id="person-roles">{% for value in form.role_options %}<option value="{{ value }}">{% endfor %}</datalist>
+    <datalist id="person-statuses">{% for value in form.status_options %}<option value="{{ value }}">{% endfor %}</datalist>
+    <button type="submit" class="btn btn-primary btn-block">{% translate "Enregistrer" %}</button>
+    <a href="{% if object %}{% url 'tenants:person-detail' object.pk %}{% else %}{% url 'tenants:person-list' %}{% endif %}" class="block text-center text-sm text-gray-500 hover:text-gray-700">{% translate "Annuler" %}</a>
+  </form>
+{% endblock %}
