@@ -240,3 +240,40 @@ def test_vat_number_and_iban_are_not_leaked_to_another_tenant(client):
 
     assert other.vat_number not in content
     assert other.iban not in content
+
+
+def test_code_ape_is_normalized_and_saved(client):
+    tenant = _login(client)
+
+    client.post(URL, _payload(code_ape="90.01 z"))
+
+    tenant.refresh_from_db()
+    assert tenant.code_ape == "9001Z"
+
+
+def test_code_ape_is_optional(client):
+    tenant = _login(client, tenant__code_ape="9001Z")
+
+    response = client.post(URL, _payload(code_ape=""))
+
+    assert response.status_code == 302
+    tenant.refresh_from_db()
+    assert tenant.code_ape == ""
+
+
+@pytest.mark.parametrize("bad", ["9001", "ABCDE", "90012Z", "9001ZZ"])
+def test_invalid_code_ape_is_rejected(client, bad):
+    tenant = _login(client)
+
+    response = client.post(URL, _payload(code_ape=bad))
+
+    assert response.status_code == 200
+    assert "4 chiffres et 1 lettre" in response.content.decode()
+    tenant.refresh_from_db()
+    assert tenant.code_ape == ""
+
+
+def test_code_ape_field_comes_right_after_siret(client):
+    _login(client)
+    names = list(client.get(URL).context["form"].fields)
+    assert names.index("code_ape") == names.index("siret") + 1

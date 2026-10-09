@@ -104,6 +104,7 @@
           {{ tenant.name }}<br>
           {{ tenant.address|linebreaksbr }}<br>
           SIRET : {{ tenant.siret|default:"……" }}<br>
+          {% if tenant.code_ape %}Code APE : {{ tenant.code_ape }}<br>{% endif %}
           {% if not vat_exempt %}N° de TVA : {{ tenant.vat_number|default:"……" }}<br>{% endif %}
           N° de licence : {{ tenant.licence_number|default:"……" }}<br>
           Représenté par {{ tenant.representative_name|default:"……" }}

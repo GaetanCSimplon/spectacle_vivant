@@ -72,6 +72,7 @@
         <p><strong>{{ issuer.name }}</strong>{% if issuer.legal_form %} — {{ issuer.legal_form }}{% endif %}</p>
         <p>{{ issuer.address|linebreaksbr }}</p>
         <p>SIRET : {{ issuer.siret|default:"……" }}</p>
+        {% if issuer.code_ape %}<p>Code APE : {{ issuer.code_ape }}</p>{% endif %}
         {% if show_vat %}<p>N° de TVA : {{ issuer.vat_number|default:"……" }}</p>{% endif %}
         {% if issuer.licence_number %}<p>Licence d'entrepreneur de spectacles : {{ issuer.licence_number }}</p>{% endif %}
       </div>

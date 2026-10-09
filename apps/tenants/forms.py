@@ -2,7 +2,7 @@ from django import forms
 from django.utils.translation import gettext_lazy as _
 
 from .models import Tenant
-from .validators import normalize_iban
+from .validators import normalize_code_ape, normalize_iban, validate_code_ape
 
 
 class OnboardingForm(forms.ModelForm):
@@ -15,12 +15,21 @@ class OnboardingForm(forms.ModelForm):
 
 
 class TenantProfileForm(forms.ModelForm):
+    # Declared here because people type "90.01 Z": the model's 5 characters apply after cleaning.
+    code_ape = forms.CharField(
+        label=_("code APE"),
+        required=False,
+        max_length=10,
+        help_text=_("4 chiffres et 1 lettre, par exemple 9001Z (spectacle vivant)."),
+    )
+
     class Meta:
         model = Tenant
         fields = [
             "name",
             "legal_form",
             "siret",
+            "code_ape",
             "address",
             "vat_regime",
             "vat_rate",
@@ -42,6 +51,12 @@ class TenantProfileForm(forms.ModelForm):
 
     def clean_vat_number(self):
         return "".join(self.cleaned_data["vat_number"].split()).upper()
+
+    def clean_code_ape(self):
+        code = normalize_code_ape(self.cleaned_data["code_ape"])
+        if code:
+            validate_code_ape(code)
+        return code
 
     def clean_iban(self):
         return normalize_iban(self.cleaned_data["iban"])

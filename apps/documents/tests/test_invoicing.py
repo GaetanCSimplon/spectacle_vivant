@@ -511,3 +511,12 @@ def test_documents_belong_to_the_gigs_tenant_and_do_not_mix():
     assert {line.tenant for line in DocumentLine.objects.filter(invoice=invoice_a)} == {
         gig_a.tenant
     }
+
+
+def test_issuing_copies_the_code_ape_into_the_snapshot():
+    gig = _gig(code_ape="9001Z")
+    invoice = _issued(gig)
+    gig.tenant.code_ape = "9002Z"
+    gig.tenant.save()
+
+    assert Invoice.objects.get(pk=invoice.pk).issuer_snapshot["code_ape"] == "9001Z"
