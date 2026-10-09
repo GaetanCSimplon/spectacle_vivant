@@ -253,6 +253,7 @@ def build_issuer_snapshot(tenant):
         "legal_form": tenant.legal_form,
         "address": tenant.address,
         "siret": tenant.siret,
+        "code_ape": tenant.code_ape,
         "vat_regime": tenant.vat_regime,
         "vat_number": tenant.vat_number,
         "iban": tenant.iban,

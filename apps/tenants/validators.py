@@ -20,3 +20,18 @@ def validate_iban(value):
     as_number = "".join(str(int(char, 36)) for char in moved)
     if int(as_number) % 97 != 1:
         raise ValidationError(_("Cet IBAN semble contenir une erreur de saisie."))
+
+
+APE_SHAPE = re.compile(r"^\d{4}[A-Z]$")
+
+
+def normalize_code_ape(value):
+    """Capitals without spaces or dot, so "90.01 z" is stored as 9001Z."""
+    return re.sub(r"[\s.]+", "", value or "").upper()
+
+
+def validate_code_ape(value):
+    if not APE_SHAPE.match(normalize_code_ape(value)):
+        raise ValidationError(
+            _("Un code APE s'écrit avec 4 chiffres et 1 lettre, par exemple 9001Z.")
+        )

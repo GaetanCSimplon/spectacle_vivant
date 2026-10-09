@@ -360,3 +360,14 @@ def test_contract_shows_the_vat_number_only_for_a_taxable_tenant():
 
     assert "N° de TVA : FR12345678901" in taxable
     assert "N° de TVA" not in franchise
+
+
+def test_contract_html_shows_the_code_ape_only_when_filled():
+    gig = GigFactory(tenant__code_ape="9001Z")
+    gig.refresh_from_db()
+    html = render_to_string("documents/contract_pdf.html", build_contract_context(gig))
+    assert "Code APE : 9001Z" in html
+
+    gig.tenant.code_ape = ""
+    html = render_to_string("documents/contract_pdf.html", build_contract_context(gig))
+    assert "Code APE" not in html

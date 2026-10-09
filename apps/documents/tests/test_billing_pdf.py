@@ -392,3 +392,11 @@ def test_the_stored_file_has_no_public_url(client, settings):
     response = client.get(f"/media/{invoice.pdf_file.name}")
 
     assert response.status_code == 404
+
+
+def test_invoice_html_shows_the_code_ape_from_the_snapshot():
+    from .test_invoicing import _gig, _issued
+
+    invoice = _issued(_gig(code_ape="9001Z"))
+    html = render_to_string("documents/billing_pdf.html", invoicing.build_pdf_context(invoice))
+    assert "Code APE : 9001Z" in html

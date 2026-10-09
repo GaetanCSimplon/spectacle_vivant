@@ -30,6 +30,7 @@
       <p>{{ issuer.name }}</p>
       <p class="text-gray-600">{{ issuer.address|linebreaksbr }}</p>
       {% if issuer.siret %}<p class="text-gray-600">SIRET {{ issuer.siret }}</p>{% endif %}
+      {% if issuer.code_ape %}<p class="text-gray-600">{% translate "Code APE" %} {{ issuer.code_ape }}</p>{% endif %}
     </div>
     <div>
       <h2 class="mb-1 text-xs font-semibold uppercase text-gray-500">{% translate "Client" %}</h2>
