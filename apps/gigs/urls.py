@@ -19,5 +19,6 @@ urlpatterns = [
     path("<int:pk>/", views.GigDetailView.as_view(), name="detail"),
     path("<int:pk>/confirmer/", views.GigConfirmView.as_view(), name="confirm"),
     path("<int:pk>/annuler/", views.GigCancelView.as_view(), name="cancel"),
+    path("<int:pk>/supprimer/", views.GigDeleteView.as_view(), name="delete"),
     path("<int:pk>/reactiver/", views.GigReactivateView.as_view(), name="reactivate"),
 ]

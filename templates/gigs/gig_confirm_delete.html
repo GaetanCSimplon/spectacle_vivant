@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}Supprimer la date — Spectacle Vivant{% endblock %}
+
+{% block page_content %}
+  <h1 class="mb-4 text-lg font-semibold">{% translate "Supprimer cette date ?" %}</h1>
+
+  {% if blockers %}
+    <p class="mb-3">{% translate "Cette date ne peut pas être supprimée :" %}</p>
+    <ul class="mb-4 list-inside list-disc">
+      {% for reason in blockers %}<li>{{ reason }}</li>{% endfor %}
+    </ul>
+    <p class="mb-6 text-sm text-gray-600">{% translate "Ces traces doivent être conservées. Annulez la date plutôt : elle restera dans votre historique." %}</p>
+    <div class="flex flex-col gap-3">
+      <a href="{% url 'gigs:cancel' gig.pk %}" class="btn btn-primary btn-block">{% translate "Annuler la date" %}</a>
+      <a href="{% url 'gigs:detail' gig.pk %}" class="text-center text-sm text-gray-500 hover:text-gray-700">{% translate "Retour" %}</a>
+    </div>
+  {% else %}
+    <p class="mb-3">
+      {% blocktranslate with show=gig.show.title date=gig.date|date:"d/m/Y" %}« {{ show }} » le {{ date }} sera supprimée définitivement.{% endblocktranslate %}
+    </p>
+    <p class="mb-6 text-sm text-gray-600">{% translate "Seront aussi effacés : les brouillons de devis et de factures, le contrat non signé et sa feuille de route (le lien partagé cessera de fonctionner). Cette action est irréversible." %}</p>
+    <form method="post" action="{% url 'gigs:delete' gig.pk %}" class="flex flex-col gap-3">
+      {% csrf_token %}
+      <button type="submit" class="btn btn-primary btn-block">{% translate "Supprimer définitivement" %}</button>
+      <a href="{% url 'gigs:detail' gig.pk %}" class="text-center text-sm text-gray-500 hover:text-gray-700">{% translate "Retour" %}</a>
+    </form>
+  {% endif %}
+{% endblock %}
