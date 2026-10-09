@@ -247,7 +247,7 @@ Avant de coder : propose un plan (fichiers, modèles, tests) et attends mon acco
 
 ### Sprint 3.9 — Retours de l'associé (2026-10-09)
 Ajouts demandés après un rendez-vous métier (voir `docs/03` : F-06, F-15, F-59, F-76). Une PR chacune, dans cet ordre :
-- [ ] Code APE dans « Ma structure », après le SIRET (et dans les contrats et factures émis).
+- [x] Code APE dans « Ma structure », après le SIRET (et dans les contrats et factures émis). — Fait (2026-10-09) : `Tenant.code_ape` (migration `tenants/0008`), normalisé (« 90.01 z » devient 9001Z), copié dans les factures émises (snapshot) et affiché dans le contrat s'il est rempli.
 - [ ] Nom facultatif (interne) des devis et des factures, modifiable après émission (F-59).
 - [ ] Cartes des prochaines dates à l'accueil : acompte et solde (F-76).
 - [ ] Vue d'ensemble de l'accueil : prévu, facturé, encaissé, dépensé, résultat (F-76). Budget de dépenses prévu : en attente de la réponse du métier.
