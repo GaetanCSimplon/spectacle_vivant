@@ -7,7 +7,9 @@ from decimal import Decimal
 
 from django.db.models import DecimalField, OuterRef, Subquery, Sum, Value
 from django.db.models.functions import Coalesce
+from django.utils.translation import gettext_lazy as _
 
+from apps.documents import invoicing
 from apps.documents.models import Invoice
 from apps.gigs.models import Gig
 
@@ -82,12 +84,55 @@ def gigs_without_contract(tenant, today):
 
 
 def next_gigs(tenant, today):
-    return list(
+    gigs = list(
         Gig.objects.filter(tenant=tenant, date__gte=today)
         .exclude(status=Gig.Status.CANCELLED)
-        .select_related("show", "venue", "promoter")
+        .select_related("show", "venue", "promoter", "tenant")
         .order_by("date")[:NEXT_GIGS_LIMIT]
     )
+    for gig in gigs:
+        gig.payment_lines = gig_payment_lines(gig)
+    return gigs
+
+
+def _payment_line(label, planned, invoices):
+    """One deposit / balance / full invoice line: what is planned, invoiced or settled."""
+    invoiced = sum((i.total_incl_tax for i in invoices), ZERO)
+    if not invoices:
+        return {"label": label, "state": "to_invoice", "amount": planned}
+    paid = Payment.objects.filter(invoice__in=invoices).aggregate(total=Sum("amount"))["total"]
+    paid = paid or ZERO
+    if paid >= invoiced:
+        return {"label": label, "state": "paid", "amount": invoiced}
+    return {"label": label, "state": "to_collect", "amount": invoiced - paid}
+
+
+def gig_payment_lines(gig):
+    """Deposit and balance of a gig, incl. tax: to invoice, to collect or paid (F-76).
+
+    A gig invoiced in one full invoice gets a single line. Planned amounts follow the
+    gig's own terms (price and deposit percentage).
+    """
+    rate = invoicing.vat_rate_for(gig.tenant)
+    planned_total = invoicing.money(gig.price * (100 + rate) / 100)
+    deposit = invoicing.money(
+        invoicing.money(gig.price * gig.deposit_percent / 100) * (100 + rate) / 100
+    )
+    deposit = min(deposit, planned_total)
+    settled = Invoice.objects.filter(
+        tenant=gig.tenant, gig=gig, status__in=(Invoice.Status.ISSUED, Invoice.Status.PAID)
+    )
+
+    def of_kind(kind):
+        return [i for i in settled if i.kind == kind]
+
+    full = of_kind(Invoice.Kind.FULL)
+    if full:
+        return [_payment_line(_("Facture totale"), planned_total, full)]
+    return [
+        _payment_line(_("Acompte"), deposit, of_kind(Invoice.Kind.DEPOSIT)),
+        _payment_line(_("Solde"), planned_total - deposit, of_kind(Invoice.Kind.BALANCE)),
+    ]
 
 
 def build_dashboard(tenant, today):
