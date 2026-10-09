@@ -141,10 +141,12 @@ class BillingDocument(TenantOwnedModel):
         ISSUED = "issued", _("Émis")
 
     # Fields that may still be written once the document is no longer a draft.
-    MUTABLE_AFTER_ISSUE = {"status"}
+    # The title is an internal label with no legal value: it stays editable (set_title).
+    MUTABLE_AFTER_ISSUE = {"status", "title"}
 
     gig = models.ForeignKey("gigs.Gig", on_delete=models.PROTECT, related_name="+")
     number = models.CharField(_("numéro"), max_length=20, blank=True)
+    title = models.CharField(_("nom"), max_length=100, blank=True)
     status = models.CharField(_("statut"), max_length=20, choices=Status.choices, default="draft")
     issue_date = models.DateField(_("date d'émission"), null=True, blank=True)
     # Copied at issue time: later edits of the tenant or the promoter never change it (RG-07).

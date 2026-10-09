@@ -10,12 +10,22 @@
         {% if is_credit_note %}{% translate "Avoir" %}{% elif is_invoice %}{% translate "Facture" %} — {{ document.get_kind_display|lower }}{% else %}{% translate "Devis" %}{% endif %}
         {% if document.number %}{{ document.number }}{% endif %}
       </h1>
+      {% if document.title %}<p class="font-medium">{{ document.title }}</p>{% endif %}
       <p class="text-sm text-gray-600">{{ gig.show.title }} — {{ gig.date|date:"d/m/Y" }}</p>
     </div>
     <span class="badge shrink-0 {% if document.is_draft %}bg-amber-100 text-amber-800{% elif document.status == 'issued' or document.status == 'paid' %}bg-green-100 text-green-800{% else %}bg-gray-200 text-gray-600{% endif %}">
       {{ document.get_status_display }}
     </span>
   </div>
+
+  <form method="post" action="{% url 'documents:document-title' gig.pk doc_type document.pk %}" class="mb-4 flex items-end gap-2 text-sm">
+    {% csrf_token %}
+    <label class="min-w-0 flex-1">
+      <span class="mb-1 block text-xs font-semibold uppercase text-gray-500">{% translate "Nom (pour vous repérer, absent du PDF)" %}</span>
+      <input type="text" name="title" value="{{ document.title }}" maxlength="100" placeholder="{% translate 'Ex. : Devis tournée automne' %}" class="w-full">
+    </label>
+    <button type="submit" class="btn btn-secondary">{% translate "Enregistrer" %}</button>
+  </form>
 
   {% if is_credit_note and document.credit_note_of %}
     <p class="mb-4 text-sm text-gray-600">
