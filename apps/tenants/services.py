@@ -11,7 +11,7 @@ from apps.finance.models import Expense, Payment
 from apps.gigs.models import Gig
 
 from .data_export import stored_files
-from .models import Tenant
+from .models import Person, Tenant
 
 DELETION_GRACE_DAYS = 30
 
@@ -108,3 +108,32 @@ def purge_due_tenants():
     for tenant in due:
         purge_tenant(tenant)
     return len(due)
+
+
+# --- team (F-06) ---------------------------------------------------------------------
+
+ROLE_SUGGESTIONS = [
+    "Chanteur",
+    "Chanteuse",
+    "Guitariste",
+    "Bassiste",
+    "Batteur",
+    "Pianiste",
+    "Claviériste",
+    "Technicien son",
+    "Technicien lumière",
+    "Régisseur",
+    "Chargé de production",
+]
+STATUS_SUGGESTIONS = ["Intermittent", "Salarié", "Auto-entrepreneur", "Bénévole", "Amateur"]
+
+
+def team_suggestions(tenant, field, fixed):
+    """The proposed values followed by those this tenant already typed, without case duplicates."""
+    typed = (
+        Person.objects.filter(tenant=tenant).exclude(**{field: ""}).values_list(field, flat=True)
+    )
+    merged = {}
+    for value in [*fixed, *typed]:
+        merged.setdefault(value.casefold(), value)
+    return sorted(merged.values(), key=str.casefold)

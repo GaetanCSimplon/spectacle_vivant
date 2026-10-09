@@ -1,0 +1,26 @@
+{% load i18n %}
+{% if not object_list %}
+  <div class="card">
+    {% if q %}
+      <p>{% blocktranslate %}Aucune personne ne correspond à « {{ q }} ».{% endblocktranslate %}</p>
+    {% else %}
+      <p>{% translate "Votre équipe est vide pour l'instant." %}</p>
+      <a href="{% url 'tenants:person-create' %}" class="btn btn-primary mt-4">
+        {% translate "+ Ajouter une personne" %}
+      </a>
+    {% endif %}
+  </div>
+{% else %}
+  <ul class="flex flex-col gap-2">
+    {% for person in object_list %}
+      <li>
+        <a href="{% url 'tenants:person-detail' person.pk %}" class="card card-link block">
+          <span class="block font-medium text-gray-900">{{ person.full_name }}</span>
+          {% if person.role or person.status %}
+            <span class="block text-sm text-gray-600">{{ person.role }}{% if person.role and person.status %} · {% endif %}{{ person.status }}</span>
+          {% endif %}
+        </a>
+      </li>
+    {% endfor %}
+  </ul>
+{% endif %}

@@ -253,6 +253,8 @@ Ajouts demandés après un rendez-vous métier (voir `docs/03` : F-06, F-15, F-5
 - [x] Vue d'ensemble de l'accueil : prévu, facturé, encaissé, dépensé, résultat (F-76). — Fait (2026-10-09) : `dashboard.year_overview` (dates de l'année hors annulées, TTC, sans migration). Budget de dépenses prévu : toujours en attente de la réponse du métier.
 - [x] Qualification des organisateurs : étiquette de suivi, type d'évènement, esthétique, filtres (F-15). — Fait (2026-10-09) : trois champs facultatifs sur `Promoter` (migration `addressbook/0005`), suivi posé à la main, type et esthétique en saisie libre avec propositions (fixes + valeurs déjà utilisées par la structure), pastille de couleur, filtres HTMX combinables avec la recherche, colonnes ajoutées à l'export.
 - [ ] Onglet « Équipe » de « Ma structure » et choix d'une personne dans la feuille de route (F-06). Numéro de sécurité sociale : repoussé.
+  - [x] Partie A, annuaire (2026-10-09) : `tenants.Person` (migration `tenants/0009`), onglet « Équipe » (liste, recherche, fiche, création, modification, suppression), tous les membres de la structure peuvent la gérer, export `equipe.csv`, suppression de compte, politique de confidentialité.
+  - [ ] Partie B, lien avec les dates : choisir une personne dans la feuille de route (`GigMember.person`), participation par personne et par date.
 
 ### Sprint 3.8 — Légal, sécurité, finition, recette
 - [x] Pages : mentions légales, CGU, confidentialité (gabarits à compléter et à faire relire avant la mise en ligne).

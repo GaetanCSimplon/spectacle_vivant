@@ -23,8 +23,8 @@ from apps.gigs.models import Gig
 from apps.roadmaps.factories import RoadmapFactory
 
 from .. import services
-from ..factories import MembershipFactory
-from ..models import Tenant
+from ..factories import MembershipFactory, PersonFactory
+from ..models import Person, Tenant
 
 pytestmark = pytest.mark.django_db
 
@@ -64,6 +64,7 @@ def _full_tenant():
     expense = ExpenseFactory(gig=gig)
     expense.receipt_file.save("ticket.pdf", ContentFile(b"ticket"))
     RoadmapFactory(gig=gig)
+    PersonFactory(tenant=tenant)
     MembershipFactory(tenant=tenant, role="owner")
     return tenant
 
@@ -203,6 +204,7 @@ def test_purge_leaves_no_row_and_no_file(settings):
         assert not model.objects.exists(), model
     assert not Payment.objects.exists()
     assert not Expense.objects.exists()
+    assert not Person.objects.exists()
     assert not Tenant.objects.exists()
     assert not Membership.objects.exists()
     assert not User.objects.exists()

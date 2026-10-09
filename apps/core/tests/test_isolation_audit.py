@@ -30,7 +30,7 @@ from apps.gigs.factories import GigFactory
 from apps.gigs.models import Gig
 from apps.roadmaps import services as roadmap_services
 from apps.roadmaps.factories import LodgingFactory, MealFactory, RoadmapFactory, RoadmapSlotFactory
-from apps.tenants.factories import MembershipFactory, TenantFactory
+from apps.tenants.factories import MembershipFactory, PersonFactory, TenantFactory
 from apps.tenants.models import Tenant
 
 pytestmark = pytest.mark.django_db
@@ -52,6 +52,9 @@ PUBLIC = {
 # Routes that take an identifier: name -> {url parameter: key of A's dataset, or "=literal"}.
 # `gig` is the gig of A; the audit also replays each route with B's own gig_id.
 ROUTES = [
+    ("tenants:person-detail", {"pk": "person"}),
+    ("tenants:person-update", {"pk": "person"}),
+    ("tenants:person-delete", {"pk": "person"}),
     ("addressbook:promoter-detail", {"pk": "promoter"}),
     ("addressbook:promoter-update", {"pk": "promoter"}),
     ("addressbook:promoter-delete", {"pk": "promoter"}),
@@ -173,6 +176,7 @@ def _build_tenant_a():
     lodging = LodgingFactory(roadmap=roadmap, name=f"Hôtel {MARKER}")
     meal = MealFactory(roadmap=roadmap, place=f"Resto {MARKER}")
     roadmap_services.publish(roadmap)
+    person = PersonFactory(tenant=tenant, last_name=f"Equipier {MARKER}", average_fee="123.00")
     return {
         "tenant": tenant,
         "show": gig.show,
@@ -189,6 +193,7 @@ def _build_tenant_a():
         "slot": slot,
         "lodging": lodging,
         "meal": meal,
+        "person": person,
     }
 
 

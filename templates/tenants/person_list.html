@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}Équipe — Spectacle Vivant{% endblock %}
+
+{% block page_content %}
+  <h1 class="mb-2 text-xl font-semibold">{% translate "Ma structure" %}</h1>
+  {% include "tenants/_tabs.html" with active="team" %}
+  <div class="mb-4 flex items-center justify-between gap-3">
+    <p class="text-sm text-gray-600">{% translate "Les artistes et les personnes qui travaillent avec vous." %}</p>
+    <a href="{% url 'tenants:person-create' %}" class="btn btn-primary shrink-0">
+      {% translate "+ Ajouter" %}
+    </a>
+  </div>
+
+  {% url 'tenants:person-list' as list_url %}
+  {% translate "Rechercher une personne" as search_placeholder %}
+  {% include "components/_search.html" with url=list_url placeholder=search_placeholder %}
+
+  <div id="results">
+    {% include "tenants/_person_results.html" %}
+  </div>
+{% endblock %}
