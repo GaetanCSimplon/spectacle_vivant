@@ -9,7 +9,8 @@ from django.utils.translation import gettext_lazy as _
 
 from apps.addressbook.models import Promoter, Venue
 from apps.catalog.models import Show
-from apps.documents.models import Contract
+from apps.documents.models import Contract, ContractVersion, Invoice, Quote
+from apps.finance.models import Expense
 
 from .models import Gig
 
@@ -136,3 +137,44 @@ def reactivate_gig(gig):
         locked.save(update_fields=["status"])
     gig.status = locked.status
     return gig
+
+
+class CannotDelete(Exception):
+    """Raised when a gig still carries legal or financial traces."""
+
+
+def deletion_blockers(gig):
+    """Plain-French reasons why this gig cannot be deleted (empty list = it can)."""
+    scope = {"gig": gig, "tenant": gig.tenant}
+    reasons = []
+    if Invoice.objects.filter(**scope, status=Invoice.Status.ISSUED).exists():
+        reasons.append(_("Une facture ou un avoir a été émis pour cette date."))
+    if Quote.objects.filter(**scope, status=Quote.Status.ISSUED).exists():
+        reasons.append(_("Un devis a été émis pour cette date."))
+    if Contract.objects.filter(**scope, status=Contract.Status.SIGNED).exists():
+        reasons.append(_("Le contrat de cession est signé."))
+    if Expense.objects.filter(**scope).exists():
+        reasons.append(_("Des dépenses sont enregistrées pour cette date."))
+    return reasons
+
+
+def delete_blank_gig(gig):
+    """Delete a gig with no legal or financial trace, with its drafts, contract and roadmap.
+
+    Re-checked under the gig lock; raises CannotDelete otherwise. Stored PDFs of the
+    unsigned contract are removed from the storage once the transaction has succeeded.
+    """
+    files = []
+    with transaction.atomic():
+        locked = _lock_gig(gig)
+        reasons = deletion_blockers(locked)
+        if reasons:
+            raise CannotDelete(reasons[0])
+        for model in (Invoice, Quote):
+            for draft in model.objects.filter(gig=locked, tenant=locked.tenant):
+                draft.delete()
+        versions = ContractVersion.objects.filter(contract__gig=locked, tenant=locked.tenant)
+        files = [(v.pdf_file.storage, v.pdf_file.name) for v in versions if v.pdf_file]
+        locked.delete()
+    for storage, name in files:
+        storage.delete(name)

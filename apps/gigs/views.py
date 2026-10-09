@@ -404,6 +404,28 @@ class GigReactivateView(GigTransitionView):
         return _("La date est réactivée : elle repasse en option.")
 
 
+class GigDeleteView(TenantScopedMixin, View):
+    """Permanent deletion, only for a gig with no legal or financial trace."""
+
+    def _gig(self, request, pk):
+        return get_object_or_404(Gig, pk=pk, tenant=request.tenant)
+
+    def get(self, request, pk):
+        gig = self._gig(request, pk)
+        blockers = services.deletion_blockers(gig)
+        return render(request, "gigs/gig_confirm_delete.html", {"gig": gig, "blockers": blockers})
+
+    def post(self, request, pk):
+        gig = self._gig(request, pk)
+        try:
+            services.delete_blank_gig(gig)
+        except services.CannotDelete as error:
+            messages.error(request, error.args[0])
+            return redirect("gigs:detail", pk=gig.pk)
+        messages.success(request, _("La date est supprimée."))
+        return redirect("gigs:list")
+
+
 class GigCancelView(GigTransitionView):
     """Cancelling asks for a confirmation first; the gig is kept, never deleted (F-36)."""
 

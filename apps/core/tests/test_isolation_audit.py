@@ -71,6 +71,7 @@ ROUTES = [
     ("gigs:confirm", {"pk": "gig"}),
     ("gigs:cancel", {"pk": "gig"}),
     ("gigs:reactivate", {"pk": "gig"}),
+    ("gigs:delete", {"pk": "gig"}),
     ("roadmaps:editor", {"gig_id": "gig"}),
     ("roadmaps:pdf", {"gig_id": "gig"}),
     ("roadmaps:notes", {"gig_id": "gig"}),
