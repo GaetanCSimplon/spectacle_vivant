@@ -34,6 +34,9 @@
               <a href="{% url 'finance:page' row.gig.pk %}" class="card card-link flex items-center justify-between gap-3 text-sm">
                 <span class="min-w-0">
                   <span class="block font-medium">{{ row.invoice.number }} · {{ row.gig.show.title }}</span>
+                  {% if row.gig.status == 'cancelled' %}
+                    <span class="block text-amber-700">{% translate "Date annulée : créez un avoir si elle n'aura pas lieu" %}</span>
+                  {% endif %}
                   {% if row.overdue %}
                     <span class="block text-red-700">{% blocktranslate with n=row.late_days %}En retard de {{ n }} j{% endblocktranslate %} · {% translate "échéance" %} {{ row.invoice.due_date|date:"d/m/Y" }}</span>
                   {% elif row.invoice.due_date %}
