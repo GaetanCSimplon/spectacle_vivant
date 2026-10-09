@@ -245,6 +245,15 @@ Avant de coder : propose un plan (fichiers, modèles, tests) et attends mon acco
 - [x] **Export CSV** (`;`, UTF-8 BOM, virgule décimale, dates jj/mm/aaaa, période au choix) : factures et avoirs, recettes, dépenses, page `exports/` ; textes neutralisés contre les formules de tableur. **Test d'ouverture dans Excel à faire à la main** (vérifié seulement avec le module `csv` de Python).
 - [x] Tests : calculs, exports, isolation, cas limites (paiement partiel, surpaiement).
 
+### Sprint 3.9 — Retours de l'associé (2026-10-09)
+Ajouts demandés après un rendez-vous métier (voir `docs/03` : F-06, F-15, F-59, F-76). Une PR chacune, dans cet ordre :
+- [ ] Code APE dans « Ma structure », après le SIRET (et dans les contrats et factures émis).
+- [ ] Nom facultatif (interne) des devis et des factures, modifiable après émission (F-59).
+- [ ] Cartes des prochaines dates à l'accueil : acompte et solde (F-76).
+- [ ] Vue d'ensemble de l'accueil : prévu, facturé, encaissé, dépensé, résultat (F-76). Budget de dépenses prévu : en attente de la réponse du métier.
+- [ ] Qualification des organisateurs : étiquette de suivi, type d'évènement, esthétique, filtres (F-15).
+- [ ] Onglet « Équipe » de « Ma structure » et choix d'une personne dans la feuille de route (F-06). Numéro de sécurité sociale : repoussé.
+
 ### Sprint 3.8 — Légal, sécurité, finition, recette
 - [x] Pages : mentions légales, CGU, confidentialité (gabarits à compléter et à faire relire avant la mise en ligne).
 - [x] Export des données (F-81) : ZIP de CSV et de fichiers, page `ma-structure/export-donnees/`.
