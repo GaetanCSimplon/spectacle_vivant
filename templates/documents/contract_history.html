@@ -51,6 +51,24 @@
     {% endif %}
   </div>
 
+  {% if can_sign %}
+    <h2 class="mb-2 text-sm font-semibold uppercase text-gray-500">{% translate "Faire signer le contrat" %}</h2>
+    <div class="card mb-6 space-y-3 text-sm">
+      <ol class="list-decimal space-y-1 pl-5">
+        <li>{% translate "Téléchargez la version la plus récente du contrat ci-dessous." %}</li>
+        <li>{% translate "Faites-la signer avec le service de signature de votre choix, depuis votre propre compte : vous créez le lien de signature et l'envoyez à l'organisateur." %}</li>
+        <li>{% translate "Quand le contrat est signé, téléchargez le PDF signé, puis revenez ici cliquer sur « Marquer comme signé » et ajoutez-le." %}</li>
+      </ol>
+      <p class="text-gray-600">
+        {% translate "Quelques services, parmi d'autres :" %}
+        <a href="https://docuseal.com" target="_blank" rel="noopener noreferrer" class="text-blue-700 underline">DocuSeal</a>,
+        <a href="https://yousign.com" target="_blank" rel="noopener noreferrer" class="text-blue-700 underline">Yousign</a>,
+        <a href="https://www.docusign.com" target="_blank" rel="noopener noreferrer" class="text-blue-700 underline">DocuSign</a>.
+        {% translate "Chacun a ses tarifs et ses conditions : BÒRD PRO n'est lié à aucun d'eux et ne leur transmet rien. Une signature à la main, scannée, convient aussi." %}
+      </p>
+    </div>
+  {% endif %}
+
   <h2 class="mb-2 text-sm font-semibold uppercase text-gray-500">{% translate "Versions générées" %}</h2>
   {% if versions %}
     <ul class="mb-6 space-y-2">

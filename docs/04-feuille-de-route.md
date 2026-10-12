@@ -319,7 +319,10 @@ Ajouts demandés après un rendez-vous métier (voir `docs/03` : F-06, F-15, F-5
 - [ ] ⚠️ **Ordre de livraison proposé le 29/09 (Q14, `docs/03-cahier-des-charges.md` §14)** : Lot 1 = périmètre vendable de la formule « Essentiel » ; Lot 2 = « Collectif » **sans** la facturation électronique conforme (affichée « bientôt incluse ») ; Lot 3 = facturation électronique conforme, seulement une fois prestataire/flux/coût validés. **Ne jamais annoncer la facturation électronique comme « incluse » avant des tests réels du flux complet.**
 
 ### 5.3 Signature électronique
-- [ ] Choisir un prestataire ; intégrer envoi, signature, récupération du PDF signé et du certificat.
+Décision du 2026-10-12 (budget serré) : la signature reste **à la charge de l'utilisateur**, avec son propre compte chez le service de son choix (DocuSeal, Yousign, DocuSign…).
+- [x] Niveau 1 : guide « Faire signer le contrat » sur la page du contrat, puis « Marquer comme signé » avec le PDF signé. — Fait (2026-10-12) : aucun coût, aucune donnée transmise à un tiers.
+- [ ] Niveau 2, seulement si les utilisateurs le demandent : l'utilisateur renseigne la clé d'accès de **son** compte (DocuSeal d'abord, offre Pro ≈ 20 $/mois), le bouton « Envoyer pour signature » et le retour automatique du PDF signé et du certificat. Demande une route publique protégée par un secret, une clé chiffrée par structure, et une mention dans la politique de confidentialité.
+- [ ] Niveau 3, plus tard et si l'application génère du revenu : un compte de signature partagé par BÒRD PRO.
 - [ ] Passage automatique de la date à `signed`.
 
 ### 5.4 Relances et rappels
@@ -368,7 +371,7 @@ Ajouts demandés après un rendez-vous métier (voir `docs/03` : F-06, F-15, F-5
 | Bucket S3 européen (Scaleway, OVH…) | Phase 3.4 | ☐ |
 | Politique de conservation des données | Phase 3.8 | ◐ *(suppression complète après 30 jours, factures émises comprises ; conservation légale de 10 ans à valider avec un comptable)* |
 | Grille tarifaire | Phase 4 | ☐ |
-| Prestataire de signature électronique | Phase 5 | ☐ |
+| Prestataire de signature électronique | Phase 5 | ☑ *(2026-10-12 : à la charge de l'utilisateur, niveau 1 fait ; niveaux 2 et 3 à la demande ou si revenus)* |
 | Plateforme agréée de facturation électronique | Phase 5 (avant 09/2027) | ☐ |
 
 ---

@@ -115,6 +115,7 @@ Un utilisateur = une structure en MVP (modèle `Membership` prêt pour plusieurs
 - **F-41** Aperçu avant génération et possibilité d'éditer les conditions particulières (champ texte).
 - **F-42** Numéro de contrat unique par structure. Historique des versions générées.
 - **F-43** Marquage « signé » (manuel en MVP) : fige un PDF, fait passer la date à `signed`.
+- **F-44** *(2026-10-12)* Guide « Faire signer le contrat » : la signature électronique se fait **avec le compte de l'utilisateur** chez le service de son choix ; l'application explique la marche à suivre puis récupère le PDF signé (F-43). Branchement automatique par clé d'accès de l'utilisateur : seulement si demandé ; compte partagé par l'éditeur : seulement si l'application génère du revenu.
 - *CA : le PDF est lisible, paginé, contient toutes les mentions prévues par le modèle validé.*
 
 ### 4.6 Devis et factures (M5)
