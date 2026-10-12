@@ -1,0 +1,7 @@
+{
+  "jobs": [
+    {
+      "command": "0 3 * * * python manage.py purge_deleted_tenants"
+    }
+  ]
+}

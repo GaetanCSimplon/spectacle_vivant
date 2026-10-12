@@ -10,6 +10,10 @@ env:
   DJANGO_DEBUG: "False"
   DJANGO_ALLOWED_HOSTS: localhost,127.0.0.1
   DATABASE_URL: postgres://spectacle:spectacle@localhost:5432/spectacle
+  # Dummy values so config.settings.prod loads (nothing is contacted).
+  EMAIL_HOST_USER: ci-user
+  EMAIL_HOST_PASSWORD: ci-password
+  DEFAULT_FROM_EMAIL: ci@example.com
 
 jobs:
   test:

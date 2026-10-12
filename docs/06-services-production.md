@@ -31,7 +31,7 @@
 - **À faire** : créer un compte, une application (région France), lier le dépôt GitHub.
 - **Variables d'environnement à renseigner** (jamais dans Git) :
   `DJANGO_SETTINGS_MODULE=config.settings.prod`, `DJANGO_SECRET_KEY`, `DJANGO_ALLOWED_HOSTS`, `DATABASE_URL` (fournie par l'addon), puis celles des services ci-dessous.
-- **Fichier à prévoir côté code** : un `Procfile` (commande de démarrage et migrations). Je le crée au moment du déploiement.
+- **Fichiers de déploiement (faits, 2026-10-12)** : `Procfile` (gunicorn sans journal d'accès, migrations après chaque déploiement), `.python-version` (3.12), `requirements.txt` (renvoie vers `requirements/prod.txt`), `.buildpacks` et `Aptfile` (bibliothèques système de WeasyPrint et polices pour les PDF), `bin/post_compile` (compile Tailwind puis `collectstatic`, car le CSS compilé n'est pas dans Git), `bin/post_deploy.sh` (migrations puis `set_site_domain`), `cron.json` (purge quotidienne à 3 h UTC). Non testés sur Scalingo tant que l'application n'y est pas déployée.
 - **Coût indicatif** : environ 10 à 25 €/mois pour un petit conteneur.
 
 ## 2. Base de données PostgreSQL
@@ -130,8 +130,30 @@ La suppression d'une structure est effective 30 jours après la demande. Il faut
 | `DJANGO_ALLOWED_HOSTS` | ton domaine |
 | `DATABASE_URL` | addon PostgreSQL Scalingo |
 | `S3_BUCKET_NAME`, `S3_ENDPOINT_URL`, `S3_REGION_NAME`, `S3_ACCESS_KEY_ID`, `S3_SECRET_ACCESS_KEY` | prestataire S3 (noms définis, voir `.env.example`) |
-| variables d'e-mail (SMTP ou clé API) | prestataire d'e-mails, noms définis à la mise en place |
+| `EMAIL_HOST_USER`, `EMAIL_HOST_PASSWORD` | identifiants SMTP du prestataire d'e-mails (Brevo : `EMAIL_HOST` vaut `smtp-relay.brevo.com` par défaut, port 587) |
+| `DEFAULT_FROM_EMAIL` | adresse d'envoi sur ton domaine, ex. `BÒRD PRO <contact@bord-pro.fr>` |
+| `DJANGO_SITE_DOMAIN` | ton domaine sans `https://` (ex. `bord-pro.fr`) : sert aux liens des e-mails |
 | `SENTRY_DSN` | Sentry (facultatif : sans valeur, rien n'est envoyé) |
 | `DJANGO_CSRF_TRUSTED_ORIGINS` | ton domaine avec `https://` (ex. `https://mon-domaine.fr`) |
+
+## Procédure de premier déploiement (Scalingo)
+
+1. **Créer l'application** (région France) et ajouter l'addon PostgreSQL. Lier le dépôt GitHub (branche `main`) ou pousser le code.
+2. **Saisir les variables** du tableau ci-dessus dans l'interface Scalingo. `DJANGO_ALLOWED_HOSTS` contient l'adresse Scalingo de l'application, puis ton domaine une fois branché. `DJANGO_CSRF_TRUSTED_ORIGINS` contient les mêmes adresses avec `https://`.
+3. **Déployer**, puis lire les journaux de construction : le Tailwind doit se compiler, `collectstatic` passer, les migrations s'appliquer.
+4. **Créer ton compte administrateur** : `scalingo --app <nom> run python manage.py createsuperuser`.
+5. **Activer le planificateur** (Scalingo Scheduler) pour que `cron.json` soit pris en compte.
+6. **Vérifier de bout en bout** (liste ci-dessous), puis seulement brancher le domaine.
+
+Vérifications après le premier déploiement :
+- la page de connexion s'affiche avec ses styles ;
+- une inscription envoie bien l'e-mail de confirmation, et son lien pointe vers la bonne adresse en `https` ;
+- un PDF de contrat se génère avec un texte lisible (polices) ;
+- un fichier ajouté (rider, justificatif) est lisible après un redémarrage (stockage S3) ;
+- le lien public d'une feuille de route fonctionne sans compte ;
+- aucune requête n'apparaît dans les journaux avec un jeton de feuille de route ;
+- une erreur volontaire remonte dans Sentry sans donnée personnelle.
+
+Les dépendances ne sont pas encore figées par version : une mise à jour inattendue d'une bibliothèque pourrait casser un déploiement. À figer (fichier de versions) avant l'ouverture au public.
 
 *Cette liste évoluera avec les sprints. Les noms exacts des variables seront ajoutés ici quand le code les utilisera.*

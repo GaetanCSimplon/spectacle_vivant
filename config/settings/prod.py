@@ -22,6 +22,19 @@ SECURE_HSTS_SECONDS = 60 * 60 * 24 * 30
 SECURE_HSTS_INCLUDE_SUBDOMAINS = True
 SECURE_HSTS_PRELOAD = True
 
+# E-mails (confirmation of the address, forgotten password) through an SMTP relay in the EU
+# (Brevo). The links in these e-mails use the Site domain and must be https.
+EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
+EMAIL_HOST = env("EMAIL_HOST", default="smtp-relay.brevo.com")  # noqa: F405
+EMAIL_PORT = env.int("EMAIL_PORT", default=587)  # noqa: F405
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = env("EMAIL_HOST_USER")  # noqa: F405
+EMAIL_HOST_PASSWORD = env("EMAIL_HOST_PASSWORD")  # noqa: F405
+DEFAULT_FROM_EMAIL = env("DEFAULT_FROM_EMAIL")  # noqa: F405
+SERVER_EMAIL = DEFAULT_FROM_EMAIL
+ACCOUNT_DEFAULT_HTTP_PROTOCOL = "https"
+SITE_DOMAIN = env("DJANGO_SITE_DOMAIN", default="")  # noqa: F405
+
 # Private S3 bucket (European provider): uploaded and generated files are never public.
 # Django itself streams them to the user after checking the tenant.
 STORAGES = {

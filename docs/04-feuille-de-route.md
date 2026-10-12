@@ -271,6 +271,7 @@ Ajouts demandés après un rendez-vous métier (voir `docs/03` : F-06, F-15, F-5
 - [x] États vides et messages de succès : relus, déjà présents sur les listes, fiches, finances et accueil.
 - [ ] **Recette** : dérouler la liste de la section 11 du cahier des charges sur staging.
 - [ ] Sauvegarde de la base + **test de restauration**.
+- [x] Fichiers de déploiement Scalingo (2026-10-12) : `Procfile`, `.python-version`, `requirements.txt`, `.buildpacks` + `Aptfile` (WeasyPrint), `bin/post_compile` (Tailwind + `collectstatic`), `bin/post_deploy.sh` (migrations + `set_site_domain`), `cron.json` (purge à 3 h UTC), e-mails SMTP en production. Construction simulée en local avec `config.settings.prod` ; procédure et vérifications dans `docs/06`.
 - [ ] Déploiement en **production** (déclenchement manuel).
 
 **Livrable** : MVP en production.
