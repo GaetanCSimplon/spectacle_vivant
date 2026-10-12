@@ -5,10 +5,10 @@
 
 {% block page_content %}
   <div class="mb-6 flex items-center justify-between">
-    <h1 class="text-xl font-semibold">{% translate "Spectacles" %}</h1>
-    <a href="{% url 'catalog:show-create' %}" class="btn btn-primary">
-      {% translate "+ Nouveau spectacle" %}
-    </a>
+    <h1 class="!mb-0 text-xl font-semibold">{% translate "Spectacles" %}</h1>
+    {% url 'catalog:show-create' as add_url %}
+    {% translate "Nouveau spectacle" as add_label %}
+    {% include "components/_add_button.html" with url=add_url label=add_label %}
   </div>
 
   {% url 'catalog:show-list' as list_url %}

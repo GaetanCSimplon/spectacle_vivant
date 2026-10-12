@@ -7,7 +7,9 @@
   {% include "addressbook/_tabs.html" with active="contacts" %}
   <div class="mb-6 flex items-center justify-between gap-3">
     <h1 class="!mb-0 text-xl font-semibold">{% translate "Contacts" %}</h1>
-    <a href="{% url 'addressbook:contact-create' %}" class="btn btn-primary shrink-0">{% translate "+ Nouveau contact" %}</a>
+    {% url 'addressbook:contact-create' as add_url %}
+    {% translate "Nouveau contact" as add_label %}
+    {% include "components/_add_button.html" with url=add_url label=add_label %}
   </div>
 
   {% url 'addressbook:contact-list' as list_url %}

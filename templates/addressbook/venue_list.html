@@ -6,10 +6,10 @@
 {% block page_content %}
   {% include "addressbook/_tabs.html" with active="venues" %}
   <div class="mb-6 flex items-center justify-between">
-    <h1 class="text-xl font-semibold">{% translate "Lieux" %}</h1>
-    <a href="{% url 'addressbook:venue-create' %}" class="btn btn-primary">
-      {% translate "+ Nouveau lieu" %}
-    </a>
+    <h1 class="!mb-0 text-xl font-semibold">{% translate "Lieux" %}</h1>
+    {% url 'addressbook:venue-create' as add_url %}
+    {% translate "Nouveau lieu" as add_label %}
+    {% include "components/_add_button.html" with url=add_url label=add_label %}
   </div>
 
   {% url 'addressbook:venue-list' as list_url %}

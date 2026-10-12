@@ -147,8 +147,9 @@
     @apply w-full;
   }
 
+  /* min-w-0: in a grid or flex row a card never grows past its column because of a long word. */
   .card {
-    @apply rounded-2xl border border-page-line bg-white p-4 shadow-[0_8px_24px_rgba(15,76,92,0.07)];
+    @apply wrap-anywhere min-w-0 rounded-2xl border border-page-line bg-white p-4 shadow-[0_8px_24px_rgba(15,76,92,0.07)];
   }
 
   /* Combine with `.card`: class="card card-link". */

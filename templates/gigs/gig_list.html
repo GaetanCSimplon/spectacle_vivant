@@ -5,10 +5,10 @@
 
 {% block page_content %}
   <div class="mb-2 flex items-center justify-between">
-    <h1 class="text-xl font-semibold">{% translate "Mes dates" %}</h1>
-    <a href="{% url 'gigs:wizard-show' %}" class="btn btn-primary">
-      {% translate "+ Nouvelle date" %}
-    </a>
+    <h1 class="!mb-0 text-xl font-semibold">{% translate "Mes dates" %}</h1>
+    {% url 'gigs:wizard-show' as add_url %}
+    {% translate "Nouvelle date" as add_label %}
+    {% include "components/_add_button.html" with url=add_url label=add_label %}
   </div>
 
   {% include "gigs/_view_tabs.html" with active="list" %}
