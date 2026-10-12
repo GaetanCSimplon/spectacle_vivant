@@ -234,7 +234,7 @@ def missing_issue_requirements(document):
     """What the user still has to fill in before the document can be issued."""
     tenant, promoter = document.tenant, document.gig.promoter
     missing = []
-    if not tenant.address:
+    if not tenant.full_address:
         missing.append(_("l'adresse de votre structure"))
     if not tenant.siret:
         missing.append(_("le SIRET de votre structure"))
@@ -243,7 +243,7 @@ def missing_issue_requirements(document):
             missing.append(_("votre numéro de TVA"))
         if tenant.vat_rate is None:
             missing.append(_("votre taux de TVA"))
-    if not promoter.billing_address:
+    if not promoter.full_address:
         missing.append(_("l'adresse de facturation de l'organisateur"))
     return missing
 
@@ -252,7 +252,7 @@ def build_issuer_snapshot(tenant):
     return {
         "name": tenant.name,
         "legal_form": tenant.legal_form,
-        "address": tenant.address,
+        "address": tenant.full_address,
         "siret": tenant.siret,
         "code_ape": tenant.code_ape,
         "vat_regime": tenant.vat_regime,
@@ -267,7 +267,7 @@ def build_issuer_snapshot(tenant):
 def build_customer_snapshot(promoter):
     return {
         "name": promoter.name,
-        "billing_address": promoter.billing_address,
+        "billing_address": promoter.full_address,
         "siret": promoter.siret,
         "email": promoter.email,
     }

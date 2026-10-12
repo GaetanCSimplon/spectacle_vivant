@@ -24,7 +24,7 @@ class PromoterListView(TenantScopedMixin, SearchListMixin, ListView):
     model = Promoter
     template_name = "addressbook/promoter_list.html"
     results_template_name = "addressbook/_promoter_results.html"
-    search_fields = ["name", "email"]
+    search_fields = ["name", "email", "city"]
 
     def get_filter_form(self):
         if not hasattr(self, "_filter_form"):
@@ -111,7 +111,7 @@ class VenueListView(TenantScopedMixin, SearchListMixin, ListView):
     model = Venue
     template_name = "addressbook/venue_list.html"
     results_template_name = "addressbook/_venue_results.html"
-    search_fields = ["name", "address"]
+    search_fields = ["name", "address", "city", "postal_code"]
 
     def get_queryset(self):
         return super().get_queryset().order_by("name")

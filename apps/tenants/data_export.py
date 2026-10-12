@@ -59,6 +59,9 @@ def promoters_rows(tenant):
         "Suivi",
         "Type d'évènement",
         "Esthétique",
+        "Code postal",
+        "Ville",
+        "Département",
     ]
     rows = [
         [
@@ -71,6 +74,9 @@ def promoters_rows(tenant):
             text(p.get_follow_up_display()),
             text(p.event_type),
             text(p.aesthetic),
+            text(p.postal_code),
+            text(p.city),
+            text(p.get_department_display()),
         ]
         for p in Promoter.objects.filter(tenant=tenant).order_by("name")
     ]
@@ -78,7 +84,17 @@ def promoters_rows(tenant):
 
 
 def venues_rows(tenant):
-    header = ["Nom", "Adresse", "Jauge", "Téléphone", "Infos d'accès", "Notes"]
+    header = [
+        "Nom",
+        "Adresse",
+        "Jauge",
+        "Téléphone",
+        "Infos d'accès",
+        "Notes",
+        "Code postal",
+        "Ville",
+        "Département",
+    ]
     rows = [
         [
             text(v.name),
@@ -87,6 +103,9 @@ def venues_rows(tenant):
             text(v.phone),
             text(v.access_info),
             text(v.notes),
+            text(v.postal_code),
+            text(v.city),
+            text(v.get_department_display()),
         ]
         for v in Venue.objects.filter(tenant=tenant).order_by("name")
     ]

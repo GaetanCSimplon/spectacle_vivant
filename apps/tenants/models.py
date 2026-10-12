@@ -2,12 +2,12 @@ from django.db import models
 from django.urls import reverse
 from django.utils.translation import gettext_lazy as _
 
-from apps.core.models import TenantOwnedModel
+from apps.core.models import AddressMixin, TenantOwnedModel
 
 from .validators import validate_iban
 
 
-class Tenant(models.Model):
+class Tenant(AddressMixin, models.Model):
     """The tenant: the artist, association or company using the app."""
 
     class VatRegime(models.TextChoices):

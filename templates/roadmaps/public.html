@@ -24,10 +24,10 @@
         <div class="grid grid-cols-2 gap-3">
           {% if venue.tel %}<a href="tel:{{ venue.tel }}" class="btn btn-primary btn-block">{% translate "Appeler" %}</a>{% endif %}
           {% if venue.address %}
-            <a href="https://www.openstreetmap.org/search?query={{ venue.address|urlencode }}" rel="noopener noreferrer" class="btn btn-secondary btn-block">{% translate "Itinéraire" %}</a>
+            <a href="https://www.openstreetmap.org/search?query={{ venue.address_one_line|urlencode }}" rel="noopener noreferrer" class="btn btn-secondary btn-block">{% translate "Itinéraire" %}</a>
           {% endif %}
         </div>
-        {% if venue.address %}{% include "roadmaps/_copy_address.html" with address=venue.address %}{% endif %}
+        {% if venue.address %}{% include "roadmaps/_copy_address.html" with address=venue.address_one_line %}{% endif %}
       </div>
 
       {% if slots %}
@@ -48,10 +48,10 @@
           {% for lodging in lodgings %}
             <li class="card space-y-2 text-sm">
               <p class="font-medium">{{ lodging.name }}{% if lodging.arrival_time %} · {% translate "arrivée" %} {{ lodging.arrival_time|time:"H:i" }}{% endif %}</p>
-              {% if lodging.address %}
-                <p class="text-gray-600">{{ lodging.address }}</p>
-                <a href="https://www.openstreetmap.org/search?query={{ lodging.address|urlencode }}" rel="noopener noreferrer" class="btn btn-secondary btn-block">{% translate "Itinéraire" %}</a>
-                {% include "roadmaps/_copy_address.html" with address=lodging.address %}
+              {% if lodging.full_address %}
+                <p class="text-gray-600">{{ lodging.full_address|linebreaksbr }}</p>
+                <a href="https://www.openstreetmap.org/search?query={{ lodging.one_line_address|urlencode }}" rel="noopener noreferrer" class="btn btn-secondary btn-block">{% translate "Itinéraire" %}</a>
+                {% include "roadmaps/_copy_address.html" with address=lodging.one_line_address %}
               {% endif %}
               {% if lodging.notes %}<p class="text-gray-600">{{ lodging.notes|linebreaksbr }}</p>{% endif %}
             </li>

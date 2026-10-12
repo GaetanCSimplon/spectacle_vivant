@@ -104,7 +104,8 @@ def public_context(roadmap):
         "date": gig.date,
         "venue": {
             "name": venue.name,
-            "address": venue.address,
+            "address": venue.full_address,
+            "address_one_line": venue.one_line_address,
             "access_info": venue.access_info,
             "phone": venue.phone,
             "tel": _tel(venue.phone),

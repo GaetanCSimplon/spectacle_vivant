@@ -3,6 +3,7 @@ from django.utils.translation import gettext_lazy as _
 
 from apps.addressbook.models import Promoter, Venue
 from apps.catalog.models import Show
+from apps.core.forms import AddressModelForm
 
 from .models import Gig
 
@@ -29,10 +30,18 @@ class GigPromoterStepForm(forms.Form):
         self.fields["promoter"].queryset = Promoter.objects.filter(tenant=tenant)
 
 
-class PromoterQuickCreateForm(forms.ModelForm):
+class PromoterQuickCreateForm(AddressModelForm):
     class Meta:
         model = Promoter
-        fields = ["name", "siret", "billing_address", "email"]
+        fields = [
+            "name",
+            "siret",
+            "billing_address",
+            "postal_code",
+            "city",
+            "department",
+            "email",
+        ]
 
 
 class GigVenueStepForm(forms.Form):
@@ -43,10 +52,10 @@ class GigVenueStepForm(forms.Form):
         self.fields["venue"].queryset = Venue.objects.filter(tenant=tenant)
 
 
-class VenueQuickCreateForm(forms.ModelForm):
+class VenueQuickCreateForm(AddressModelForm):
     class Meta:
         model = Venue
-        fields = ["name", "address"]
+        fields = ["name", "address", "postal_code", "city", "department"]
 
 
 class GigFilterForm(forms.Form):

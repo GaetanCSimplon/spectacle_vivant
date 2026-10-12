@@ -1,11 +1,13 @@
 from django import forms
 from django.utils.translation import gettext_lazy as _
 
+from apps.core.forms import AddressModelForm
+
 from . import services
 from .models import Contact, Promoter, Venue
 
 
-class PromoterForm(forms.ModelForm):
+class PromoterForm(AddressModelForm):
     class Meta:
         model = Promoter
         fields = [
@@ -21,10 +23,13 @@ class PromoterForm(forms.ModelForm):
             "representative_name",
             "representative_role",
             "billing_address",
+            "postal_code",
+            "city",
+            "department",
             "notes",
         ]
         widgets = {
-            "billing_address": forms.Textarea(attrs={"rows": 3}),
+            "billing_address": forms.Textarea(attrs={"rows": 2}),
             "notes": forms.Textarea(attrs={"rows": 3}),
             "event_type": forms.TextInput(attrs={"list": "event-type-options"}),
             "aesthetic": forms.TextInput(attrs={"list": "aesthetic-options"}),
@@ -88,12 +93,22 @@ class PromoterFilterForm(forms.Form):
         return any(self.cleaned_data.get(name) for name in self.fields)
 
 
-class VenueForm(forms.ModelForm):
+class VenueForm(AddressModelForm):
     class Meta:
         model = Venue
-        fields = ["name", "address", "capacity", "phone", "access_info", "notes"]
+        fields = [
+            "name",
+            "address",
+            "postal_code",
+            "city",
+            "department",
+            "capacity",
+            "phone",
+            "access_info",
+            "notes",
+        ]
         widgets = {
-            "address": forms.Textarea(attrs={"rows": 3}),
+            "address": forms.Textarea(attrs={"rows": 2}),
             "access_info": forms.Textarea(attrs={"rows": 3}),
             "notes": forms.Textarea(attrs={"rows": 3}),
         }
