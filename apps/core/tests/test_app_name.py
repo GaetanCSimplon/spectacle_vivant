@@ -10,7 +10,7 @@ pytestmark = pytest.mark.django_db
 
 def test_login_page_and_home_show_the_new_name(client):
     login = client.get(reverse("account_login")).content.decode()
-    assert "BÒRD PRO" in login
+    assert 'aria-label="BÒRD PRO"' in login
 
     client.force_login(MembershipFactory().user)
     home = client.get(reverse("home")).content.decode()

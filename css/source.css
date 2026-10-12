@@ -1,15 +1,56 @@
 @import "tailwindcss";
 
 /*
- * Tailwind source for Spectacle Vivant.
+ * Tailwind source for BÒRD PRO, "Scène" identity: deep teal, coral, rounded shapes, Sora.
  * Django form helpers (`{{ form.as_p }}`) render plain HTML with no classes,
  * so the `base` layer below styles raw elements directly: every form in the
  * app gets consistent inputs/labels without touching each template.
  */
 
+/* Self-hosted (no request to a font provider): Sora, latin subset, variable weight. */
+@font-face {
+  font-family: "Sora";
+  font-style: normal;
+  font-weight: 100 800;
+  font-display: swap;
+  src: url("../fonts/sora-latin.woff2") format("woff2");
+}
+
+@theme {
+  --font-sans: "Sora", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+
+  /*
+   * The templates already use Tailwind's `blue-*` classes for "the brand colour": the scale
+   * is redefined here as the BÒRD PRO teal, so one change recolours the whole application.
+   */
+  --color-blue-50: #eaf5f6;
+  --color-blue-100: #cde7ea;
+  --color-blue-200: #9fd0d6;
+  --color-blue-300: #6bb4be;
+  --color-blue-400: #3a94a2;
+  --color-blue-500: #1f7686;
+  --color-blue-600: #165f6f;
+  --color-blue-700: #0f4c5c;
+  --color-blue-800: #0c3d4b;
+  --color-blue-900: #0a323e;
+  --color-blue-950: #05202a;
+
+  /* Coral: the main action and small touches. 600 keeps white text readable (4.7:1). */
+  --color-coral-50: #fff1ec;
+  --color-coral-100: #fde4dc;
+  --color-coral-400: #f5906f;
+  --color-coral-500: #ef6f4f;
+  --color-coral-600: #c9482b;
+  --color-coral-700: #b23c22;
+
+  /* Page background: a faint teal tint instead of grey. */
+  --color-page: #eef6f5;
+  --color-page-line: #d3e4e2;
+}
+
 @layer base {
   h1 {
-    @apply mb-5 text-2xl font-bold tracking-tight text-stone-900;
+    @apply mb-5 text-2xl font-bold tracking-tight text-blue-950;
   }
 
   /* Titles that carry no classes of their own (e.g. a form heading inside a card). */
@@ -59,7 +100,7 @@
   select,
   textarea {
     /* 16px text: phones do not zoom in on focus; 44px tall: easy to touch. */
-    @apply block min-h-11 w-full rounded-lg border-2 border-stone-300 bg-white px-3 py-2.5 text-base
+    @apply block min-h-11 w-full rounded-xl border-2 border-stone-300 bg-white px-3 py-2.5 text-base
       text-stone-900 shadow-sm focus:border-blue-600 focus:ring-2 focus:ring-blue-200
       focus:outline-none;
   }
@@ -88,14 +129,14 @@
 
 @layer components {
   .btn {
-    @apply inline-flex min-h-11 items-center justify-center gap-2 rounded-lg px-5 py-2.5 text-base
+    @apply inline-flex min-h-11 items-center justify-center gap-2 rounded-full px-5 py-2.5 text-base
       font-semibold transition-colors active:translate-y-px;
   }
 
   /* Combine with `.btn`: class="btn btn-primary". Tailwind v4 can't @apply a custom
      class inside another custom class, so these only add color/border, not layout. */
   .btn-primary {
-    @apply bg-blue-700 text-white shadow-sm hover:bg-blue-800;
+    @apply bg-coral-600 text-white shadow-sm hover:bg-coral-700;
   }
 
   .btn-secondary {
@@ -107,7 +148,7 @@
   }
 
   .card {
-    @apply rounded-xl border border-stone-200 bg-white p-4 shadow-sm;
+    @apply rounded-2xl border border-page-line bg-white p-4 shadow-[0_8px_24px_rgba(15,76,92,0.07)];
   }
 
   /* Combine with `.card`: class="card card-link". */
@@ -122,12 +163,64 @@
 
   /* Main navigation links; the current page is marked by aria-current (see _nav.html). */
   .nav-link {
-    @apply rounded-lg px-3 py-2 text-sm font-medium text-stone-600 transition-colors
+    @apply rounded-full px-3 py-2 text-sm font-medium text-stone-600 transition-colors
       hover:bg-stone-100 hover:text-stone-900;
   }
 
   .nav-link[aria-current="page"] {
     @apply bg-blue-50 font-bold text-blue-800;
+  }
+
+  /* The same links on the dark teal header (desktop). */
+  .header-nav .nav-link {
+    @apply text-white/80 hover:bg-white/10 hover:text-white;
+  }
+
+  .header-nav .nav-link[aria-current="page"] {
+    @apply bg-white/15 text-white underline decoration-coral-400 decoration-2 underline-offset-8;
+  }
+
+  /* --- Home page ------------------------------------------------------------------- */
+
+  .stat-label {
+    @apply text-xs font-semibold uppercase tracking-wider text-stone-500;
+  }
+
+  .stat-value {
+    @apply mt-1 text-4xl font-bold tracking-tight text-blue-950 tabular-nums;
+  }
+
+  .pill {
+    @apply inline-flex items-center rounded-full px-2.5 py-1 text-xs font-bold;
+  }
+
+  .pill-good {
+    @apply bg-green-100 text-green-900;
+  }
+
+  .pill-bad {
+    @apply bg-red-100 text-red-900;
+  }
+
+  .pill-neutral {
+    @apply bg-stone-100 text-stone-700;
+  }
+
+  /* Week / Month / Year switch (links, so it works without JavaScript). */
+  .segmented {
+    @apply inline-flex rounded-full border border-page-line bg-white p-0.5 text-sm;
+  }
+
+  .segmented a {
+    @apply min-h-9 rounded-full px-3.5 py-1.5 font-medium text-stone-600 hover:text-stone-900;
+  }
+
+  .segmented a[aria-current="true"] {
+    @apply bg-blue-700 font-bold text-white hover:text-white;
+  }
+
+  .alert-dot {
+    @apply mt-1.5 size-2.5 shrink-0 rounded-full;
   }
 
   /* A form that is the main thing to do in its card (e.g. "Enregistrer un paiement"). */

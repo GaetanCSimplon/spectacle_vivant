@@ -7,7 +7,7 @@ from django.views.generic import CreateView, DeleteView, DetailView, ListView, U
 
 from apps.core.views import SearchListMixin, TenantScopedMixin
 
-from .forms import ContactForm, PromoterFilterForm, PromoterForm, VenueForm
+from .forms import ContactForm, NewContactForm, PromoterFilterForm, PromoterForm, VenueForm
 from .models import Contact, Promoter, Venue
 
 
@@ -218,6 +218,29 @@ class ContactCreateView(TenantScopedMixin, CreateView):
 
     def get_success_url(self):
         return self.get_parent().get_absolute_url()
+
+    def form_valid(self, form):
+        response = super().form_valid(form)
+        messages.success(self.request, _("Le contact a été créé."))
+        return response
+
+
+class ContactQuickCreateView(TenantScopedMixin, CreateView):
+    """ "Nouveau contact" from the home page: the form asks which organiser or venue it is for."""
+
+    model = Contact
+    form_class = NewContactForm
+    template_name = "addressbook/contact_form.html"
+
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs["tenant"] = self.request.tenant
+        # Set before validation so Contact.clean() can compare tenants.
+        kwargs["instance"] = Contact(tenant=self.request.tenant)
+        return kwargs
+
+    def get_success_url(self):
+        return (self.object.promoter or self.object.venue).get_absolute_url()
 
     def form_valid(self, form):
         response = super().form_valid(form)

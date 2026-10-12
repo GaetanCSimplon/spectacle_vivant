@@ -5,7 +5,10 @@
 
 {% block page_content %}
   {% include "addressbook/_tabs.html" with active="contacts" %}
-  <h1 class="mb-6 text-xl font-semibold">{% translate "Contacts" %}</h1>
+  <div class="mb-6 flex items-center justify-between gap-3">
+    <h1 class="!mb-0 text-xl font-semibold">{% translate "Contacts" %}</h1>
+    <a href="{% url 'addressbook:contact-create' %}" class="btn btn-primary shrink-0">{% translate "+ Nouveau contact" %}</a>
+  </div>
 
   {% url 'addressbook:contact-list' as list_url %}
   {% translate "Rechercher un contact" as search_placeholder %}

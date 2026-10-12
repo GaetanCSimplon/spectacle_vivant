@@ -122,3 +122,42 @@ class ContactForm(forms.ModelForm):
         fields = ["name", "role", "email", "phone"]
         # Suggestions only (Accueil, Technique, Comm'...): the role stays free text.
         widgets = {"role": forms.TextInput(attrs={"list": "contact-roles"})}
+
+
+class NewContactForm(ContactForm):
+    """A contact created from the home page: the user picks the organiser or venue here.
+
+    Only this tenant's organisers and venues are offered, so a choice that is not in the list
+    (another tenant's id, a made-up value) is an invalid choice, never a hidden link.
+    """
+
+    parent = forms.ChoiceField(label=_("Rattaché à"))
+    field_order = ["parent", "name", "role", "email", "phone"]
+
+    def __init__(self, *args, tenant, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.promoters = {
+            str(p.pk): p for p in Promoter.objects.filter(tenant=tenant).order_by("name")
+        }
+        self.venues = {str(v.pk): v for v in Venue.objects.filter(tenant=tenant).order_by("name")}
+        groups = []
+        if self.promoters:
+            groups.append(
+                (
+                    _("Organisateurs"),
+                    [(f"promoter:{pk}", p.name) for pk, p in self.promoters.items()],
+                )
+            )
+        if self.venues:
+            groups.append((_("Lieux"), [(f"venue:{pk}", v.name) for pk, v in self.venues.items()]))
+        self.fields["parent"].choices = [("", _("Choisir…")), *groups]
+        self.has_parents = bool(groups)
+
+    def clean(self):
+        cleaned = super().clean()
+        kind, _sep, pk = cleaned.get("parent", "").partition(":")
+        if kind == "promoter":
+            self.instance.promoter, self.instance.venue = self.promoters.get(pk), None
+        elif kind == "venue":
+            self.instance.venue, self.instance.promoter = self.venues.get(pk), None
+        return cleaned

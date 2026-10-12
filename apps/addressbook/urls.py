@@ -34,6 +34,7 @@ urlpatterns = [
         name="venue-contact-create",
     ),
     path("contacts/", views.ContactListView.as_view(), name="contact-list"),
+    path("contacts/nouveau/", views.ContactQuickCreateView.as_view(), name="contact-create"),
     path("contacts/<int:pk>/modifier/", views.ContactUpdateView.as_view(), name="contact-update"),
     path("contacts/<int:pk>/supprimer/", views.ContactDeleteView.as_view(), name="contact-delete"),
 ]
