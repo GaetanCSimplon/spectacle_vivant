@@ -1,9 +1,10 @@
-"""Cleaning of what is sent to Sentry: the secret roadmap link must never leave the app."""
+"""Cleaning of what is sent to Sentry: the secret links (roadmap, organiser form) never leave."""
 
 import re
 
-# /feuille-de-route/<token>/ and /feuille-de-route/<token>/pdf/ (also inside a full URL).
-ROADMAP_TOKEN = re.compile(r"(/feuille-de-route/)[^/?#\s\"']+")
+# /feuille-de-route/<token>/ (and /pdf/) and /formulaire-organisateur/<token>/, also inside a
+# full URL: the token is the whole access right to the page.
+ROADMAP_TOKEN = re.compile(r"(/(?:feuille-de-route|formulaire-organisateur)/)[^/?#\s\"']+")
 MASK = "[masque]"
 
 

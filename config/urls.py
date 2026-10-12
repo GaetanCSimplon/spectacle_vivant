@@ -18,6 +18,7 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import include, path
 
+from apps.addressbook import public_views as addressbook_public_views
 from apps.core.views import HelloPdfView, HomeView
 from apps.finance import views as finance_views
 from apps.roadmaps import views as roadmap_views
@@ -44,6 +45,16 @@ urlpatterns = [
         "feuille-de-route/<str:token>/pdf/",
         roadmap_views.PublicRoadmapPdfView.as_view(),
         name="roadmap-public-pdf",
+    ),
+    path(
+        "formulaire-organisateur/merci/",
+        addressbook_public_views.PublicPromoterFormThanksView.as_view(),
+        name="promoter-form-thanks",
+    ),
+    path(
+        "formulaire-organisateur/<str:token>/",
+        addressbook_public_views.PublicPromoterFormView.as_view(),
+        name="promoter-form-public",
     ),
     path("exports/", finance_views.ExportView.as_view(), name="export"),
     path("exports/<str:kind>.csv", finance_views.ExportCsvView.as_view(), name="export-csv"),

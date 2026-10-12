@@ -70,7 +70,7 @@
 - **À quoi ça sert** : être prévenu avec le détail technique quand une page plante chez un utilisateur.
 - **À faire** : créer un compte Sentry avec **hébergement des données dans l'UE**, créer un projet Django, renseigner `SENTRY_DSN`.
 - **Règle** : aucune donnée personnelle dans les rapports (CLAUDE.md §6.3). Déjà réglé dans `config/settings/prod.py` : Sentry n'est actif que si `SENTRY_DSN` est défini ; e-mail, IP et variables locales ne sont pas envoyés ; le jeton du lien de feuille de route est masqué (`apps/core/sentry.py`).
-- **Journaux du serveur** : ne pas activer le journal d'accès de gunicorn (`--access-logfile`), car il contiendrait le jeton des feuilles de route.
+- **Journaux du serveur** : ne pas activer le journal d'accès de gunicorn (`--access-logfile`), car il contiendrait les jetons des feuilles de route et des formulaires envoyés aux organisateurs. Le masquage de Sentry (`apps/core/sentry.py`) couvre les chemins `/feuille-de-route/<jeton>/` et `/formulaire-organisateur/<jeton>/`.
 - **Coût indicatif** : offre gratuite suffisante au départ.
 
 ## 7. Sauvegardes

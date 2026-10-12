@@ -11,6 +11,7 @@ from django.db.models.functions import Coalesce
 from django.urls import reverse
 from django.utils.translation import gettext_lazy as _
 
+from apps.addressbook.services import pending_answers
 from apps.catalog.models import Show
 from apps.documents import invoicing
 from apps.documents.models import Invoice
@@ -226,6 +227,16 @@ def alerts(tenant, today, awaiting=None):
                 "text": _("Date du %(date)s : %(n)s dépense(s) sans justificatif")
                 % {"date": f"{row['gig__date']:%d/%m}", "n": row["n"]},
                 "url": reverse("finance:page", args=[row["gig_id"]]),
+            }
+        )
+
+    for invitation in pending_answers(tenant):
+        found.append(
+            {
+                "level": "amber",
+                "text": _("%(name)s a répondu au formulaire : informations à vérifier")
+                % {"name": invitation.promoter.name},
+                "url": reverse("addressbook:promoter-answer", args=[invitation.promoter_id]),
             }
         )
 

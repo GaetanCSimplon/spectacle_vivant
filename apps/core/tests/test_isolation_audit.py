@@ -47,6 +47,8 @@ PUBLIC = {
     "legal-privacy",
     "roadmap-public",  # the secret link is the access right
     "roadmap-public-pdf",
+    "promoter-form-public",  # the secret link is the access right
+    "promoter-form-thanks",
 }
 
 # Routes that take an identifier: name -> {url parameter: key of A's dataset, or "=literal"}.
@@ -55,6 +57,9 @@ ROUTES = [
     ("tenants:person-detail", {"pk": "person"}),
     ("tenants:person-update", {"pk": "person"}),
     ("tenants:person-delete", {"pk": "person"}),
+    ("addressbook:promoter-invite", {"pk": "promoter"}),
+    ("addressbook:promoter-invite-revoke", {"pk": "promoter"}),
+    ("addressbook:promoter-answer", {"pk": "promoter"}),
     ("addressbook:promoter-detail", {"pk": "promoter"}),
     ("addressbook:promoter-update", {"pk": "promoter"}),
     ("addressbook:promoter-delete", {"pk": "promoter"}),

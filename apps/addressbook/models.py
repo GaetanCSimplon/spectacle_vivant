@@ -1,6 +1,8 @@
+from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.db import models
 from django.urls import reverse
+from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 
 from apps.core.models import AddressMixin, TenantOwnedModel
@@ -100,3 +102,48 @@ class Contact(TenantOwnedModel):
 
     def __str__(self):
         return self.name
+
+
+class PromoterInvitation(TenantOwnedModel):
+    """A temporary secret link that lets an organiser fill in their own details (F-16).
+
+    The answers wait in `response` until the user reviews them and applies them to the
+    Promoter; `response` is emptied afterwards, so the data is not kept twice.
+    """
+
+    class Status(models.TextChoices):
+        ACTIVE = "active", _("Lien actif")
+        ANSWERED = "answered", _("Réponse à vérifier")
+        REVIEWED = "reviewed", _("Réponse traitée")
+        EXPIRED = "expired", _("Lien expiré")
+        REVOKED = "revoked", _("Lien annulé")
+
+    promoter = models.ForeignKey(Promoter, on_delete=models.CASCADE, related_name="invitations")
+    token = models.CharField(max_length=64, unique=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    created_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, related_name="+"
+    )
+    expires_at = models.DateTimeField()
+    revoked_at = models.DateTimeField(null=True, blank=True)
+    completed_at = models.DateTimeField(null=True, blank=True)
+    reviewed_at = models.DateTimeField(null=True, blank=True)
+    response = models.JSONField(default=dict, blank=True)
+
+    class Meta:
+        ordering = ["-created_at"]
+
+    def __str__(self):
+        return f"Formulaire — {self.promoter}"
+
+    @property
+    def status(self):
+        if self.reviewed_at:
+            return self.Status.REVIEWED
+        if self.completed_at:
+            return self.Status.ANSWERED
+        if self.revoked_at:
+            return self.Status.REVOKED
+        if self.expires_at <= timezone.now():
+            return self.Status.EXPIRED
+        return self.Status.ACTIVE

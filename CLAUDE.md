@@ -96,7 +96,7 @@ Une app = un domaine métier. Ne pas créer d'app supplémentaire sans en parler
 ### 6.3 Sécurité
 - Aucun secret dans le code ni dans Git. Tout passe par variables d'environnement.
 - Liens secrets (feuille de route) : `secrets.token_urlsafe(32)`, révocables, jamais un ID séquentiel.
-- Toute vue exige la connexion, sauf inscription, connexion, pages légales et feuille de route par lien secret.
+- Toute vue exige la connexion, sauf inscription, connexion, pages légales, feuille de route par lien secret et formulaire de complétion envoyé à un organisateur (lien secret temporaire de 7 jours, à usage unique, qui ne donne accès qu'à un formulaire ; les réponses sont vérifiées par l'utilisateur avant d'être appliquées).
 - Ne jamais afficher de données personnelles dans les logs ou Sentry.
 
 ### 6.4 Simplicité

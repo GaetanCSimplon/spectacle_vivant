@@ -140,3 +140,17 @@ def test_production_refuses_to_start_without_the_sender_address(load_prod, monke
             monkeypatch.setenv(key, value)
     with pytest.raises(Exception, match="DEFAULT_FROM_EMAIL"):
         importlib.import_module("config.settings.prod")
+
+
+def test_the_organiser_form_token_is_hidden_from_sentry_too():
+    token = "AbC123-secret_token_value"
+    event = {
+        "request": {"url": f"https://exemple.fr/formulaire-organisateur/{token}/?x=1"},
+        "transaction": f"/formulaire-organisateur/{token}/",
+        "message": f"POST /formulaire-organisateur/{token}/ failed",
+    }
+
+    cleaned = scrub_event(event)
+
+    assert token not in str(cleaned)
+    assert cleaned["request"]["url"] == f"https://exemple.fr/formulaire-organisateur/{MASK}/?x=1"

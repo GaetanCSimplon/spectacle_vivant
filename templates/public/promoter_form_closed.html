@@ -1,0 +1,11 @@
+{% extends "public/base_public.html" %}
+{% load i18n %}
+
+{% block title %}Lien expiré — BÒRD PRO{% endblock %}
+
+{% block content %}
+  <h1>{% translate "Ce lien n'est plus valable" %}</h1>
+  <p class="card">
+    {% blocktranslate with tenant=tenant.name %}Il a déjà été utilisé, il a expiré ou il a été annulé. Pour compléter vos informations, demandez un nouveau lien à {{ tenant }}.{% endblocktranslate %}
+  </p>
+{% endblock %}
