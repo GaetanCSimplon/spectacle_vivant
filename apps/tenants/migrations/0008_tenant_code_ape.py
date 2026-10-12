@@ -13,6 +13,6 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='tenant',
             name='code_ape',
-            field=models.CharField(blank=True, max_length=5, verbose_name='code APE'),
+            field=models.CharField(blank=True, max_length=5, verbose_name='Code APE'),
         ),
     ]

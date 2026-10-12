@@ -20,7 +20,7 @@ class Tenant(models.Model):
     plan = models.CharField(_("offre"), max_length=50, default="free")
     address = models.TextField(_("adresse"), blank=True)
     siret = models.CharField(_("SIRET"), max_length=14, blank=True)
-    code_ape = models.CharField(_("code APE"), max_length=5, blank=True)
+    code_ape = models.CharField(_("Code APE"), max_length=5, blank=True)
     vat_regime = models.CharField(
         _("régime de TVA"),
         max_length=20,

@@ -18,7 +18,7 @@ class OnboardingForm(forms.ModelForm):
 class TenantProfileForm(forms.ModelForm):
     # Declared here because people type "90.01 Z": the model's 5 characters apply after cleaning.
     code_ape = forms.CharField(
-        label=_("code APE"),
+        label=_("Code APE"),
         required=False,
         max_length=10,
         help_text=_("4 chiffres et 1 lettre, par exemple 9001Z (spectacle vivant)."),
