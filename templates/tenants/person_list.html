@@ -8,9 +8,9 @@
   {% include "tenants/_tabs.html" with active="team" %}
   <div class="mb-4 flex items-center justify-between gap-3">
     <p class="text-sm text-gray-600">{% translate "Les artistes et les personnes qui travaillent avec vous." %}</p>
-    <a href="{% url 'tenants:person-create' %}" class="btn btn-primary shrink-0">
-      {% translate "+ Ajouter" %}
-    </a>
+    {% url 'tenants:person-create' as add_url %}
+    {% translate "Ajouter" as add_label %}
+    {% include "components/_add_button.html" with url=add_url label=add_label %}
   </div>
 
   {% url 'tenants:person-list' as list_url %}

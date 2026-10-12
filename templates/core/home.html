@@ -11,15 +11,23 @@
         <p class="stat-label">{% translate "Bienvenue" %}</p>
         <h1 class="!mb-0">{{ tenant.name }}</h1>
       </div>
-      <div class="flex flex-wrap gap-2">
-        <a href="{% url 'gigs:wizard-show' %}" class="btn btn-primary">{% translate "+ Nouvelle date" %}</a>
-        <a href="{% url 'catalog:show-create' %}" class="btn btn-secondary">{% translate "+ Nouveau spectacle" %}</a>
-        <a href="{% url 'addressbook:contact-create' %}" class="btn btn-secondary">{% translate "+ Nouveau contact" %}</a>
+      <div class="grid w-full grid-cols-2 gap-2 sm:flex sm:w-auto sm:flex-wrap">
+        <a href="{% url 'gigs:wizard-show' %}" class="btn btn-primary col-span-2">{% translate "+ Nouvelle date" %}</a>
+        <a href="{% url 'catalog:show-create' %}" class="btn btn-secondary !px-3">
+          <span class="sm:hidden" aria-hidden="true">{% translate "+ Spectacle" %}</span>
+          <span class="hidden sm:inline">{% translate "+ Nouveau spectacle" %}</span>
+          <span class="sr-only sm:hidden">{% translate "Nouveau spectacle" %}</span>
+        </a>
+        <a href="{% url 'addressbook:contact-create' %}" class="btn btn-secondary !px-3">
+          <span class="sm:hidden" aria-hidden="true">{% translate "+ Contact" %}</span>
+          <span class="hidden sm:inline">{% translate "+ Nouveau contact" %}</span>
+          <span class="sr-only sm:hidden">{% translate "Nouveau contact" %}</span>
+        </a>
       </div>
     </div>
 
     {% if has_gigs %}
-      <div class="grid gap-4 md:grid-cols-2">
+      <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
         <section class="card" aria-labelledby="shows-title">
           <h2 id="shows-title" class="stat-label !text-xs !font-semibold">{% translate "Spectacles actifs" %}</h2>
           <p class="stat-value">{{ active_shows }}</p>
