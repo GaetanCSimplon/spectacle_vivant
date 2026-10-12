@@ -185,7 +185,9 @@ def test_the_public_page_needs_no_account_and_shows_nothing_of_the_structure():
         assert secret not in page
     assert response["Cache-Control"] == "no-store"
     assert "noindex" in response["X-Robots-Tag"]
-    assert response["Referrer-Policy"] == "no-referrer"
+    # "no-referrer" would break the form: browsers then send `Origin: null` and CSRF answers 403.
+    assert response["Referrer-Policy"] == "same-origin"
+    assert '<meta name="referrer" content="same-origin">' in page
 
 
 def test_an_unknown_token_is_a_plain_404():
@@ -415,3 +417,29 @@ def test_other_tenants_answers_are_never_listed_in_the_alerts():
     mine = MembershipFactory().tenant
     _answered(PromoterFactory())
     assert dashboard.alerts(mine, datetime.date.today())["items"] == []
+
+
+def test_the_form_can_be_sent_with_csrf_checks_on_but_not_with_a_null_origin():
+    """What a browser does: GET the page (cookie + token), then POST with an Origin header."""
+    invitation = _invitation(PromoterFactory())
+    client = Client(enforce_csrf_checks=True)
+    client.get(_public(invitation))
+    data = {**ANSWER, "csrfmiddlewaretoken": client.cookies["csrftoken"].value}
+
+    refused = client.post(_public(invitation), data, HTTP_ORIGIN="null")
+    sent = client.post(_public(invitation), data, HTTP_ORIGIN="http://testserver")
+
+    assert refused.status_code == 403  # this is the 403 an organiser saw with "no-referrer"
+    assert sent.status_code == 302 and sent.url == reverse("promoter-form-thanks")
+    invitation.refresh_from_db()
+    assert invitation.status == PromoterInvitation.Status.ANSWERED
+
+
+def test_every_page_of_the_organiser_flow_keeps_the_token_out_of_the_referer():
+    invitation = _invitation(PromoterFactory())
+    for response in (
+        Client().get(_public(invitation)),
+        Client().get(reverse("promoter-form-thanks")),
+    ):
+        assert response["Referrer-Policy"] in ("same-origin", "no-referrer")
+        assert response["Cache-Control"] == "no-store"
