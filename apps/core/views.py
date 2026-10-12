@@ -82,12 +82,21 @@ class SearchListMixin:
 class HomeView(LoginRequiredMixin, TemplateView):
     template_name = "core/home.html"
 
+    results_template_name = "core/_upcoming_card.html"
+
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context["tenant"] = self.request.tenant
         if self.request.tenant is not None:
-            context.update(build_dashboard(self.request.tenant, timezone.localdate()))
+            period = self.request.GET.get("periode", "")
+            context.update(build_dashboard(self.request.tenant, timezone.localdate(), period))
         return context
+
+    def get_template_names(self):
+        # The Week / Month / Year switch swaps only the "Prochaines dates" card.
+        if wants_fragment(self.request) and self.request.tenant is not None:
+            return [self.results_template_name]
+        return super().get_template_names()
 
 
 class HelloPdfView(LoginRequiredMixin, View):

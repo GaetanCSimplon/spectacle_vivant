@@ -1,0 +1,37 @@
+{% load i18n %}
+{% comment %}
+  The "Prochaines dates" card. HTMX swaps it when the period changes (#upcoming-card).
+  Needs: period, periods, period_end, next_gigs, upcoming_count, upcoming_hidden.
+{% endcomment %}
+<section id="upcoming-card" class="card md:col-span-2" aria-labelledby="upcoming-title">
+  <div class="mb-3 flex flex-wrap items-center justify-between gap-3">
+    <h2 id="upcoming-title" class="stat-label !text-xs !font-semibold">{% translate "Prochaines dates" %}</h2>
+    <nav class="segmented" aria-label="{% translate 'Période' %}">
+      {% for key, label in periods.items %}
+        <a href="{% url 'home' %}?periode={{ key }}"
+           hx-get="{% url 'home' %}?periode={{ key }}" hx-target="#upcoming-card" hx-swap="outerHTML"
+           {% if key == period %}aria-current="true"{% endif %}>{{ label }}</a>
+      {% endfor %}
+    </nav>
+  </div>
+
+  {% if next_gigs %}
+    <ul class="flex flex-col gap-2">
+      {% for gig in next_gigs %}{% include "gigs/_gig_row.html" %}{% endfor %}
+    </ul>
+    {% if upcoming_hidden %}
+      <p class="mt-2 text-sm text-stone-500">{% blocktranslate count n=upcoming_hidden %}et {{ n }} autre date sur cette période.{% plural %}et {{ n }} autres dates sur cette période.{% endblocktranslate %}</p>
+    {% endif %}
+  {% else %}
+    <p class="rounded-xl bg-blue-50 px-4 py-3 text-sm text-blue-900">
+      {% if period == "semaine" %}{% translate "Aucune date d'ici la fin de la semaine." %}
+      {% elif period == "annee" %}{% translate "Aucune date d'ici la fin de l'année." %}
+      {% else %}{% translate "Aucune date d'ici la fin du mois." %}{% endif %}
+    </p>
+  {% endif %}
+
+  <a href="{% url 'gigs:list' %}{% if period == 'mois' %}?month={{ period_end|date:'Y-m' }}{% endif %}"
+     class="mt-3 inline-flex min-h-11 items-center text-sm font-bold text-blue-700 hover:text-blue-900">
+    {% translate "Voir mes dates" %} →
+  </a>
+</section>

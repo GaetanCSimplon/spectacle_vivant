@@ -224,7 +224,7 @@ def test_a_new_tenant_sees_a_call_to_create_a_date(client, tenant):
 
     assert "pas encore de date" in text
     assert "Factures à encaisser" not in text
-    assert "Dates sans contrat" not in text
+    assert "contrat à générer" not in text
 
 
 def test_home_shows_the_dashboard(client, tenant):
@@ -248,9 +248,10 @@ def test_home_shows_the_dashboard(client, tenant):
     assert "En retard de 4 j" in text
     assert "700 €" in text  # 1000.60 - 300.20 = 700.40, shown in whole euros
     assert reverse("finance:page", args=[gig.pk]) in text
-    assert "Dates sans contrat" in text
-    assert pending.show.title in text
+    assert "Date du" in text and "contrat à générer" in text  # alert for the pending gig
+    assert "Facture " in text and "en retard de 4 jour(s)" in text  # alert for the late invoice
     assert "Prochaines dates" in text
+    assert pending.pk  # created above: it feeds the alerts
 
 
 def test_home_amounts_are_whole_euros_in_the_summary(client, tenant):
@@ -414,5 +415,5 @@ def test_overview_is_shown_on_the_home_page(client):
 
     content = client.get(reverse("home")).content.decode()
 
-    assert "prévu et réel" in content
+    assert "Solde de l&#x27;année" in content or "Solde de l'année" in content
     assert "Reste à facturer" in content

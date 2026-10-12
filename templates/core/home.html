@@ -2,81 +2,101 @@
 {% load i18n %}
 
 {% block title %}Accueil — BÒRD PRO{% endblock %}
+{% block main_width %}max-w-5xl{% endblock %}
 
 {% block page_content %}
   {% if tenant %}
-    <h1 class="mb-4 text-xl font-semibold">{{ tenant.name }}</h1>
-    <div class="mb-6 flex flex-wrap gap-3">
-      <a href="{% url 'gigs:wizard-show' %}" class="btn btn-primary">
-        {% translate "+ Nouvelle date" %}
-      </a>
-      <a href="{% url 'gigs:list' %}" class="btn btn-secondary">
-        {% translate "Voir mes dates" %}
-      </a>
+    <div class="mb-6 flex flex-wrap items-end justify-between gap-4">
+      <div>
+        <p class="stat-label">{% translate "Bienvenue" %}</p>
+        <h1 class="!mb-0">{{ tenant.name }}</h1>
+      </div>
+      <div class="flex flex-wrap gap-2">
+        <a href="{% url 'gigs:wizard-show' %}" class="btn btn-primary">{% translate "+ Nouvelle date" %}</a>
+        <a href="{% url 'catalog:show-create' %}" class="btn btn-secondary">{% translate "+ Nouveau spectacle" %}</a>
+        <a href="{% url 'addressbook:contact-create' %}" class="btn btn-secondary">{% translate "+ Nouveau contact" %}</a>
+      </div>
     </div>
 
     {% if has_gigs %}
-      <h2 class="mb-2 text-sm font-semibold uppercase text-gray-500">{% blocktranslate %}Année {{ year }}{% endblocktranslate %}</h2>
-      <div class="card mb-6 space-y-1 text-sm">
-        <p class="flex justify-between"><span>{% translate "Facturé" %} (TTC)</span><span>{{ invoiced_year|floatformat:"0g" }} €</span></p>
-        <p class="flex justify-between"><span>{% translate "Encaissé" %}</span><span>{{ received_year|floatformat:"0g" }} €</span></p>
-        <a href="{% url 'export' %}" class="inline-block pt-1 text-blue-700 underline">{% translate "Exporter (CSV)" %}</a>
+      <div class="grid gap-4 md:grid-cols-2">
+        <section class="card" aria-labelledby="shows-title">
+          <h2 id="shows-title" class="stat-label !text-xs !font-semibold">{% translate "Spectacles actifs" %}</h2>
+          <p class="stat-value">{{ active_shows }}</p>
+          <p class="mt-1 text-sm text-stone-500">{% translate "avec au moins une date à venir" %}</p>
+          <a href="{% url 'catalog:show-list' %}" class="mt-3 inline-flex min-h-11 items-center text-sm font-bold text-blue-700 hover:text-blue-900">{% translate "Voir mes spectacles" %} →</a>
+        </section>
+
+        <section class="card" aria-labelledby="balance-title">
+          <h2 id="balance-title" class="stat-label !text-xs !font-semibold">{% blocktranslate %}Solde de l'année {{ year }}{% endblocktranslate %}</h2>
+          <p class="stat-value">{% if overview.result > 0 %}+ {% endif %}{{ overview.result|floatformat:"0g" }} €</p>
+          <p class="mt-1">
+            {% if overview.result > 0 %}<span class="pill pill-good">{% translate "Excédent" %}</span>
+            {% elif overview.result < 0 %}<span class="pill pill-bad">{% translate "Déficit" %}</span>
+            {% else %}<span class="pill pill-neutral">{% translate "Équilibre" %}</span>{% endif %}
+            <span class="ml-1 text-sm text-stone-500">{% translate "encaissé − dépensé" %}</span>
+          </p>
+          <details class="mt-3 text-sm">
+            <summary class="flex min-h-11 cursor-pointer items-center font-bold text-blue-700">{% translate "Voir le détail" %}</summary>
+            <div class="space-y-1 pb-1">
+              <p class="flex justify-between"><span>{% translate "Prévu" %} (TTC)</span><span>{{ overview.planned|floatformat:"0g" }} €</span></p>
+              <p class="flex justify-between"><span>{% translate "Facturé" %}</span><span>{{ overview.invoiced|floatformat:"0g" }} €</span></p>
+              <p class="flex justify-between text-stone-500"><span>{% translate "Reste à facturer" %}</span><span>{{ overview.to_invoice|floatformat:"0g" }} €</span></p>
+              <p class="flex justify-between"><span>{% translate "Encaissé" %}</span><span>{{ overview.received|floatformat:"0g" }} €</span></p>
+              <p class="flex justify-between text-stone-500"><span>{% translate "Reste à encaisser" %}</span><span>{{ overview.to_collect|floatformat:"0g" }} €</span></p>
+              <p class="flex justify-between"><span>{% translate "Dépensé" %}</span><span>{{ overview.spent|floatformat:"0g" }} €</span></p>
+              <p class="pt-1 text-xs text-stone-500">{% translate "Les dates annulées ne sont pas comptées." %}</p>
+              <p class="flex justify-between border-t border-page-line pt-2"><span>{% translate "Facturé en" %} {{ year }} ({% translate "caisse" %})</span><span>{{ invoiced_year|floatformat:"0g" }} €</span></p>
+              <p class="flex justify-between"><span>{% translate "Encaissé en" %} {{ year }}</span><span>{{ received_year|floatformat:"0g" }} €</span></p>
+              {% if awaiting %}
+                <h3 class="pt-2 text-xs font-semibold uppercase tracking-wider text-stone-500">
+                  {% translate "Factures à encaisser" %}
+                  {% if overdue_count %}<span class="pill pill-bad ml-1">{% blocktranslate count n=overdue_count %}{{ n }} en retard{% plural %}{{ n }} en retard{% endblocktranslate %}</span>{% endif %}
+                </h3>
+                <ul class="flex flex-col gap-2 pt-1">
+                  {% for row in awaiting %}
+                    <li>
+                      <a href="{% url 'finance:page' row.gig.pk %}" class="flex items-center justify-between gap-3 rounded-xl border border-page-line px-3 py-2 hover:border-blue-300">
+                        <span class="min-w-0">
+                          <span class="block font-medium">{{ row.invoice.number }} · {{ row.gig.show.title }}</span>
+                          {% if row.invoice.title %}<span class="block text-stone-600">{{ row.invoice.title }}</span>{% endif %}
+                          {% if row.gig.status == 'cancelled' %}<span class="block text-amber-700">{% translate "Date annulée : créez un avoir si elle n'aura pas lieu" %}</span>{% endif %}
+                          {% if row.overdue %}<span class="block text-red-700">{% blocktranslate with n=row.late_days %}En retard de {{ n }} j{% endblocktranslate %} · {% translate "échéance" %} {{ row.invoice.due_date|date:"d/m/Y" }}</span>
+                          {% elif row.invoice.due_date %}<span class="block text-stone-600">{% translate "Échéance" %} {{ row.invoice.due_date|date:"d/m/Y" }}</span>{% endif %}
+                        </span>
+                        <span class="shrink-0 font-medium">{{ row.remaining|floatformat:"0g" }} €</span>
+                      </a>
+                    </li>
+                  {% endfor %}
+                </ul>
+                <p class="pt-1 text-right text-stone-600">{% translate "Total à encaisser" %} : <strong>{{ awaiting_total|floatformat:"0g" }} €</strong></p>
+              {% endif %}
+              <a href="{% url 'export' %}" class="inline-flex min-h-11 items-center font-bold text-blue-700 underline">{% translate "Exporter (CSV)" %}</a>
+            </div>
+          </details>
+        </section>
+
+        {% include "core/_upcoming_card.html" %}
+
+        <section class="card md:col-span-2" aria-labelledby="alerts-title">
+          <h2 id="alerts-title" class="stat-label !text-xs !font-semibold">{% translate "Alertes et rappels" %}</h2>
+          {% if alerts.items %}
+            <ul class="mt-2 flex flex-col">
+              {% for alert in alerts.items %}
+                <li>
+                  <a href="{{ alert.url }}" class="flex min-h-11 items-start gap-3 rounded-xl px-2 py-2 hover:bg-blue-50">
+                    <span class="alert-dot {% if alert.level == 'red' %}bg-red-600{% else %}bg-amber-500{% endif %}" aria-hidden="true"></span>
+                    <span class="text-sm text-stone-800">{{ alert.text }}</span>
+                  </a>
+                </li>
+              {% endfor %}
+            </ul>
+            {% if alerts.hidden %}<p class="mt-1 px-2 text-sm text-stone-500">{% blocktranslate count n=alerts.hidden %}et {{ n }} autre rappel.{% plural %}et {{ n }} autres rappels.{% endblocktranslate %}</p>{% endif %}
+          {% else %}
+            <p class="mt-2 rounded-xl bg-green-50 px-4 py-3 text-sm text-green-900">✓ {% translate "Rien à signaler pour le moment." %}</p>
+          {% endif %}
+        </section>
       </div>
-
-      <h2 class="mb-2 text-sm font-semibold uppercase text-gray-500">{% blocktranslate with n=overview.gig_count %}Dates {{ year }} : prévu et réel ({{ n }}){% endblocktranslate %}</h2>
-      <div class="card mb-6 space-y-1 text-sm">
-        <p class="flex justify-between"><span>{% translate "Prévu" %} (TTC)</span><span>{{ overview.planned|floatformat:"0g" }} €</span></p>
-        <p class="flex justify-between"><span>{% translate "Facturé" %}</span><span>{{ overview.invoiced|floatformat:"0g" }} €</span></p>
-        <p class="flex justify-between text-gray-600"><span>{% translate "Reste à facturer" %}</span><span>{{ overview.to_invoice|floatformat:"0g" }} €</span></p>
-        <p class="flex justify-between"><span>{% translate "Encaissé" %}</span><span>{{ overview.received|floatformat:"0g" }} €</span></p>
-        <p class="flex justify-between text-gray-600"><span>{% translate "Reste à encaisser" %}</span><span>{{ overview.to_collect|floatformat:"0g" }} €</span></p>
-        <p class="flex justify-between"><span>{% translate "Dépensé" %}</span><span>{{ overview.spent|floatformat:"0g" }} €</span></p>
-        <p class="flex justify-between border-t border-gray-200 pt-1 font-semibold"><span>{% translate "Résultat" %} ({% translate "encaissé − dépensé" %})</span><span>{{ overview.result|floatformat:"0g" }} €</span></p>
-        <p class="pt-1 text-gray-500">{% translate "Les dates annulées ne sont pas comptées." %}</p>
-      </div>
-
-      {% if awaiting %}
-        <h2 class="mb-2 text-sm font-semibold uppercase text-gray-500">
-          {% translate "Factures à encaisser" %}
-          {% if overdue_count %}<span class="badge ml-1 bg-red-100 text-red-800">{% blocktranslate count n=overdue_count %}{{ n }} en retard{% plural %}{{ n }} en retard{% endblocktranslate %}</span>{% endif %}
-        </h2>
-        <ul class="mb-2 flex flex-col gap-2">
-          {% for row in awaiting %}
-            <li>
-              <a href="{% url 'finance:page' row.gig.pk %}" class="card card-link flex items-center justify-between gap-3 text-sm">
-                <span class="min-w-0">
-                  <span class="block font-medium">{{ row.invoice.number }} · {{ row.gig.show.title }}</span>
-                  {% if row.invoice.title %}<span class="block text-gray-600">{{ row.invoice.title }}</span>{% endif %}
-                  {% if row.gig.status == 'cancelled' %}
-                    <span class="block text-amber-700">{% translate "Date annulée : créez un avoir si elle n'aura pas lieu" %}</span>
-                  {% endif %}
-                  {% if row.overdue %}
-                    <span class="block text-red-700">{% blocktranslate with n=row.late_days %}En retard de {{ n }} j{% endblocktranslate %} · {% translate "échéance" %} {{ row.invoice.due_date|date:"d/m/Y" }}</span>
-                  {% elif row.invoice.due_date %}
-                    <span class="block text-gray-600">{% translate "Échéance" %} {{ row.invoice.due_date|date:"d/m/Y" }}</span>
-                  {% endif %}
-                </span>
-                <span class="shrink-0 font-medium">{{ row.remaining|floatformat:"0g" }} €</span>
-              </a>
-            </li>
-          {% endfor %}
-        </ul>
-        <p class="mb-6 text-right text-sm text-gray-600">{% translate "Total à encaisser" %} : <strong>{{ awaiting_total|floatformat:"0g" }} €</strong></p>
-      {% endif %}
-
-      {% if gigs_without_contract %}
-        <h2 class="mb-2 text-sm font-semibold uppercase text-gray-500">{% translate "Dates sans contrat" %}</h2>
-        <ul class="mb-6 flex flex-col gap-2">
-          {% for gig in gigs_without_contract %}{% include "gigs/_gig_row.html" %}{% endfor %}
-        </ul>
-      {% endif %}
-
-      {% if next_gigs %}
-        <h2 class="mb-2 text-sm font-semibold uppercase text-gray-500">{% translate "Prochaines dates" %}</h2>
-        <ul class="mb-6 flex flex-col gap-2">
-          {% for gig in next_gigs %}{% include "gigs/_gig_row.html" %}{% endfor %}
-        </ul>
-      {% endif %}
     {% else %}
       <p class="card text-sm">{% translate "Vous n'avez pas encore de date. Créez la première !" %}</p>
     {% endif %}

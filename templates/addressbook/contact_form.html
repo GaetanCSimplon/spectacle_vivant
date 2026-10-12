@@ -9,8 +9,19 @@
   <h1 class="mb-1 text-lg font-semibold">
     {% if object %}{% translate "Modifier le contact" %}{% else %}{% translate "Nouveau contact" %}{% endif %}
   </h1>
-  <p class="mb-4 text-sm text-gray-600">{% blocktranslate %}Rattaché à : {{ parent }}{% endblocktranslate %}</p>
+  {% if parent %}
+    <p class="mb-4 text-sm text-gray-600">{% blocktranslate %}Rattaché à : {{ parent }}{% endblocktranslate %}</p>
+  {% endif %}
 
+  {% if form.has_parents is False %}
+    <div class="card space-y-3">
+      <p>{% translate "Un contact est rattaché à un organisateur ou à un lieu. Créez d'abord l'un des deux." %}</p>
+      <div class="flex flex-wrap gap-2">
+        <a href="{% url 'addressbook:promoter-create' %}" class="btn btn-secondary">{% translate "+ Nouvel organisateur" %}</a>
+        <a href="{% url 'addressbook:venue-create' %}" class="btn btn-secondary">{% translate "+ Nouveau lieu" %}</a>
+      </div>
+    </div>
+  {% else %}
   <form method="post" class="space-y-4">
     {% csrf_token %}
     {{ form.as_p }}
@@ -21,6 +32,7 @@
     </datalist>
     <button type="submit" class="btn btn-primary btn-block">{% translate "Enregistrer" %}</button>
   </form>
+  {% endif %}
 
   {% if object %}
     <a
