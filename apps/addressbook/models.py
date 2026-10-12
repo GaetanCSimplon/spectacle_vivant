@@ -3,11 +3,13 @@ from django.db import models
 from django.urls import reverse
 from django.utils.translation import gettext_lazy as _
 
-from apps.core.models import TenantOwnedModel
+from apps.core.models import AddressMixin, TenantOwnedModel
 
 
-class Promoter(TenantOwnedModel):
+class Promoter(AddressMixin, TenantOwnedModel):
     """The client (Organisateur) who buys the show and gets invoiced."""
+
+    street_field = "billing_address"
 
     class Kind(models.TextChoices):
         MUNICIPALITY = "municipality", _("Mairie / collectivité")
@@ -46,7 +48,7 @@ class Promoter(TenantOwnedModel):
         return reverse("addressbook:promoter-detail", args=[self.pk])
 
 
-class Venue(TenantOwnedModel):
+class Venue(AddressMixin, TenantOwnedModel):
     """The physical place (Lieu / Salle) where the gig happens."""
 
     name = models.CharField(_("nom"), max_length=255)

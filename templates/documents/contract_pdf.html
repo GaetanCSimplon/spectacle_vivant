@@ -91,7 +91,7 @@
         <h2>L'ORGANISATEUR</h2>
         <p>
           {{ promoter.name }}<br>
-          {{ promoter.billing_address|linebreaksbr }}<br>
+          {{ promoter.full_address|linebreaksbr }}<br>
           SIRET : {{ promoter.siret|default:"……" }}<br>
           N° de licence : {{ promoter.licence_number|default:"……" }}<br>
           Représenté par {{ promoter.representative_name|default:"……" }}
@@ -102,7 +102,7 @@
         <h2>{{ party.subject }}</h2>
         <p>
           {{ tenant.name }}<br>
-          {{ tenant.address|linebreaksbr }}<br>
+          {{ tenant.full_address|linebreaksbr }}<br>
           SIRET : {{ tenant.siret|default:"……" }}<br>
           {% if tenant.code_ape %}Code APE : {{ tenant.code_ape }}<br>{% endif %}
           {% if not vat_exempt %}N° de TVA : {{ tenant.vat_number|default:"……" }}<br>{% endif %}
@@ -140,7 +140,7 @@
         représentation de « {{ show.title }} » le {{ gig.date|date:"d F Y" }}.
       </p>
       <p>
-        Lieu de la représentation : {{ venue.name }}, {{ venue.address|linebreaksbr }}<br>
+        Lieu de la représentation : {{ venue.name }}, {{ venue.full_address|linebreaksbr }}<br>
         Durée de la représentation : {{ show.duration_minutes }} minutes<br>
         Heure de get in : {{ gig.get_in_time|time:"H\hi"|default:"……" }}<br>
         Heure de balances : {{ gig.soundcheck_time|time:"H\hi"|default:"……" }}<br>

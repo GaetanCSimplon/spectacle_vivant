@@ -41,7 +41,7 @@
       <h2>Hébergement</h2>
       {% for lodging in lodgings %}
         <p><strong>{{ lodging.name }}</strong>{% if lodging.arrival_time %} — arrivée {{ lodging.arrival_time|time:"H:i" }}{% endif %}</p>
-        {% if lodging.address %}<p>{{ lodging.address }}</p>{% endif %}
+        {% if lodging.full_address %}<p>{{ lodging.full_address|linebreaksbr }}</p>{% endif %}
         {% if lodging.notes %}<p class="muted">{{ lodging.notes|linebreaksbr }}</p>{% endif %}
       {% endfor %}
     {% endif %}

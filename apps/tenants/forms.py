@@ -1,6 +1,8 @@
 from django import forms
 from django.utils.translation import gettext_lazy as _
 
+from apps.core.forms import AddressModelForm
+
 from . import services
 from .models import Person, Tenant
 from .validators import normalize_code_ape, normalize_iban, validate_code_ape
@@ -15,7 +17,7 @@ class OnboardingForm(forms.ModelForm):
         }
 
 
-class TenantProfileForm(forms.ModelForm):
+class TenantProfileForm(AddressModelForm):
     # Declared here because people type "90.01 Z": the model's 5 characters apply after cleaning.
     code_ape = forms.CharField(
         label=_("Code APE"),
@@ -32,6 +34,9 @@ class TenantProfileForm(forms.ModelForm):
             "siret",
             "code_ape",
             "address",
+            "postal_code",
+            "city",
+            "department",
             "vat_regime",
             "vat_rate",
             "vat_number",
@@ -41,7 +46,7 @@ class TenantProfileForm(forms.ModelForm):
             "representative_role",
             "jurisdiction_city",
         ]
-        widgets = {"address": forms.Textarea(attrs={"rows": 3})}
+        widgets = {"address": forms.Textarea(attrs={"rows": 2})}
         help_texts = {
             "legal_form": _("Par exemple : association loi 1901, micro-entreprise, SARL…"),
             "licence_number": _(

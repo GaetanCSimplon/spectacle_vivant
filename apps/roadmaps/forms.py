@@ -1,5 +1,6 @@
 from django import forms
 
+from apps.core.forms import AddressModelForm
 from apps.gigs.models import GigMember
 
 from .models import Lodging, Meal, Roadmap, RoadmapSlot
@@ -25,10 +26,10 @@ class SlotForm(forms.ModelForm):
         widgets = {"time": _time_widget(), "note": forms.Textarea(attrs={"rows": 2})}
 
 
-class LodgingForm(forms.ModelForm):
+class LodgingForm(AddressModelForm):
     class Meta:
         model = Lodging
-        fields = ["name", "address", "arrival_time", "notes"]
+        fields = ["name", "address", "postal_code", "city", "department", "arrival_time", "notes"]
         widgets = {"arrival_time": _time_widget(), "notes": forms.Textarea(attrs={"rows": 2})}
 
 

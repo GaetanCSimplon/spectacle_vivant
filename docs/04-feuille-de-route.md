@@ -258,7 +258,7 @@ Ajouts demandés après un rendez-vous métier (voir `docs/03` : F-06, F-15, F-5
 
 ### Sprint 3.10 — Retours du test en local (2026-10-12)
 - [x] Nom de l'application : « BÒRD PRO » à la place de « Spectacle Vivant » (titres, en-tête, pages légales, pages d'erreur). — Fait (2026-10-12).
-- [ ] Adresses en champs séparés : adresse, code postal, ville, département (liste), pour la structure, l'organisateur, le lieu et l'hébergement.
+- [x] Adresses en champs séparés : adresse, code postal, ville, département (liste), pour la structure, l'organisateur, le lieu et l'hébergement. — Fait (2026-10-12) : `core.AddressMixin` (migrations `tenants/0010`, `addressbook/0006`, `roadmaps/0002`), département déduit du code postal s'il est laissé vide, adresse complète sur les contrats, factures (figée à l'émission), feuilles de route et exports. Les adresses déjà saisies restent dans « Adresse » et se complètent au fil de l'eau.
 - [ ] Page d'accueil : cartes « Spectacles actifs », « Prochaines dates » (semaine / mois / année), « Solde de l'année », « Alertes et rappels », boutons « Nouvelle date », « Nouveau spectacle », « Nouveau contact ».
 - [ ] Nouvelle identité visuelle, direction « Scène » (bleu-vert et corail, formes arrondies).
 
