@@ -33,11 +33,16 @@ class TenantScopedMixin(LoginRequiredMixin):
         return super().form_valid(form)
 
 
-def protect_secret_page(response):
-    """The token is in the URL: keep these pages out of caches, search engines and Referer."""
+def protect_secret_page(response, referrer="no-referrer"):
+    """The token is in the URL: keep these pages out of caches, search engines and Referer.
+
+    A page that contains a form must pass `referrer="same-origin"`: with "no-referrer"
+    browsers send `Origin: null` when the form is submitted, and Django's CSRF check then
+    answers 403. "same-origin" still sends no Referer to other sites.
+    """
     response["Cache-Control"] = "no-store"
     response["X-Robots-Tag"] = "noindex, nofollow"
-    response["Referrer-Policy"] = "no-referrer"
+    response["Referrer-Policy"] = referrer
     return response
 
 

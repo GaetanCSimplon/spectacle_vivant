@@ -15,6 +15,9 @@ from . import services
 from .forms import PromoterPublicForm
 from .models import PromoterInvitation
 
+# "no-referrer" would make the browser send `Origin: null` with the form: CSRF check fails.
+SAME_ORIGIN = "same-origin"
+
 
 class PublicPromoterFormView(View):
     template_name = "public/promoter_form.html"
@@ -29,11 +32,11 @@ class PublicPromoterFormView(View):
         response = render(
             request, "public/promoter_form_closed.html", {"tenant": invitation.tenant}, status=410
         )
-        return protect_secret_page(response)
+        return protect_secret_page(response, referrer=SAME_ORIGIN)
 
     def page(self, request, invitation, form):
         context = {"form": form, "tenant": invitation.tenant, "promoter": invitation.promoter}
-        return protect_secret_page(render(request, self.template_name, context))
+        return protect_secret_page(render(request, self.template_name, context), SAME_ORIGIN)
 
     def get(self, request, token):
         invitation = self.get_invitation(token)
@@ -52,9 +55,9 @@ class PublicPromoterFormView(View):
             services.submit_response(invitation, form.cleaned_data)
         except services.InvitationClosed:
             return self.closed(request, invitation)
-        return protect_secret_page(redirect("promoter-form-thanks"))
+        return protect_secret_page(redirect("promoter-form-thanks"), SAME_ORIGIN)
 
 
 class PublicPromoterFormThanksView(View):
     def get(self, request):
-        return protect_secret_page(render(request, "public/promoter_form_thanks.html"))
+        return protect_secret_page(render(request, "public/promoter_form_thanks.html"), SAME_ORIGIN)
