@@ -19,7 +19,7 @@
 | 8 | Supervision de disponibilité | Alerte si le site ne répond plus | Après le déploiement | Recommandé |
 | 9 | Dépôt GitHub + CI | Code et tests automatiques | Déjà en place | Fait |
 | 10 | Relecture professionnelle | Contrat et facture validés | Avant la phase 4 | Oui (juridique) |
-| 11 | Signature électronique | Faire signer les contrats en ligne | v1 (Phase 5) | Plus tard |
+| 11 | Signature électronique | Faire signer les contrats en ligne | À la charge de l'utilisateur (guide dans l'application) | Aucun compte à créer |
 | 12 | Plateforme de facturation électronique | Obligation légale | Phase 5, avant 09/2027 | Plus tard |
 | 13 | Paiement des abonnements | Encaisser les abonnés | Phase 4-5 | Plus tard |
 
@@ -101,7 +101,7 @@ La suppression d'une structure est effective 30 jours après la demande. Il faut
 
 ## 11 à 13. Plus tard (v1 et Phase 4-5)
 
-- **Signature électronique** : prestataire à choisir (Yousign, Universign…). À décider en v1.
+- **Signature électronique** : décision du 2026-10-12, budget serré. Chaque utilisateur signe avec **son propre compte** chez le service de son choix (DocuSeal, Yousign, DocuSign…), puis ajoute le PDF signé dans l'application (guide sur la page du contrat). Pas de compte, ni de coût, ni de donnée transmise de notre côté. Un branchement par clé d'accès de l'utilisateur (DocuSeal Pro ≈ 20 $/mois à sa charge) viendra seulement s'il est demandé ; un compte partagé BÒRD PRO seulement si l'application génère du revenu.
 - **Plateforme agréée de facturation électronique** : obligation à anticiper avant 09/2027.
 - **Paiement des abonnements** : Stripe ou équivalent, après décision sur le modèle économique (Q9) et sur le statut juridique de ton activité.
 - **Pages légales** (mentions légales, CGU, politique de confidentialité, RGPD) : à rédiger avant l'ouverture au public ; relecture professionnelle conseillée.

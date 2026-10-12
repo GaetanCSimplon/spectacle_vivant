@@ -388,3 +388,32 @@ def test_media_files_are_not_served_by_url(settings):
         settings.DEBUG = False
         importlib.reload(config.urls)
         clear_url_caches()
+
+
+# --- guide "Faire signer" (level 1: the user signs with their own service) -------------
+
+
+def test_history_explains_how_to_get_the_contract_signed(client):
+    tenant = _login(client)
+    gig = _confirmed_gig_with_contract(tenant)
+
+    content = client.get(reverse("documents:contract-history", args=[gig.pk])).content.decode()
+
+    assert "Faire signer le contrat" in content
+    assert "depuis votre propre compte" in content
+    for service in ("DocuSeal", "Yousign", "DocuSign"):
+        assert service in content
+    assert 'rel="noopener noreferrer"' in content
+
+
+def test_the_guide_is_hidden_when_there_is_nothing_to_sign(client):
+    tenant = _login(client)
+    unsigned_without_version = GigFactory(tenant=tenant, status=Gig.Status.CONFIRMED)
+    option_gig = GigFactory(tenant=tenant, status=Gig.Status.OPTION)
+    generate_contract_pdf(option_gig)
+    signed = _confirmed_gig_with_contract(tenant)
+    mark_contract_signed(signed)
+
+    for gig in (unsigned_without_version, option_gig, signed):
+        content = client.get(reverse("documents:contract-history", args=[gig.pk])).content.decode()
+        assert "Faire signer le contrat" not in content
