@@ -1,0 +1,6 @@
+#!/bin/bash
+# Runs on the final container after the Python dependencies are installed (Scalingo hook).
+# The compiled Tailwind stylesheet is not in Git, so it is built here, then collected.
+set -euo pipefail
+python manage.py tailwind build
+python manage.py collectstatic --noinput

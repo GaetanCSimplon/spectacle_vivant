@@ -14,6 +14,9 @@ PROD_ENV = {
     "S3_REGION_NAME": "fr-par",
     "S3_ACCESS_KEY_ID": "key",
     "S3_SECRET_ACCESS_KEY": "secret",
+    "EMAIL_HOST_USER": "smtp-user",
+    "EMAIL_HOST_PASSWORD": "smtp-password",
+    "DEFAULT_FROM_EMAIL": "BÒRD PRO <contact@example.com>",
 }
 
 
@@ -112,3 +115,28 @@ def test_other_urls_are_left_alone():
     event = {"request": {"url": "https://exemple.fr/dates/12/"}, "level": "error"}
 
     assert scrub_event(event) == event
+
+
+def test_e_mails_go_through_a_tls_smtp_relay_and_links_are_https(load_prod):
+    prod = load_prod(DJANGO_SITE_DOMAIN="bord-pro.fr")
+
+    assert prod.EMAIL_BACKEND == "django.core.mail.backends.smtp.EmailBackend"
+    assert (prod.EMAIL_HOST, prod.EMAIL_PORT, prod.EMAIL_USE_TLS) == (
+        "smtp-relay.brevo.com",
+        587,
+        True,
+    )
+    assert prod.EMAIL_HOST_USER == "smtp-user"
+    assert prod.DEFAULT_FROM_EMAIL == prod.SERVER_EMAIL == "BÒRD PRO <contact@example.com>"
+    assert prod.ACCOUNT_DEFAULT_HTTP_PROTOCOL == "https"
+    assert prod.SITE_DOMAIN == "bord-pro.fr"
+
+
+def test_production_refuses_to_start_without_the_sender_address(load_prod, monkeypatch):
+    monkeypatch.delenv("DEFAULT_FROM_EMAIL", raising=False)
+    sys.modules.pop("config.settings.prod", None)
+    for key, value in PROD_ENV.items():
+        if key != "DEFAULT_FROM_EMAIL":
+            monkeypatch.setenv(key, value)
+    with pytest.raises(Exception, match="DEFAULT_FROM_EMAIL"):
+        importlib.import_module("config.settings.prod")
