@@ -1,4 +1,4 @@
-# Gestion Spectacle Vivant
+# BÒRD PRO
 
 SaaS de gestion pour artistes et associations du spectacle vivant.
 

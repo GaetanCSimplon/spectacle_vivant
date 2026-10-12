@@ -256,6 +256,12 @@ Ajouts demandés après un rendez-vous métier (voir `docs/03` : F-06, F-15, F-5
   - [x] Partie A, annuaire (2026-10-09) : `tenants.Person` (migration `tenants/0009`), onglet « Équipe » (liste, recherche, fiche, création, modification, suppression), tous les membres de la structure peuvent la gérer, export `equipe.csv`, suppression de compte, politique de confidentialité.
   - [x] Partie B, lien avec les dates (2026-10-09) : `GigMember.person` (migration `gigs/0007`, copie du nom, de la fonction et des coordonnées, jamais du cachet), « Ajouter depuis mon équipe » dans la feuille de route, fiche d'une personne avec ses dates, nombre de dates de l'année dans la liste, équipe de la date sur sa fiche. La tâche est terminée.
 
+### Sprint 3.10 — Retours du test en local (2026-10-12)
+- [x] Nom de l'application : « BÒRD PRO » à la place de « Spectacle Vivant » (titres, en-tête, pages légales, pages d'erreur). — Fait (2026-10-12).
+- [ ] Adresses en champs séparés : adresse, code postal, ville, département (liste), pour la structure, l'organisateur, le lieu et l'hébergement.
+- [ ] Page d'accueil : cartes « Spectacles actifs », « Prochaines dates » (semaine / mois / année), « Solde de l'année », « Alertes et rappels », boutons « Nouvelle date », « Nouveau spectacle », « Nouveau contact ».
+- [ ] Nouvelle identité visuelle, direction « Scène » (bleu-vert et corail, formes arrondies).
+
 ### Sprint 3.8 — Légal, sécurité, finition, recette
 - [x] Pages : mentions légales, CGU, confidentialité (gabarits à compléter et à faire relire avant la mise en ligne).
 - [x] Export des données (F-81) : ZIP de CSV et de fichiers, page `ma-structure/export-donnees/`.
