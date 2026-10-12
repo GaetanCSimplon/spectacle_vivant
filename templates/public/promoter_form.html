@@ -1,0 +1,36 @@
+{% extends "public/base_public.html" %}
+{% load i18n %}
+
+{% block title %}Vos informations — BÒRD PRO{% endblock %}
+
+{% block content %}
+  <h1>{% translate "Compléter vos informations" %}</h1>
+  <p class="mb-2">
+    {% blocktranslate with tenant=tenant.name %}<strong>{{ tenant }}</strong> vous demande de compléter les informations de votre structure, pour préparer le contrat et les factures.{% endblocktranslate %}
+  </p>
+  <p class="mb-5 rounded-xl bg-blue-50 px-4 py-3 text-sm text-blue-900">
+    {% blocktranslate with promoter=promoter.name %}Fiche concernée : <strong>{{ promoter }}</strong>. Remplissez ce que vous savez, tous les champs sont facultatifs. Ce lien ne peut servir qu'une fois.{% endblocktranslate %}
+  </p>
+
+  <form method="post" class="card space-y-1">
+    {% csrf_token %}
+    {{ form.non_field_errors }}
+    {% for field in form %}
+      {% if field.name == "contact_name" %}
+        <h2 class="!mt-6 pt-2">{% translate "Un autre contact (facultatif)" %}</h2>
+        <p class="mb-3 text-sm">{% translate "Par exemple la personne à joindre pour la logistique ou la facturation." %}</p>
+      {% endif %}
+      <p>
+        {{ field.label_tag }}
+        {{ field }}
+        {% if field.help_text %}<span class="helptext">{{ field.help_text }}</span>{% endif %}
+        {{ field.errors }}
+      </p>
+    {% endfor %}
+    <button type="submit" class="btn btn-primary btn-block">{% translate "Envoyer mes informations" %}</button>
+  </form>
+
+  <p class="mt-4 text-xs text-stone-500">
+    {% blocktranslate with tenant=tenant.name %}Les informations saisies sont transmises à {{ tenant }}, qui les utilise pour établir le contrat de cession et les factures de cette date. Pour les consulter, les corriger ou les faire supprimer, contactez directement {{ tenant }}. BÒRD PRO héberge ce formulaire en France et n'utilise pas ces données pour autre chose.{% endblocktranslate %}
+  </p>
+{% endblock %}

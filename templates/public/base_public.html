@@ -1,0 +1,22 @@
+{% load static tailwind_cli i18n %}
+<!DOCTYPE html>
+<html lang="fr">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="robots" content="noindex, nofollow">
+    <meta name="referrer" content="no-referrer">
+    <title>{% block title %}BÒRD PRO{% endblock %}</title>
+    {% tailwind_css %}
+  </head>
+  <body class="min-h-screen bg-page text-stone-900">
+    <header class="bg-blue-700 text-white">
+      <div class="mx-auto max-w-xl px-4 py-3">
+        <span class="text-lg font-extrabold tracking-[0.12em]" aria-label="BÒRD PRO">BÒRD<span class="text-coral-400"> PRO</span></span>
+      </div>
+    </header>
+    <main class="mx-auto max-w-xl px-4 py-6">
+      {% block content %}{% endblock %}
+    </main>
+  </body>
+</html>

@@ -8,7 +8,7 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.utils.translation import gettext_lazy as _
 from django.views import View
 
-from apps.core.views import TenantScopedMixin, wants_fragment
+from apps.core.views import TenantScopedMixin, protect_secret_page, wants_fragment
 from apps.gigs.models import Gig, GigMember
 from apps.tenants.models import Person
 
@@ -241,14 +241,6 @@ def pdf_response(roadmap):
     return response
 
 
-def _protect(response):
-    """The token is in the URL: keep these pages out of caches, search engines and Referer."""
-    response["Cache-Control"] = "no-store"
-    response["X-Robots-Tag"] = "noindex, nofollow"
-    response["Referrer-Policy"] = "no-referrer"
-    return response
-
-
 def _shared_roadmap(token):
     """A roadmap reached by its secret link; unknown token or sharing off = 404 (same answer)."""
     queryset = Roadmap.objects.select_related("gig__show", "gig__venue")
@@ -262,9 +254,9 @@ class PublicRoadmapView(View):
         roadmap = _shared_roadmap(token)
         context = services.public_context(roadmap)
         context["token"] = token
-        return _protect(render(request, "roadmaps/public.html", context))
+        return protect_secret_page(render(request, "roadmaps/public.html", context))
 
 
 class PublicRoadmapPdfView(View):
     def get(self, request, token):
-        return _protect(pdf_response(_shared_roadmap(token)))
+        return protect_secret_page(pdf_response(_shared_roadmap(token)))

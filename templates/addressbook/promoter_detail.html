@@ -29,6 +29,39 @@
     {% endif %}
   </div>
 
+  <section id="formulaire" class="card mb-6 space-y-3 text-sm" aria-labelledby="invite-title">
+    <h2 id="invite-title" class="stat-label !text-xs !font-semibold">{% translate "Informations à faire compléter" %}</h2>
+    {% if invitation and invitation.status == 'answered' %}
+      <p class="font-medium text-blue-900">{% blocktranslate with date=invitation.completed_at|date:"d/m/Y" %}L'organisateur a répondu le {{ date }}.{% endblocktranslate %}</p>
+      <a href="{% url 'addressbook:promoter-answer' promoter.pk %}" class="btn btn-primary btn-block">{% translate "Vérifier les informations reçues" %}</a>
+    {% elif invitation and invitation.status == 'active' %}
+      <p>{% blocktranslate with date=invitation.expires_at|date:"d/m/Y" %}Un lien est actif jusqu'au {{ date }}. Envoyez-le à l'organisateur : il pourra remplir ses informations sans compte, une seule fois.{% endblocktranslate %}</p>
+      <div x-data="{ copied: false }" class="space-y-2">
+        <input type="text" readonly aria-label="{% translate 'Adresse du formulaire' %}" value="{{ invitation_url }}" class="w-full" onfocus="this.select()">
+        <button type="button" class="btn btn-secondary btn-block"
+                @click="navigator.clipboard.writeText('{{ invitation_url|escapejs }}').then(() => copied = true)">
+          <span x-show="!copied">{% translate "Copier le lien" %}</span>
+          <span x-show="copied" x-cloak>{% translate "Lien copié" %}</span>
+        </button>
+      </div>
+      <form method="post" action="{% url 'addressbook:promoter-invite-revoke' promoter.pk %}">
+        {% csrf_token %}
+        <button type="submit" class="text-red-700 underline">{% translate "Annuler ce lien" %}</button>
+      </form>
+    {% else %}
+      <p>
+        {% if invitation and invitation.status == 'expired' %}{% translate "Le dernier lien a expiré." %}
+        {% elif invitation and invitation.status == 'revoked' %}{% translate "Le dernier lien a été annulé." %}
+        {% elif invitation and invitation.status == 'reviewed' %}{% translate "La dernière réponse a été traitée." %}{% endif %}
+        {% translate "Plutôt que de tout saisir vous-même, envoyez un lien à l'organisateur : il remplit ses informations (SIRET, adresse, représentant…) et vous vérifiez avant de les enregistrer." %}
+      </p>
+      <form method="post" action="{% url 'addressbook:promoter-invite' promoter.pk %}">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-secondary btn-block">{% translate "Envoyer un formulaire à l'organisateur" %}</button>
+      </form>
+    {% endif %}
+  </section>
+
   <div class="mb-2 flex items-center justify-between">
     <h2 class="text-sm font-semibold uppercase text-gray-500">{% translate "Contacts" %}</h2>
     <a href="{% url 'addressbook:promoter-contact-create' promoter.pk %}" class="text-sm text-blue-600">

@@ -161,3 +161,50 @@ class NewContactForm(ContactForm):
         elif kind == "venue":
             self.instance.venue, self.instance.promoter = self.venues.get(pk), None
         return cleaned
+
+
+class PromoterPublicForm(AddressModelForm):
+    """What an organiser fills in from the link they received (F-16).
+
+    It is built on a blank, unsaved Promoter and never saved: the answer is only stored until
+    the user has reviewed it. Nothing of the real card is shown or touched here. Every field
+    is optional, but at least one must be filled in.
+    """
+
+    # Declared here so that "213 400 000 000 19" is accepted and cleaned to 14 digits.
+    siret = forms.CharField(label=_("SIRET"), required=False, max_length=20)
+    contact_name = forms.CharField(label=_("Nom"), required=False, max_length=255)
+    contact_role = forms.CharField(label=_("Fonction"), required=False, max_length=255)
+    contact_email = forms.EmailField(label=_("E-mail"), required=False)
+    contact_phone = forms.CharField(label=_("Téléphone"), required=False, max_length=30)
+
+    class Meta:
+        model = Promoter
+        fields = [key for key, _label in services.PROMOTER_FIELDS]
+        widgets = {"billing_address": forms.Textarea(attrs={"rows": 2})}
+        labels = {
+            "billing_address": _("Adresse"),
+            "representative_name": _("Nom du représentant légal"),
+            "representative_role": _("Qualité du représentant"),
+            "licence_number": _("N° de licence d'entrepreneur de spectacles"),
+        }
+        help_texts = {
+            "representative_name": _("La personne qui signe le contrat (maire, président…)."),
+            "licence_number": _("Si votre structure en a une."),
+        }
+
+    def clean_siret(self):
+        siret = "".join(self.cleaned_data["siret"].split())
+        if siret and not (siret.isdigit() and len(siret) == 14):
+            raise forms.ValidationError(_("Un SIRET comporte 14 chiffres."))
+        return siret
+
+    def clean(self):
+        cleaned = super().clean()
+        contact = [cleaned.get(f"contact_{key}") for key in services.CONTACT_KEYS]
+        if any(contact) and not cleaned.get("contact_name"):
+            self.add_error("contact_name", _("Indiquez le nom de ce contact."))
+        answered = [cleaned.get(key) for key, _label in services.PROMOTER_FIELDS] + contact
+        if not self.errors and not any(answered):
+            raise forms.ValidationError(_("Merci de remplir au moins un champ."))
+        return cleaned

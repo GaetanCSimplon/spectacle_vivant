@@ -33,6 +33,14 @@ class TenantScopedMixin(LoginRequiredMixin):
         return super().form_valid(form)
 
 
+def protect_secret_page(response):
+    """The token is in the URL: keep these pages out of caches, search engines and Referer."""
+    response["Cache-Control"] = "no-store"
+    response["X-Robots-Tag"] = "noindex, nofollow"
+    response["Referrer-Policy"] = "no-referrer"
+    return response
+
+
 def wants_fragment(request):
     """True for a live HTMX request that must get only a page fragment.
 

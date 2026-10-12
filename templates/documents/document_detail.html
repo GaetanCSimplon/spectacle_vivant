@@ -65,7 +65,8 @@
       </ul>
       <p class="mt-1">
         <a href="{% url 'tenants:profile' %}" class="underline">{% translate "Ma structure" %}</a> ·
-        <a href="{% url 'addressbook:promoter-update' gig.promoter.pk %}" class="underline">{% translate "L'organisateur" %}</a>
+        <a href="{% url 'addressbook:promoter-update' gig.promoter.pk %}" class="underline">{% translate "L'organisateur" %}</a> ·
+        <a href="{% url 'addressbook:promoter-detail' gig.promoter.pk %}#formulaire" class="underline">{% translate "Lui envoyer un formulaire" %}</a>
       </p>
     </div>
   {% endif %}

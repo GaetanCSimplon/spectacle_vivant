@@ -18,6 +18,21 @@ urlpatterns = [
         views.PromoterDeleteView.as_view(),
         name="promoter-delete",
     ),
+    path(
+        "organisateurs/<int:pk>/formulaire/",
+        views.PromoterInviteView.as_view(),
+        name="promoter-invite",
+    ),
+    path(
+        "organisateurs/<int:pk>/formulaire/annuler/",
+        views.PromoterInviteRevokeView.as_view(),
+        name="promoter-invite-revoke",
+    ),
+    path(
+        "organisateurs/<int:pk>/reponse/",
+        views.PromoterAnswerView.as_view(),
+        name="promoter-answer",
+    ),
     path("lieux/", views.VenueListView.as_view(), name="venue-list"),
     path("lieux/nouveau/", views.VenueCreateView.as_view(), name="venue-create"),
     path("lieux/<int:pk>/", views.VenueDetailView.as_view(), name="venue-detail"),

@@ -1,12 +1,14 @@
 from django.contrib import messages
 from django.db.models import ProtectedError
-from django.shortcuts import get_object_or_404, redirect
+from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse, reverse_lazy
 from django.utils.translation import gettext_lazy as _
+from django.views import View
 from django.views.generic import CreateView, DeleteView, DetailView, ListView, UpdateView
 
 from apps.core.views import SearchListMixin, TenantScopedMixin
 
+from . import services
 from .forms import ContactForm, NewContactForm, PromoterFilterForm, PromoterForm, VenueForm
 from .models import Contact, Promoter, Venue
 
@@ -53,7 +55,88 @@ class PromoterDetailView(TenantScopedMixin, DetailView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context["gigs"] = self.object.gigs.select_related("show", "venue").order_by("-date")
+        invitation = services.latest_invitation(self.object)
+        context["invitation"] = invitation
+        if invitation and invitation.status == invitation.Status.ACTIVE:
+            context["invitation_url"] = self.request.build_absolute_uri(
+                services.invitation_path(invitation.token)
+            )
         return context
+
+
+class PromoterInviteView(TenantScopedMixin, View):
+    """POST only: create the link the organiser will use to fill in their details."""
+
+    http_method_names = ["post"]
+
+    def post(self, request, pk):
+        promoter = get_object_or_404(Promoter, pk=pk, tenant=request.tenant)
+        services.create_invitation(promoter, request.user)
+        messages.success(request, _("Le lien est prêt : copiez-le et envoyez-le à l'organisateur."))
+        return redirect("addressbook:promoter-detail", pk=promoter.pk)
+
+
+class PromoterInviteRevokeView(TenantScopedMixin, View):
+    http_method_names = ["post"]
+
+    def post(self, request, pk):
+        promoter = get_object_or_404(Promoter, pk=pk, tenant=request.tenant)
+        if services.revoke_invitation(promoter):
+            messages.success(request, _("Le lien est annulé : il ne fonctionne plus."))
+        return redirect("addressbook:promoter-detail", pk=promoter.pk)
+
+
+class PromoterAnswerView(TenantScopedMixin, View):
+    """Review what the organiser answered, then apply it (or part of it) to their card."""
+
+    template_name = "addressbook/promoter_answer.html"
+
+    def load(self, request, pk):
+        self.promoter = get_object_or_404(Promoter, pk=pk, tenant=request.tenant)
+        invitation = services.latest_invitation(self.promoter)
+        if invitation is None or invitation.status != invitation.Status.ANSWERED:
+            return None
+        return invitation
+
+    def nothing_to_review(self):
+        messages.info(self.request, _("Il n'y a pas de réponse à vérifier."))
+        return redirect("addressbook:promoter-detail", pk=self.promoter.pk)
+
+    def get(self, request, pk):
+        invitation = self.load(request, pk)
+        if invitation is None:
+            return self.nothing_to_review()
+        return render(
+            request,
+            self.template_name,
+            {
+                "promoter": self.promoter,
+                "invitation": invitation,
+                "rows": services.review_rows(invitation),
+                "contact": services.answer_contact(invitation),
+            },
+        )
+
+    def post(self, request, pk):
+        invitation = self.load(request, pk)
+        if invitation is None:
+            return self.nothing_to_review()
+        try:
+            if "ignore" in request.POST:
+                services.ignore_response(invitation)
+                messages.success(request, _("La réponse est ignorée : rien n'a été modifié."))
+            else:
+                chosen = services.apply_response(
+                    invitation, request.POST.getlist("fields"), "contact" in request.POST
+                )
+                messages.success(
+                    request,
+                    _("Les informations choisies sont enregistrées (%(n)s champ(s) mis à jour).")
+                    % {"n": len(chosen)},
+                )
+        except services.InvitationClosed:
+            return self.nothing_to_review()
+        return redirect("addressbook:promoter-detail", pk=self.promoter.pk)
 
 
 class PromoterFormMixin:
