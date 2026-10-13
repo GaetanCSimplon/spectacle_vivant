@@ -59,7 +59,7 @@ def test_the_file_is_utf8_with_bom_and_semicolons(client, tenant):
     assert response["Content-Disposition"].endswith('depenses-2026-01-01_2026-12-31.csv"')
     assert response.content.startswith("﻿".encode())
     raw = response.content.decode("utf-8")
-    assert raw.splitlines()[0].count(";") == 6
+    assert raw.splitlines()[0].count(";") == 7
     assert "Café" in raw  # accents survive
     assert raw.endswith("\r\n")
 

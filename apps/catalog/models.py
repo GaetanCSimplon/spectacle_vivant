@@ -20,6 +20,22 @@ class Show(TenantOwnedModel):
     crew_size = models.PositiveIntegerField(
         _("effectif (personnes en tournée)"), null=True, blank=True
     )
+    artists_count = models.PositiveIntegerField(_("nombre d'artistes"), null=True, blank=True)
+    technicians_count = models.PositiveIntegerField(
+        _("nombre de techniciens"), null=True, blank=True
+    )
+    soundcheck_minutes = models.PositiveIntegerField(
+        _("durée minimale des balances (minutes)"), null=True, blank=True
+    )
+    soundcheck_to_set_minutes = models.PositiveIntegerField(
+        _("temps minimum entre la fin des balances et le set (minutes)"), null=True, blank=True
+    )
+    analytic_code = models.CharField(
+        _("code analytique"),
+        max_length=30,
+        blank=True,
+        help_text=_("Pour le suivi et les exports (colonne ajoutée aux fichiers CSV)."),
+    )
     tech_sheet_text = models.TextField(_("fiche technique"), blank=True)
     tech_sheet_file = models.FileField(
         _("fiche technique (PDF)"),

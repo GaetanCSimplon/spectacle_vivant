@@ -49,6 +49,7 @@ def invoices_rows(tenant, start, end):
         "Total TTC",
         "Encaissé",
         "Reste à payer",
+        "Code analytique",
     ]
     invoices = (
         Invoice.objects.filter(tenant=tenant, issue_date__range=(start, end))
@@ -82,6 +83,7 @@ def invoices_rows(tenant, start, end):
                 amount(invoice.total_incl_tax),
                 amount(invoice.paid),
                 amount(remaining),
+                text(invoice.gig.show.analytic_code),
             ]
         )
     return header, rows
@@ -96,6 +98,7 @@ def payments_rows(tenant, start, end):
         "Client",
         "Spectacle",
         "Date du spectacle",
+        "Code analytique",
     ]
     payments = (
         Payment.objects.filter(tenant=tenant, date__range=(start, end))
@@ -111,6 +114,7 @@ def payments_rows(tenant, start, end):
             text(p.invoice.customer_snapshot.get("name")),
             text(p.invoice.gig.show.title),
             day(p.invoice.gig.date),
+            text(p.invoice.gig.show.analytic_code),
         ]
         for p in payments
     ]
@@ -126,6 +130,7 @@ def expenses_rows(tenant, start, end):
         "Spectacle",
         "Date du spectacle",
         "Justificatif",
+        "Code analytique",
     ]
     expenses = (
         Expense.objects.filter(tenant=tenant, date__range=(start, end))
@@ -141,6 +146,7 @@ def expenses_rows(tenant, start, end):
             text(e.gig.show.title),
             day(e.gig.date),
             "oui" if e.receipt_file else "non",
+            text(e.gig.show.analytic_code),
         ]
         for e in expenses
     ]
