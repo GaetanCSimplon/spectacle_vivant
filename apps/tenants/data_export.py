@@ -219,10 +219,14 @@ def gigs_rows(tenant):
     return header, rows
 
 
-def team_rows(tenant):
+def team_rows(tenant, include_private=False):
+    """The private columns (address, GUSO number) are for the owner's export only."""
     header = ["Nom", "Prénom", "Fonction", "Statut", "Téléphone", "E-mail", "Cachet moyen", "Notes"]
-    rows = [
-        [
+    if include_private:
+        header += ["Adresse", "Code postal", "Ville", "Département", "N° GUSO"]
+    rows = []
+    for p in Person.objects.filter(tenant=tenant):
+        row = [
             text(p.last_name),
             text(p.first_name),
             text(p.role),
@@ -232,8 +236,15 @@ def team_rows(tenant):
             amount(p.average_fee) if p.average_fee is not None else "",
             text(p.notes),
         ]
-        for p in Person.objects.filter(tenant=tenant)
-    ]
+        if include_private:
+            row += [
+                text(p.address),
+                text(p.postal_code),
+                text(p.city),
+                text(p.get_department_display()),
+                text(p.guso_number),
+            ]
+        rows.append(row)
     return header, rows
 
 
@@ -307,13 +318,19 @@ repas, équipe) et le détail des lignes de devis et de facture (consultez les P
 {missing}"""
 
 
-def build_export_zip(tenant):
-    """Return an open temporary file holding the ZIP, positioned at the start."""
+def build_export_zip(tenant, include_private=False):
+    """Return an open temporary file holding the ZIP, positioned at the start.
+
+    `include_private` adds the owner-only columns (address and GUSO number of the team).
+    """
     archive = tempfile.SpooledTemporaryFile(max_size=20 * 1024 * 1024)
     missing = []
     with zipfile.ZipFile(archive, "w", zipfile.ZIP_DEFLATED) as zf:
         for name, builder in TABLES.items():
-            header, rows = builder(tenant)
+            if name == "equipe":
+                header, rows = builder(tenant, include_private=include_private)
+            else:
+                header, rows = builder(tenant)
             zf.writestr(f"{name}.csv", _csv_bytes(header, rows))
         for path, field in stored_files(tenant):
             try:
