@@ -13,13 +13,73 @@ class Promoter(AddressMixin, TenantOwnedModel):
 
     street_field = "billing_address"
 
+    # Qualification criteria (F-15): each is a list of these values, several can apply.
     class Kind(models.TextChoices):
-        MUNICIPALITY = "municipality", _("Mairie / collectivité")
+        VENUE = "venue", _("Salle")
         FESTIVAL = "festival", _("Festival")
-        VENUE = "venue", _("Salle / théâtre")
+        MUNICIPALITY = "municipality", _("Collectivité")
         ASSOCIATION = "association", _("Association")
-        BAR = "bar", _("Bar / café-concert")
+        PRODUCER = "producer", _("Producteur")
+        AGENCY = "agency", _("Agence")
+        COMPANY = "company", _("Entreprise")
+        CULTURAL_INSTITUTION = "cultural_institution", _("Établissement culturel")
         OTHER = "other", _("Autre")
+
+    class EventType(models.TextChoices):
+        CONCERT = "concert", _("Concert")
+        FESTIVAL = "festival", _("Festival")
+        CULTURAL_SEASON = "cultural_season", _("Saison culturelle")
+        MUNICIPAL_EVENT = "municipal_event", _("Évènement municipal")
+        PRIVATE_EVENT = "private_event", _("Évènement privé")
+        TRADE_SHOW = "trade_show", _("Salon")
+        CULTURAL_ACTION = "cultural_action", _("Action culturelle")
+        OTHER = "other", _("Autre")
+
+    class Aesthetic(models.TextChoices):
+        CHANSON = "chanson", _("Chanson")
+        CONTEMPORARY_MUSIC = "contemporary_music", _("Musiques actuelles")
+        JAZZ = "jazz", _("Jazz")
+        CLASSICAL = "classical", _("Classique")
+        THEATRE = "theatre", _("Théâtre")
+        DANCE = "dance", _("Danse")
+        CIRCUS = "circus", _("Cirque")
+        STREET_ARTS = "street_arts", _("Arts de la rue")
+        MULTIDISCIPLINARY = "multidisciplinary", _("Pluridisciplinaire")
+        OTHER = "other", _("Autre")
+
+    class Format(models.TextChoices):
+        SMALL_CAPACITY = "small_capacity", _("Petite jauge")
+        OPEN_AIR = "open_air", _("Plein air")
+        TOURING = "touring", _("Itinérant")
+        SEATED = "seated", _("Assis")
+        STANDING = "standing", _("Debout")
+        OTHER = "other", _("Autre")
+
+    class Period(models.TextChoices):
+        SEASON = "season", _("Saison")
+        FESTIVAL_PERIOD = "festival_period", _("Période de festival")
+        ONE_OFF = "one_off", _("Dates ponctuelles")
+        KNOWN_PROGRAMMING = "known_programming", _("Période de programmation connue")
+        OTHER = "other", _("Autre")
+
+    class EventRole(models.TextChoices):
+        ORGANISER = "organiser", _("Organisateur")
+        PROGRAMMER = "programmer", _("Programmateur")
+        PRODUCER = "producer", _("Producteur")
+        CO_PRODUCER = "co_producer", _("Coproducteur")
+        DISTRIBUTOR = "distributor", _("Diffuseur")
+        SERVICE_PROVIDER = "service_provider", _("Prestataire")
+        OTHER = "other", _("Autre")
+
+    # field name -> (choices, title): the order is the order of the form and of the pages.
+    QUALIFICATION = {
+        "kinds": (Kind, _("Type d'organisateur")),
+        "event_types": (EventType, _("Type d'évènement")),
+        "aesthetics": (Aesthetic, _("Esthétique / discipline")),
+        "formats": (Format, _("Format / jauge")),
+        "usual_periods": (Period, _("Période habituelle")),
+        "event_roles": (EventRole, _("Rôle dans l'évènement")),
+    }
 
     class FollowUp(models.TextChoices):
         PROSPECT = "prospect", _("Prospect")
@@ -38,15 +98,46 @@ class Promoter(AddressMixin, TenantOwnedModel):
     billing_address = models.TextField(_("adresse de facturation"), blank=True)
     email = models.EmailField(_("e-mail"), blank=True)
     phone = models.CharField(_("téléphone"), max_length=30, blank=True)
-    kind = models.CharField(_("type d'organisateur"), max_length=20, choices=Kind, blank=True)
     # Prospecting: set by hand, it is only a visual landmark (F-15).
     follow_up = models.CharField(_("suivi"), max_length=20, choices=FollowUp, blank=True)
-    event_type = models.CharField(_("type d'évènement"), max_length=100, blank=True)
-    aesthetic = models.CharField(_("esthétique"), max_length=100, blank=True)
+    kinds = models.JSONField(_("type d'organisateur"), default=list, blank=True)
+    event_types = models.JSONField(_("type d'évènement"), default=list, blank=True)
+    aesthetics = models.JSONField(_("esthétique / discipline"), default=list, blank=True)
+    formats = models.JSONField(_("format / jauge"), default=list, blank=True)
+    usual_periods = models.JSONField(_("période habituelle"), default=list, blank=True)
+    event_roles = models.JSONField(_("rôle dans l'évènement"), default=list, blank=True)
+    indicative_capacity = models.PositiveIntegerField(_("jauge indicative"), null=True, blank=True)
+    qualification_other = models.CharField(_("autres précisions"), max_length=255, blank=True)
     notes = models.TextField(_("notes"), blank=True)
 
     def __str__(self):
         return self.name
+
+    def labels_for(self, field):
+        choices = self.QUALIFICATION[field][0]
+        return [str(choices(v).label) for v in getattr(self, field) if v in choices.values]
+
+    @property
+    def kind_labels(self):
+        return self.labels_for("kinds")
+
+    @property
+    def event_type_labels(self):
+        return self.labels_for("event_types")
+
+    @property
+    def aesthetic_labels(self):
+        return self.labels_for("aesthetics")
+
+    @property
+    def qualification_tags(self):
+        """(title, labels) of every criterion that has a value, in display order."""
+        tags = []
+        for field, (_choices, title) in self.QUALIFICATION.items():
+            labels = self.labels_for(field)
+            if labels:
+                tags.append((title, labels))
+        return tags
 
     def get_absolute_url(self):
         return reverse("addressbook:promoter-detail", args=[self.pk])
@@ -58,6 +149,12 @@ class Venue(AddressMixin, TenantOwnedModel):
     name = models.CharField(_("nom"), max_length=255)
     address = models.TextField(_("adresse"), blank=True)
     capacity = models.PositiveIntegerField(_("jauge (places)"), null=True, blank=True)
+    configuration = models.CharField(
+        _("configuration"),
+        max_length=255,
+        blank=True,
+        help_text=_("Par exemple : assis, debout, plein air."),
+    )
     phone = models.CharField(_("téléphone"), max_length=30, blank=True)
     access_info = models.TextField(_("infos d'accès (parking, chargement…)"), blank=True)
     notes = models.TextField(_("notes"), blank=True)

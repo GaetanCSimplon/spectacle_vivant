@@ -21,7 +21,7 @@ def test_new_fields_are_optional():
     promoter.refresh_from_db()
     venue.refresh_from_db()
 
-    assert (promoter.phone, promoter.kind, promoter.notes) == ("", "", "")
+    assert (promoter.phone, promoter.kinds, promoter.notes) == ("", [], "")
     assert (venue.phone, venue.access_info, venue.notes) == ("", "", "")
 
 
@@ -32,7 +32,7 @@ def test_create_a_promoter_with_type_phone_and_notes(client):
         reverse("addressbook:promoter-create"),
         {
             "name": "Mairie de Lyon",
-            "kind": "municipality",
+            "kinds": ["municipality"],
             "phone": "04 72 00 00 00",
             "notes": "Programme en mars",
         },
@@ -40,8 +40,8 @@ def test_create_a_promoter_with_type_phone_and_notes(client):
 
     promoter = Promoter.objects.get()
     assert response.status_code == 302
-    assert (promoter.kind, promoter.phone, promoter.notes) == (
-        Promoter.Kind.MUNICIPALITY,
+    assert (promoter.kinds, promoter.phone, promoter.notes) == (
+        [Promoter.Kind.MUNICIPALITY],
         "04 72 00 00 00",
         "Programme en mars",
     )
@@ -51,7 +51,7 @@ def test_promoter_type_must_be_one_of_the_choices(client):
     _login(client)
 
     response = client.post(
-        reverse("addressbook:promoter-create"), {"name": "Mairie", "kind": "inconnu"}
+        reverse("addressbook:promoter-create"), {"name": "Mairie", "kinds": ["inconnu"]}
     )
 
     assert response.status_code == 200
@@ -61,16 +61,16 @@ def test_promoter_type_must_be_one_of_the_choices(client):
 def test_promoter_type_can_be_left_empty(client):
     _login(client)
 
-    response = client.post(reverse("addressbook:promoter-create"), {"name": "Mairie", "kind": ""})
+    response = client.post(reverse("addressbook:promoter-create"), {"name": "Mairie"})
 
     assert response.status_code == 302
-    assert Promoter.objects.get().kind == ""
+    assert Promoter.objects.get().kinds == []
 
 
 def test_promoter_detail_shows_type_phone_and_notes(client):
     tenant = _login(client)
     promoter = PromoterFactory(
-        tenant=tenant, kind="festival", phone="0612345678", notes="Ne pas appeler le lundi"
+        tenant=tenant, kinds=["festival"], phone="0612345678", notes="Ne pas appeler le lundi"
     )
 
     content = client.get(

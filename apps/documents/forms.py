@@ -114,7 +114,7 @@ class ShowCompletionForm(forms.ModelForm):
 class VenueCompletionForm(forms.ModelForm):
     class Meta:
         model = Venue
-        fields = ["capacity"]
+        fields = ["capacity", "configuration"]
 
 
 class PromoterCompletionForm(PromoterIdentifiersMixin, forms.ModelForm):

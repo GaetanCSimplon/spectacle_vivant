@@ -16,6 +16,7 @@
     {% if venue.department %}<p class="text-gray-600">{{ venue.get_department_display }}</p>{% endif %}
     {% if venue.phone %}<p><a href="tel:{{ venue.phone }}" class="text-blue-600">{{ venue.phone }}</a></p>{% endif %}
     {% if venue.capacity %}<p>{% translate "Jauge :" %} {{ venue.capacity }} places</p>{% endif %}
+    {% if venue.configuration %}<p>{% translate "Configuration :" %} {{ venue.configuration }}</p>{% endif %}
     {% if venue.access_info %}<p>{% translate "Accès :" %} {{ venue.access_info|linebreaksbr }}</p>{% endif %}
     {% if venue.notes %}<p class="text-gray-600">{{ venue.notes|linebreaksbr }}</p>{% endif %}
   </div>

@@ -30,7 +30,7 @@ class PromoterListView(TenantScopedMixin, SearchListMixin, ListView):
 
     def get_filter_form(self):
         if not hasattr(self, "_filter_form"):
-            self._filter_form = PromoterFilterForm(self.request.GET, tenant=self.request.tenant)
+            self._filter_form = PromoterFilterForm(self.request.GET)
         return self._filter_form
 
     def get_queryset(self):
@@ -139,16 +139,7 @@ class PromoterAnswerView(TenantScopedMixin, View):
         return redirect("addressbook:promoter-detail", pk=self.promoter.pk)
 
 
-class PromoterFormMixin:
-    """The promoter form proposes the values this tenant already uses."""
-
-    def get_form_kwargs(self):
-        kwargs = super().get_form_kwargs()
-        kwargs["tenant"] = self.request.tenant
-        return kwargs
-
-
-class PromoterCreateView(PromoterFormMixin, DetailRedirectMixin, TenantScopedMixin, CreateView):
+class PromoterCreateView(DetailRedirectMixin, TenantScopedMixin, CreateView):
     model = Promoter
     form_class = PromoterForm
     template_name = "addressbook/promoter_form.html"
@@ -160,7 +151,7 @@ class PromoterCreateView(PromoterFormMixin, DetailRedirectMixin, TenantScopedMix
         return response
 
 
-class PromoterUpdateView(PromoterFormMixin, DetailRedirectMixin, TenantScopedMixin, UpdateView):
+class PromoterUpdateView(DetailRedirectMixin, TenantScopedMixin, UpdateView):
     model = Promoter
     form_class = PromoterForm
     template_name = "addressbook/promoter_form.html"

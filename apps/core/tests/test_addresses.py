@@ -19,7 +19,7 @@ from apps.documents.services import build_contract_context
 from apps.gigs.factories import GigFactory
 from apps.roadmaps.factories import LodgingFactory, RoadmapFactory
 from apps.roadmaps.services import public_context
-from apps.tenants.factories import MembershipFactory, TenantFactory
+from apps.tenants.factories import MembershipFactory
 
 pytestmark = pytest.mark.django_db
 
@@ -110,7 +110,7 @@ def test_an_unknown_department_is_refused():
 
 
 def test_all_address_fields_are_optional():
-    form = PromoterForm({"name": "Mairie"}, tenant=TenantFactory())
+    form = PromoterForm({"name": "Mairie"})
     assert form.is_valid(), form.errors
 
 

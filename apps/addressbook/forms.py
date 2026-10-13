@@ -27,15 +27,42 @@ class PromoterIdentifiersMixin(forms.Form):
         return "".join(self.cleaned_data["vat_number"].split()).upper()[:20]
 
 
+class OrderedMultipleChoiceField(forms.MultipleChoiceField):
+    """Checkboxes whose picked values always come back in the order of the list."""
+
+    widget = forms.CheckboxSelectMultiple
+
+    def clean(self, value):
+        picked = super().clean(value)
+        return [key for key, _label in self.choices if key in picked]
+
+
+def _criterion(field):
+    choices, title = Promoter.QUALIFICATION[field]
+    return OrderedMultipleChoiceField(label=title, choices=choices.choices, required=False)
+
+
 class PromoterForm(PromoterIdentifiersMixin, AddressModelForm):
+    kinds = _criterion("kinds")
+    event_types = _criterion("event_types")
+    aesthetics = _criterion("aesthetics")
+    formats = _criterion("formats")
+    usual_periods = _criterion("usual_periods")
+    event_roles = _criterion("event_roles")
+
     class Meta:
         model = Promoter
         fields = [
             "name",
-            "kind",
             "follow_up",
-            "event_type",
-            "aesthetic",
+            "kinds",
+            "event_types",
+            "aesthetics",
+            "formats",
+            "indicative_capacity",
+            "usual_periods",
+            "event_roles",
+            "qualification_other",
             "email",
             "phone",
             "siret",
@@ -53,29 +80,11 @@ class PromoterForm(PromoterIdentifiersMixin, AddressModelForm):
         widgets = {
             "billing_address": forms.Textarea(attrs={"rows": 2}),
             "notes": forms.Textarea(attrs={"rows": 3}),
-            "event_type": forms.TextInput(attrs={"list": "event-type-options"}),
-            "aesthetic": forms.TextInput(attrs={"list": "aesthetic-options"}),
         }
         help_texts = {
             "follow_up": _("Un repère pour vous : à vous de le changer au fil des échanges."),
-            "event_type": _("Choisissez une proposition ou écrivez la vôtre."),
-            "aesthetic": _("Choisissez une proposition ou écrivez la vôtre."),
+            "qualification_other": _("Pour tout ce qui ne figure pas dans les listes ci-dessus."),
         }
-
-    def __init__(self, *args, tenant=None, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.event_type_options = services.suggestions(
-            tenant, "event_type", services.EVENT_TYPE_SUGGESTIONS
-        )
-        self.aesthetic_options = services.suggestions(
-            tenant, "aesthetic", services.AESTHETIC_SUGGESTIONS
-        )
-
-    def clean_event_type(self):
-        return " ".join(self.cleaned_data["event_type"].split())
-
-    def clean_aesthetic(self):
-        return " ".join(self.cleaned_data["aesthetic"].split())
 
 
 class PromoterFilterForm(forms.Form):
@@ -86,28 +95,33 @@ class PromoterFilterForm(forms.Form):
         required=False,
         choices=[("", _("Tous les suivis")), *Promoter.FollowUp.choices],
     )
-    event_type = forms.ChoiceField(label=_("Type d'évènement"), required=False)
-    aesthetic = forms.ChoiceField(label=_("Esthétique"), required=False)
+    # query parameter -> (model field, label of the "everything" choice)
+    CRITERIA = {
+        "kind": ("kinds", _("Tous les types d'organisateur")),
+        "event_type": ("event_types", _("Tous les types d'évènement")),
+        "aesthetic": ("aesthetics", _("Toutes les esthétiques")),
+        "format": ("formats", _("Tous les formats")),
+        "period": ("usual_periods", _("Toutes les périodes")),
+        "role": ("event_roles", _("Tous les rôles")),
+    }
 
-    def __init__(self, *args, tenant, **kwargs):
+    def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        # Only values this tenant has typed can be chosen: anything else is ignored.
-        for name, empty in (
-            ("event_type", _("Tous les types")),
-            ("aesthetic", _("Toutes les esthétiques")),
-        ):
-            values = services.used_values(tenant, name)
-            self.fields[name].choices = [("", empty), *[(v, v) for v in values]]
+        for name, (field, empty) in self.CRITERIA.items():
+            choices, title = Promoter.QUALIFICATION[field]
+            self.fields[name] = forms.ChoiceField(
+                label=title, required=False, choices=[("", empty), *choices.choices]
+            )
 
     def apply(self, queryset):
         self.is_valid()  # fills cleaned_data with the valid fields, drops the invalid ones
         data = self.cleaned_data
         if data.get("follow_up"):
             queryset = queryset.filter(follow_up=data["follow_up"])
-        if data.get("event_type"):
-            queryset = queryset.filter(event_type__iexact=data["event_type"])
-        if data.get("aesthetic"):
-            queryset = queryset.filter(aesthetic__iexact=data["aesthetic"])
+        for name, (field, _empty) in self.CRITERIA.items():
+            if data.get(name):
+                # The organiser has this value among its several ones.
+                queryset = queryset.filter(**{f"{field}__contains": [data[name]]})
         return queryset
 
     @property
@@ -125,6 +139,7 @@ class VenueForm(AddressModelForm):
             "city",
             "department",
             "capacity",
+            "configuration",
             "phone",
             "access_info",
             "notes",
