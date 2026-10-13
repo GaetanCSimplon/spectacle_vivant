@@ -10,6 +10,7 @@ from apps.gigs import services as gig_services
 from apps.gigs.models import Gig
 from apps.tenants.models import Tenant
 
+from .invoicing import legal_mentions, money
 from .models import Contract, ContractSequence, ContractTemplate, ContractVersion
 
 TWO_PLACES = Decimal("0.01")
@@ -26,6 +27,7 @@ PARTY_FORMS = {
 # The wordings that have a template file. A model is offered to users only once it is listed here.
 CONTRACT_TEMPLATES = {
     ContractTemplate.MODEL_1: "documents/contracts/model_1.html",
+    ContractTemplate.MODEL_2: "documents/contracts/model_2.html",
 }
 DEFAULT_CONTRACT_TEMPLATE = ContractTemplate.MODEL_1
 
@@ -54,9 +56,39 @@ def _compute_vat(gig, tenant):
     return vat_amount, gig.price + vat_amount
 
 
+def payment_schedule(gig):
+    """Deposit, balance and total of the price, with and without VAT (None when unknown).
+
+    The deposit follows the gig's `deposit_percent`; the balance is what is left, so that
+    the two always add up to the total, to the cent.
+    """
+    tenant = gig.tenant
+    price = money(gig.price)
+    deposit_ht = money(price * Decimal(str(gig.deposit_percent)) / 100)
+    balance_ht = price - deposit_ht
+    if tenant.vat_regime != Tenant.VatRegime.TAXABLE:
+        total_ttc, deposit_ttc = price, deposit_ht
+    elif tenant.vat_rate is None:
+        total_ttc = deposit_ttc = None
+    else:
+        factor = 1 + Decimal(tenant.vat_rate) / 100
+        total_ttc = money(price * factor)
+        deposit_ttc = money(deposit_ht * factor)
+    return {
+        "deposit_ht": deposit_ht,
+        "deposit_ttc": deposit_ttc,
+        "balance_ht": balance_ht,
+        "balance_ttc": None if total_ttc is None else total_ttc - deposit_ttc,
+        "total_ht": price,
+        "total_ttc": total_ttc,
+    }
+
+
 def build_contract_context(gig, contract=None):
     vat_amount, total_with_vat = _compute_vat(gig, gig.tenant)
     return {
+        "payment": payment_schedule(gig),
+        "vat_mentions": legal_mentions({"vat_regime": gig.tenant.vat_regime}, False, False),
         "contract": contract,
         "party": PARTY_FORMS,
         "vat_exempt": gig.tenant.vat_regime != Tenant.VatRegime.TAXABLE,

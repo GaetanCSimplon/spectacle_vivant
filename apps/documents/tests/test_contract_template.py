@@ -13,11 +13,13 @@ pytestmark = pytest.mark.django_db
 
 
 @pytest.fixture
-def two_models(monkeypatch):
-    """Offer a second wording, backed by the same file, so that switching can be tested."""
-    monkeypatch.setitem(
-        services.CONTRACT_TEMPLATES, ContractTemplate.MODEL_2, "documents/contracts/model_1.html"
-    )
+def two_models():
+    """Models 1 and 2 are both offered."""
+
+
+@pytest.fixture
+def one_model(monkeypatch):
+    monkeypatch.delitem(services.CONTRACT_TEMPLATES, ContractTemplate.MODEL_2)
 
 
 def _member_gig(client):
@@ -43,7 +45,10 @@ def test_model_1_carries_no_draft_banner():
 
 
 def test_only_models_with_a_template_file_are_offered():
-    assert services.available_contract_templates() == [("model_1", "Modèle 1")]
+    assert services.available_contract_templates() == [
+        ("model_1", "Modèle 1"),
+        ("model_2", "Modèle 2"),
+    ]
 
 
 def test_regenerating_with_another_model_switches_the_contract_and_keeps_old_versions(two_models):
@@ -126,7 +131,7 @@ def test_the_preview_uses_the_chosen_model_and_refuses_an_unknown_one(client, tw
     assert bad.status_code == 302
 
 
-def test_the_selector_is_hidden_with_a_single_model(client):
+def test_the_selector_is_hidden_with_a_single_model(client, one_model):
     gig = _member_gig(client)
 
     response = client.get(reverse("documents:contract-history", args=[gig.pk]))
