@@ -31,7 +31,7 @@
 
 **Modèle de demande à Claude Code**
 ```
-Contexte : je travaille sur <tâche> (Phase X, voir docs/04-feuille-de-route.md).
+Contexte : je travaille sur <tâche> (Phase X, voir docs/cadrage/04-feuille-de-route.md).
 Objectif : <résultat attendu, en une phrase>.
 Contraintes : respecte CLAUDE.md (lexique, isolation des tenants).
 Avant de coder : propose un plan (fichiers, modèles, tests) et attends mon accord.
@@ -41,7 +41,7 @@ Avant de coder : propose un plan (fichiers, modèles, tests) et attends mon acco
 
 > **Renommage du 2026-09-25** : `Organization` → `Tenant` dans tout le projet (modèle, champ FK, middleware `request.tenant`, mixin, app `organizations` → `tenants`). Les tâches déjà cochées ci-dessous utilisaient l'ancien nom au moment où elles ont été faites ; le texte a été mis à jour pour refléter le nom actuel, sans que ça change ce qui a été livré.
 
-> **Mise à jour du 2026-09-30** : intégration de l'entretien du 28/09 avec le collègue, de sa note de cadrage technique (modèle d'abonnement à deux formules) et de sa proposition de modèle de données Projet/Spectacle. Les ajouts additifs (code APE, rôles de contact, lien EPK, idées v1/v2) sont intégrés directement ci-dessous, marqués *(28/09)*. Les décisions structurantes (modèle économique, hiérarchie Projet/Spectacle, clause TVA du contrat) sont marquées ⚠️ et **ne sont pas développées tant qu'elles ne sont pas tranchées** — voir le tableau « Décisions à prendre » et `docs/03-cahier-des-charges.md` §14 (Q9-Q15 ; Q8 est tranchée depuis le 2026-10-01).
+> **Mise à jour du 2026-09-30** : intégration de l'entretien du 28/09 avec le collègue, de sa note de cadrage technique (modèle d'abonnement à deux formules) et de sa proposition de modèle de données Projet/Spectacle. Les ajouts additifs (code APE, rôles de contact, lien EPK, idées v1/v2) sont intégrés directement ci-dessous, marqués *(28/09)*. Les décisions structurantes (modèle économique, hiérarchie Projet/Spectacle, clause TVA du contrat) sont marquées ⚠️ et **ne sont pas développées tant qu'elles ne sont pas tranchées** — voir le tableau « Décisions à prendre » et `docs/cadrage/03-cahier-des-charges.md` §14 (Q9-Q15 ; Q8 est tranchée depuis le 2026-10-01).
 
 ---
 
@@ -49,16 +49,16 @@ Avant de coder : propose un plan (fichiers, modèles, tests) et attends mon acco
 
 **Objectif** : t'assurer que tu construis quelque chose d'utile, et acquérir le vocabulaire du métier.
 
-- [ ] Lire `02-guide-metier.md`.
+- [ ] Lire `docs/guides/02-guide-metier.md`.
 - [ ] Lister 10 à 15 personnes à contacter (artistes, groupes, associations, tourneurs, un comptable ou une CAE si possible) via ton réseau, réseaux sociaux, salles locales, groupes Facebook de musiciens.
 - [ ] Mener **5 entretiens** de 30 min avec la trame de la section 5 du guide métier. Enregistrer (avec accord) ou prendre des notes.
 - [x] Récupérer des **exemples réels** : contrat de cession, document de logique métier, modèles de données de suivi (obtenus du collègue, 2026-09-25) ; entretien complémentaire, note de cadrage technique et modèle de données Projet/Spectacle (obtenus le 2026-09-28/29).
 - [ ] Repérer 2 à 3 **modèles de contrats de cession de référence** (organismes professionnels, syndicats) et vérifier **leurs conditions de réutilisation** — le modèle reçu du collègue n'a pas encore été validé par un professionnel, voir point suivant.
 - [ ] Identifier **un professionnel relecteur** (juriste, expert-comptable, CAE, association d'artistes) pour valider contrat et mentions de facture.
-- [ ] **Obtenir les réponses du collègue aux questions ouvertes restantes** (`docs/03-cahier-des-charges.md` §14) : CRM de prospection, types de contrat, suivi temps réel, paie des intermittents, déclarations SACEM, capitalisation, contrats multi-dates, **+ Q9-Q15 issues des échanges de fin septembre** (modèle économique à deux formules, hiérarchie Projet/Spectacle, ordre de livraison, etc.). *Q8 est tranchée depuis le 2026-10-01, voir ci-dessous.*
+- [ ] **Obtenir les réponses du collègue aux questions ouvertes restantes** (`docs/cadrage/03-cahier-des-charges.md` §14) : CRM de prospection, types de contrat, suivi temps réel, paie des intermittents, déclarations SACEM, capitalisation, contrats multi-dates, **+ Q9-Q15 issues des échanges de fin septembre** (modèle économique à deux formules, hiérarchie Projet/Spectacle, ordre de livraison, etc.). *Q8 est tranchée depuis le 2026-10-01, voir ci-dessous.*
 - [x] **Q8 tranchée (2026-10-01)** : la mention « Nécitge 2000 et non assujetti à la TVA : article 293b du CGI » n'est pas conservée ; la suppression dans le contrat est confirmée.
 - [ ] Rédiger une synthèse d'une page : 3 problèmes principaux, 3 fonctionnalités les plus demandées, vocabulaire noté, prix acceptable.
-- [x] Mettre à jour `03-cahier-des-charges.md` si les entretiens changent le périmètre — *mis à jour au fil des documents reçus du collègue (contrat, logique métier, tableurs de suivi, entretien du 28/09, note de cadrage) ; à revoir une fois les 5 entretiens artistes réellement menés.*
+- [x] Mettre à jour `docs/cadrage/03-cahier-des-charges.md` si les entretiens changent le périmètre — *mis à jour au fil des documents reçus du collègue (contrat, logique métier, tableurs de suivi, entretien du 28/09, note de cadrage) ; à revoir une fois les 5 entretiens artistes réellement menés.*
 - [ ] **Décider** : go / go modifié / stop.
 
 **Livrable** : synthèse des entretiens + 2 modèles de contrat + contact d'un relecteur.
@@ -154,7 +154,7 @@ Avant de coder : propose un plan (fichiers, modèles, tests) et attends mon acco
 - [x] **Mise à jour du template** avec les nouveaux champs du modèle de contrat reçu du métier (2026-09-25) : `Tenant.contract_party_label` (supprimé le 2026-10-07, voir Sprint 3.8), `Show.group_name`/`performers`/`rider_file`, `Gig.invitations_count`/`signing_place`/`is_free`/`ticket_price`, `Contract.signatory_name`/`signatory_role`, et règle RG-12 (dans `Gig.save()`). — Le template affiche le libellé de la partie, le lieu de signature, les invitations et le signataire. **Pas encore fait** : reprendre la formulation exacte du contrat du métier (à faire avec le texte sous les yeux), afficher `group_name`/`performers` dans l'objet du contrat, et exposer ces champs dans les formulaires (wizard, Sprints 3.2/3.3/3.4 : pour l'instant seulement via l'admin).
 - [x] **Template du contrat aligné sur le vrai modèle du métier** (2026-09-25, 9 articles). Nouveaux champs : `Tenant.licence_number`/`representative_name`/`representative_role`/`jurisdiction_city` (ville du tribunal, art. 8), mêmes champs de représentant et de licence sur `Promoter`, `Venue.capacity`, `Show.sacem_number`/`sacem_object_number`, `Gig.get_in_time`/`soundcheck_time`/`performance_time`/`crew_headcount`. Tout champ vide s'affiche en « …… » pour être complété à la main. Coquilles du modèle corrigées (« ORGANISTAEUR », « hébéerments », « Nécitge 2000 » retiré). ✅ **Q8 tranchée le 2026-10-01** : la mention « Nécitge 2000 » n'est pas conservée, la suppression est confirmée. Le régime de TVA « assujetti » n'est pas géré (TVA laissée en pointillés) : à traiter au Sprint 3.5. Logo de la structure non repris (Sprint 3.1). **À demander au collègue : que signifie « APA » dans « Siret / APA » ?** (on n'affiche que le SIRET en attendant — voir aussi Q11, §14, sur le champ `code_ape` distinct.)
 - [x] **Formulaire « Compléter la date »** (2026-09-25) : page unique `dates/<id>/contrat/completer/` (`documents:contract-complete`), atteinte depuis l'écran « Date créée ». Un seul bouton « Enregistrer » pour 6 sections (date, spectacle, lieu, organisateur, ma structure, signature), enregistrées dans une transaction (tout ou rien). Tous les champs sont facultatifs (vide = pointillés dans le contrat). La section « Ma structure » est **réservée au rôle `owner`** ; un contrat `signé` n'est plus modifiable (RG-08). — **Provisoire** : la section « Ma structure » sera retirée de ce formulaire quand la page « Ma structure » du Sprint 3.1 existera. `rider_file` et `performers` restent pour le Sprint 3.2. **Testé à la main dans le navigateur (2026-09-25)** : rendu à 375 px, grisage du prix pour un concert gratuit, remplissage et pré-remplissage des champs, isolation entre structures, section « Ma structure » non modifiable par un `member`, contrat `signé` figé et refusé à la modification.
-- [ ] Ne retirer le filigrane « gabarit provisoire » qu'une fois le contrat validé par le relecteur professionnel (Phase 0 puis confirmation en Phase 4).
+- [x] ~~Ne retirer le filigrane « gabarit provisoire » qu'une fois le contrat validé~~ — bandeau « PROJET — non relu » retiré le 2026-10-13 sur décision de l'utilisateur : le gabarit d'origine (désormais « Modèle 1 ») est un contrat de cession réellement utilisé. La relecture professionnelle reste à faire avant la bêta.
 - [ ] *(signalé manquant dans le point d'étape du 30/09)* Logo de la structure (`Tenant.logo`) non encore affiché sur le PDF du contrat — dépend aussi de la page « Ma structure » complète (Sprint 3.1).
 
 ### 2.4 Test utilisateur
@@ -211,7 +211,7 @@ Avant de coder : propose un plan (fichiers, modèles, tests) et attends mon acco
 - [x] Aperçu avant génération ; historique des versions générées. — Aperçu fait (PR A) : rendu à la volée, rien n'est enregistré ; un contrat signé ou d'une date annulée affiche son PDF enregistré ; pas de génération pour une date annulée sans contrat. Historique fait (PR B) : modèle `ContractVersion` (une ligne par PDF généré, jamais écrasée), page « Contrat de cession » (`documents:contract-history`) avec « Générer une nouvelle version » et téléchargement de chaque version ; `Contract.pdf_file`/`generated_at` supprimés (migrations `documents/0003` et `0004`).
 - [x] Numérotation des contrats par tenant. — Fait (PR B) : `Contract.reference` (ex. `C-2026-007`), attribuée à la première génération via `ContractSequence` (tenant + année) sous `select_for_update`, dans la transaction de création : sans trou, repart à 001 chaque année.
 - [x] Marquage « signé » : figeage du PDF, passage de la date à `signed`, upload optionnel du PDF signé. — Fait (PR C) : `mark_contract_signed` (une transaction : fige la dernière version dans `Contract.signed_version`, `signed_at`, contrat et date à `signed`) ; écran de confirmation (« signé en dehors de l'application » — la signature électronique par un prestataire reste prévue en v1) ; PDF signé facultatif (PDF réel, 10 Mo max) ajoutable ensuite une seule fois, jamais remplacé ; une date signée puis annulée puis réactivée revient en `signed` (et non en option) ; migration `documents/0005`.
-- [x] Stockage des PDF figés : bucket S3 européen via `django-storages` (dev = stockage local). — Fait (PR C) : `STORAGES` S3 privé dans `config/settings/prod.py` (variables `S3_*`), chemins `contracts/<uuid>/…`, fichiers envoyés uniquement par des vues protégées par le tenant ; `/media/` n'est plus servi, même en dev. **Reste à faire de ton côté : créer le bucket** (voir `docs/06-services-production.md`).
+- [x] Stockage des PDF figés : bucket S3 européen via `django-storages` (dev = stockage local). — Fait (PR C) : `STORAGES` S3 privé dans `config/settings/prod.py` (variables `S3_*`), chemins `contracts/<uuid>/…`, fichiers envoyés uniquement par des vues protégées par le tenant ; `/media/` n'est plus servi, même en dev. **Reste à faire de ton côté : créer le bucket** (voir `docs/guides/06-services-production.md`).
 - [x] Tests : contenu du PDF, immutabilité après signature, accès protégé aux fichiers (pas d'URL publique devinable).
 
 ### Sprint 3.5 — Devis et factures
@@ -239,14 +239,14 @@ Avant de coder : propose un plan (fichiers, modèles, tests) et attends mon acco
 - [x] `Payment` et `Expense` avec formulaires rapides (HTMX) : page `dates/<id>/finances/` (paiements par facture, dépenses avec justificatif PDF/JPEG/PNG de 10 Mo max servi par une vue protégée, modification et suppression), bloc « Paiements et dépenses » sur la fiche de la date. Migrations `finance/0001`, `finance/0002` (validateurs) et `documents/0007`.
 - [x] Mise à jour automatique du statut de facture selon les paiements (`paid` ↔ `issued`, sous verrou ; une facture payée reste créditable).
 - [x] Catégories de dépenses (cachets, transport, hébergement, technique, communication, autres).
-- [x] Bilan par date (facturé / encaissé / dépensé / résultat) — **distinguer recette prévue (prix du contrat) / facturée / encaissée** (F-57, `docs/03-cahier-des-charges.md` §4.8, demandé le 29/09), pas un chiffre unique.
+- [x] Bilan par date (facturé / encaissé / dépensé / résultat) — **distinguer recette prévue (prix du contrat) / facturée / encaissée** (F-57, `docs/cadrage/03-cahier-des-charges.md` §4.8, demandé le 29/09), pas un chiffre unique.
 - [x] Affichage des montants de synthèse en euros entiers arrondis, stockage et calculs au centime près (F-58, demandé le 29/09).
 - [x] Tableau de bord global (page d'accueil, `finance/dashboard.py`) : facturé et encaissé de l'année en cours (TTC, euros entiers à l'affichage), factures à encaisser avec reste dû et retard, dates confirmées à venir sans contrat généré, 5 prochaines dates.
 - [x] **Export CSV** (`;`, UTF-8 BOM, virgule décimale, dates jj/mm/aaaa, période au choix) : factures et avoirs, recettes, dépenses, page `exports/` ; textes neutralisés contre les formules de tableur. **Test d'ouverture dans Excel à faire à la main** (vérifié seulement avec le module `csv` de Python).
 - [x] Tests : calculs, exports, isolation, cas limites (paiement partiel, surpaiement).
 
 ### Sprint 3.9 — Retours de l'associé (2026-10-09)
-Ajouts demandés après un rendez-vous métier (voir `docs/03` : F-06, F-15, F-59, F-76). Une PR chacune, dans cet ordre :
+Ajouts demandés après un rendez-vous métier (voir `docs/cadrage/03` : F-06, F-15, F-59, F-76). Une PR chacune, dans cet ordre :
 - [x] Code APE dans « Ma structure », après le SIRET (et dans les contrats et factures émis). — Fait (2026-10-09) : `Tenant.code_ape` (migration `tenants/0008`), normalisé (« 90.01 z » devient 9001Z), copié dans les factures émises (snapshot) et affiché dans le contrat s'il est rempli.
 - [x] Nom facultatif (interne) des devis et des factures, modifiable après émission (F-59). — Fait (2026-10-09) : `title` sur `Quote` et `Invoice` (migration `documents/0008`), formulaire sur la fiche du document, affiché dans la page de facturation et les factures à encaisser, absent du PDF.
 - [x] Cartes des prochaines dates à l'accueil : acompte et solde (F-76). — Fait (2026-10-09) : `dashboard.gig_payment_lines` (TTC, sans migration) ; « à facturer » (montant prévu selon les conditions de la date), « à encaisser » (reste dû) ou « encaissé » ; une facture totale remplace les deux lignes.
@@ -264,6 +264,15 @@ Ajouts demandés après un rendez-vous métier (voir `docs/03` : F-06, F-15, F-5
 - [x] Rendu mobile (375 px) — Fait (2026-10-12) : barre du bas remplacée par un menu burger (`<details>`, fonctionne sans JavaScript, se ferme au clic extérieur et à Échap), cartes de l'accueil qui ne débordent plus (colonne unique explicite, `min-w-0`, mots longs coupés), boutons « + » ronds dans les en-têtes de listes, rangées de dates plus lisibles. Contrôlé avec un navigateur sans écran sur 30 pages à 375 et 320 px : aucun défilement horizontal.
 - [x] Nouvelle identité visuelle « Scène » — Fait (2026-10-12) : bleu-vert (l'échelle `blue-*` de Tailwind est redéfinie, tout le site change d'un coup) et corail, formes arrondies, en-tête bleu-vert, police Sora hébergée par nous (aucune requête vers un fournisseur de polices). Rendu à vérifier à la main.
 
+### Sprint 3.11 — Plusieurs modèles de contrat de cession (2026-10-13)
+Demande de l'associé : proposer 4 modèles de contrat de cession (le nôtre + 3 modèles réellement utilisés, dans `docs/modeles-contrats/`). Tous restent des contrats de **cession** (ni coréalisation ni location, Q2). Choix possible tant que le contrat est en brouillon ; une fois « signé », le modèle ne change plus. Noms affichés : Modèle 1 (par défaut, notre gabarit), Modèle 2, Modèle 3, Modèle 4. Un champ vide s'affiche en « …… » ; les annexes du dernier modèle sont des pages à compléter à la main ; les mentions de théâtre sont gardées telles quelles.
+- [x] **PR 1 — le choix du modèle** (2026-10-13) : `Contract.template` et `ContractVersion.template` (migration `documents/0009`), gabarit d'origine déplacé en `templates/documents/contracts/model_1.html` sans bandeau « non relu », sélecteur sur la page « Contrat de cession » (affiché dès que plusieurs modèles existent), aperçu du modèle choisi. Un modèle n'est proposé qu'une fois son fichier listé dans `services.CONTRACT_TEMPLATES`.
+- [ ] **PR 2 — champs communs** : structure (téléphone, e-mail, BIC), organisateur (code APE, n° de TVA, aussi dans le formulaire envoyé à l'organisateur), date (nom de l'évènement, nombre de représentations, échéances d'acompte et de solde, mode de paiement, délai de retour du contrat signé, nombre d'exemplaires, accueil : repas, hébergement, transports locaux, autres).
+- [ ] **PR 3 — Modèle 2** (`01template_contrat_cession_spectacle.md`).
+- [ ] **PR 4 — Modèle 3** (`02template_contrat_cession_spectacle.md`).
+- [ ] **PR 5 — Modèle 4** (le .docx, annexes en pages à compléter ; le taux de TVA vient de la structure, pas du texte).
+- [ ] Faire relire les 4 modèles par le professionnel avant la bêta.
+
 ### Sprint 3.8 — Légal, sécurité, finition, recette
 - [x] Pages : mentions légales, CGU, confidentialité (gabarits à compléter et à faire relire avant la mise en ligne).
 - [x] Export des données (F-81) : ZIP de CSV et de fichiers, page `ma-structure/export-donnees/`.
@@ -279,7 +288,7 @@ Ajouts demandés après un rendez-vous métier (voir `docs/03` : F-06, F-15, F-5
 - [x] États vides et messages de succès : relus, déjà présents sur les listes, fiches, finances et accueil.
 - [ ] **Recette** : dérouler la liste de la section 11 du cahier des charges sur staging.
 - [ ] Sauvegarde de la base + **test de restauration**.
-- [x] Fichiers de déploiement Scalingo (2026-10-12) : `Procfile`, `.python-version`, `requirements.txt`, `.buildpacks` + `Aptfile` (WeasyPrint), `bin/post_compile` (Tailwind + `collectstatic`), `bin/post_deploy.sh` (migrations + `set_site_domain`), `cron.json` (purge à 3 h UTC), e-mails SMTP en production. Construction simulée en local avec `config.settings.prod` ; procédure et vérifications dans `docs/06`.
+- [x] Fichiers de déploiement Scalingo (2026-10-12) : `Procfile`, `.python-version`, `requirements.txt`, `.buildpacks` + `Aptfile` (WeasyPrint), `bin/post_compile` (Tailwind + `collectstatic`), `bin/post_deploy.sh` (migrations + `set_site_domain`), `cron.json` (purge à 3 h UTC), e-mails SMTP en production. Construction simulée en local avec `config.settings.prod` ; procédure et vérifications dans `docs/guides/06`.
 - [ ] Déploiement en **production** (déclenchement manuel).
 
 **Livrable** : MVP en production.
@@ -316,7 +325,7 @@ Ajouts demandés après un rendez-vous métier (voir `docs/03` : F-06, F-15, F-5
 **Objectif** : ouvrir à un public plus large et facturer. L'**ordre** doit être revu selon les retours de la bêta.
 
 ### 5.1 Abonnement et quotas (priorité haute)
-- [ ] Choisir la grille tarifaire — **⚠️ deux modèles concurrents à trancher (Q9, `docs/03-cahier-des-charges.md` §14)** : soit le freemium initial (gratuit jusqu'à 3 dates/an, puis mensuel/annuel), soit les deux formules payantes « Essentiel »/« Collectif » proposées le 29/09 (sans palier gratuit, avec matrice de fonctionnalités par formule). Ne pas développer cette section avant la décision.
+- [ ] Choisir la grille tarifaire — **⚠️ deux modèles concurrents à trancher (Q9, `docs/cadrage/03-cahier-des-charges.md` §14)** : soit le freemium initial (gratuit jusqu'à 3 dates/an, puis mensuel/annuel), soit les deux formules payantes « Essentiel »/« Collectif » proposées le 29/09 (sans palier gratuit, avec matrice de fonctionnalités par formule). Ne pas développer cette section avant la décision.
 - [ ] Intégrer Stripe (Checkout + webhooks), gestion de la facturation des abonnés, résiliation.
 - [ ] Appliquer le quota : blocage doux à la 4ᵉ date avec message clair et invitation à s'abonner.
 - [ ] Conditions générales de vente.
@@ -325,7 +334,7 @@ Ajouts demandés après un rendez-vous métier (voir `docs/03` : F-06, F-15, F-5
 - [ ] Étudier les **plateformes agréées** et leurs API ; choisir l'option (génération Factur-X + envoi via une PA, ou partenariat).
 - [ ] Générer des factures au format **Factur-X** ; ajouter les nouvelles mentions requises (dont SIREN du client).
 - [ ] Gestion des statuts de cycle de vie côté plateforme.
-- [ ] ⚠️ **Ordre de livraison proposé le 29/09 (Q14, `docs/03-cahier-des-charges.md` §14)** : Lot 1 = périmètre vendable de la formule « Essentiel » ; Lot 2 = « Collectif » **sans** la facturation électronique conforme (affichée « bientôt incluse ») ; Lot 3 = facturation électronique conforme, seulement une fois prestataire/flux/coût validés. **Ne jamais annoncer la facturation électronique comme « incluse » avant des tests réels du flux complet.**
+- [ ] ⚠️ **Ordre de livraison proposé le 29/09 (Q14, `docs/cadrage/03-cahier-des-charges.md` §14)** : Lot 1 = périmètre vendable de la formule « Essentiel » ; Lot 2 = « Collectif » **sans** la facturation électronique conforme (affichée « bientôt incluse ») ; Lot 3 = facturation électronique conforme, seulement une fois prestataire/flux/coût validés. **Ne jamais annoncer la facturation électronique comme « incluse » avant des tests réels du flux complet.**
 
 ### 5.3 Signature électronique
 Décision du 2026-10-12 (budget serré) : la signature reste **à la charge de l'utilisateur**, avec son propre compte chez le service de son choix (DocuSeal, Yousign, DocuSign…).
@@ -357,8 +366,8 @@ Décision du 2026-10-12 (budget serré) : la signature reste **à la charge de l
 ### 5.7 Version 2 (à évaluer)
 - [ ] Carte des dates et calcul des trajets (OpenStreetMap + service d'itinéraire).
 - [ ] Statistiques avancées, import de données, éventuelle app mobile.
-- [ ] Contrat couvrant plusieurs dates (tournée en un seul accord) — voir Q7, `docs/03-cahier-des-charges.md` §14.
-- [ ] *(à arbitrer — Q10, §14)* Refonte du modèle `Show` vers une hiérarchie `Projet` → `Spectacle` → `Spectacle_version` → `Representation` avec référentiel `Personne` réutilisable, si confirmée utile au-delà du MVP actuel — voir `docs/07-modele-spectacle.md` pour le détail des champs.
+- [ ] Contrat couvrant plusieurs dates (tournée en un seul accord) — voir Q7, `docs/cadrage/03-cahier-des-charges.md` §14.
+- [ ] *(à arbitrer — Q10, §14)* Refonte du modèle `Show` vers une hiérarchie `Projet` → `Spectacle` → `Spectacle_version` → `Representation` avec référentiel `Personne` réutilisable, si confirmée utile au-delà du MVP actuel — voir `docs/metier/07-modele-spectacle.md` pour le détail des champs.
 
 ---
 
@@ -376,7 +385,7 @@ Décision du 2026-10-12 (budget serré) : la signature reste **à la charge de l
 | Prestataire d'e-mails transactionnels | Phase 3.1 | ☐ |
 | Navigation principale limitée à 5 entrées : où loger le carnet d'adresses et les spectacles ? | Sprint 3.2 | ☑ *(2026-09-30 : Accueil · Mes dates · Contacts · Ma structure, puis + Spectacles ; « Nouvelle date » devient un bouton dans « Mes dates »)* — menu à 5 entrées depuis le CRUD `Show` |
 | Modèle économique : freemium (3 dates gratuites) ou formules Essentiel/Collectif (Q9) | Avant Phase 5.1 | ☐ |
-| Adoption ou non de la hiérarchie Projet/Spectacle/Version proposée le 29/09 (Q10) — détail dans `docs/07-modele-spectacle.md` | Avant toute refonte du modèle `Show` | ☐ |
+| Adoption ou non de la hiérarchie Projet/Spectacle/Version proposée le 29/09 (Q10) — détail dans `docs/metier/07-modele-spectacle.md` | Avant toute refonte du modèle `Show` | ☐ |
 | Bucket S3 européen (Scaleway, OVH…) | Phase 3.4 | ☐ |
 | Politique de conservation des données | Phase 3.8 | ◐ *(suppression complète après 30 jours, factures émises comprises ; conservation légale de 10 ans à valider avec un comptable)* |
 | Grille tarifaire | Phase 4 | ☐ |

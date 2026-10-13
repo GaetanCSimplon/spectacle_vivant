@@ -17,7 +17,7 @@ def test_procfile_starts_gunicorn_without_an_access_log_and_migrates_after_deplo
     procfile = (ROOT / "Procfile").read_text()
     assert "web: gunicorn config.wsgi" in procfile
     assert "$PORT" in procfile
-    # The roadmap token is in the URL: gunicorn must not log requests (docs/06).
+    # The roadmap token is in the URL: gunicorn must not log requests (docs/guides/06).
     assert "access" not in procfile
     assert "postdeploy:" in procfile
 

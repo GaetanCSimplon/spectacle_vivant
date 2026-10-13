@@ -1,6 +1,6 @@
 # Cas d'usage et diagrammes
 
-> Illustration des fonctionnalités réalisées au 2026-10-07 (voir `08-synthese-fonctionnalites.md`).
+> Illustration des fonctionnalités réalisées au 2026-10-07 (voir `docs/cadrage/08-synthese-fonctionnalites.md`).
 > Les schémas sont écrits en **Mermaid** : ils s'affichent directement sur GitHub, et dans VS Code avec une extension d'aperçu Markdown qui gère Mermaid.
 > Ils décrivent ce que fait le code. Les 16 premiers schémas ont été validés par l'analyseur syntaxique de Mermaid le 03/10 ; ceux ajoutés le 07/10 (cas d'usage UC19 à UC22, séquence 4.10, états 5.4, architecture) ne l'ont pas été. Le rendu visuel n'a pas été contrôlé à l'œil, signalez tout schéma qui s'affiche mal.
 

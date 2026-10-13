@@ -147,7 +147,7 @@ Une date peut aussi être **Annulée** (à toute étape). L'app doit le gérer p
 - **Onboarding < 10 min** : au premier lancement, un assistant en quelques écrans (nom de la structure, forme juridique, SIRET, premier spectacle, première date) avec des **modèles pré-remplis**. Un utilisateur qui a un contrat PDF en 10 minutes est un utilisateur conquis.
 - **Freemium** : gratuit jusqu'à 3 dates par an, puis abonnement bas. Justification : les artistes émergents n'ont presque pas de revenus. Techniquement : un champ « plan » sur la structure et une vérification de quota ; le paiement (Stripe) vient en v1.
 
-⚠️ **À arbitrer** : la note de cadrage technique du 29/09 propose de remplacer ce freemium par deux formules payantes dès le départ (« Essentiel » / « Collectif »). Voir Q9, `docs/03-cahier-des-charges.md` §14 — non tranché à ce jour, ce guide garde la description du freemium tant que ce n'est pas confirmé.
+⚠️ **À arbitrer** : la note de cadrage technique du 29/09 propose de remplacer ce freemium par deux formules payantes dès le départ (« Essentiel » / « Collectif »). Voir Q9, `docs/cadrage/03-cahier-des-charges.md` §14 — non tranché à ce jour, ce guide garde la description du freemium tant que ce n'est pas confirmé.
 
 ---
 

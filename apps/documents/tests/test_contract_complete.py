@@ -259,7 +259,7 @@ def test_completed_values_end_up_in_the_contract(client):
     gig.refresh_from_db()
     contract = Contract.objects.get(gig=gig)
     context = build_contract_context(gig, contract)
-    rendered = html_lib.unescape(render_to_string("documents/contract_pdf.html", context))
+    rendered = html_lib.unescape(render_to_string("documents/contracts/model_1.html", context))
     text = " ".join(rendered.split())
     assert "Heure de get in : 15h30" in text
     assert "numéro SACEM : SAC-1" in text

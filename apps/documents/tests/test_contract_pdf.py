@@ -54,7 +54,7 @@ def test_contract_html_contains_the_gig_details_in_french_format():
     # what template localization (French comma) needs.
     gig.refresh_from_db()
 
-    html = render_to_string("documents/contract_pdf.html", build_contract_context(gig))
+    html = render_to_string("documents/contracts/model_1.html", build_contract_context(gig))
 
     assert gig.show.title in html
     assert gig.promoter.name in html
@@ -107,7 +107,9 @@ def test_contract_preview_of_another_tenants_gig_returns_404(client):
 
 def _render(gig, contract=None):
     gig.refresh_from_db()
-    html = render_to_string("documents/contract_pdf.html", build_contract_context(gig, contract))
+    html = render_to_string(
+        "documents/contracts/model_1.html", build_contract_context(gig, contract)
+    )
     return " ".join(html_lib.unescape(html).split())
 
 
@@ -271,7 +273,7 @@ def test_contract_hides_the_special_conditions_article_when_empty():
 def test_contract_escapes_html_in_the_special_conditions():
     gig = GigFactory(conditions="<script>alert(1)</script>")
 
-    html = render_to_string("documents/contract_pdf.html", build_contract_context(gig))
+    html = render_to_string("documents/contracts/model_1.html", build_contract_context(gig))
 
     assert "<script>" not in html
     assert "&lt;script&gt;" in html
@@ -365,9 +367,9 @@ def test_contract_shows_the_vat_number_only_for_a_taxable_tenant():
 def test_contract_html_shows_the_code_ape_only_when_filled():
     gig = GigFactory(tenant__code_ape="9001Z")
     gig.refresh_from_db()
-    html = render_to_string("documents/contract_pdf.html", build_contract_context(gig))
+    html = render_to_string("documents/contracts/model_1.html", build_contract_context(gig))
     assert "Code APE : 9001Z" in html
 
     gig.tenant.code_ape = ""
-    html = render_to_string("documents/contract_pdf.html", build_contract_context(gig))
+    html = render_to_string("documents/contracts/model_1.html", build_contract_context(gig))
     assert "Code APE" not in html

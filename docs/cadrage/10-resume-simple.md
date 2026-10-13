@@ -2,7 +2,7 @@
 
 > Un texte pour comprendre l'essentiel sans connaître la technique.
 > État au **7 octobre 2026**, seize jours après le premier commit (21 septembre).
-> Pour le détail : `08-synthese-fonctionnalites.md` (ce qui existe) et `09-cas-d-usage-et-diagrammes.md` (les schémas).
+> Pour le détail : `docs/cadrage/08-synthese-fonctionnalites.md` (ce qui existe) et `docs/guides/09-cas-d-usage-et-diagrammes.md` (les schémas).
 
 ## L'idée en une phrase
 

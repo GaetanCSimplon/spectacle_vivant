@@ -17,6 +17,15 @@ def signed_upload_to(instance, filename):
     return f"contracts/{uuid.uuid4().hex}/contrat-signe.pdf"
 
 
+class ContractTemplate(models.TextChoices):
+    """The cession contract wordings a user can pick from (see services.CONTRACT_TEMPLATES)."""
+
+    MODEL_1 = "model_1", _("Modèle 1")
+    MODEL_2 = "model_2", _("Modèle 2")
+    MODEL_3 = "model_3", _("Modèle 3")
+    MODEL_4 = "model_4", _("Modèle 4")
+
+
 class Contract(TenantOwnedModel):
     """The cession contract (Contrat de cession) PDF linked to a Gig."""
 
@@ -27,6 +36,12 @@ class Contract(TenantOwnedModel):
     gig = models.OneToOneField("gigs.Gig", on_delete=models.CASCADE, related_name="contract")
     status = models.CharField(
         _("statut"), max_length=20, choices=Status.choices, default=Status.DRAFT
+    )
+    template = models.CharField(
+        _("modèle de contrat"),
+        max_length=20,
+        choices=ContractTemplate.choices,
+        default=ContractTemplate.MODEL_1,
     )
     signatory_name = models.CharField(_("nom du signataire"), max_length=255, blank=True)
     signatory_role = models.CharField(_("qualité du signataire"), max_length=255, blank=True)
@@ -64,6 +79,12 @@ class ContractVersion(TenantOwnedModel):
 
     contract = models.ForeignKey(Contract, on_delete=models.CASCADE, related_name="versions")
     number = models.PositiveIntegerField(_("numéro de version"))
+    template = models.CharField(
+        _("modèle de contrat"),
+        max_length=20,
+        choices=ContractTemplate.choices,
+        default=ContractTemplate.MODEL_1,
+    )
     pdf_file = models.FileField(_("fichier PDF"), upload_to=version_upload_to)
     created_at = models.DateTimeField(_("généré le"), auto_now_add=True)
     created_by = models.ForeignKey(
