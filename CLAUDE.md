@@ -101,7 +101,7 @@ Une app = un domaine métier. Ne pas créer d'app supplémentaire sans en parler
 
 ### 6.4 Simplicité
 - Pas de sur-ingénierie : pas d'abstraction « au cas où ». Trois lignes répétées valent mieux qu'une abstraction prématurée.
-- Une fonctionnalité du prompt client non listée dans `docs/03-cahier-des-charges.md` (MVP) **n'est pas à coder**.
+- Une fonctionnalité du prompt client non listée dans `docs/cadrage/03-cahier-des-charges.md` (MVP) **n'est pas à coder**.
 
 ## 7. Conventions de code
 
@@ -122,7 +122,7 @@ Une tâche est terminée quand :
 2. les cas normaux **et** les cas d'erreur sont testés ;
 3. l'isolation des tenants est testée si un modèle ou une vue est concerné ;
 4. la page est utilisable sur mobile (largeur 375 px) ;
-5. `docs/04-feuille-de-route.md` est mis à jour (case cochée).
+5. `docs/cadrage/04-feuille-de-route.md` est mis à jour (case cochée).
 
 ## 9. Méthode de travail avec moi
 
@@ -135,11 +135,11 @@ Une tâche est terminée quand :
 
 ## 10. Hors périmètre (ne pas coder, ne pas proposer)
 
-Calcul de charges sociales GUSO/intermittence, carte et temps de trajet, connecteur expert-comptable/CAE, aide au choix du statut juridique, billetterie, gestion des droits SACEM, application mobile native. (Voir `docs/03-cahier-des-charges.md` pour les évolutions prévues.)
+Calcul de charges sociales GUSO/intermittence, carte et temps de trajet, connecteur expert-comptable/CAE, aide au choix du statut juridique, billetterie, gestion des droits SACEM, application mobile native. (Voir `docs/cadrage/03-cahier-des-charges.md` pour les évolutions prévues.)
 
 ## 11. État actuel
 
-- Phase en cours : **Phase 3 (Sprints 3.1 à 3.7 terminés ; Sprint 3.8 à venir : pages légales, export et suppression de compte, audit d'isolation, sauvegardes, recette)** — voir `docs/04-feuille-de-route.md`. Acquis à ce stade : onboarding, « Ma structure », navigation, CRUD `Promoter`/`Venue`/`Contact`/`Show`, dates (statuts, option avec échéance, filtres, calendrier), contrat de cession (conditions particulières, aperçu, versions numérotées, marquage « signé » qui fige le PDF, PDF signé facultatif), stockage privé (disque en dev, S3 en prod, jamais d'URL `/media/`), devis, factures et avoirs (numérotation sans trou, émission figée, écrans HTMX, PDF), feuille de route (éditeur HTMX, lien secret révocable, page publique sans compte, PDF, bouton « Copier l'adresse »), paiements, dépenses (justificatifs privés), bilan par date, tableau de bord d'accueil, exports CSV. Pas encore déployé (pas de compte Scalingo) ; services à prévoir : `docs/06-services-production.md`.
-- Un vrai modèle de contrat de cession et un document de logique métier ont été fournis par le métier, puis complétés le 2026-09-28/29 par un entretien, un modèle de données plus riche (hiérarchie Projet/Spectacle/Version, détaillé champ par champ le 01/10 — voir `docs/07-modele-spectacle.md`) et une note de cadrage technique (abonnement à deux niveaux). Le contrat (cas cession simple) reste aligné avec le périmètre MVP ; les extensions de périmètre (CRM, hiérarchie Projet/Spectacle, types de contrat multiples, paie intermittents, déclarations SACEM, signature électronique par prestataire) **restent hors du MVP tant qu'elles n'ont pas été explicitement confirmées** — voir `docs/03-cahier-des-charges.md` §14 (Questions ouvertes, Q1-Q15).
+- Phase en cours : **Phase 3 (Sprints 3.1 à 3.7 terminés ; Sprint 3.8 à venir : pages légales, export et suppression de compte, audit d'isolation, sauvegardes, recette)** — voir `docs/cadrage/04-feuille-de-route.md`. Acquis à ce stade : onboarding, « Ma structure », navigation, CRUD `Promoter`/`Venue`/`Contact`/`Show`, dates (statuts, option avec échéance, filtres, calendrier), contrat de cession (conditions particulières, aperçu, versions numérotées, marquage « signé » qui fige le PDF, PDF signé facultatif), stockage privé (disque en dev, S3 en prod, jamais d'URL `/media/`), devis, factures et avoirs (numérotation sans trou, émission figée, écrans HTMX, PDF), feuille de route (éditeur HTMX, lien secret révocable, page publique sans compte, PDF, bouton « Copier l'adresse »), paiements, dépenses (justificatifs privés), bilan par date, tableau de bord d'accueil, exports CSV. Pas encore déployé (pas de compte Scalingo) ; services à prévoir : `docs/guides/06-services-production.md`.
+- Un vrai modèle de contrat de cession et un document de logique métier ont été fournis par le métier, puis complétés le 2026-09-28/29 par un entretien, un modèle de données plus riche (hiérarchie Projet/Spectacle/Version, détaillé champ par champ le 01/10 — voir `docs/metier/07-modele-spectacle.md`) et une note de cadrage technique (abonnement à deux niveaux). Le contrat (cas cession simple) reste aligné avec le périmètre MVP ; les extensions de périmètre (CRM, hiérarchie Projet/Spectacle, types de contrat multiples, paie intermittents, déclarations SACEM, signature électronique par prestataire) **restent hors du MVP tant qu'elles n'ont pas été explicitement confirmées** — voir `docs/cadrage/03-cahier-des-charges.md` §14 (Questions ouvertes, Q1-Q15).
 - Q8 tranchée (2026-10-01) : la mention « Nécitge 2000 et non assujetti à la TVA : article 293b du CGI » n'est pas conservée dans le contrat.
 - Décisions ouvertes : voir la section « Décisions à prendre » de la feuille de route.

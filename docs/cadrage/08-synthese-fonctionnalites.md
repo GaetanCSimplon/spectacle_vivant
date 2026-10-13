@@ -1,8 +1,8 @@
 # Synthèse des fonctionnalités réalisées
 
 > **Situation au 2026-10-07.** Phase 3 (MVP) : Sprints 3.1 à 3.7 réalisés, et le code du Sprint 3.8 (légal, sécurité, finition) aussi. Il reste la recette, les sauvegardes et la mise en ligne, qui attendent les comptes d'hébergement (§7).
-> Ce document décrit **ce qui existe dans le code** ; les intentions et le périmètre complet restent dans `03-cahier-des-charges.md` et `04-feuille-de-route.md`.
-> Pour les schémas : `09-cas-d-usage-et-diagrammes.md`. Pour une version non technique : `10-resume-simple.md`.
+> Ce document décrit **ce qui existe dans le code** ; les intentions et le périmètre complet restent dans `docs/cadrage/03-cahier-des-charges.md` et `docs/cadrage/04-feuille-de-route.md`.
+> Pour les schémas : `docs/guides/09-cas-d-usage-et-diagrammes.md`. Pour une version non technique : `docs/cadrage/10-resume-simple.md`.
 
 Légende : ✅ fait · 🟡 partiel · ⬜ pas encore fait.
 
@@ -105,7 +105,7 @@ Légende : ✅ fait · 🟡 partiel · ⬜ pas encore fait.
 ### M9 — Légal et RGPD
 - **Pages légales** (`infos/mentions-legales/`, `infos/cgu/`, `infos/confidentialite/`) : accessibles sans connexion. Les textes sont des **gabarits provisoires** avec des « [À compléter] » ; ils doivent être renseignés et relus avant la mise en ligne.
 - **Export des données** (`ma-structure/export-donnees/`) : un ZIP contenant des CSV (spectacles, organisateurs, lieux, contacts, dates, finances) et les fichiers stockés (contrats, PDF, justificatifs…).
-- **Suppression de compte** (`ma-structure/supprimer/`) : réservée au propriétaire, qui confirme avec le nom de la structure et son mot de passe. **Délai de 30 jours**, pendant lequel la suppression peut être annulée (`ma-structure/annuler-suppression/`). Passé ce délai, la commande `purge_deleted_tenants` supprime tout (données et fichiers) ; elle est **à planifier en production** (`06-services-production.md`).
+- **Suppression de compte** (`ma-structure/supprimer/`) : réservée au propriétaire, qui confirme avec le nom de la structure et son mot de passe. **Délai de 30 jours**, pendant lequel la suppression peut être annulée (`ma-structure/annuler-suppression/`). Passé ce délai, la commande `purge_deleted_tenants` supprime tout (données et fichiers) ; elle est **à planifier en production** (`docs/guides/06-services-production.md`).
 - **Départ d'un membre** (`ma-structure/quitter/`) : un membre peut quitter la structure ; le dernier propriétaire ne peut pas, il doit la supprimer ou la confier.
 - ⚠️ La suppression emporte aussi les factures émises : la conservation légale de 10 ans reste à valider avec un comptable.
 
@@ -171,7 +171,7 @@ Aucune PR en attente : tout est fusionné dans `main`.
 `Contract`, `ContractVersion`, `ContractSequence` · `Invoice`, `Quote`, `DocumentLine`, `DocumentSequence` ·
 `Roadmap`, `RoadmapSlot`, `Lodging`, `Meal`, `GigMember` · `Payment`, `Expense`.
 
-Schéma des relations : voir `09-cas-d-usage-et-diagrammes.md` §6. La description champ par champ est dans le cahier des charges §9 (aligné sur le code le 01/10).
+Schéma des relations : voir `docs/guides/09-cas-d-usage-et-diagrammes.md` §6. La description champ par champ est dans le cahier des charges §9 (aligné sur le code le 01/10).
 
 **Écarts avec le cahier des charges initial** (déjà reportés dans le §9) : `ContractVersion` et `reference` remplacent `Contract.pdf_file`/`number` ; `DocumentSequence` remplace `InvoiceSequence` ; un avoir est un type de facture ; la TVA est portée par `Tenant.vat_rate` ; `Invoice` a un statut « payée » ; `Meal` n'a pas de champ adresse (seulement un lieu en texte).
 
@@ -192,8 +192,8 @@ Schéma des relations : voir `09-cas-d-usage-et-diagrammes.md` §6. La descripti
 - Le bilan et le tableau de bord sont en TTC ; si la TVA concerne l'utilisateur, faire valider la présentation (résultat = encaissé − dépensé, sans distinguer la TVA).
 - ⚠️ **Les PDF du MVP ne remplacent pas la plateforme agréée de facturation électronique** (obligation à vérifier, prévue en Phase 5). L'application ne doit pas se dire « conforme » avant cette connexion.
 
-**Déploiement** (rien n'est en ligne à ce jour) : compte Scalingo, bucket S3 privé, prestataire d'e-mails, domaine, Sentry, tâche planifiée de purge des comptes supprimés, `collectstatic` au build. Liste complète : `06-services-production.md`.
+**Déploiement** (rien n'est en ligne à ce jour) : compte Scalingo, bucket S3 privé, prestataire d'e-mails, domaine, Sentry, tâche planifiée de purge des comptes supprimés, `collectstatic` au build. Liste complète : `docs/guides/06-services-production.md`.
 
-**Questions de fond ouvertes** (cahier des charges §14) : Q9 modèle économique, Q10 hiérarchie Projet/Spectacle (détail : `07-modele-spectacle.md`), Q12, Q13, Q14, Q15 (sens du mot « Structure »), Q16 (plan des lieux dans la feuille de route).
+**Questions de fond ouvertes** (cahier des charges §14) : Q9 modèle économique, Q10 hiérarchie Projet/Spectacle (détail : `docs/metier/07-modele-spectacle.md`), Q12, Q13, Q14, Q15 (sens du mot « Structure »), Q16 (plan des lieux dans la feuille de route).
 
 **Points techniques notés** : `Gig.venue` obligatoire (RG-02) ; un test de liste de dates utilise `date.today()` au lieu de `timezone.localdate()` (risque de test instable passé minuit UTC) ; avertissement de dépréciation Django 6 sur `FORMS_URLFIELD_ASSUME_HTTPS` (sans effet sous Django 5.2) ; la mise en page des PDF de facture et de feuille de route reste à vérifier à l'œil ; un brouillon de facture n'apparaît pas sur la page des paiements (il ne peut pas être payé) ; une feuille de route n'a pas encore de plan des lieux ni d'adresse pour les repas.
