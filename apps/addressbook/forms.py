@@ -1,7 +1,7 @@
 from django import forms
 from django.utils.translation import gettext_lazy as _
 
-from apps.core.forms import AddressModelForm
+from apps.core.forms import AddressModelForm, MultiSelectDropdown
 from apps.tenants.validators import normalize_code_ape, validate_code_ape
 
 from . import services
@@ -28,9 +28,9 @@ class PromoterIdentifiersMixin(forms.Form):
 
 
 class OrderedMultipleChoiceField(forms.MultipleChoiceField):
-    """Checkboxes whose picked values always come back in the order of the list."""
+    """A drop-down of checkboxes whose picked values always come back in the order of the list."""
 
-    widget = forms.CheckboxSelectMultiple
+    widget = MultiSelectDropdown
 
     def clean(self, value):
         picked = super().clean(value)

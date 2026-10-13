@@ -314,3 +314,41 @@ def test_the_export_carries_the_six_criteria(client):
     assert row["Rôle dans l'évènement"] == "Coproducteur"
     assert row["Jauge indicative"] == 300
     assert row["Autres précisions"] == "'=1+1"  # neutralised like every free text
+
+
+# --- the drop-downs ---------------------------------------------------------------------
+
+
+def test_each_criterion_is_a_drop_down_of_checkboxes_not_a_long_list(client):
+    _login(client)
+
+    content = client.get(reverse("addressbook:promoter-create")).content.decode()
+
+    assert content.count("data-summary=") == 6
+    assert "<select multiple" not in content
+    assert "Choisir…" in content
+
+
+def test_the_summary_lists_what_is_ticked(client):
+    tenant = _login(client)
+    promoter = PromoterFactory(tenant=tenant, aesthetics=["jazz", "dance"], kinds=[])
+
+    content = client.get(
+        reverse("addressbook:promoter-update", args=[promoter.pk])
+    ).content.decode()
+
+    assert 'data-summary="Jazz, Danse"' in content
+    assert 'data-summary=""' in content  # the criteria nobody ticked
+    assert 'value="jazz"' in content and "checked" in content
+
+
+def test_what_was_ticked_is_kept_when_the_form_has_an_error(client):
+    _login(client)
+
+    response = client.post(
+        reverse("addressbook:promoter-create"), {"name": "", "kinds": ["venue", "festival"]}
+    )
+
+    content = response.content.decode()
+    assert response.status_code == 200
+    assert 'data-summary="Salle, Festival"' in content
