@@ -22,6 +22,18 @@ def validate_iban(value):
         raise ValidationError(_("Cet IBAN semble contenir une erreur de saisie."))
 
 
+BIC_SHAPE = re.compile(r"^[A-Z]{4}[A-Z]{2}[A-Z0-9]{2}([A-Z0-9]{3})?$")
+
+
+def normalize_bic(value):
+    return re.sub(r"\s+", "", value or "").upper()
+
+
+def validate_bic(value):
+    if not BIC_SHAPE.match(normalize_bic(value)):
+        raise ValidationError(_("Un BIC comporte 8 ou 11 caractères, par exemple AGRIFRPP."))
+
+
 APE_SHAPE = re.compile(r"^\d{4}[A-Z]$")
 
 

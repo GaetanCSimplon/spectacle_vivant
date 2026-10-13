@@ -24,6 +24,10 @@ class Gig(TenantOwnedModel):
         SIGNED = "signed", _("Signée")
         CANCELLED = "cancelled", _("Annulée")
 
+    class PaymentMethod(models.TextChoices):
+        TRANSFER = "transfer", _("Virement")
+        CHEQUE = "cheque", _("Chèque")
+
     show = models.ForeignKey("catalog.Show", on_delete=models.PROTECT, related_name="gigs")
     promoter = models.ForeignKey(
         "addressbook.Promoter", on_delete=models.PROTECT, related_name="gigs"
@@ -56,6 +60,32 @@ class Gig(TenantOwnedModel):
     )
     invitations_count = models.PositiveIntegerField(_("nombre d'invitations"), default=0)
     signing_place = models.CharField(_("lieu de signature"), max_length=255, blank=True)
+
+    # Wording of the contract (all optional: an empty value prints as dots).
+    event_name = models.CharField(_("nom de l'évènement"), max_length=255, blank=True)
+    performances_count = models.PositiveIntegerField(
+        _("nombre de représentations"), default=1, validators=[MinValueValidator(1)]
+    )
+    deposit_due_on = models.DateField(_("acompte à régler le"), null=True, blank=True)
+    balance_due_on = models.DateField(_("solde à régler le"), null=True, blank=True)
+    payment_method = models.CharField(
+        _("mode de paiement"), max_length=20, choices=PaymentMethod, blank=True
+    )
+    signature_deadline_days = models.PositiveIntegerField(
+        _("délai de retour du contrat signé (jours)"), null=True, blank=True
+    )
+    copies_count = models.PositiveIntegerField(
+        _("nombre d'exemplaires du contrat"), default=2, validators=[MinValueValidator(1)]
+    )
+    meals = models.CharField(_("repas pris en charge"), max_length=255, blank=True)
+    lodging = models.CharField(_("hébergement pris en charge"), max_length=255, blank=True)
+    local_transport = models.CharField(_("transports locaux"), max_length=255, blank=True)
+    other_hospitality = models.CharField(
+        _("autres éléments d'accueil"),
+        max_length=255,
+        blank=True,
+        help_text=_("Par exemple : parking, catering, petits-déjeuners, backline."),
+    )
 
     @cached_property
     def option_expiry(self):

@@ -52,6 +52,8 @@ def promoters_rows(tenant):
     header = [
         "Nom",
         "SIRET",
+        "Code APE",
+        "N° de TVA",
         "Représentant",
         "Adresse de facturation",
         "E-mail",
@@ -67,6 +69,8 @@ def promoters_rows(tenant):
         [
             text(p.name),
             text(p.siret),
+            text(p.code_ape),
+            text(p.vat_number),
             text(p.representative_name),
             text(p.billing_address),
             text(p.email),
@@ -143,6 +147,17 @@ def gigs_rows(tenant):
         "Concert gratuit",
         "Prix du billet",
         "Invitations",
+        "Nom de l'évènement",
+        "Représentations",
+        "Exemplaires du contrat",
+        "Délai de retour du contrat (jours)",
+        "Mode de paiement",
+        "Acompte à régler le",
+        "Solde à régler le",
+        "Repas",
+        "Hébergement",
+        "Transports locaux",
+        "Autres éléments d'accueil",
     ]
     gigs = (
         Gig.objects.filter(tenant=tenant)
@@ -162,6 +177,17 @@ def gigs_rows(tenant):
             _yes(g.is_free),
             amount(g.ticket_price) if g.ticket_price is not None else "",
             g.invitations_count,
+            text(g.event_name),
+            g.performances_count,
+            g.copies_count,
+            g.signature_deadline_days if g.signature_deadline_days is not None else "",
+            g.get_payment_method_display(),
+            day(g.deposit_due_on) if g.deposit_due_on else "",
+            day(g.balance_due_on) if g.balance_due_on else "",
+            text(g.meals),
+            text(g.lodging),
+            text(g.local_transport),
+            text(g.other_hospitality),
         ]
         for g in gigs
     ]

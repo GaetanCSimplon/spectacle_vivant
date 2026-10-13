@@ -19,6 +19,8 @@
     {% if promoter.email %}<p><a href="mailto:{{ promoter.email }}" class="text-blue-600">{{ promoter.email }}</a></p>{% endif %}
     {% if promoter.phone %}<p><a href="tel:{{ promoter.phone }}" class="text-blue-600">{{ promoter.phone }}</a></p>{% endif %}
     {% if promoter.siret %}<p>SIRET : {{ promoter.siret }}</p>{% endif %}
+    {% if promoter.code_ape %}<p>{% translate "Code APE" %} : {{ promoter.code_ape }}</p>{% endif %}
+    {% if promoter.vat_number %}<p>{% translate "N° de TVA" %} : {{ promoter.vat_number }}</p>{% endif %}
     {% if promoter.full_address %}<p>{{ promoter.full_address|linebreaksbr }}</p>{% endif %}
     {% if promoter.department %}<p class="text-gray-600">{{ promoter.get_department_display }}</p>{% endif %}
     {% if promoter.notes %}<p class="text-gray-600">{{ promoter.notes|linebreaksbr }}</p>{% endif %}

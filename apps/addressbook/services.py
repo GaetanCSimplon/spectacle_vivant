@@ -63,6 +63,8 @@ PROMOTER_FIELDS = [
     ("city", _("Ville")),
     ("department", _("Département")),
     ("siret", _("SIRET")),
+    ("code_ape", _("Code APE")),
+    ("vat_number", _("N° de TVA intracommunautaire")),
     ("representative_name", _("Représentant légal")),
     ("representative_role", _("Qualité du représentant")),
     ("licence_number", _("N° de licence d'entrepreneur de spectacles")),

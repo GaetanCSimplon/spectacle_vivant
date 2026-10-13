@@ -5,7 +5,7 @@ from apps.core.forms import AddressModelForm
 
 from . import services
 from .models import Person, Tenant
-from .validators import normalize_code_ape, normalize_iban, validate_code_ape
+from .validators import normalize_bic, normalize_code_ape, normalize_iban, validate_code_ape
 
 
 class OnboardingForm(forms.ModelForm):
@@ -41,6 +41,9 @@ class TenantProfileForm(AddressModelForm):
             "vat_rate",
             "vat_number",
             "iban",
+            "bic",
+            "phone",
+            "email",
             "licence_number",
             "representative_name",
             "representative_role",
@@ -66,6 +69,9 @@ class TenantProfileForm(AddressModelForm):
 
     def clean_iban(self):
         return normalize_iban(self.cleaned_data["iban"])
+
+    def clean_bic(self):
+        return normalize_bic(self.cleaned_data["bic"])
 
 
 class DeleteTenantForm(forms.Form):

@@ -2,12 +2,32 @@ from django import forms
 from django.utils.translation import gettext_lazy as _
 
 from apps.core.forms import AddressModelForm
+from apps.tenants.validators import normalize_code_ape, validate_code_ape
 
 from . import services
 from .models import Contact, Promoter, Venue
 
 
-class PromoterForm(AddressModelForm):
+class PromoterIdentifiersMixin(forms.Form):
+    """The APE code and the VAT number of an organiser, typed with spaces or dots."""
+
+    # Declared here because people type "90.01 Z": the model's 5 characters apply after cleaning.
+    code_ape = forms.CharField(label=_("Code APE"), required=False, max_length=10)
+    vat_number = forms.CharField(
+        label=_("N° de TVA intracommunautaire"), required=False, max_length=30
+    )
+
+    def clean_code_ape(self):
+        code = normalize_code_ape(self.cleaned_data["code_ape"])
+        if code:
+            validate_code_ape(code)
+        return code
+
+    def clean_vat_number(self):
+        return "".join(self.cleaned_data["vat_number"].split()).upper()[:20]
+
+
+class PromoterForm(PromoterIdentifiersMixin, AddressModelForm):
     class Meta:
         model = Promoter
         fields = [
@@ -19,6 +39,8 @@ class PromoterForm(AddressModelForm):
             "email",
             "phone",
             "siret",
+            "code_ape",
+            "vat_number",
             "licence_number",
             "representative_name",
             "representative_role",
@@ -163,7 +185,7 @@ class NewContactForm(ContactForm):
         return cleaned
 
 
-class PromoterPublicForm(AddressModelForm):
+class PromoterPublicForm(PromoterIdentifiersMixin, AddressModelForm):
     """What an organiser fills in from the link they received (F-16).
 
     It is built on a blank, unsaved Promoter and never saved: the answer is only stored until
