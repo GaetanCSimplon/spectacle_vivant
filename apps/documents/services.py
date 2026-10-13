@@ -29,6 +29,7 @@ CONTRACT_TEMPLATES = {
     ContractTemplate.MODEL_1: "documents/contracts/model_1.html",
     ContractTemplate.MODEL_2: "documents/contracts/model_2.html",
     ContractTemplate.MODEL_3: "documents/contracts/model_3.html",
+    ContractTemplate.MODEL_4: "documents/contracts/model_4.html",
 }
 DEFAULT_CONTRACT_TEMPLATE = ContractTemplate.MODEL_1
 
@@ -89,6 +90,9 @@ def build_contract_context(gig, contract=None):
     vat_amount, total_with_vat = _compute_vat(gig, gig.tenant)
     return {
         "payment": payment_schedule(gig),
+        # The SIREN is the first nine digits of the SIRET.
+        "tenant_siren": (gig.tenant.siret or "")[:9],
+        "promoter_siren": (gig.promoter.siret or "")[:9],
         "vat_mentions": legal_mentions({"vat_regime": gig.tenant.vat_regime}, False, False),
         "contract": contract,
         "party": PARTY_FORMS,
