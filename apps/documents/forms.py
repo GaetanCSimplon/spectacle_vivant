@@ -3,6 +3,7 @@ from decimal import Decimal
 from django import forms
 from django.utils.translation import gettext_lazy as _
 
+from apps.addressbook.forms import PromoterIdentifiersMixin
 from apps.addressbook.models import Promoter, Venue
 from apps.catalog.models import Show
 from apps.gigs.models import Gig
@@ -27,7 +28,18 @@ class GigCompletionForm(forms.ModelForm):
             "crew_headcount",
             "invitations_count",
             "signing_place",
+            "event_name",
+            "performances_count",
+            "copies_count",
+            "signature_deadline_days",
+            "payment_method",
             "deposit_percent",
+            "deposit_due_on",
+            "balance_due_on",
+            "meals",
+            "lodging",
+            "local_transport",
+            "other_hospitality",
             "conditions",
             "is_free",
             "ticket_price",
@@ -35,6 +47,8 @@ class GigCompletionForm(forms.ModelForm):
         widgets = {
             "option_expires_on": forms.DateInput(attrs={"type": "date"}, format="%Y-%m-%d"),
             "conditions": forms.Textarea(attrs={"rows": 4}),
+            "deposit_due_on": forms.DateInput(attrs={"type": "date"}, format="%Y-%m-%d"),
+            "balance_due_on": forms.DateInput(attrs={"type": "date"}, format="%Y-%m-%d"),
             "get_in_time": _time_widget(),
             "soundcheck_time": _time_widget(),
             "performance_time": _time_widget(),
@@ -48,6 +62,8 @@ class GigCompletionForm(forms.ModelForm):
         self.fields["ticket_price"].required = False
         self.fields["invitations_count"].required = False
         self.fields["deposit_percent"].required = False
+        self.fields["performances_count"].required = False
+        self.fields["copies_count"].required = False
         # An option's validity only matters while the gig is still an option.
         if self.instance.status != Gig.Status.OPTION:
             del self.fields["option_expires_on"]
@@ -56,6 +72,16 @@ class GigCompletionForm(forms.ModelForm):
         # Left empty: keep the current value (30 % for a new gig).
         value = self.cleaned_data["deposit_percent"]
         return self.instance.deposit_percent if value is None else value
+
+    def clean_performances_count(self):
+        # Left empty: keep the current value (1 for a new gig).
+        value = self.cleaned_data["performances_count"]
+        return self.instance.performances_count if value is None else value
+
+    def clean_copies_count(self):
+        # Left empty: keep the current value (2 for a new gig).
+        value = self.cleaned_data["copies_count"]
+        return self.instance.copies_count if value is None else value
 
     def clean_invitations_count(self):
         return self.cleaned_data["invitations_count"] or 0
@@ -85,10 +111,17 @@ class VenueCompletionForm(forms.ModelForm):
         fields = ["capacity"]
 
 
-class PromoterCompletionForm(forms.ModelForm):
+class PromoterCompletionForm(PromoterIdentifiersMixin, forms.ModelForm):
     class Meta:
         model = Promoter
-        fields = ["siret", "licence_number", "representative_name", "representative_role"]
+        fields = [
+            "siret",
+            "code_ape",
+            "vat_number",
+            "licence_number",
+            "representative_name",
+            "representative_role",
+        ]
 
 
 class ContractCompletionForm(forms.ModelForm):

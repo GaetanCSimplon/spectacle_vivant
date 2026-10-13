@@ -4,7 +4,7 @@ from django.utils.translation import gettext_lazy as _
 
 from apps.core.models import AddressMixin, TenantOwnedModel
 
-from .validators import validate_iban
+from .validators import validate_bic, validate_iban
 
 
 class Tenant(AddressMixin, models.Model):
@@ -52,6 +52,15 @@ class Tenant(AddressMixin, models.Model):
         validators=[validate_iban],
         help_text=_("Affiché sur vos factures pour être payé par virement."),
     )
+    bic = models.CharField(
+        _("BIC"),
+        max_length=11,
+        blank=True,
+        validators=[validate_bic],
+        help_text=_("Affiché avec l'IBAN sur les contrats qui le demandent."),
+    )
+    phone = models.CharField(_("téléphone"), max_length=30, blank=True)
+    email = models.EmailField(_("e-mail"), blank=True)
     licence_number = models.CharField(_("n° de licence"), max_length=50, blank=True)
     representative_name = models.CharField(_("représentant légal"), max_length=255, blank=True)
     representative_role = models.CharField(_("qualité du représentant"), max_length=255, blank=True)
