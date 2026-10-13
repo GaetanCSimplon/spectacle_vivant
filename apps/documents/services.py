@@ -28,6 +28,7 @@ PARTY_FORMS = {
 CONTRACT_TEMPLATES = {
     ContractTemplate.MODEL_1: "documents/contracts/model_1.html",
     ContractTemplate.MODEL_2: "documents/contracts/model_2.html",
+    ContractTemplate.MODEL_3: "documents/contracts/model_3.html",
 }
 DEFAULT_CONTRACT_TEMPLATE = ContractTemplate.MODEL_1
 

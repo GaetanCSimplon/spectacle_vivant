@@ -14,12 +14,13 @@ pytestmark = pytest.mark.django_db
 
 @pytest.fixture
 def two_models():
-    """Models 1 and 2 are both offered."""
+    """Several models are offered."""
 
 
 @pytest.fixture
 def one_model(monkeypatch):
-    monkeypatch.delitem(services.CONTRACT_TEMPLATES, ContractTemplate.MODEL_2)
+    for model in (ContractTemplate.MODEL_2, ContractTemplate.MODEL_3):
+        monkeypatch.delitem(services.CONTRACT_TEMPLATES, model)
 
 
 def _member_gig(client):
@@ -48,6 +49,7 @@ def test_only_models_with_a_template_file_are_offered():
     assert services.available_contract_templates() == [
         ("model_1", "Modèle 1"),
         ("model_2", "Modèle 2"),
+        ("model_3", "Modèle 3"),
     ]
 
 
@@ -73,7 +75,7 @@ def test_regenerating_without_a_choice_keeps_the_current_model(two_models):
 
 def test_a_model_without_template_file_is_refused():
     with pytest.raises(ValueError):
-        generate_contract_pdf(GigFactory(), template=ContractTemplate.MODEL_3)
+        generate_contract_pdf(GigFactory(), template=ContractTemplate.MODEL_4)
 
     assert not Contract.objects.exists()
 
@@ -104,7 +106,7 @@ def test_the_generate_view_refuses_an_unknown_model(client):
     gig = _member_gig(client)
 
     response = client.post(
-        reverse("documents:contract-generate", args=[gig.pk]), {"template": "model_3"}
+        reverse("documents:contract-generate", args=[gig.pk]), {"template": "model_4"}
     )
 
     assert response.status_code == 302
@@ -124,7 +126,7 @@ def test_the_preview_uses_the_chosen_model_and_refuses_an_unknown_one(client, tw
     url = reverse("documents:contract-preview", args=[gig.pk])
 
     ok = client.get(url, {"template": "model_2"})
-    bad = client.get(url, {"template": "model_3"})
+    bad = client.get(url, {"template": "model_4"})
 
     assert ok.status_code == 200
     assert ok["Content-Type"] == "application/pdf"
