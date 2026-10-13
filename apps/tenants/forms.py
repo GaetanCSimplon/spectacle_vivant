@@ -98,7 +98,10 @@ class DeleteTenantForm(forms.Form):
         return password
 
 
-class PersonForm(forms.ModelForm):
+class PersonForm(AddressModelForm):
+    # Private data: only the owner sees and changes these (see __init__).
+    PRIVATE_FIELDS = ["address", "postal_code", "city", "department", "guso_number"]
+
     class Meta:
         model = Person
         fields = [
@@ -108,6 +111,11 @@ class PersonForm(forms.ModelForm):
             "status",
             "phone",
             "email",
+            "address",
+            "postal_code",
+            "city",
+            "department",
+            "guso_number",
             "average_fee",
             "notes",
         ]
@@ -116,18 +124,24 @@ class PersonForm(forms.ModelForm):
             "status": forms.TextInput(attrs={"list": "person-statuses"}),
             "average_fee": forms.NumberInput(attrs={"step": "0.01", "min": "0"}),
             "notes": forms.Textarea(attrs={"rows": 3}),
+            "address": forms.Textarea(attrs={"rows": 2}),
         }
         help_texts = {
             "role": _("Choisissez une proposition ou écrivez la vôtre."),
             "status": _("Choisissez une proposition ou écrivez la vôtre."),
+            "address": _("Visible par le propriétaire de la structure seulement."),
+            "guso_number": _("Visible par le propriétaire seulement. Pour votre suivi."),
             "average_fee": _(
                 "Facultatif, pour votre suivi. Il n'apparaît jamais dans vos documents."
             ),
             "notes": _("N'y notez pas de numéro de sécurité sociale."),
         }
 
-    def __init__(self, *args, tenant=None, **kwargs):
+    def __init__(self, *args, tenant=None, is_owner=False, **kwargs):
         super().__init__(*args, **kwargs)
+        if not is_owner:
+            for name in self.PRIVATE_FIELDS:
+                del self.fields[name]
         self.role_options = services.team_suggestions(tenant, "role", services.ROLE_SUGGESTIONS)
         self.status_options = services.team_suggestions(
             tenant, "status", services.STATUS_SUGGESTIONS

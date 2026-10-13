@@ -106,7 +106,9 @@ class DataExportView(TenantScopedMixin, TemplateView):
     template_name = "tenants/data_export.html"
 
     def post(self, request, *args, **kwargs):
-        archive = build_export_zip(request.tenant)
+        archive = build_export_zip(
+            request.tenant, include_private=is_tenant_owner(request.user, request.tenant)
+        )
         filename = f"export-{timezone.localdate()}.zip"
         return FileResponse(archive, as_attachment=True, filename=filename)
 
@@ -193,6 +195,7 @@ class PersonDetailView(TenantScopedMixin, DetailView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
+        context["is_owner"] = is_tenant_owner(self.request.user, self.request.tenant)
         context["gigs"] = (
             Gig.objects.filter(tenant=self.request.tenant, members__person=self.object)
             .select_related("show", "venue")
@@ -211,6 +214,7 @@ class PersonFormMixin:
     def get_form_kwargs(self):
         kwargs = super().get_form_kwargs()
         kwargs["tenant"] = self.request.tenant
+        kwargs["is_owner"] = is_tenant_owner(self.request.user, self.request.tenant)
         return kwargs
 
     def get_success_url(self):
