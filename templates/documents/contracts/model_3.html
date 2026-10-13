@@ -58,7 +58,7 @@
         <li><strong>Nom du lieu :</strong> {{ venue.name }}</li>
         <li><strong>Adresse :</strong> {{ venue.full_address|default:"……"|linebreaksbr }}</li>
         <li><strong>Capacité / jauge :</strong> {% if venue.capacity %}{{ venue.capacity }} places{% else %}…… places{% endif %}</li>
-        <li><strong>Configuration :</strong> ……</li>
+        <li><strong>Configuration :</strong> {{ venue.configuration|default:"……" }}</li>
       </ul>
       <p>La capacité indiquée est la capacité maximale dans la configuration choisie et ne pourra en aucun cas dépasser celle autorisée par la commission de sécurité compétente.</p>
       <ul>

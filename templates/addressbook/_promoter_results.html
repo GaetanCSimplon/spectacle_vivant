@@ -19,13 +19,13 @@
             <span class="block font-medium text-gray-900">{{ promoter.name }}</span>
             {% include "addressbook/_follow_up_badge.html" %}
           </span>
-          {% if promoter.kind or promoter.email %}
+          {% if promoter.kinds or promoter.email %}
             <span class="block text-sm text-gray-600">
-              {{ promoter.get_kind_display }}{% if promoter.kind and promoter.email %} · {% endif %}{{ promoter.email }}
+              {{ promoter.kind_labels|join:", " }}{% if promoter.kinds and promoter.email %} · {% endif %}{{ promoter.email }}
             </span>
           {% endif %}
-          {% if promoter.event_type or promoter.aesthetic %}
-            <span class="block text-sm text-gray-500">{{ promoter.event_type }}{% if promoter.event_type and promoter.aesthetic %} · {% endif %}{{ promoter.aesthetic }}</span>
+          {% if promoter.event_types or promoter.aesthetics %}
+            <span class="block text-sm text-gray-500">{{ promoter.event_type_labels|join:", " }}{% if promoter.event_types and promoter.aesthetics %} · {% endif %}{{ promoter.aesthetic_labels|join:", " }}</span>
           {% endif %}
         </a>
       </li>

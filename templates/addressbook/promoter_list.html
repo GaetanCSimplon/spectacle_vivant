@@ -35,8 +35,12 @@
       class="col-span-2 w-full rounded-md border border-gray-300 px-3 py-2 text-sm sm:col-span-3"
     >
     <div>{{ filter_form.follow_up.label_tag }} {{ filter_form.follow_up }}</div>
+    <div>{{ filter_form.kind.label_tag }} {{ filter_form.kind }}</div>
     <div>{{ filter_form.event_type.label_tag }} {{ filter_form.event_type }}</div>
-    <div class="col-span-2 sm:col-span-1">{{ filter_form.aesthetic.label_tag }} {{ filter_form.aesthetic }}</div>
+    <div>{{ filter_form.aesthetic.label_tag }} {{ filter_form.aesthetic }}</div>
+    <div>{{ filter_form.format.label_tag }} {{ filter_form.format }}</div>
+    <div>{{ filter_form.period.label_tag }} {{ filter_form.period }}</div>
+    <div>{{ filter_form.role.label_tag }} {{ filter_form.role }}</div>
     <noscript><button type="submit" class="btn btn-secondary">{% translate "Filtrer" %}</button></noscript>
   </form>
 
