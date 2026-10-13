@@ -83,8 +83,8 @@
       <p>En sa qualité d’employeur, l’Organisateur assurera les rémunérations de son personnel, ainsi que les charges sociales et fiscales correspondantes.</p>
 
       <h3>Accueil et mise à disposition du lieu</h3>
-      <p>Le lieu de spectacle sera mis à la disposition exclusive des artistes pendant …… le jour de la représentation afin de réaliser le filage, la balance son et le calage lumière.</p>
-      <p>Entre la fin du filage et le début de la représentation, les artistes disposeront de …… pour se restaurer et se préparer au spectacle.</p>
+      <p>Le lieu de spectacle sera mis à la disposition exclusive des artistes pendant {% if show.soundcheck_minutes %}{{ show.soundcheck_minutes }} minutes{% else %}……{% endif %} le jour de la représentation afin de réaliser le filage, la balance son et le calage lumière.</p>
+      <p>Entre la fin du filage et le début de la représentation, les artistes disposeront de {% if show.soundcheck_to_set_minutes %}{{ show.soundcheck_to_set_minutes }} minutes{% else %}……{% endif %} pour se restaurer et se préparer au spectacle.</p>
       <p>Des loges seront mises à disposition des artistes à proximité du lieu de représentation. Elles comprendront notamment un lavabo, des miroirs, des chaises, des tables et des portants en quantité suffisante.</p>
       <p>Les loges seront gardées pendant la représentation ainsi que pendant toute la durée où les effets personnels des artistes y seront déposés.</p>
       <p>Un catering conforme au rider de l’artiste sera mis à disposition dès l’arrivée des artistes et comprendra des boissons et des aliments en quantité et qualité suffisantes.</p>

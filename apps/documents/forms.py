@@ -102,7 +102,13 @@ class GigCompletionForm(forms.ModelForm):
 class ShowCompletionForm(forms.ModelForm):
     class Meta:
         model = Show
-        fields = ["group_name", "sacem_number", "sacem_object_number"]
+        fields = [
+            "group_name",
+            "sacem_number",
+            "sacem_object_number",
+            "soundcheck_minutes",
+            "soundcheck_to_set_minutes",
+        ]
 
 
 class VenueCompletionForm(forms.ModelForm):

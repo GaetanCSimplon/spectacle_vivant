@@ -28,12 +28,29 @@ FIRST_DAY, LAST_DAY = date(2000, 1, 1), date(2100, 12, 31)
 text, amount, day = finance_exports.text, finance_exports.amount, finance_exports.day
 
 
+def _number(value):
+    return "" if value is None else value
+
+
 def _yes(value):
     return "oui" if value else "non"
 
 
 def shows_rows(tenant):
-    header = ["Titre", "Groupe", "Durée (min)", "Prix indicatif", "N° SACEM", "Fiche technique"]
+    header = [
+        "Titre",
+        "Groupe",
+        "Durée (min)",
+        "Prix indicatif",
+        "N° SACEM",
+        "Fiche technique",
+        "Effectif",
+        "Artistes",
+        "Techniciens",
+        "Balances minimum (min)",
+        "Entre balances et set minimum (min)",
+        "Code analytique",
+    ]
     rows = [
         [
             text(s.title),
@@ -42,6 +59,12 @@ def shows_rows(tenant):
             amount(s.default_price),
             text(s.sacem_number),
             text(s.tech_sheet_text),
+            _number(s.crew_size),
+            _number(s.artists_count),
+            _number(s.technicians_count),
+            _number(s.soundcheck_minutes),
+            _number(s.soundcheck_to_set_minutes),
+            text(s.analytic_code),
         ]
         for s in Show.objects.filter(tenant=tenant).order_by("title")
     ]
@@ -158,6 +181,7 @@ def gigs_rows(tenant):
         "Hébergement",
         "Transports locaux",
         "Autres éléments d'accueil",
+        "Code analytique",
     ]
     gigs = (
         Gig.objects.filter(tenant=tenant)
@@ -188,6 +212,7 @@ def gigs_rows(tenant):
             text(g.lodging),
             text(g.local_transport),
             text(g.other_hospitality),
+            text(g.show.analytic_code),
         ]
         for g in gigs
     ]
