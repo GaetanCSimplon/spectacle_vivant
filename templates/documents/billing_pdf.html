@@ -121,8 +121,11 @@
 
     <div class="mentions">
       {% for mention in mentions %}<p>{{ mention }}</p>{% endfor %}
-      {% if is_invoice and not is_credit_note and issuer.iban %}
-        <p>Règlement par virement : IBAN {{ issuer.iban }}</p>
+      {% if not is_credit_note and issuer.iban %}
+        <p>
+          {% if is_invoice %}Règlement par virement{% else %}Coordonnées bancaires pour le règlement{% endif %} :
+          IBAN {{ issuer.iban }}{% if issuer.bic %} — BIC {{ issuer.bic }}{% endif %}
+        </p>
       {% endif %}
     </div>
 

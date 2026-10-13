@@ -148,6 +148,10 @@
           {{ gig.price }} € HT + TVA …… € = …… € T.T.C.
         {% endif %}
       </p>
+      <p>
+        Règlement par virement sur le compte : IBAN {{ tenant.iban|default:"……" }}
+        — BIC {{ tenant.bic|default:"……" }}.
+      </p>
     </section>
 
     <section>

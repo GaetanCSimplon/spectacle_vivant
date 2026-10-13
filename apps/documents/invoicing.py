@@ -258,6 +258,7 @@ def build_issuer_snapshot(tenant):
         "vat_regime": tenant.vat_regime,
         "vat_number": tenant.vat_number,
         "iban": tenant.iban,
+        "bic": tenant.bic,
         "licence_number": tenant.licence_number,
         "representative_name": tenant.representative_name,
         "representative_role": tenant.representative_role,
