@@ -274,6 +274,9 @@ Demande de l'associé : proposer 4 modèles de contrat de cession (le nôtre + 3
 - [ ] Faire relire les 4 modèles par le professionnel avant la bêta.
 - [x] **Données de contrat du spectacle** (2026-10-13, demande de l'associé, migration `catalog/0005`) : sur la fiche Spectacle, durée minimale des balances, temps minimum entre la fin des balances et le set (en minutes, modifiables à tout moment, aussi dans « Compléter la date »), nombre d'artistes, nombre de techniciens (l'effectif total existant est conservé tel quel) et **code analytique**. Les durées remplissent les pointillés des Modèles 2 et 3 ; le code analytique est ajouté en dernière colonne de tous les exports CSV (factures, recettes, dépenses, dates, spectacles). Format d'export propre à un logiciel : seulement si demandé.
 
+- [x] **IBAN et BIC dans les documents** (2026-10-13, demande de l'associé, sans migration) : le BIC rejoint l'IBAN dans l'instantané de l'émetteur ; les factures affichent « IBAN — BIC », les **devis** aussi (« Coordonnées bancaires pour le règlement »), les avoirs non ; le Modèle 1 du contrat affiche l'IBAN et le BIC (déjà présents dans les Modèles 2, 3 et 4). Un document émis garde les coordonnées de son émission ; ceux émis avant n'ont pas de BIC. Le nom de la banque (RIB détaillé) n'est pas repris : IBAN + BIC suffisent.
+- [ ] **Fiche Équipe : adresse, n° GUSO, n° de compte** (demande de l'associé) — adresse et n° GUSO (texte libre) à faire ; le **n° de compte est mis de côté** en attendant la réponse de l'associé (IBAN contrôlé ou autre). Réservés au propriétaire, jamais copiés vers la feuille de route.
+
 ### Sprint 3.8 — Légal, sécurité, finition, recette
 - [x] Pages : mentions légales, CGU, confidentialité (gabarits à compléter et à faire relire avant la mise en ligne).
 - [x] Export des données (F-81) : ZIP de CSV et de fichiers, page `ma-structure/export-donnees/`.

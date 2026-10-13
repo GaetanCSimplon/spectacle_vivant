@@ -154,7 +154,7 @@ def test_a_quote_shows_its_validity_and_the_approval_box():
     assert f"DEVIS D-{YEAR}-0001" in text
     assert f"Valable jusqu'au {quote.valid_until:%d/%m/%Y}" in text
     assert "Bon pour accord" in text
-    assert "IBAN" not in text
+    assert "Coordonnées bancaires pour le règlement : IBAN FR1420041010050500013M02606" in text
 
 
 def test_an_issued_pdf_carries_the_provisional_banner_until_reviewed():
