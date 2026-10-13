@@ -179,7 +179,7 @@ def _gig():
 
 
 def test_the_contract_prints_postal_code_and_city():
-    html = render_to_string("documents/contract_pdf.html", build_contract_context(_gig()))
+    html = render_to_string("documents/contracts/model_1.html", build_contract_context(_gig()))
     for expected in ("69001 Lyon", "34000 Montpellier", "34200 Sète"):
         assert expected in html
 

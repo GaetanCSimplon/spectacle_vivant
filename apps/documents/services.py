@@ -10,7 +10,7 @@ from apps.gigs import services as gig_services
 from apps.gigs.models import Gig
 from apps.tenants.models import Tenant
 
-from .models import Contract, ContractSequence, ContractVersion
+from .models import Contract, ContractSequence, ContractTemplate, ContractVersion
 
 TWO_PLACES = Decimal("0.01")
 
@@ -21,6 +21,18 @@ PARTY_FORMS = {
     "to": "AU PRODUCTEUR",
     "of": "DU PRODUCTEUR",
 }
+
+
+# The wordings that have a template file. A model is offered to users only once it is listed here.
+CONTRACT_TEMPLATES = {
+    ContractTemplate.MODEL_1: "documents/contracts/model_1.html",
+}
+DEFAULT_CONTRACT_TEMPLATE = ContractTemplate.MODEL_1
+
+
+def available_contract_templates():
+    """The (value, label) choices a user can pick from."""
+    return [choice for choice in ContractTemplate.choices if choice[0] in CONTRACT_TEMPLATES]
 
 
 class ContractNotAvailable(Exception):
@@ -59,9 +71,13 @@ def build_contract_context(gig, contract=None):
     }
 
 
-def render_contract_pdf(gig, contract=None):
-    """Render the contract PDF bytes without storing anything (used for the preview)."""
-    return render_pdf("documents/contract_pdf.html", build_contract_context(gig, contract))
+def render_contract_pdf(gig, contract=None, template=None):
+    """Render the contract PDF bytes without storing anything (used for the preview).
+
+    `template` is the wording to use; by default the one the contract already has.
+    """
+    template = template or (contract.template if contract else DEFAULT_CONTRACT_TEMPLATE)
+    return render_pdf(CONTRACT_TEMPLATES[template], build_contract_context(gig, contract))
 
 
 def next_contract_reference(tenant):
@@ -78,7 +94,7 @@ def next_contract_reference(tenant):
     return f"C-{year}-{sequence.last_number:03d}"
 
 
-def generate_contract_pdf(gig, user=None):
+def generate_contract_pdf(gig, user=None, template=None):
     """Render the contract PDF for a gig and store it as a new version.
 
     Each call adds a version; older ones are kept. A signed contract keeps its
@@ -93,17 +109,23 @@ def generate_contract_pdf(gig, user=None):
             if contract and contract.latest_version:
                 return contract
             raise ContractNotAvailable
+        template = template or (contract.template if contract else DEFAULT_CONTRACT_TEMPLATE)
+        if template not in CONTRACT_TEMPLATES:
+            raise ValueError(f"Unknown contract template: {template}")
         if contract is None:
-            contract = Contract.objects.create(gig=gig, tenant=gig.tenant)
+            contract = Contract.objects.create(gig=gig, tenant=gig.tenant, template=template)
+        elif contract.template != template:
+            contract.template = template
+            contract.save(update_fields=["template"])
         if not contract.reference:
             contract.reference = next_contract_reference(gig.tenant)
             contract.save(update_fields=["reference"])
 
         latest = contract.latest_version
         number = latest.number + 1 if latest else 1
-        pdf_bytes = render_contract_pdf(gig, contract)
+        pdf_bytes = render_contract_pdf(gig, contract, template)
         version = ContractVersion(
-            tenant=gig.tenant, contract=contract, number=number, created_by=user
+            tenant=gig.tenant, contract=contract, number=number, created_by=user, template=template
         )
         version.pdf_file.save(f"{contract.reference}-v{number}.pdf", ContentFile(pdf_bytes))
     return contract

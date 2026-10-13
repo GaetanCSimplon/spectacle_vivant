@@ -58,7 +58,7 @@ SaaS B2B freemium : gratuit jusqu'à **3 dates par an**, puis abonnement mensuel
 Paiement d'abonnement (Stripe) et quotas ; signature électronique (prestataire) ; facture électronique conforme (Factur-X, avant 09/2027) ; relances automatiques ; rappels d'échéances ; export iCal ; PWA de la feuille de route (hors-ligne) ; comptes « invités en lecture » ; bibliothèque de documents types.
 
 ### 2.3 Version 2
-Carte des dates avec distances et temps de trajet ; import de données ; modèles de contrats multiples ; statistiques avancées.
+Carte des dates avec distances et temps de trajet ; import de données ; statistiques avancées.
 
 ### 2.4 Hors périmètre
 Calcul de charges sociales GUSO/intermittence ; connecteur expert-comptable ou CAE ; aide au choix du statut juridique ; comptabilité générale (plan comptable, bilan, déclaration de TVA) ; billetterie ; droits SACEM ; application mobile native ; paie des artistes.
@@ -117,6 +117,7 @@ Un utilisateur = une structure en MVP (modèle `Membership` prêt pour plusieurs
 - **F-42** Numéro de contrat unique par structure. Historique des versions générées.
 - **F-43** Marquage « signé » (manuel en MVP) : fige un PDF, fait passer la date à `signed`.
 - **F-44** *(2026-10-12)* Guide « Faire signer le contrat » : la signature électronique se fait **avec le compte de l'utilisateur** chez le service de son choix ; l'application explique la marche à suivre puis récupère le PDF signé (F-43). Branchement automatique par clé d'accès de l'utilisateur : seulement si demandé ; compte partagé par l'éditeur : seulement si l'application génère du revenu.
+- **F-45** *(2026-10-13)* Choix du modèle de contrat de cession parmi quatre (Modèle 1 par défaut). Le choix est libre tant que le contrat est en brouillon, chaque version générée garde son modèle, et un contrat signé ne change plus de modèle.
 - *CA : le PDF est lisible, paginé, contient toutes les mentions prévues par le modèle validé.*
 
 ### 4.6 Devis et factures (M5)
@@ -242,8 +243,8 @@ Multi-tenant par **base partagée avec clé `tenant`**. Détails : `docs/guides/
 **Gig (T)** : show, promoter, venue (nullable), date, status, price (prix de cession HT), deposit_percent (30 % par défaut, modifiable par date ; le taux de TVA est porté par `Tenant.vat_rate`, pas par la date), option_expires_on, conditions, notes, get_in_time, soundcheck_time (« Balances »), performance_time (« Passage »), crew_headcount (« Nb Participants », pour repas/hébergement), is_free (« Concert Gratuit »), ticket_price (« Prix des places » — voir RG-12), invitations_count (nombre d'invitations dues, variable), signing_place (« Fait à … »).
 **GigMember (T)** : gig, name, role, phone, email.
 
-**Contract (T)** : gig (OneToOne), reference (`C-AAAA-NNN`, attribuée à la première génération, sans trou par structure et par année via `ContractSequence`), status (`draft`/`signed`), signatory_name, signatory_role, signed_at, signed_version (version figée à la signature), signed_pdf (scan facultatif).
-**ContractVersion (T)** : contract, number, pdf_file, created_at, created_by — un PDF par génération, jamais écrasé ni supprimé. Les conditions particulières sont `Gig.conditions`.
+**Contract (T)** : gig (OneToOne), template (`model_1` à `model_4`), reference (`C-AAAA-NNN`, attribuée à la première génération, sans trou par structure et par année via `ContractSequence`), status (`draft`/`signed`), signatory_name, signatory_role, signed_at, signed_version (version figée à la signature), signed_pdf (scan facultatif).
+**ContractVersion (T)** : contract, number, template, pdf_file, created_at, created_by — un PDF par génération, jamais écrasé ni supprimé. Les conditions particulières sont `Gig.conditions`.
 **Invoice (T)** : gig, number (`F-AAAA-NNNN`, attribué à l'émission), kind (`deposit`/`balance`/`full`/`credit_note`), status (`draft`/`issued`/`cancelled` ; `paid` viendra avec les paiements), issue_date, due_date, issuer_snapshot et customer_snapshot (JSON, copiés à l'émission), total_excl_tax, total_vat, total_incl_tax, credit_note_of (obligatoire pour un avoir, interdit sinon), pdf_file. Un avoir est une facture négative dans la même série de numéros.
 **Quote (T)** : mêmes champs sans `kind`/`due_date`/`credit_note_of`, avec valid_until et un numéro `D-AAAA-NNNN` (série séparée).
 **DocumentLine (T)** : invoice **ou** quote (exactement un des deux), position, label, quantity, unit_price_excl_tax, vat_rate.
@@ -320,7 +321,7 @@ Le document « Logique métier – Cycle de vie d'un spectacle » fourni par le 
 | # | Sujet | Ce que décrit le document métier | Statut MVP actuel | Question à trancher |
 |---|---|---|---|---|
 | Q1 | CRM de prospection (Phases 1-2 du document) | Fiche de qualification, statuts `Prospect` → `En négociation` → `Client actif`, historique des échanges, canal d'entrée | ✅ **Version légère retenue (2026-10-09, F-15)** : étiquette de suivi, type d'évènement, esthétique, filtres. Historique des échanges et canal d'entrée : non prévus | Le reste (historique, relances) est à situer en v1/v2. |
-| Q2 | Types de contrat | Cession (géré) / coréalisation (partage de recette + responsabilité solidaire employeur au-delà de 5000 €) / location de salle | Seule la cession est gérée (`Gig.price`, prix HT fixe) | Faut-il gérer les trois dès le MVP, ou rester sur la cession seule pour l'instant ? *(Le modèle de contrat transmis est un contrat de cession simple — cohérent avec le MVP actuel.)* |
+| Q2 | Types de contrat | Cession (géré) / coréalisation (partage de recette + responsabilité solidaire employeur au-delà de 5000 €) / location de salle | Seule la cession est gérée (`Gig.price`, prix HT fixe) | Faut-il gérer les trois dès le MVP, ou rester sur la cession seule pour l'instant ? *(Le modèle de contrat transmis est un contrat de cession simple — cohérent avec le MVP actuel.)* ✅ **Précisé le 2026-10-13** : seule la cession est gérée, mais en **quatre modèles de rédaction** au choix (F-45). Coréalisation et location de salle : toujours non gérées. |
 | Q3 | Suivi temps réel jour J (Phase 5 du document) | Check-in équipe, horaires réels vs prévus, remontée d'incidents en direct | Non prévu (feuille de route = document consultable, pas de suivi live) | Utile pour la cible « quelques dates par an » ou fonctionnalité pour un usage plus intensif (v2) ? |
 | Q4 | Paie des intermittents (Phase 4 et 6 du document) | DPAE, relevés d'heures, bulletins récapitulatifs, export GUSO | **Explicitement hors périmètre** (§2.4) | Confirmation : l'app reste hors de ce périmètre (renvoi vers le GUSO/un comptable), ou attente réelle de couverture ? Risque juridique élevé à évaluer avec un professionnel si oui. |
 | Q5 | Déclarations SACEM/SACD/CNM (Phase 6 du document) | Déclaration définitive et régularisation du montant réel de recette | **Explicitement hors périmètre** (§2.4) ; le contrat reçu montre que c'est **l'organisateur** qui gère ces déclarations, pas la structure de l'utilisateur | À confirmer que ça reste hors périmètre — le contrat fourni semble aller dans ce sens |
