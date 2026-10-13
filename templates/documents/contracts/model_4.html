@@ -1,0 +1,278 @@
+{% extends "documents/contracts/_base.html" %}
+
+{% block content %}
+    <h1>CONTRAT DE CESSION DU DROIT D’EXPLOITATION D’UN SPECTACLE</h1>
+
+    <p><strong>Entre les soussignés :</strong></p>
+
+    <p>
+      Raison sociale de l’entreprise : {{ tenant.name }}<br>
+      Numéro SIREN : {{ tenant_siren|default:"……" }}<br>
+      Licence d’entrepreneur de spectacles n° et catégorie : {{ tenant.licence_number|default:"……" }}<br>
+      Siège social : {{ tenant.full_address|default:"……"|linebreaksbr }}<br>
+      Représentée par : {{ tenant.representative_name|default:"……" }} &nbsp; Qualité : {{ tenant.representative_role|default:"……" }}
+    </p>
+    <p>Ci-après dénommée le « Producteur » d’une part,</p>
+
+    <p>Et :</p>
+    <p>
+      Raison sociale de l’entreprise : {{ promoter.name }}<br>
+      Numéro SIREN : {{ promoter_siren|default:"……" }}<br>
+      Licence d’entrepreneur de spectacles n° : {{ promoter.licence_number|default:"……" }} &nbsp; Catégorie n° : ……<br>
+      Siège social : {{ promoter.full_address|default:"……"|linebreaksbr }}<br>
+      Représentée par : {{ promoter.representative_name|default:"……" }} &nbsp; Qualité : {{ promoter.representative_role|default:"……" }}
+    </p>
+    <p>Ci-après dénommée l’« Organisateur » d’autre part,</p>
+
+    <p><strong>Il est exposé ce qui suit :</strong></p>
+    <p>A - Le Producteur dispose du droit de représentation en France du spectacle suivant, pour lequel il s’est assuré le concours des artistes nécessaires à sa présentation :</p>
+    <p>
+      Titre du spectacle : {{ show.title }}<br>
+      Titre de l’ouvrage : ……<br>
+      Auteur : ……<br>
+      Adaptateur : ……<br>
+      Metteur en scène ou chorégraphe : ……<br>
+      Nom des interprètes principaux : {{ show.performers|default:show.group_name|default:"……" }}<br>
+      Durée du spectacle : {% if show.duration_minutes %}{{ show.duration_minutes }} minutes{% else %}……{% endif %}
+    </p>
+    <p>B - L’Organisateur s’est assuré de la disposition de la ou des salles suivantes : {{ venue.name }}{% if venue.full_address %}, {{ venue.full_address }}{% endif %} ; du personnel nécessaire à son bon fonctionnement général et dont le Producteur déclare connaître et accepter les caractéristiques techniques (cf. fiche technique du lieu en annexe).</p>
+    <p>En aucun cas, l’Organisateur ne pourra changer le lieu du spectacle sans l’accord écrit du Producteur.</p>
+    <p>C – Les deux parties disposent des autorisations nécessaires pour employer du personnel et s’acquittent de leurs obligations fiscales et sociales en la matière.</p>
+
+    <p><strong>Ceci exposé, il est convenu ce qui suit :</strong></p>
+
+    <section>
+      <h2>Article 1 – Objet</h2>
+      <p>Le Producteur s’engage à donner, dans les conditions définies ci-après et dans le cadre du présent contrat de cession d’exploitation du spectacle, {{ gig.performances_count }} représentation(s), sur les lieux précités, le {{ gig.date|date:"d/m/Y" }}, à {{ gig.performance_time|time:"H\hi"|default:"……" }}.</p>
+    </section>
+
+    <section>
+      <h2>Article 2 - Obligations du Producteur</h2>
+      <h3>2-1. Responsabilité d'employeur à l'égard de son personnel</h3>
+      <p>Le Producteur fournira le spectacle entièrement monté et assumera la responsabilité artistique des représentations. En qualité d’employeur, il assurera les rémunérations de son personnel attaché au spectacle, charges sociales et fiscales comprises (Audiens, Urssaf, Afdas, etc.). Le cas échéant, il lui appartiendra notamment de solliciter en temps utile, auprès des autorités compétentes, les autorisations pour l’emploi de mineurs ou d’artistes étrangers dans le spectacle.</p>
+      <h3>2-2. Documents à remettre à l'Organisateur</h3>
+      <p>Le Producteur fournira à l'Organisateur :</p>
+      <ul>
+        <li>tous les éléments nécessaires à la publicité du spectacle dont la liste est annexée au présent contrat ;</li>
+        <li>la fiche technique du spectacle annexée au présent contrat ;</li>
+        <li>une photocopie du traité particulier conclu avec la ou les sociétés d’auteurs, d’artistes-interprètes et/ou d’éditeurs concernant ce spectacle préalablement à la signature du présent contrat ;</li>
+        <li>une attestation, le cas échéant, certifiant que le spectacle, objet du présent contrat, a été représenté moins de 141 fois au sens défini par l’article 89 ter annexe III du Code général des impôts.</li>
+        <li>les documents prévus à l’article D8222-5 du Code du travail (notamment l'attestation de vigilance) et permettant de vérifier qu’il s’acquitte bien de ses obligations sociales et fiscales.</li>
+        <li>en cas de subvention publique, une copie de la convention ou de la notification.</li>
+      </ul>
+      <p>Si le Producteur estime nécessaire d’utiliser des matériels et équipements autres que ceux dont dispose l’Organisateur et mentionnés dans la fiche technique du lieu, il doit, lui-même et à ses frais, en effectuer la location ou l’achat, le transport, l’assurance, la mise en place et l’enlèvement.</p>
+      <h3>2-3. Transport des décors, costumes, etc.</h3>
+      <p>Le spectacle comprendra les décors, costumes, meubles et accessoires et d’une manière générale tous les éléments nécessaires à sa représentation. Le Producteur en assurera le transport aller et retour et effectuera les éventuelles formalités douanières.</p>
+      <h3>2-4. Droits voisins</h3>
+      <p>Les droits voisins sont à la charge du Producteur.</p>
+    </section>
+
+    <section>
+      <h2>Article 3 - Obligations de l’Organisateur</h2>
+      <p>L’Organisateur fournira le lieu de représentation en ordre de marche, y compris le personnel nécessaire aux déchargement et rechargement, aux montage et démontage et aux services des représentations. Il assurera, en outre, le service général du lieu : location, accueil, billetterie, encaissement et comptabilité des recettes ainsi que le service de sécurité.</p>
+      <p>En qualité d’employeur, il assurera les rémunérations de ce personnel, charges sociales et fiscales comprises.</p>
+      <p>Il aura à sa charge les droits d’auteur et en assurera le paiement ainsi que les déclarations liées à ce paiement.</p>
+      <p>En matière de publicité et d’information, l’Organisateur s’efforcera de respecter l’esprit général de la documentation fournie par le Producteur et observera scrupuleusement les mentions obligatoires. La liste des éléments que le Producteur souhaite voir apparaître sur les différents supports de communication est annexée au présent contrat. Les mentions obligatoires sont spécifiées dans cette même annexe.</p>
+    </section>
+
+    <section>
+      <h2>Article 4 - Prix des places et invitations</h2>
+      <p>Le prix des places est fixé à {% if gig.is_free %}0 € (concert gratuit){% else %}{{ gig.ticket_price }} €{% endif %}.</p>
+      <p>La capacité de la salle est de {% if venue.capacity %}{{ venue.capacity }}{% else %}……{% endif %} places.</p>
+      <p>Le nombre de spectateurs admis dans la salle sera limité à {% if venue.capacity %}{{ venue.capacity }}{% else %}……{% endif %} par représentation.</p>
+      <p>Les invitations consenties par l’Organisateur au Producteur sont de deux ordres. Les premières sont destinées à l’équipe de production pour leur usage personnel. Elles sont au nombre de {{ gig.invitations_count|default:"……" }} par représentation. Les secondes sont destinées aux professionnels du secteur susceptibles de promouvoir et de diffuser le spectacle. Un quota de …… places est réservé à cet effet. Celles-ci, si elles ne sont pas utilisées, seront vendues au plus tard …… minutes/heures/jours avant le début de la représentation.</p>
+    </section>
+
+    <section>
+      <h2>Article 5 - Prix de cession et frais annexes</h2>
+      <p>L’Organisateur s’engage à verser au Producteur, en contrepartie de la présente cession, sur présentation de factures la somme globale de :</p>
+      <p>
+        {% if tenant.vat_regime == "taxable" %}
+          {{ payment.total_ht }} € HT + {% if vat_amount is not None %}{{ vat_amount }}{% else %}……{% endif %} € (TVA à {% if tenant.vat_rate is not None %}{{ tenant.vat_rate }}{% else %}……{% endif %} %) = {% if payment.total_ttc is not None %}{{ payment.total_ttc }}{% else %}……{% endif %} € TTC
+        {% elif tenant.vat_regime == "franchise" %}
+          {{ payment.total_ht }} € HT = {{ payment.total_ttc }} € TTC (TVA non applicable conformément à l'article 293 B du CGI)
+        {% else %}
+          {{ payment.total_ht }} € HT = {{ payment.total_ttc }} € TTC (TVA non applicable)
+        {% endif %}
+      </p>
+      <p>Les modalités de versement sont détaillées à l'article 9.</p>
+      <p>Par ailleurs, l’organisateur prendra à sa charge les frais liés au transport du matériel du spectacle mentionné dans la fiche technique annexée au présent contrat ainsi que les frais de voyages et de séjour du personnel du producteur. Les conditions de cette prise en charge seront déterminées dans une annexe au présent contrat au plus tard le ……</p>
+    </section>
+
+    <section>
+      <h2>Article 6 - Montage, démontage, répétitions</h2>
+      <p>L’Organisateur tiendra le lieu théâtral à la disposition du Producteur à partir du …… à …… heures, pour permettre d’effectuer le montage, les réglages et d’éventuels raccords.</p>
+      <p>Le démontage et le rechargement seront effectués le …… à partir de …… heures.</p>
+    </section>
+
+    <section>
+      <h2>Article 7 – Assurances</h2>
+      <p>Le Producteur est tenu d’assurer, contre tous les risques, tous les objets lui appartenant ou appartenant à son personnel.</p>
+      <p>L’Organisateur déclare avoir souscrit les assurances nécessaires à la couverture des risques liés à l’exploitation du spectacle dans son lieu.</p>
+      <p>Chacune des parties remettra à l’autre les attestations des assurances décrites ci-dessus au plus tard le ……</p>
+    </section>
+
+    <section>
+      <h2>Article 8 - Enregistrement - diffusion</h2>
+      <p>En dehors des retransmissions fragmentaires radiodiffusées ou télévisées du spectacle, d’une durée de 3 minutes au plus, dans le cadre d’une diffusion dans un journal ou un magazine d’actualités générales (national ou régional), radiodiffusé ou télévisé, ou d’une émission spécialisée dans les informations d’actualités culturelles (nationale ou régionale), tout autre enregistrement et diffusion de tout ou partie du spectacle nécessiteront l’accord du Producteur.</p>
+    </section>
+
+    <section>
+      <h2>Article 9 - Paiement du prix</h2>
+      <p>Le règlement des sommes dues au Producteur sera effectué au plus tard le {{ gig.balance_due_on|date:"d/m/Y"|default:"……" }}</p>
+      {% if gig.payment_method == "cheque" %}
+        <p>par chèque établi à l’ordre de {{ tenant.name }}</p>
+      {% elif gig.payment_method == "transfer" %}
+        <p>par virement au compte IBAN {{ tenant.iban|default:"……" }} (BIC {{ tenant.bic|default:"……" }})</p>
+      {% else %}
+        <p>par chèque établi à l’ordre de {{ tenant.name }}<br>
+        OU par virement au compte IBAN {{ tenant.iban|default:"……" }} (BIC {{ tenant.bic|default:"……" }})<br>
+        <em>Rayer les mentions inutiles</em></p>
+      {% endif %}
+      <p><strong>En cas d’acompte :</strong></p>
+      <p>Un acompte sera versé à la signature du présent contrat, soit la somme de {% if payment.deposit_ttc is not None %}{{ payment.deposit_ttc }}{% else %}……{% endif %} €.</p>
+      <p>Le solde interviendra au plus tard 15 jours après la dernière représentation. Les deux versements se feront :</p>
+      {% if gig.payment_method == "cheque" %}
+        <p>par chèque établi à l’ordre de {{ tenant.name }}</p>
+      {% elif gig.payment_method == "transfer" %}
+        <p>par virement au compte IBAN {{ tenant.iban|default:"……" }} (BIC {{ tenant.bic|default:"……" }})</p>
+      {% else %}
+        <p>par chèque établi à l’ordre de {{ tenant.name }}<br>
+        OU par virement au compte IBAN {{ tenant.iban|default:"……" }} (BIC {{ tenant.bic|default:"……" }})<br>
+        <em>Rayer les mentions inutiles</em></p>
+      {% endif %}
+    </section>
+
+    <section>
+      <h2>Article 10 - Résiliation du contrat</h2>
+      <p>En cas d'inexécution de ses obligations par l'une ou l'autre des parties :</p>
+      <ul>
+        <li>le présent contrat sera résolu ou résilié de plein droit, …… jours après envoi d'une mise en demeure en LRAR restée sans effet ;</li>
+        <li>la partie défaillante s'engage à rembourser le montant des frais engagés par son cocontractant, notamment ……, sur présentation de justificatifs.</li>
+        <li>la partie défaillante sera redevable de la somme de …… au titre de dommages et intérêts.</li>
+      </ul>
+      <p>Le présent contrat se trouverait résolu, résilié ou suspendu de plein droit, et sans indemnité d'aucune sorte dans tous les cas de force majeure. Il est rappelé que la force majeure doit répondre aux 3 critères suivants : imprévisibilité, extériorité et irrésistibilité.</p>
+    </section>
+
+    <section>
+      <h2>Article 11 – Attribution de compétence</h2>
+      <p>En cas de litige portant sur l’interprétation ou l’application du présent contrat, les parties conviennent de s’en remettre à l’appréciation des tribunaux compétents de la ville de {{ tenant.jurisdiction_city|default:"……" }}</p>
+    </section>
+
+    <section>
+      <h2>Article 12 - Dispositions particulières</h2>
+      <ul>
+        <li>Les annexes sont paraphées. Elles font partie intégrante du contrat et doivent être scrupuleusement respectées.</li>
+        <li>La liste des contacts utiles à la bonne exécution du contrat figure à l’annexe 1 jointe à ce contrat.</li>
+        <li>Pour être valable, ce contrat devra être renvoyé signé dans les {{ gig.signature_deadline_days|default:"……" }} jours au Producteur, le cas échéant accompagné d’un acompte. Une fois ce délai expiré, le Producteur pourra s’estimer libre de tout engagement.</li>
+        <li>Autres dispositions : {% if gig.conditions %}{{ gig.conditions|linebreaksbr }}{% else %}……{% endif %}</li>
+      </ul>
+    </section>
+
+    <p>Fait à {{ gig.signing_place|default:"……" }}, le {{ today|date:"d/m/Y" }}, en {{ gig.copies_count }} exemplaires.</p>
+
+    <div class="parties signatures">
+      <div class="party">
+        <h2>Le Producteur</h2>
+        {% with name=contract.signatory_name|default:tenant.representative_name role=contract.signatory_role|default:tenant.representative_role %}
+          {% if name %}<p>{{ name }}{% if role %}, {{ role }}{% endif %}</p>{% endif %}
+        {% endwith %}
+        <div class="signature-box"></div>
+      </div>
+      <div class="party">
+        <h2>L’Organisateur</h2>
+        {% if promoter.representative_name %}
+          <p>{{ promoter.representative_name }}{% if promoter.representative_role %}, {{ promoter.representative_role }}{% endif %}</p>
+        {% endif %}
+        <div class="signature-box"></div>
+      </div>
+    </div>
+    <p>Nombre de mots rayés nuls : …</p>
+    <p>Chaque page du présent contrat doit être paraphée par les deux parties.</p>
+
+    <div class="annex">
+      <h1>Annexe n°1 : contacts utiles à la bonne exécution du contrat</h1>
+      <div class="parties">
+        <div class="party">
+          <h3>Le Producteur</h3>
+          <p>Responsable : ……<br>Nom : ……<br>Téléphone : {{ tenant.phone|default:"……" }}<br>Poste : ……<br>Administratif : ……<br>Technique : ……<br>Relations publiques : ……<br>Jours de fermeture : ……<br>Observations : ……</p>
+        </div>
+        <div class="party">
+          <h3>L’Organisateur</h3>
+          <p>Responsable : ……<br>Nom : ……<br>Téléphone : {{ promoter.phone|default:"……" }}<br>Poste : ……<br>Administratif : ……<br>Technique : ……<br>Relations publiques : ……<br>Jours de fermeture : ……<br>Observations : ……</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="annex">
+      <h1>Annexe n°2 : fiche technique</h1>
+      {% if show.tech_sheet_text %}<p>{{ show.tech_sheet_text|linebreaksbr }}</p>{% endif %}
+      {% if show.tech_sheet_file %}<p>Le fichier de la fiche technique du spectacle est joint au présent contrat.</p>{% endif %}
+      <h3>Fiche technique du lieu et du spectacle</h3>
+      <ul>
+        <li>Sonorisation : magnétophones, retours scène, enceintes (nombre, puissance), console (nombre d’entrées), microphones, piano accordé, etc. : ……</li>
+        <li>Machinerie : scène (profondeur, largeur, hauteur, dégagements), porteuses (nombre, longueur, charge), proscenium (dimensions), cadre de scène (minima), ouverture, hauteur, largeur : ……</li>
+        <li>Loges : nombre, confort : ……</li>
+      </ul>
+      <h3>Fiche technique du spectacle</h3>
+      <ul>
+        <li>L’équipe de tournée : artistique (comédiens, danseurs, musiciens, etc.), technique (régisseurs, techniciens, etc.), administrative (administrateur, chargé de production, attaché de presse, etc.) : ……</li>
+        <li>Installation : temps nécessaire, horaires, personnel requis, etc. : ……</li>
+      </ul>
+    </div>
+
+    <div class="annex">
+      <h1>Annexe n°3 : éléments nécessaires à la communication du spectacle</h1>
+      <p>
+        Titre et durée du spectacle : {{ show.title }}{% if show.duration_minutes %}, {{ show.duration_minutes }} minutes{% endif %}<br>
+        Nom du metteur en scène : ……<br>
+        Nom du directeur artistique : ……<br>
+        Titre de l'œuvre et du (des) auteur(s) : ……<br>
+        Distribution artistique : {{ show.performers|default:"……" }}<br>
+        Equipe technique : ……<br>
+        Liste des mentions obligatoires (par exemple, le nom des coproducteurs, des organismes subventionneurs et autres partenaires financiers, logos, etc.) : ……<br>
+        Photos éventuellement à disposition (en précisant « libres de droits » ou « droits réservés ») : ……
+      </p>
+    </div>
+
+    <div class="annex">
+      <h1>Annexe n°4 : frais liés à l’exécution du contrat (les frais annexes)</h1>
+      <p>
+        Raison sociale de l’entreprise : {{ tenant.name }}<br>
+        Numéro SIREN : {{ tenant_siren|default:"……" }}<br>
+        Licence d’entrepreneur de spectacles n° : {{ tenant.licence_number|default:"……" }} &nbsp; Catégorie n° : ……<br>
+        Siège social : {{ tenant.full_address|default:"……"|linebreaksbr }}<br>
+        Téléphone : {{ tenant.phone|default:"……" }}<br>
+        Représentée par : {{ tenant.representative_name|default:"……" }} &nbsp; Qualité : {{ tenant.representative_role|default:"……" }}
+      </p>
+      <p>Ci-après dénommée le « Producteur » d’une part,</p>
+      <p>Et :</p>
+      <p>
+        Raison sociale de l’entreprise : {{ promoter.name }}<br>
+        Numéro SIREN : {{ promoter_siren|default:"……" }}<br>
+        Licence d’entrepreneur de spectacles n° : {{ promoter.licence_number|default:"……" }} &nbsp; Catégorie n° : ……<br>
+        Siège social : {{ promoter.full_address|default:"……"|linebreaksbr }}<br>
+        Téléphone : {{ promoter.phone|default:"……" }}<br>
+        Représentée par : {{ promoter.representative_name|default:"……" }} &nbsp; Qualité : {{ promoter.representative_role|default:"……" }}
+      </p>
+      <p>Ci-après dénommée l’« Organisateur » d’autre part,</p>
+      <p>Il est convenu et arrêté ce qui suit :</p>
+      <p>L’Organisateur prendra à sa charge les frais de transport du matériel du spectacle précité ainsi que les frais de voyage et de séjour des personnels attachés à ce dernier pour les représentations faisant l’objet du présent contrat.</p>
+      <p>
+        Frais directement pris en charge par l'Organisateur : ……<br>
+        Frais remboursés par l'Organisateur au Producteur : ……
+      </p>
+      <p>Le montant total des frais remboursés au Producteur s'élève à :
+        …… € HT + …… € (TVA à {% if tenant.vat_regime == "taxable" and tenant.vat_rate is not None %}{{ tenant.vat_rate }}{% else %}……{% endif %} %) = …… € TTC
+        {% if tenant.vat_regime == "franchise" %}(TVA non applicable conformément à l'article 293 B du CGI){% elif tenant.vat_regime == "not_taxable" %}(TVA non applicable){% endif %}
+      </p>
+      <p>Le paiement de ces frais au Producteur interviendra sur présentation d’une facture et de justificatifs. Il devra être effectuée au plus tard …… jours à compter de la date d'émission de la facture.</p>
+      <p>Mode de règlement : {{ gig.get_payment_method_display|default:"……" }}</p>
+      <p>Fait à {{ gig.signing_place|default:"……" }}, le {{ today|date:"d/m/Y" }}, en {{ gig.copies_count }} exemplaires.</p>
+      <div class="parties signatures">
+        <div class="party"><h2>Le Producteur</h2><div class="signature-box"></div></div>
+        <div class="party"><h2>L’Organisateur</h2><div class="signature-box"></div></div>
+      </div>
+      <p>Nombre de mots rayés nuls : …</p>
+    </div>
+{% endblock %}
