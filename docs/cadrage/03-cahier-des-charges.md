@@ -257,7 +257,7 @@ Multi-tenant par **base partagée avec clé `tenant`**. Détails : `docs/guides/
 **Payment (T)** : invoice, amount, date, method.
 **Expense (T)** : gig, category, label, amount, date, receipt_file.
 
-> **Person (T)** *(prévu, F-06)* : first_name, last_name, role, status, phone, email, average_fee (facultatif), notes ; liée à `GigMember` (FK facultative) pour savoir qui a participé à quelle date. Lien avec un `Show` non retenu pour l'instant.
+> **Person (T)** *(prévu, F-06)* : first_name, last_name, role, status, phone, email, average_fee (facultatif), **address (+ code postal, ville, département) et guso_number — visibles du propriétaire seulement** *(13/10)*, notes ; liée à `GigMember` (FK facultative) pour savoir qui a participé à quelle date. Lien avec un `Show` non retenu pour l'instant.
 
 ---
 

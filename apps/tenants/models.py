@@ -77,9 +77,13 @@ class Tenant(AddressMixin, models.Model):
         return self.name
 
 
-class Person(TenantOwnedModel):
+class Person(AddressMixin, TenantOwnedModel):
     """A member of the structure's team (artist, musician, technician...). Tracking only:
-    nothing here is used to compute pay or social contributions (F-06)."""
+    nothing here is used to compute pay or social contributions (F-06).
+
+    The address and the GUSO number are private: only the owner sees them, and they are
+    never copied to a roadmap.
+    """
 
     first_name = models.CharField(_("prénom"), max_length=100)
     last_name = models.CharField(_("nom"), max_length=100)
@@ -87,6 +91,8 @@ class Person(TenantOwnedModel):
     status = models.CharField(_("statut"), max_length=100, blank=True)
     phone = models.CharField(_("téléphone"), max_length=30, blank=True)
     email = models.EmailField(_("e-mail"), blank=True)
+    address = models.TextField(_("adresse"), blank=True)
+    guso_number = models.CharField(_("n° GUSO"), max_length=50, blank=True)
     average_fee = models.DecimalField(
         _("cachet moyen (€)"), max_digits=10, decimal_places=2, null=True, blank=True
     )

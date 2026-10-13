@@ -14,6 +14,11 @@
     {% if person.status %}<p class="text-gray-600">{% translate "Statut" %} : {{ person.status }}</p>{% endif %}
     {% if person.phone %}<p><a href="tel:{{ person.phone }}" class="text-blue-600">{{ person.phone }}</a></p>{% endif %}
     {% if person.email %}<p><a href="mailto:{{ person.email }}" class="text-blue-600">{{ person.email }}</a></p>{% endif %}
+    {% if is_owner %}
+      {% if person.full_address %}<p>{{ person.full_address|linebreaksbr }}</p>{% endif %}
+      {% if person.department %}<p class="text-gray-600">{{ person.get_department_display }}</p>{% endif %}
+      {% if person.guso_number %}<p class="text-gray-600">{% translate "N° GUSO" %} : {{ person.guso_number }}</p>{% endif %}
+    {% endif %}
     {% if person.average_fee is not None %}<p class="text-gray-600">{% translate "Cachet moyen" %} : {{ person.average_fee }} €</p>{% endif %}
     {% if person.notes %}<p class="text-gray-600">{{ person.notes|linebreaksbr }}</p>{% endif %}
   </div>
