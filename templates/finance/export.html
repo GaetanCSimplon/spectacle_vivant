@@ -27,5 +27,10 @@
     </p>
   </form>
 
+  <p class="mb-4 text-sm text-gray-600">
+    {% translate "Pour récupérer tout le reste (dates, spectacles, contacts, documents…), utilisez" %}
+    <a href="{% url 'tenants:data-export' %}" class="text-blue-700 underline">{% translate "le téléchargement de toutes mes données" %}</a>.
+  </p>
+
   <a href="{% url 'home' %}" class="text-sm text-gray-500 hover:text-gray-700">{% translate "Retour à l'accueil" %}</a>
 {% endblock %}

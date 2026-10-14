@@ -79,9 +79,9 @@
                 </ul>
                 <p class="pt-1 text-right text-stone-600">{% translate "Total à encaisser" %} : <strong>{{ awaiting_total|floatformat:"0g" }} €</strong></p>
               {% endif %}
-              <a href="{% url 'export' %}" class="inline-flex min-h-11 items-center font-bold text-blue-700 underline">{% translate "Exporter (CSV)" %}</a>
             </div>
           </details>
+          <a href="{% url 'export' %}" class="mt-1 inline-flex min-h-11 items-center text-sm font-bold text-blue-700 hover:text-blue-900">{% translate "Exporter mes chiffres (CSV)" %} →</a>
         </section>
 
         {% include "core/_upcoming_card.html" %}

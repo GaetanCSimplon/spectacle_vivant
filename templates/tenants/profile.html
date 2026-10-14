@@ -27,10 +27,21 @@
   </form>
 
   <section class="mt-8 border-t border-gray-200 pt-4">
-    <h2 class="mb-1 text-base font-semibold">{% translate "Mes données" %}</h2>
-    <a href="{% url 'tenants:data-export' %}" class="text-sm text-blue-700 underline">
-      {% translate "Télécharger toutes mes données" %}
-    </a>
+    <h2 class="mb-2 text-base font-semibold">{% translate "Exports et données" %}</h2>
+    <ul class="space-y-3 text-sm">
+      <li>
+        <a href="{% url 'export' %}" class="inline-flex min-h-11 items-center font-bold text-blue-700 underline">
+          {% translate "Exporter mes chiffres (CSV)" %}
+        </a>
+        <span class="block text-gray-600">{% translate "Factures, recettes et dépenses sur la période de votre choix, à ouvrir dans Excel ou à donner à votre comptable." %}</span>
+      </li>
+      <li>
+        <a href="{% url 'tenants:data-export' %}" class="inline-flex min-h-11 items-center font-bold text-blue-700 underline">
+          {% translate "Télécharger toutes mes données (ZIP)" %}
+        </a>
+        <span class="block text-gray-600">{% translate "Tout ce que contient votre compte : dates, spectacles, contacts, équipe, documents et justificatifs." %}</span>
+      </li>
+    </ul>
   </section>
 
   <section class="mt-8 border-t border-gray-200 pt-4">
