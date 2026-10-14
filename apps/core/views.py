@@ -1,6 +1,7 @@
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db.models import Q
 from django.http import Http404, HttpResponse
+from django.shortcuts import render
 from django.utils import timezone
 from django.views import View
 from django.views.generic import TemplateView
@@ -31,6 +32,16 @@ class TenantScopedMixin(LoginRequiredMixin):
         if hasattr(form, "instance"):
             form.instance.tenant = self.request.tenant
         return super().form_valid(form)
+
+
+def csrf_failure(request, reason=""):
+    """The page shown when the security check of a form fails.
+
+    Not only "the form expired": a closed session, blocked cookies or a wrong origin end
+    here too. It is rendered with the request, so that a visitor without an account (an
+    organiser answering a link) is not sent to a login page.
+    """
+    return render(request, "403_csrf.html", {"reason": reason}, status=403)
 
 
 def protect_secret_page(response, referrer="no-referrer"):

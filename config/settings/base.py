@@ -131,6 +131,9 @@ AUTH_PASSWORD_VALIDATORS = [
 ]
 
 
+# What a visitor sees when the security check of a form fails.
+CSRF_FAILURE_VIEW = "apps.core.views.csrf_failure"
+
 # Internationalization
 # https://docs.djangoproject.com/en/5.2/topics/i18n/
 
