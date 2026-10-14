@@ -154,6 +154,11 @@ Vérifications après le premier déploiement :
 - aucune requête n'apparaît dans les journaux avec un jeton de feuille de route ;
 - une erreur volontaire remonte dans Sentry sans donnée personnelle.
 
-Les dépendances ne sont pas encore figées par version : une mise à jour inattendue d'une bibliothèque pourrait casser un déploiement. À figer (fichier de versions) avant l'ouverture au public.
+## Les versions des dépendances (figées le 2026-10-14)
+
+- `requirements/base.txt`, `dev.txt` et `prod.txt` disent **quelles** bibliothèques on utilise ; `requirements/constraints.txt` dit **quelle version exacte** de chacune (et de ce qu'elles installent). Tout `pip install` le respecte (ligne `-c` de `base.txt`) : ta machine, la CI et Scalingo installent donc les mêmes versions, celles qui ont été testées.
+- **Dependabot** (`.github/dependabot.yml`) ouvre chaque lundi **une** PR groupée avec les mises à jour mineures et correctifs, que la CI teste ; Django reste sur la série 5.2 LTS (changer de série est une décision, pas une mise à jour). Il propose aussi les mises à jour des actions GitHub.
+- **`pip-audit`** (job `audit` de la CI, aussi chaque lundi) signale une faille de sécurité connue dans une version utilisée. Il est séparé du job de tests : une nouvelle alerte apparaît en rouge sans bloquer une PR sans rapport.
+- **Mettre à jour à la main**, dans un environnement propre : `pip install -U <paquet>`, lancer `pytest`, puis régénérer le fichier avec `pip freeze --exclude-editable` (en gardant les trois lignes de commentaire du début). Une PR Dependabot fait la même chose pour toi.
 
 *Cette liste évoluera avec les sprints. Les noms exacts des variables seront ajoutés ici quand le code les utilisera.*
