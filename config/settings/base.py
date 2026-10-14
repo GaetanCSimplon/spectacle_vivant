@@ -145,9 +145,6 @@ USE_I18N = True
 
 USE_TZ = True
 
-# A link typed without a scheme (e.g. "exemple.fr/epk") is completed with https://.
-FORMS_URLFIELD_ASSUME_HTTPS = True
-
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.2/howto/static-files/
