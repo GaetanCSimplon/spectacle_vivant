@@ -289,7 +289,7 @@ Demande de l'associé : proposer 4 modèles de contrat de cession (le nôtre + 3
 - [x] **Passe de design n°1** (2026-10-08, retour de test : interface trop impersonnelle) : style global dans `css/source.css` (titres, champs de 44 px, boutons, cartes, badges, messages par niveau, navigation), fond chaleureux, accent bleu conservé, marque en texte. Reste : passe écran par écran après le test complet ; logo ; mode sombre (plus tard).
 - [ ] Vérifier les téléchargements de fichiers (contrôle d'accès).
 - [x] Passage d'accessibilité de base : lien « Aller au contenu », focus visible, contrastes du calendrier et de l'assistant, label du lien de partage (à compléter par un test manuel au clavier et sur lecteur d'écran).
-- [x] Messages d'erreur en français : pages 404, 403, 500 et formulaire expiré (CSRF) ; chaîne non traduite de l'accueil corrigée.
+- [x] Messages d'erreur en français : pages 404, 403, 500 et formulaire expiré (CSRF) ; chaîne non traduite de l'accueil corrigée. *(2026-10-14)* La page d'échec du contrôle de sécurité d'un formulaire ne dit plus « Le formulaire a expiré » (cause trop restrictive) : « Votre action n'a pas pu être enregistrée », avec les causes courantes (page ouverte trop longtemps, connexion dans un autre onglet, cookies bloqués), un « Détail technique » replié et un bouton d'accueil seulement pour un utilisateur connecté (un organisateur sans compte n'est pas renvoyé vers la connexion). Page 403 d'accès refusé reformulée sans accuser à tort le rôle de l'utilisateur.
 - [x] États vides et messages de succès : relus, déjà présents sur les listes, fiches, finances et accueil.
 - [ ] **Recette** : dérouler la liste de la section 11 du cahier des charges sur staging.
 - [ ] Sauvegarde de la base + **test de restauration**.

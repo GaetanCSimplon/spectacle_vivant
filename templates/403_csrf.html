@@ -1,10 +1,25 @@
 {% extends "base.html" %}
 {% load i18n %}
 
-{% block title %}Formulaire expiré — BÒRD PRO{% endblock %}
+{% block title %}Action non enregistrée — BÒRD PRO{% endblock %}
 
 {% block page_content %}
-  <h1>{% translate "Le formulaire a expiré" %}</h1>
-  <p class="mb-4">{% translate "Pour votre sécurité, ce formulaire n'est plus valable (page restée ouverte trop longtemps, ou cookies bloqués). Rechargez la page et recommencez : rien n'a été enregistré." %}</p>
-  <a href="{% url 'home' %}" class="btn btn-primary">{% translate "Retour à l'accueil" %}</a>
+  <h1>{% translate "Votre action n'a pas pu être enregistrée" %}</h1>
+  <p class="mb-3">{% translate "Pour votre sécurité, le site n'a pas pu vérifier que cette action venait bien de vous. Rien n'a été enregistré." %}</p>
+  <p class="mb-1">{% translate "Cela arrive quand :" %}</p>
+  <ul class="mb-3 list-disc space-y-1 pl-5">
+    <li>{% translate "la page est restée ouverte trop longtemps ;" %}</li>
+    <li>{% translate "vous vous êtes déconnecté ou reconnecté dans un autre onglet ;" %}</li>
+    <li>{% translate "votre navigateur bloque les cookies." %}</li>
+  </ul>
+  <p class="mb-4">{% translate "Revenez à la page précédente, rechargez-la, puis recommencez." %}</p>
+  {% if user.is_authenticated %}
+    <a href="{% url 'home' %}" class="btn btn-primary">{% translate "Retour à l'accueil" %}</a>
+  {% endif %}
+  {% if reason %}
+    <details class="mt-6 text-sm text-stone-600">
+      <summary class="cursor-pointer">{% translate "Détail technique" %}</summary>
+      <p class="mt-1">{{ reason }}</p>
+    </details>
+  {% endif %}
 {% endblock %}
