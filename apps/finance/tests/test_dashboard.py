@@ -1,4 +1,6 @@
 import datetime
+import html as html_lib
+import re
 from decimal import Decimal
 
 import pytest
@@ -254,15 +256,29 @@ def test_home_shows_the_dashboard(client, tenant):
     assert pending.pk  # created above: it feeds the alerts
 
 
-def test_home_amounts_are_whole_euros_in_the_summary(client, tenant):
+def _flat(html):
+    """The visible text of a page: no tags, one kind of space, one space between words."""
+    text = html_lib.unescape(re.sub(r"<[^>]+>", " ", html))
+    return " ".join(text.replace("\u202f", " ").replace("\xa0", " ").split())
+
+
+def test_home_amounts_are_whole_euros_in_the_summary_but_stored_to_the_cent(client, tenant):
     gig = make_gig(tenant=tenant, price="1000.60")
     invoice = issued_invoice(gig)
     services.record_payment(invoice, "300.20", datetime.date.today(), CASH)
 
-    text = client.get(reverse("home")).content.decode()
+    text = _flat(client.get(reverse("home")).content.decode())
 
-    assert "1 001 €" in text.replace(" ", " ").replace("\xa0", " ") or "1001 €" in text
-    assert "300 €" in text
+    # Each figure sits next to its own label (a bare "300 €" would also match "1 300 €").
+    assert "Facturé 1 001 €" in text  # 1000.60, half up
+    assert "Encaissé 300 €" in text  # 300.20
+    assert "Reste à encaisser 700 €" in text  # 700.40
+    # No cents anywhere in the summary...
+    assert not re.search(r"\d+[,.]\d{2} €", text)
+    # ...but nothing was rounded in the database (F-58).
+    invoice.refresh_from_db()
+    assert invoice.total_incl_tax == D("1000.60")
+    assert invoice.payments.get().amount == D("300.20")
 
 
 def test_home_never_shows_another_tenants_data(client, tenant):
