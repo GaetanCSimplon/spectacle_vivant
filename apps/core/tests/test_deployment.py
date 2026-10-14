@@ -2,6 +2,7 @@
 
 import json
 import os
+import re
 import stat
 from pathlib import Path
 
@@ -63,3 +64,49 @@ def test_set_site_domain_needs_a_domain(settings):
     settings.SITE_DOMAIN = ""
     with pytest.raises(CommandError):
         call_command("set_site_domain")
+
+
+def _package_names(path):
+    """Package names written in a requirements file (extras and versions left out)."""
+    names = set()
+    for line in path.read_text().splitlines():
+        line = line.split("#")[0].strip()
+        if not line or line.startswith("-"):
+            continue
+        names.add(re.split(r"[\[<>=!~; ]", line, maxsplit=1)[0].lower().replace("_", "-"))
+    return names
+
+
+def _pinned():
+    pins = {}
+    for line in (ROOT / "requirements/constraints.txt").read_text().splitlines():
+        if line.strip() and not line.startswith("#"):
+            name, version = line.split("==")
+            pins[name.lower().replace("_", "-")] = version
+    return pins
+
+
+def test_every_installed_version_is_pinned_exactly():
+    base = (ROOT / "requirements/base.txt").read_text()
+    assert "-c constraints.txt" in base
+    for line in (ROOT / "requirements/constraints.txt").read_text().splitlines():
+        assert line.startswith("#") or re.fullmatch(r"[A-Za-z0-9._-]+==[A-Za-z0-9.!+_-]+", line), (
+            line
+        )
+
+
+@pytest.mark.parametrize("name", ["base", "dev", "prod"])
+def test_every_package_we_ask_for_has_a_pinned_version(name):
+    pins = _pinned()
+    missing = _package_names(ROOT / f"requirements/{name}.txt") - set(pins)
+    assert not missing, f"not pinned in requirements/constraints.txt: {sorted(missing)}"
+
+
+def test_django_stays_on_the_52_lts():
+    assert _pinned()["django"].startswith("5.2.")
+
+
+def test_dependabot_and_the_audit_are_configured():
+    assert "package-ecosystem: pip" in (ROOT / ".github/dependabot.yml").read_text()
+    assert "pip-audit" in (ROOT / ".github/workflows/ci.yml").read_text()
+    assert "pip-audit" in (ROOT / "requirements/dev.txt").read_text()

@@ -4,3 +4,4 @@ pytest-django
 factory-boy
 ruff
 pre-commit
+pip-audit
