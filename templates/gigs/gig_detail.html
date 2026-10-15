@@ -29,6 +29,14 @@
         · <a href="{% url 'gigs:price' gig.pk %}" class="text-blue-600">{% translate "Modifier le prix" %}</a>
       </p>
     {% endif %}
+    {% if gig.status != 'cancelled' %}
+      <p>
+        {% translate "Acompte" %} : {{ gig.deposit_due_on|date:"d/m/Y"|default:"—" }}
+        · {% translate "Solde" %} : {{ gig.balance_due_on|date:"d/m/Y"|default:"—" }}
+        · {{ gig.get_payment_method_display|default:"—" }}
+        · <a href="{% url 'gigs:terms' gig.pk %}" class="text-blue-600">{% translate "Modifier les échéances" %}</a>
+      </p>
+    {% endif %}
     {% if price_changes|length > 1 %}
       <details class="text-gray-600">
         <summary class="cursor-pointer">{% translate "Historique du prix" %}</summary>

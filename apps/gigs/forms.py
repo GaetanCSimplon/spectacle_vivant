@@ -131,3 +131,15 @@ class PriceForm(forms.Form):
         required=False,
         help_text=_("Par exemple : négocié par téléphone, remise pour une 2e date."),
     )
+
+
+class TermsForm(forms.ModelForm):
+    """The payment terms of the future contract (quick edit from the card)."""
+
+    class Meta:
+        model = Gig
+        fields = ["deposit_due_on", "balance_due_on", "payment_method"]
+        widgets = {
+            "deposit_due_on": forms.DateInput(attrs={"type": "date"}, format="%Y-%m-%d"),
+            "balance_due_on": forms.DateInput(attrs={"type": "date"}, format="%Y-%m-%d"),
+        }

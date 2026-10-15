@@ -24,6 +24,7 @@ from .forms import (
     PriceForm,
     PromoterQuickCreateForm,
     ShowQuickCreateForm,
+    TermsForm,
     VenueQuickCreateForm,
 )
 from .models import Gig
@@ -294,7 +295,7 @@ class GigListView(TenantScopedMixin, ListView):
 
     def get_queryset(self):
         queryset = super().get_queryset().select_related("show", "venue", "promoter")
-        return services.with_price_lock(self.get_filter_form().apply(queryset))
+        return services.with_locks(self.get_filter_form().apply(queryset))
 
     def get_template_names(self):
         if wants_fragment(self.request):
@@ -464,7 +465,7 @@ class GigPriceView(TenantScopedMixin, View):
     """
 
     def _gig(self, request, pk):
-        queryset = services.with_price_lock(Gig.objects.filter(tenant=request.tenant))
+        queryset = services.with_locks(Gig.objects.filter(tenant=request.tenant))
         return get_object_or_404(queryset, pk=pk)
 
     def _block(self, request, gig, form=None, saved=False):
@@ -503,6 +504,51 @@ class GigPriceView(TenantScopedMixin, View):
                 if wants_fragment(request):
                     return self._block(request, self._gig(request, pk), saved=True)
                 messages.success(request, _("Le prix est enregistré."))
+                return redirect("gigs:detail", pk=gig.pk)
+        if wants_fragment(request):
+            return self._block(request, gig, form)
+        return self._page(request, gig, form)
+
+
+class GigTermsView(TenantScopedMixin, View):
+    """Quick edit of the payment terms of the contract (instalment dates, payment method).
+
+    Same mechanics as `GigPriceView`: HTMX swaps the block of the card, a page serves the
+    no-JavaScript case, `?vue=affichage` is the "Annuler" button.
+    """
+
+    def _gig(self, request, pk):
+        queryset = services.with_locks(Gig.objects.filter(tenant=request.tenant))
+        return get_object_or_404(queryset, pk=pk)
+
+    def _block(self, request, gig, form=None, saved=False):
+        context = {"gig": gig, "form": form, "saved": saved}
+        return render(request, "gigs/_terms.html", context)
+
+    def _page(self, request, gig, form):
+        return render(request, "gigs/gig_terms.html", {"gig": gig, "form": form})
+
+    def get(self, request, pk):
+        gig = self._gig(request, pk)
+        form = None if gig.terms_locked else TermsForm(instance=gig)
+        if wants_fragment(request):
+            if request.GET.get("vue") == "affichage":
+                form = None
+            return self._block(request, gig, form)
+        return self._page(request, gig, form)
+
+    def post(self, request, pk):
+        gig = self._gig(request, pk)
+        form = TermsForm(request.POST, instance=Gig(pk=gig.pk, tenant=gig.tenant))
+        if form.is_valid():
+            try:
+                services.update_terms(gig, **form.cleaned_data)
+            except services.CannotChangeTerms as error:
+                form.add_error(None, error.args[0])
+            else:
+                if wants_fragment(request):
+                    return self._block(request, self._gig(request, pk), saved=True)
+                messages.success(request, _("Les échéances sont enregistrées."))
                 return redirect("gigs:detail", pk=gig.pk)
         if wants_fragment(request):
             return self._block(request, gig, form)

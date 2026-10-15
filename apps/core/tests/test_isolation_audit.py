@@ -77,6 +77,7 @@ ROUTES = [
     ("catalog:show-file", {"pk": "show", "kind": "=fiche-technique"}),
     ("gigs:detail", {"pk": "gig"}),
     ("gigs:price", {"pk": "gig"}),
+    ("gigs:terms", {"pk": "gig"}),
     ("gigs:confirm", {"pk": "gig"}),
     ("gigs:cancel", {"pk": "gig"}),
     ("gigs:reactivate", {"pk": "gig"}),

@@ -1,0 +1,53 @@
+{% load i18n %}
+{% comment %}Payment terms block of a gig card in "Mes dates": instalment dates and payment method,
+or the quick-edit form. Swapped alone by HTMX. Context: gig (annotated with terms_locked), form, saved.{% endcomment %}
+<div id="terms-{{ gig.pk }}" class="mt-2 border-t border-stone-200 pt-2 text-sm">
+  {% if form %}
+    <form
+      method="post"
+      action="{% url 'gigs:terms' gig.pk %}"
+      hx-post="{% url 'gigs:terms' gig.pk %}"
+      hx-target="#terms-{{ gig.pk }}"
+      hx-swap="outerHTML"
+      class="space-y-2"
+    >
+      {% csrf_token %}
+      {{ form.as_p }}
+      <div class="flex items-center gap-4">
+        <button type="submit" class="btn btn-primary">{% translate "Enregistrer" %}</button>
+        <a
+          href="{% url 'gigs:list' %}"
+          hx-get="{% url 'gigs:terms' gig.pk %}?vue=affichage"
+          hx-target="#terms-{{ gig.pk }}"
+          hx-swap="outerHTML"
+          class="text-gray-600 underline"
+        >{% translate "Annuler" %}</a>
+      </div>
+    </form>
+  {% else %}
+    <div class="flex items-center justify-between gap-3">
+      <span>
+        {% translate "Acompte" %} : {% if gig.deposit_due_on %}{{ gig.deposit_due_on|date:"d/m/Y" }}{% else %}<span class="text-gray-500">{% translate "à définir" %}</span>{% endif %}
+        · {% translate "Solde" %} : {% if gig.balance_due_on %}{{ gig.balance_due_on|date:"d/m/Y" }}{% else %}<span class="text-gray-500">{% translate "à définir" %}</span>{% endif %}
+        · {% if gig.payment_method %}{{ gig.get_payment_method_display }}{% else %}<span class="text-gray-500">{% translate "paiement à définir" %}</span>{% endif %}
+        {% if saved %}<span role="status" class="ml-1 text-green-700">{% translate "Enregistré" %}</span>{% endif %}
+      </span>
+      {% if gig.terms_locked %}
+        <span class="shrink-0 text-xs text-gray-500" title="{% translate 'Contrat signé : ces informations ne peuvent plus changer.' %}">
+          {% translate "Verrouillé" %}
+        </span>
+      {% else %}
+        <a
+          href="{% url 'gigs:terms' gig.pk %}"
+          hx-get="{% url 'gigs:terms' gig.pk %}"
+          hx-target="#terms-{{ gig.pk }}"
+          hx-swap="outerHTML"
+          class="inline-flex min-h-11 min-w-11 shrink-0 items-center justify-center text-blue-700 hover:text-blue-900" title="{% translate "Modifier les échéances" %}"
+        >
+          <svg aria-hidden="true" width="16" height="16" viewBox="0 0 20 20" fill="currentColor" class="shrink-0"><path d="M13.59 2.59a2 2 0 0 1 2.82 2.82l-.8.8-2.82-2.82.8-.8ZM11.6 4.58 3 13.17V16h2.83l8.6-8.59-2.83-2.83Z"/></svg>
+          <span class="sr-only">{% translate "Modifier les échéances" %}</span>
+        </a>
+      {% endif %}
+    </div>
+  {% endif %}
+</div>

@@ -25,7 +25,10 @@ of "Mes dates" (`editable_price`) can hold its own buttons above it.{% endcommen
       </span>
     {% endif %}
     {% if editable_price %}
-      <div class="relative z-10">{% include "gigs/_price.html" with form=None saved=False %}</div>
+      <div class="relative z-10">
+        {% include "gigs/_price.html" with form=None saved=False %}
+        {% if gig.status != 'cancelled' %}{% include "gigs/_terms.html" with form=None saved=False %}{% endif %}
+      </div>
     {% endif %}
   </div>
 </li>

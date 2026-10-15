@@ -246,13 +246,38 @@ def change_price(gig, new_price, user, note=""):
     return change
 
 
-def with_price_lock(queryset):
-    """Annotate gigs with `price_locked`, true when `price_blockers` would not be empty."""
+def with_locks(queryset):
+    """Annotate gigs with `price_locked` (`price_blockers` is not empty) and `terms_locked`."""
     signed = Contract.objects.filter(gig=OuterRef("pk"), status=Contract.Status.SIGNED)
     invoiced = Invoice.objects.filter(gig=OuterRef("pk")).exclude(status=Invoice.Status.DRAFT)
     return queryset.annotate(
+        terms_locked=Exists(signed),
         price_locked=ExpressionWrapper(
             Q(status=Gig.Status.CANCELLED) | Q(Exists(signed)) | Q(Exists(invoiced)),
             output_field=BooleanField(),
-        )
+        ),
     )
+
+
+class CannotChangeTerms(Exception):
+    """Raised when the payment terms of a gig may not change."""
+
+
+def update_terms(gig, deposit_due_on, balance_due_on, payment_method):
+    """Set the payment terms printed in the contract (refused once the contract is signed)."""
+    with transaction.atomic():
+        locked = _lock_gig(gig)
+        if Contract.objects.filter(
+            gig=locked, tenant=locked.tenant, status=Contract.Status.SIGNED
+        ).exists():
+            raise CannotChangeTerms(
+                _("Ce contrat est signé : ses informations ne peuvent plus être modifiées.")
+            )
+        locked.deposit_due_on = deposit_due_on
+        locked.balance_due_on = balance_due_on
+        locked.payment_method = payment_method
+        locked.save(update_fields=["deposit_due_on", "balance_due_on", "payment_method"])
+    gig.deposit_due_on = deposit_due_on
+    gig.balance_due_on = balance_due_on
+    gig.payment_method = payment_method
+    return gig
