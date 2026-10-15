@@ -56,6 +56,21 @@
     </div>
   {% endif %}
 
+  {% if gigs %}
+    <h2 class="mb-2 text-sm font-semibold uppercase text-gray-500">{% translate "Prix accordés" %}</h2>
+    <div class="card mb-6">
+      <p class="mb-2 text-sm text-gray-600">{% blocktranslate with price=show.default_price|floatformat:"-2g" %}Prix indicatif du spectacle : {{ price }} € HT. Chaque date a son prix, négocié avec l'organisateur.{% endblocktranslate %}</p>
+      <ul class="space-y-1 text-sm">
+        {% for gig in gigs %}
+          <li class="flex flex-wrap justify-between gap-x-3 {% if gig.status == 'cancelled' %}text-gray-500 line-through{% endif %}">
+            <span>{{ gig.date|date:"d/m/Y" }} — {{ gig.promoter.name }}</span>
+            <span><strong>{{ gig.price|floatformat:"-2g" }} € HT</strong></span>
+          </li>
+        {% endfor %}
+      </ul>
+    </div>
+  {% endif %}
+
   <h2 class="mb-2 text-sm font-semibold uppercase text-gray-500">{% translate "Historique des dates" %}</h2>
   {% if gigs %}
     <ul class="mb-6 flex flex-col gap-2">

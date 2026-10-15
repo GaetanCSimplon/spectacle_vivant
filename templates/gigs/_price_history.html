@@ -1,0 +1,17 @@
+{% load i18n %}
+{% comment %}Price history of a gig, newest first. Context: price_changes.{% endcomment %}
+<ul class="space-y-1 text-sm">
+  {% for change in price_changes %}
+    <li class="flex flex-wrap justify-between gap-x-3">
+      <span>
+        {{ change.changed_at|date:"d/m/Y" }} —
+        {% if change.old_price is None %}
+          {% blocktranslate with price=change.new_price|floatformat:"-2g" %}prix initial : {{ price }} € HT{% endblocktranslate %}
+        {% else %}
+          {{ change.old_price|floatformat:"-2g" }} € → <strong>{{ change.new_price|floatformat:"-2g" }} € HT</strong>
+        {% endif %}
+      </span>
+      {% if change.note %}<span class="text-gray-600">{{ change.note }}</span>{% endif %}
+    </li>
+  {% endfor %}
+</ul>

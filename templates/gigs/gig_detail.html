@@ -24,7 +24,16 @@
     {% if gig.status == 'cancelled' %}
       <p class="text-gray-500"><s>{% translate "Prix de cession" %} : {{ gig.price }} € HT</s> · {% translate "date annulée" %}</p>
     {% else %}
-      <p>{% translate "Prix de cession" %} : {{ gig.price }} € HT</p>
+      <p>
+        {% translate "Prix de cession" %} : {{ gig.price|floatformat:"-2g" }} € HT
+        · <a href="{% url 'gigs:price' gig.pk %}" class="text-blue-600">{% translate "Modifier le prix" %}</a>
+      </p>
+    {% endif %}
+    {% if price_changes|length > 1 %}
+      <details class="text-gray-600">
+        <summary class="cursor-pointer">{% translate "Historique du prix" %}</summary>
+        <div class="mt-1">{% include "gigs/_price_history.html" %}</div>
+      </details>
     {% endif %}
     {% if gig.status == 'option' and gig.option_expires_on %}
       <p>

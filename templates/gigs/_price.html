@@ -1,0 +1,51 @@
+{% load i18n %}
+{% comment %}Price block of a gig card in "Mes dates": the price and a pencil, or the quick-edit form.
+Swapped alone by HTMX. Context: gig (annotated with price_locked), form (None = display), saved.{% endcomment %}
+<div id="price-{{ gig.pk }}" class="mt-2 border-t border-stone-200 pt-2 text-sm">
+  {% if form %}
+    <form
+      method="post"
+      action="{% url 'gigs:price' gig.pk %}"
+      hx-post="{% url 'gigs:price' gig.pk %}"
+      hx-target="#price-{{ gig.pk }}"
+      hx-swap="outerHTML"
+      class="space-y-2"
+    >
+      {% csrf_token %}
+      {{ form.as_p }}
+      <div class="flex items-center gap-4">
+        <button type="submit" class="btn btn-primary">{% translate "Enregistrer" %}</button>
+        <a
+          href="{% url 'gigs:list' %}"
+          hx-get="{% url 'gigs:price' gig.pk %}?vue=affichage"
+          hx-target="#price-{{ gig.pk }}"
+          hx-swap="outerHTML"
+          class="text-gray-600 underline"
+        >{% translate "Annuler" %}</a>
+      </div>
+    </form>
+  {% else %}
+    <div class="flex items-center justify-between gap-3">
+      <span>
+        {% translate "Prix de cession" %} : <strong>{{ gig.price|floatformat:"-2g" }} € HT</strong>
+        {% if saved %}<span role="status" class="ml-1 text-green-700">{% translate "Enregistré" %}</span>{% endif %}
+      </span>
+      {% if gig.price_locked %}
+        <span class="text-xs text-gray-500" title="{% translate 'Contrat signé, facture émise ou date annulée : le prix ne peut plus changer.' %}">
+          {% translate "Prix verrouillé" %}
+        </span>
+      {% else %}
+        <a
+          href="{% url 'gigs:price' gig.pk %}"
+          hx-get="{% url 'gigs:price' gig.pk %}"
+          hx-target="#price-{{ gig.pk }}"
+          hx-swap="outerHTML"
+          class="inline-flex min-h-11 items-center gap-1 font-semibold text-blue-700 underline"
+        >
+          <svg aria-hidden="true" width="16" height="16" viewBox="0 0 20 20" fill="currentColor" class="shrink-0"><path d="M13.59 2.59a2 2 0 0 1 2.82 2.82l-.8.8-2.82-2.82.8-.8ZM11.6 4.58 3 13.17V16h2.83l8.6-8.59-2.83-2.83Z"/></svg>
+          {% translate "Modifier le prix" %}
+        </a>
+      {% endif %}
+    </div>
+  {% endif %}
+</div>

@@ -21,6 +21,7 @@ from .forms import (
     GigPromoterStepForm,
     GigShowStepForm,
     GigVenueStepForm,
+    PriceForm,
     PromoterQuickCreateForm,
     ShowQuickCreateForm,
     VenueQuickCreateForm,
@@ -293,7 +294,7 @@ class GigListView(TenantScopedMixin, ListView):
 
     def get_queryset(self):
         queryset = super().get_queryset().select_related("show", "venue", "promoter")
-        return self.get_filter_form().apply(queryset)
+        return services.with_price_lock(self.get_filter_form().apply(queryset))
 
     def get_template_names(self):
         if wants_fragment(self.request):
@@ -312,6 +313,7 @@ class GigListView(TenantScopedMixin, ListView):
         context["past_gigs"] = live.filter(date__lt=today).order_by("-date")
         context["cancelled_gigs"] = cancelled.order_by("-date")
         context["filter_form"] = self.get_filter_form()
+        context["editable_price"] = True
         context["has_any_gig"] = Gig.objects.filter(tenant=self.request.tenant).exists()
         context["year"] = today.year
         context["year_count"] = services.count_gigs_for_year(self.request.tenant, today.year)
@@ -362,6 +364,7 @@ class GigDetailView(TenantScopedMixin, DetailView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context["balance"] = finance_services.gig_balance(self.object)
+        context["price_changes"] = list(self.object.price_changes.all())
         context["crew"] = list(self.object.members.all())
         context["team_total"] = Person.objects.filter(tenant=self.request.tenant).count()
         context["team_on_gig"] = sum(1 for member in context["crew"] if member.person_id)
@@ -451,3 +454,56 @@ class GigCancelView(GigTransitionView):
 
     def apply(self, gig):
         services.change_status(gig, Gig.Status.CANCELLED)
+
+
+class GigPriceView(TenantScopedMixin, View):
+    """Quick edit of the price of a gig, from its card in "Mes dates".
+
+    HTMX swaps the price block of the card; without JavaScript the same view serves a page.
+    `?vue=affichage` gives back the plain display (the "Annuler" button).
+    """
+
+    def _gig(self, request, pk):
+        queryset = services.with_price_lock(Gig.objects.filter(tenant=request.tenant))
+        return get_object_or_404(queryset, pk=pk)
+
+    def _block(self, request, gig, form=None, saved=False):
+        context = {"gig": gig, "form": form, "saved": saved, "editable_price": True}
+        return render(request, "gigs/_price.html", context)
+
+    def _page(self, request, gig, form):
+        context = {
+            "gig": gig,
+            "form": form,
+            "blockers": services.price_blockers(gig),
+            "price_changes": list(gig.price_changes.all()),
+        }
+        return render(request, "gigs/gig_price.html", context)
+
+    def get(self, request, pk):
+        gig = self._gig(request, pk)
+        form = None if gig.price_locked else PriceForm(initial={"price": gig.price})
+        if wants_fragment(request):
+            if request.GET.get("vue") == "affichage":
+                form = None
+            return self._block(request, gig, form)
+        return self._page(request, gig, form)
+
+    def post(self, request, pk):
+        gig = self._gig(request, pk)
+        form = PriceForm(request.POST)
+        if form.is_valid():
+            try:
+                services.change_price(
+                    gig, form.cleaned_data["price"], request.user, form.cleaned_data["note"]
+                )
+            except services.CannotChangePrice as error:
+                form.add_error("price", error.args[0])
+            else:
+                if wants_fragment(request):
+                    return self._block(request, self._gig(request, pk), saved=True)
+                messages.success(request, _("Le prix est enregistré."))
+                return redirect("gigs:detail", pk=gig.pk)
+        if wants_fragment(request):
+            return self._block(request, gig, form)
+        return self._page(request, gig, form)
