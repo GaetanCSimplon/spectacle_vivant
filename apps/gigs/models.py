@@ -1,6 +1,7 @@
 from collections import namedtuple
 from functools import cached_property
 
+from django.conf import settings
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 from django.utils import timezone
@@ -110,6 +111,34 @@ class Gig(TenantOwnedModel):
 
     def __str__(self):
         return f"{self.show} — {self.date}"
+
+
+class PriceChange(TenantOwnedModel):
+    """One step in the negotiated price of a gig (Historique des prix).
+
+    The first entry (no old price) is the price set when the date was created.
+    """
+
+    gig = models.ForeignKey(Gig, on_delete=models.CASCADE, related_name="price_changes")
+    old_price = models.DecimalField(
+        _("ancien prix HT"), max_digits=8, decimal_places=2, null=True, blank=True
+    )
+    new_price = models.DecimalField(_("nouveau prix HT"), max_digits=8, decimal_places=2)
+    changed_at = models.DateTimeField(_("modifié le"), auto_now_add=True)
+    changed_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="+",
+    )
+    note = models.CharField(_("note"), max_length=255, blank=True)
+
+    class Meta:
+        ordering = ["-changed_at", "-id"]
+
+    def __str__(self):
+        return f"{self.gig} : {self.old_price} → {self.new_price}"
 
 
 class GigMember(TenantOwnedModel):

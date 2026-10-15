@@ -273,7 +273,7 @@ class GigWizardRecapView(GigWizardMixin, View):
             return redirect_response
 
         data = self.get_wizard_data()
-        gig = services.create_gig_from_wizard_data(request.tenant, data)
+        gig = services.create_gig_from_wizard_data(request.tenant, data, user=request.user)
         del request.session[WIZARD_SESSION_KEY]
         messages.success(request, _("La date a bien été créée."))
         return redirect("gigs:detail", pk=gig.pk)
