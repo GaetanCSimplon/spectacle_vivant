@@ -17,6 +17,7 @@ urlpatterns = [
     path("nouvelle/recapitulatif/", views.GigWizardRecapView.as_view(), name="wizard-recap"),
     path("calendrier/", views.GigCalendarView.as_view(), name="calendar"),
     path("<int:pk>/", views.GigDetailView.as_view(), name="detail"),
+    path("<int:pk>/prix/", views.GigPriceView.as_view(), name="price"),
     path("<int:pk>/confirmer/", views.GigConfirmView.as_view(), name="confirm"),
     path("<int:pk>/annuler/", views.GigCancelView.as_view(), name="cancel"),
     path("<int:pk>/supprimer/", views.GigDeleteView.as_view(), name="delete"),

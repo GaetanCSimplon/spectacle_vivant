@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}Prix de la date — BÒRD PRO{% endblock %}
+
+{% block page_content %}
+  <h1 class="mb-1 text-xl font-semibold">{% translate "Prix de cession" %}</h1>
+  <p class="mb-4 text-sm text-gray-600">{{ gig.date|date:"d/m/Y" }} — {{ gig.show.title }} · {{ gig.promoter.name }}</p>
+
+  {% if blockers %}
+    <div class="card mb-6 text-sm">
+      <p>{% translate "Prix actuel" %} : <strong>{{ gig.price|floatformat:"-2g" }} € HT</strong></p>
+      <p class="mt-2 text-gray-700">{% translate "Le prix ne peut plus changer :" %}</p>
+      <ul class="list-disc pl-5 text-gray-700">
+        {% for reason in blockers %}<li>{{ reason }}</li>{% endfor %}
+      </ul>
+    </div>
+  {% else %}
+    <form method="post" class="card mb-6 space-y-3">
+      {% csrf_token %}
+      {{ form.as_p }}
+      <button type="submit" class="btn btn-primary btn-block">{% translate "Enregistrer" %}</button>
+    </form>
+  {% endif %}
+
+  <h2 class="mb-2 text-sm font-semibold uppercase text-gray-500">{% translate "Historique du prix" %}</h2>
+  {% if price_changes %}
+    <div class="card mb-6">{% include "gigs/_price_history.html" %}</div>
+  {% else %}
+    <p class="mb-6 text-sm">{% translate "Aucun changement enregistré pour cette date." %}</p>
+  {% endif %}
+
+  <a href="{% url 'gigs:detail' gig.pk %}" class="text-sm text-gray-500 hover:text-gray-700">{% translate "Retour à la date" %}</a>
+{% endblock %}

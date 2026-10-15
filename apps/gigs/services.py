@@ -4,6 +4,7 @@ from collections import defaultdict
 from decimal import Decimal, InvalidOperation
 
 from django.db import transaction
+from django.db.models import BooleanField, Exists, ExpressionWrapper, OuterRef, Q
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
@@ -243,3 +244,15 @@ def change_price(gig, new_price, user, note=""):
         locked.save(update_fields=["price"])
     gig.price = price
     return change
+
+
+def with_price_lock(queryset):
+    """Annotate gigs with `price_locked`, true when `price_blockers` would not be empty."""
+    signed = Contract.objects.filter(gig=OuterRef("pk"), status=Contract.Status.SIGNED)
+    invoiced = Invoice.objects.filter(gig=OuterRef("pk")).exclude(status=Invoice.Status.DRAFT)
+    return queryset.annotate(
+        price_locked=ExpressionWrapper(
+            Q(status=Gig.Status.CANCELLED) | Q(Exists(signed)) | Q(Exists(invoiced)),
+            output_field=BooleanField(),
+        )
+    )

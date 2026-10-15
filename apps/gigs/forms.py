@@ -116,3 +116,18 @@ class GigDetailsStepForm(forms.ModelForm):
                 _("L'option ne peut pas se prolonger après la date du concert."),
             )
         return cleaned
+
+
+class PriceForm(forms.Form):
+    """New price HT of a gig; the amount is checked by `services.clean_price`."""
+
+    price = forms.CharField(
+        label=_("Prix HT (€)"),
+        widget=forms.TextInput(attrs={"inputmode": "decimal", "autocomplete": "off"}),
+    )
+    note = forms.CharField(
+        label=_("Note (facultatif)"),
+        max_length=255,
+        required=False,
+        help_text=_("Par exemple : négocié par téléphone, remise pour une 2e date."),
+    )
