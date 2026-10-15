@@ -286,7 +286,7 @@ Demandes de l'associé après ses tests. « Ma structure » devient **Bòrd**, p
 - [x] **PR 1 — Renommage** (2026-10-15, sans migration) : menu et titres « Bòrd » (`bord/`, `tenants:profile`), nouvelle sous-page « Informations de la structure » avec icône d'engrenage (`bord/informations/`, `tenants:settings`), onglets Tableau de bord / Équipe / Informations. La page Bòrd n'est pour l'instant qu'un point d'entrée vers ces pages.
 - [ ] **PR 2 — Tableau de bord Bòrd** : cartes Recette / Dépenses / Solde, filtres (spectacle, type de chiffres prévu / facturé / encaissé, statut, dates), table « Opérations récentes » (statut annulé / rétablir, lien vers les pièces). Réservé au propriétaire (à confirmer).
 - [ ] **PR 3 — Graphiques** : évolution mensuelle recette / dépenses, dépenses par catégorie.
-- [ ] **Dates, PR 1 — journal des prix** (migration `gigs/0009`, modèle `PriceChange`) : service `change_price` (refusé si contrat signé, facture émise ou date annulée).
+- [x] **Dates, PR 1 — journal des prix** (2026-10-15, migration `gigs/0009`, modèle `PriceChange`) : ancien et nouveau prix HT, auteur, date, note facultative ; le prix de création est la première ligne. Service `change_price` (montant au centime, strictement positif ; refusé si le contrat est signé, si une facture ou un avoir est émis, ou si la date est annulée ; rien d'écrit si le prix ne change pas) et `price_blockers` pour expliquer le verrou. Pas encore d'écran (PR suivante). Les dates créées avant n'ont pas de première ligne.
 - [ ] **Dates, PR 2 — boutons sur les cartes** : modification rapide du prix, historique sur la fiche de la date et du spectacle.
 - [ ] **Dates, PR 3 — échéances et mode de paiement** modifiables depuis la carte.
 

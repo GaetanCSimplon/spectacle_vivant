@@ -1,6 +1,7 @@
 import calendar
 import datetime
 from collections import defaultdict
+from decimal import Decimal, InvalidOperation
 
 from django.db import transaction
 from django.shortcuts import get_object_or_404
@@ -12,7 +13,7 @@ from apps.catalog.models import Show
 from apps.documents.models import Contract, ContractVersion, Invoice, Quote
 from apps.finance.models import Expense
 
-from .models import Gig
+from .models import Gig, PriceChange
 
 
 def get_wizard_related_objects(tenant, data):
@@ -23,18 +24,23 @@ def get_wizard_related_objects(tenant, data):
     return show, promoter, venue
 
 
-def create_gig_from_wizard_data(tenant, data):
+def create_gig_from_wizard_data(tenant, data, user=None):
     show, promoter, venue = get_wizard_related_objects(tenant, data)
-    return Gig.objects.create(
-        tenant=tenant,
-        show=show,
-        promoter=promoter,
-        venue=venue,
-        date=data["date"],
-        option_expires_on=data.get("option_expires_on") or None,
-        price=data["price"],
-        conditions=data.get("conditions", ""),
-    )
+    with transaction.atomic():
+        gig = Gig.objects.create(
+            tenant=tenant,
+            show=show,
+            promoter=promoter,
+            venue=venue,
+            date=data["date"],
+            option_expires_on=data.get("option_expires_on") or None,
+            price=data["price"],
+            conditions=data.get("conditions", ""),
+        )
+        PriceChange.objects.create(
+            tenant=tenant, gig=gig, old_price=None, new_price=gig.price, changed_by=user
+        )
+    return gig
 
 
 def count_gigs_for_year(tenant, year):
@@ -178,3 +184,62 @@ def delete_blank_gig(gig):
         locked.delete()
     for storage, name in files:
         storage.delete(name)
+
+
+class CannotChangePrice(Exception):
+    """Raised when the price of a gig may not change (or the new price is not valid)."""
+
+
+def price_blockers(gig):
+    """Plain-French reasons why the price of this gig is locked (empty list = it can change)."""
+    scope = {"gig": gig, "tenant": gig.tenant}
+    reasons = []
+    if gig.status == Gig.Status.CANCELLED:
+        reasons.append(_("La date est annulée."))
+    if Contract.objects.filter(**scope, status=Contract.Status.SIGNED).exists():
+        reasons.append(_("Le contrat de cession est signé."))
+    if Invoice.objects.filter(**scope).exclude(status=Invoice.Status.DRAFT).exists():
+        reasons.append(_("Une facture ou un avoir a été émis pour cette date."))
+    return reasons
+
+
+def clean_price(value):
+    """The price as a Decimal to the cent, or CannotChangePrice when it is not a valid amount."""
+    try:
+        price = Decimal(str(value).replace(",", ".").strip())
+    except InvalidOperation:
+        raise CannotChangePrice(_("Le prix doit être un nombre.")) from None
+    if not price.is_finite() or price.quantize(Decimal("0.01")) != price:
+        raise CannotChangePrice(_("Le prix s'écrit en euros, avec au plus deux décimales."))
+    if price <= 0:
+        raise CannotChangePrice(_("Le prix doit être supérieur à 0."))
+    if price >= Decimal("1000000"):
+        raise CannotChangePrice(_("Ce prix est trop élevé."))
+    return price
+
+
+def change_price(gig, new_price, user, note=""):
+    """Set a new price HT on the gig and write it in the price history.
+
+    Returns the new PriceChange, or None when the price is the same (nothing is written).
+    """
+    price = clean_price(new_price)
+    with transaction.atomic():
+        locked = _lock_gig(gig)
+        reasons = price_blockers(locked)
+        if reasons:
+            raise CannotChangePrice(" ".join(str(reason) for reason in reasons))
+        if locked.price == price:
+            return None
+        change = PriceChange.objects.create(
+            tenant=locked.tenant,
+            gig=locked,
+            old_price=locked.price,
+            new_price=price,
+            changed_by=user,
+            note=note.strip()[:255],
+        )
+        locked.price = price
+        locked.save(update_fields=["price"])
+    gig.price = price
+    return change
