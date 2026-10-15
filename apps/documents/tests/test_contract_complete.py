@@ -71,7 +71,7 @@ def test_complete_page_shows_every_section(client):
     for section in ("La date", "Le spectacle", "Le lieu", "Signature"):
         assert section in content
     assert 'name="tenant-' not in content
-    assert reverse("tenants:profile") in content
+    assert reverse("tenants:settings") in content
 
 
 def test_gig_detail_links_to_the_complete_form(client):

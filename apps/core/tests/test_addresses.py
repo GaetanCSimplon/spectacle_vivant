@@ -144,7 +144,7 @@ def test_saving_through_the_page_stores_the_separate_fields(client):
 
 def test_the_profile_page_and_the_organiser_form_have_the_fields(client):
     client.force_login(MembershipFactory().user)
-    for name in ("tenants:profile", "addressbook:promoter-create", "addressbook:venue-create"):
+    for name in ("tenants:settings", "addressbook:promoter-create", "addressbook:venue-create"):
         content = client.get(reverse(name)).content.decode()
         assert "Code postal" in content and "Ville" in content and "Département" in content, name
 

@@ -14,7 +14,7 @@ from ..models import Contract
 
 pytestmark = pytest.mark.django_db
 
-PROFILE_URL = reverse("tenants:profile")
+PROFILE_URL = reverse("tenants:settings")
 
 
 def _login(client):

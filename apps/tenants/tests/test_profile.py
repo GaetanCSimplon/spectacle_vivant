@@ -9,7 +9,7 @@ from ..factories import MembershipFactory, TenantFactory
 
 pytestmark = pytest.mark.django_db
 
-URL = reverse("tenants:profile")
+URL = reverse("tenants:settings")
 
 
 def _login(client, role="owner", **tenant_fields):

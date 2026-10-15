@@ -281,6 +281,15 @@ Demande de l'associé : proposer 4 modèles de contrat de cession (le nôtre + 3
 - [x] **Petite dette technique** (2026-10-14) : page d'échec du contrôle de sécurité des formulaires reformulée ; avertissement Django 6 (`FORMS_URLFIELD_ASSUME_HTTPS`) réglé sur le champ ; test des montants de l'accueil rendu strict (chaque chiffre à côté de son libellé, aucun centime affiché, centimes conservés en base) ; versions des dépendances figées avec Dependabot et `pip-audit`. Le « test lié à la date du jour » (`date.today()` au lieu de `timezone.localdate()`) n'était pas un vrai risque : Django règle le fuseau du processus sur `TIME_ZONE` (Europe/Paris) dès son démarrage, donc `date.today()` donne la date de Paris, comme `localdate()` ; aucun changement nécessaire.
 - [x] **Exports faciles à trouver** (2026-10-14, sans migration) : le lien « Exporter mes chiffres (CSV) » sort du détail replié de la carte « Solde de l'année » de l'accueil ; « Ma structure » a une section « Exports et données » avec le CSV (factures, recettes, dépenses) et le ZIP de toutes les données, chacun expliqué ; la page d'export CSV renvoie vers le ZIP. Menu principal inchangé (5 entrées).
 
+### Sprint 3.12 — Bòrd et « Mes dates » (rendez-vous du 2026-10-15)
+Demandes de l'associé après ses tests. « Ma structure » devient **Bòrd**, page d'administration de la structure ; « Mes dates » permet de modifier vite des valeurs du futur contrat et garde l'historique des prix négociés. Statut « payé » **calculé** (paiements), « annulé » = statut de la date : aucun nouveau champ de statut. Graphiques en SVG/CSS côté serveur (pas de bibliothèque JS).
+- [x] **PR 1 — Renommage** (2026-10-15, sans migration) : menu et titres « Bòrd » (`bord/`, `tenants:profile`), nouvelle sous-page « Informations de la structure » avec icône d'engrenage (`bord/informations/`, `tenants:settings`), onglets Tableau de bord / Équipe / Informations. La page Bòrd n'est pour l'instant qu'un point d'entrée vers ces pages.
+- [ ] **PR 2 — Tableau de bord Bòrd** : cartes Recette / Dépenses / Solde, filtres (spectacle, type de chiffres prévu / facturé / encaissé, statut, dates), table « Opérations récentes » (statut annulé / rétablir, lien vers les pièces). Réservé au propriétaire (à confirmer).
+- [ ] **PR 3 — Graphiques** : évolution mensuelle recette / dépenses, dépenses par catégorie.
+- [ ] **Dates, PR 1 — journal des prix** (migration `gigs/0009`, modèle `PriceChange`) : service `change_price` (refusé si contrat signé, facture émise ou date annulée).
+- [ ] **Dates, PR 2 — boutons sur les cartes** : modification rapide du prix, historique sur la fiche de la date et du spectacle.
+- [ ] **Dates, PR 3 — échéances et mode de paiement** modifiables depuis la carte.
+
 ### Sprint 3.8 — Légal, sécurité, finition, recette
 - [x] Pages : mentions légales, CGU, confidentialité (gabarits à compléter et à faire relire avant la mise en ligne).
 - [x] Export des données (F-81) : ZIP de CSV et de fichiers, page `ma-structure/export-donnees/`.

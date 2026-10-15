@@ -37,7 +37,7 @@ def test_navigation_links_are_shown_when_logged_in(client):
         ("addressbook:promoter-list", "Contacts"),
         ("addressbook:venue-list", "Contacts"),
         ("addressbook:contact-list", "Contacts"),
-        ("tenants:profile", "Ma structure"),
+        ("tenants:profile", "Bòrd"),
     ],
 )
 def test_current_page_is_marked_active(client, url_name, label):
@@ -51,7 +51,7 @@ def test_current_page_is_marked_active(client, url_name, label):
 
 
 def test_phone_navigation_is_a_burger_menu_without_a_bottom_bar(client):
-    """At 375 px five labels did not fit in a bottom bar ("Ma structure" was cut off)."""
+    """At 375 px five labels did not fit in a bottom bar ("Bòrd" was cut off)."""
     _login(client)
 
     content = client.get(reverse("home")).content.decode()
@@ -59,7 +59,7 @@ def test_phone_navigation_is_a_burger_menu_without_a_bottom_bar(client):
     assert 'aria-label="Menu"' in content and "<details" in content
     assert "fixed inset-x-0 bottom-0" not in content
     menu = content.split("<details", 1)[1].split("</details>", 1)[0]
-    for label in ("Accueil", "Mes dates", "Spectacles", "Contacts", "Ma structure"):
+    for label in ("Accueil", "Mes dates", "Spectacles", "Contacts", "Bòrd"):
         assert label in menu
     assert "Se déconnecter" in menu and reverse("account_logout") in menu
 
