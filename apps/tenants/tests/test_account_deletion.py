@@ -128,7 +128,7 @@ def test_the_banner_shows_the_purge_day_and_the_deletion_can_be_cancelled(client
     services.request_deletion(tenant)
     expected = services.deletion_date(tenant).strftime("%d/%m/%Y")
 
-    page = client.get(reverse("tenants:profile")).content.decode()
+    page = client.get(reverse("tenants:settings")).content.decode()
     assert f"Suppression de votre structure prévue le {expected}" in page
 
     response = client.post(reverse("tenants:cancel-deletion"))

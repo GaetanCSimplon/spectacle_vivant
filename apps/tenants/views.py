@@ -56,16 +56,27 @@ class OnboardingView(LoginRequiredMixin, FormView):
         return super().form_valid(form)
 
 
-class TenantProfileView(LoginRequiredMixin, UpdateView):
-    """ "Ma structure": the current tenant's own page.
+class BordView(LoginRequiredMixin, TemplateView):
+    """ "Bòrd": the administration page of the current tenant (its dashboard)."""
+
+    template_name = "tenants/bord.html"
+
+    def dispatch(self, request, *args, **kwargs):
+        if request.user.is_authenticated and request.tenant is None:
+            raise Http404
+        return super().dispatch(request, *args, **kwargs)
+
+
+class TenantSettingsView(LoginRequiredMixin, UpdateView):
+    """ "Informations de la structure": the current tenant's own settings.
 
     The object is always `request.tenant` (never read from the URL or the form).
     Only the owner can edit; other members see the same page read-only.
     """
 
     form_class = TenantProfileForm
-    template_name = "tenants/profile.html"
-    success_url = reverse_lazy("tenants:profile")
+    template_name = "tenants/settings.html"
+    success_url = reverse_lazy("tenants:settings")
 
     def dispatch(self, request, *args, **kwargs):
         if request.user.is_authenticated:
@@ -126,7 +137,7 @@ class OwnerRequiredMixin(TenantScopedMixin):
 class DeleteTenantView(OwnerRequiredMixin, FormView):
     form_class = DeleteTenantForm
     template_name = "tenants/delete.html"
-    success_url = reverse_lazy("tenants:profile")
+    success_url = reverse_lazy("tenants:settings")
 
     def get_form_kwargs(self):
         kwargs = super().get_form_kwargs()
@@ -146,7 +157,7 @@ class CancelDeletionView(OwnerRequiredMixin, View):
     def post(self, request):
         cancel_deletion(request.tenant)
         messages.success(request, _("La suppression est annulée."))
-        return redirect("tenants:profile")
+        return redirect("tenants:settings")
 
 
 class LeaveTenantView(TenantScopedMixin, TemplateView):
@@ -160,7 +171,7 @@ class LeaveTenantView(TenantScopedMixin, TemplateView):
                 request,
                 _("Vous êtes le seul propriétaire : supprimez la structure pour la quitter."),
             )
-            return redirect("tenants:profile")
+            return redirect("tenants:settings")
         messages.success(request, _("Vous avez quitté la structure."))
         return redirect("home")
 

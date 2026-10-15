@@ -104,9 +104,9 @@ Légende : ✅ fait · 🟡 partiel · ⬜ pas encore fait.
 
 ### M9 — Légal et RGPD
 - **Pages légales** (`infos/mentions-legales/`, `infos/cgu/`, `infos/confidentialite/`) : accessibles sans connexion. Les textes sont des **gabarits provisoires** avec des « [À compléter] » ; ils doivent être renseignés et relus avant la mise en ligne.
-- **Export des données** (`ma-structure/export-donnees/`) : un ZIP contenant des CSV (spectacles, organisateurs, lieux, contacts, dates, finances) et les fichiers stockés (contrats, PDF, justificatifs…).
-- **Suppression de compte** (`ma-structure/supprimer/`) : réservée au propriétaire, qui confirme avec le nom de la structure et son mot de passe. **Délai de 30 jours**, pendant lequel la suppression peut être annulée (`ma-structure/annuler-suppression/`). Passé ce délai, la commande `purge_deleted_tenants` supprime tout (données et fichiers) ; elle est **à planifier en production** (`docs/guides/06-services-production.md`).
-- **Départ d'un membre** (`ma-structure/quitter/`) : un membre peut quitter la structure ; le dernier propriétaire ne peut pas, il doit la supprimer ou la confier.
+- **Export des données** (`bord/export-donnees/`) : un ZIP contenant des CSV (spectacles, organisateurs, lieux, contacts, dates, finances) et les fichiers stockés (contrats, PDF, justificatifs…).
+- **Suppression de compte** (`bord/supprimer/`) : réservée au propriétaire, qui confirme avec le nom de la structure et son mot de passe. **Délai de 30 jours**, pendant lequel la suppression peut être annulée (`bord/annuler-suppression/`). Passé ce délai, la commande `purge_deleted_tenants` supprime tout (données et fichiers) ; elle est **à planifier en production** (`docs/guides/06-services-production.md`).
+- **Départ d'un membre** (`bord/quitter/`) : un membre peut quitter la structure ; le dernier propriétaire ne peut pas, il doit la supprimer ou la confier.
 - ⚠️ La suppression emporte aussi les factures émises : la conservation légale de 10 ans reste à valider avec un comptable.
 
 ---

@@ -1,4 +1,4 @@
-"""The exports must be easy to find: home card, "Ma structure", and each other."""
+"""The exports must be easy to find: home card, "Informations de la structure", and each other."""
 
 import pytest
 from django.urls import reverse
@@ -36,7 +36,7 @@ def test_home_shows_the_export_link_without_opening_the_detail(client):
 def test_ma_structure_links_to_both_exports(client, role):
     _login(client, role)
 
-    html = client.get(reverse("tenants:profile")).content.decode()
+    html = client.get(reverse("tenants:settings")).content.decode()
 
     assert f'href="{reverse(CSV_PAGE)}"' in html
     assert f'href="{reverse(ZIP_PAGE)}"' in html

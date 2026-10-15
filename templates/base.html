@@ -19,7 +19,7 @@
     {% if pending_deletion_date %}
       <div class="bg-red-50 px-4 py-2 text-center text-sm text-red-800">
         {% blocktranslate with date=pending_deletion_date|date:"d/m/Y" %}Suppression de votre structure prévue le {{ date }}.{% endblocktranslate %}
-        <a href="{% url 'tenants:profile' %}" class="underline">{% translate "Annuler" %}</a>
+        <a href="{% url 'tenants:settings' %}" class="underline">{% translate "Annuler" %}</a>
       </div>
     {% endif %}
 

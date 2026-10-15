@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}Bòrd — BÒRD PRO{% endblock %}
+
+{% block page_content %}
+  <h1 class="mb-2 text-xl font-semibold">{% translate "Bòrd" %}</h1>
+  {% include "tenants/_tabs.html" with active="bord" %}
+
+  <ul class="space-y-3 text-sm">
+    <li>
+      <a href="{% url 'tenants:settings' %}" class="inline-flex min-h-11 items-center font-bold text-blue-700 underline">{% translate "Informations de la structure" %}</a>
+      <span class="block text-gray-600">{% translate "Nom, SIRET, adresse, coordonnées bancaires : ce qui apparaît dans vos contrats et vos factures." %}</span>
+    </li>
+    <li>
+      <a href="{% url 'tenants:person-list' %}" class="inline-flex min-h-11 items-center font-bold text-blue-700 underline">{% translate "Équipe" %}</a>
+      <span class="block text-gray-600">{% translate "Les personnes qui jouent ou travaillent avec vous." %}</span>
+    </li>
+    <li>
+      <a href="{% url 'export' %}" class="inline-flex min-h-11 items-center font-bold text-blue-700 underline">{% translate "Exporter mes chiffres (CSV)" %}</a>
+      <span class="block text-gray-600">{% translate "Factures, recettes et dépenses sur la période de votre choix." %}</span>
+    </li>
+  </ul>
+{% endblock %}

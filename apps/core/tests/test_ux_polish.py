@@ -106,7 +106,7 @@ def test_csrf_failure_page_offers_the_home_page_to_a_logged_in_user(logged_in):
     client = Client(enforce_csrf_checks=True)
     client.force_login(membership.user)
 
-    response = client.post(reverse("tenants:profile"), {"name": "x"})
+    response = client.post(reverse("tenants:settings"), {"name": "x"})
 
     assert response.status_code == 403
     assert "Retour à l'accueil" in response.content.decode()
