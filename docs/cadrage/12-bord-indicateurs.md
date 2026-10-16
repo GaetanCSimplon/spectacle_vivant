@@ -45,6 +45,8 @@ Bòrd = « Où en suis-je ? » : une synthèse qui ouvre le détail de chaque ch
 | **Personnes mobilisées** | Personnes **distinctes** de l'équipe affectées à des dates confirmées de la période | Dates et participants |
 | **Complétude** | Dates confirmées sans contrat signé, sans échéances ou sans organisateur à jour : « n dates à compléter » | Dates |
 
+**Lecture des chiffres.** Les cartes suivent les dates de référence du §3 (une facture émise hors période n'est pas dans la carte « Facturé »). La table des opérations liste les **dates de la période** avec, pour chacune, ses montants complets (prévu, facturé, encaissé), quelle que soit la date de la facture ou du paiement. Le « restant à encaisser » est un état **à ce jour** : il suit le filtre de spectacle, pas la période. Les dépenses sont de l'argent réellement dépensé (même pour une date annulée) et sont reprises telles que saisies.
+
 **Statut d'une opération** (table « Opérations récentes ») : *annulé* = date annulée ; *payé* = toutes les factures de la date sont soldées ; *en attente* = le reste. Seul « annulé » se modifie à la main ; « payé » vient des paiements.
 
 ## 5. « À traiter maintenant » (cinq lignes au maximum)
