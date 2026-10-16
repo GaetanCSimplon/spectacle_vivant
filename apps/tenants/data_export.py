@@ -18,7 +18,8 @@ from apps.catalog.models import Show
 from apps.documents.models import Contract, ContractVersion, Invoice, Quote
 from apps.finance import exports as finance_exports
 from apps.finance.models import Expense
-from apps.gigs.models import Gig
+from apps.gigs import checklist as gig_checklist
+from apps.gigs.models import Gig, GigChecklist
 
 from .models import Person
 
@@ -231,6 +232,27 @@ def gigs_rows(tenant):
     return header, rows
 
 
+def checklists_rows(tenant):
+    """One row per gig that has a checklist: "oui" for a done box, "non" otherwise."""
+    boxes = [(key, str(label)) for _title, items in gig_checklist.SECTIONS for key, label in items]
+    header = ["Date", "Spectacle", *(label for _key, label in boxes), "Dernière modification"]
+    checklists = (
+        GigChecklist.objects.filter(tenant=tenant)
+        .select_related("gig__show")
+        .order_by("gig__date", "id")
+    )
+    rows = [
+        [
+            day(c.gig.date),
+            text(c.gig.show.title),
+            *(_yes(c.items.get(key) is True) for key, _label in boxes),
+            day(c.updated_at.date()),
+        ]
+        for c in checklists
+    ]
+    return header, rows
+
+
 def team_rows(tenant, include_private=False):
     """The private columns (address, GUSO number) are for the owner's export only."""
     header = ["Nom", "Prénom", "Fonction", "Statut", "Téléphone", "E-mail", "Cachet moyen", "Notes"]
@@ -267,6 +289,7 @@ def _finance(builder):
 # file name -> builder(tenant) -> (header, rows)
 TABLES = {
     "dates": gigs_rows,
+    "checklists-contractualisation": checklists_rows,
     "spectacles": shows_rows,
     "organisateurs": promoters_rows,
     "lieux": venues_rows,
@@ -320,8 +343,8 @@ Généré le {today}.
 
 Ce dossier contient :
 - les fichiers .csv (à ouvrir avec Excel ou LibreOffice, séparateur « ; », encodage UTF-8) :
-  dates, spectacles, organisateurs, lieux, contacts, équipe, factures et avoirs, recettes,
-  dépenses ;
+  dates, checklists de contractualisation, spectacles, organisateurs, lieux, contacts, équipe,
+  factures et avoirs, recettes, dépenses ;
 - le dossier « fichiers » : vos contrats (toutes les versions et le PDF signé), devis,
   factures, justificatifs de dépenses, ainsi que les fiches techniques et riders.
 

@@ -12,6 +12,9 @@
     {% include "gigs/_status_badge.html" %}
   </div>
 
+  <div class="mb-4">{% include "gigs/_checklist_button.html" with class="btn-block sm:w-auto" %}</div>
+  <div id="checklist-modal"></div>
+
   <div class="card mb-6 space-y-1 text-sm">
     <p>
       {% translate "Organisateur" %} :

@@ -1,0 +1,4 @@
+{% load i18n %}
+<p id="checklist-updated" class="text-xs text-stone-500" {% if oob %}hx-swap-oob="true"{% endif %}>
+  {% if updated_at %}{% blocktranslate with when=updated_at|date:"d/m/Y à H:i" %}Dernière modification : {{ when }}{% endblocktranslate %}{% else %}{% translate "Aucune modification pour l'instant." %}{% endif %}
+</p>

@@ -1,6 +1,7 @@
 import datetime
 
 from django.contrib import messages
+from django.http import HttpResponseBadRequest
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 from django.utils import timezone
@@ -14,7 +15,7 @@ from apps.documents.models import Invoice
 from apps.finance import services as finance_services
 from apps.tenants.models import Person
 
-from . import services
+from . import checklist, services
 from .forms import (
     GigDetailsStepForm,
     GigFilterForm,
@@ -553,3 +554,62 @@ class GigTermsView(TenantScopedMixin, View):
         if wants_fragment(request):
             return self._block(request, gig, form)
         return self._page(request, gig, form)
+
+
+class GigChecklistMixin(TenantScopedMixin):
+    """The contracting checklist of a gig (F-83). Any member of the tenant may read and tick."""
+
+    def _gig(self, request, pk):
+        return get_object_or_404(Gig.objects.select_related("show"), pk=pk, tenant=request.tenant)
+
+    def _context(self, gig):
+        return {
+            "gig": gig,
+            "sections": checklist.checklist_sections(gig),
+            "updated_at": checklist.last_update(gig),
+        }
+
+
+class GigChecklistView(GigChecklistMixin, View):
+    """The checklist as a modal (HTMX) or as a page when JavaScript is off."""
+
+    def get(self, request, pk):
+        context = self._context(self._gig(request, pk))
+        template = (
+            "gigs/_checklist_dialog.html" if wants_fragment(request) else "gigs/gig_checklist.html"
+        )
+        return render(request, template, context)
+
+
+class GigChecklistItemView(GigChecklistMixin, View):
+    """Tick or untick one box; the others are never touched."""
+
+    http_method_names = ["post"]
+
+    def post(self, request, pk):
+        gig = self._gig(request, pk)
+        key = request.POST.get("item", "")
+        try:
+            checklist.set_item(gig, key, request.POST.get("value") == "true", request.user)
+        except checklist.InvalidChecklistItem:
+            return HttpResponseBadRequest()
+        if not wants_fragment(request):
+            return redirect("gigs:checklist", pk=gig.pk)
+        context = self._context(gig)
+        item = next(
+            i for section in context["sections"] for i in section["items"] if i["key"] == key
+        )
+        return render(request, "gigs/_checklist_item_reply.html", {**context, "item": item})
+
+
+class GigChecklistResetView(GigChecklistMixin, View):
+    """Untick every box (the confirmation is asked by the page before posting)."""
+
+    http_method_names = ["post"]
+
+    def post(self, request, pk):
+        gig = self._gig(request, pk)
+        checklist.reset(gig, request.user)
+        if not wants_fragment(request):
+            return redirect("gigs:checklist", pk=gig.pk)
+        return render(request, "gigs/_checklist_body.html", self._context(gig))

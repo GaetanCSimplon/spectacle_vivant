@@ -10,6 +10,9 @@
     {% if contract.reference %}· {{ contract.reference }}{% endif %}
   </p>
 
+  <div class="mb-6">{% include "gigs/_checklist_button.html" with class="btn-block sm:w-auto" %}</div>
+  <div id="checklist-modal"></div>
+
   {% if contract.status == 'signed' %}
     <div class="card mb-6 space-y-2 text-sm">
       <p class="font-semibold">
