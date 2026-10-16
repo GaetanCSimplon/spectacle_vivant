@@ -312,3 +312,25 @@ def test_the_redirect_never_leaves_the_site(client):
 
     assert response.url.startswith(URL + "?")
     assert "evil.example" not in response.url.split("?")[0]
+
+
+def test_the_page_draws_the_chart_with_a_text_alternative(client):
+    membership = _membership(client)
+    gig = _gig(membership.tenant, price="1200.00")
+    ExpenseFactory(gig=gig, amount="300.00", date=TODAY)
+
+    content = client.get(URL).content.decode()
+
+    assert "Évolution mensuelle" in content
+    assert "<svg" in content and 'role="img"' in content
+    assert "<title" in content and "Voir les chiffres du graphique" in content
+    assert "Dépenses par catégorie" in content and "width: 100%" in content
+
+
+def test_the_page_says_so_when_there_is_nothing_to_draw(client):
+    _membership(client)
+
+    content = client.get(URL).content.decode()
+
+    assert "Pas encore de chiffres sur cette période" in content
+    assert "<svg" not in content.split("Évolution mensuelle")[1].split("Prochaines dates")[0]
