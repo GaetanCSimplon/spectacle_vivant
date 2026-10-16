@@ -141,6 +141,28 @@ class PriceChange(TenantOwnedModel):
         return f"{self.gig} : {self.old_price} → {self.new_price}"
 
 
+class GigChecklist(TenantOwnedModel):
+    """Which steps of the contracting of a gig are done (Checklist contractualisation).
+
+    `items` only holds the boxes that were touched, as {key: bool}; an absent key means not
+    done. The list of boxes lives in `checklist.py`. The author is kept for the audit.
+    """
+
+    gig = models.OneToOneField(Gig, on_delete=models.CASCADE, related_name="checklist")
+    items = models.JSONField(default=dict, blank=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    updated_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="+",
+    )
+
+    def __str__(self):
+        return f"Checklist — {self.gig}"
+
+
 class GigMember(TenantOwnedModel):
     """A person travelling for a gig (musician, technician…), shown on the roadmap."""
 

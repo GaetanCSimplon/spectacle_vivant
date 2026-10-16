@@ -5,7 +5,7 @@ from apps.tenants.factories import TenantFactory
 
 from .. import services
 from ..factories import GigFactory
-from ..models import Gig, PriceChange
+from ..models import Gig, GigChecklist, PriceChange
 
 mark_isolation_tested(Gig)
 
@@ -30,6 +30,7 @@ def test_gig_related_objects_belong_to_the_same_tenant():
 
 
 mark_isolation_tested(PriceChange)
+mark_isolation_tested(GigChecklist)
 
 
 def test_price_changes_do_not_mix_between_tenants():
