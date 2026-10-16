@@ -1,7 +1,9 @@
 from django import forms
 from django.utils.translation import gettext_lazy as _
 
+from apps.catalog.models import Show
 from apps.core.forms import AddressModelForm
+from apps.finance import bord
 
 from . import services
 from .models import Person, Tenant
@@ -158,3 +160,63 @@ class PersonForm(AddressModelForm):
         if fee is not None and fee < 0:
             raise forms.ValidationError(_("Le cachet ne peut pas être négatif."))
         return fee
+
+
+class BordFilterForm(forms.Form):
+    """Filters of the Bòrd page. Every field is optional; an invalid value is ignored."""
+
+    PERIODS = [
+        ("mois", _("Ce mois-ci")),
+        ("trimestre", _("Ce trimestre")),
+        ("annee", _("Cette année")),
+        ("perso", _("Période choisie")),
+    ]
+
+    period = forms.ChoiceField(label=_("Période"), required=False, choices=PERIODS)
+    start = forms.DateField(
+        label=_("Du"),
+        required=False,
+        widget=forms.DateInput(attrs={"type": "date"}, format="%Y-%m-%d"),
+    )
+    end = forms.DateField(
+        label=_("Au"),
+        required=False,
+        widget=forms.DateInput(attrs={"type": "date"}, format="%Y-%m-%d"),
+    )
+    show = forms.ModelChoiceField(
+        label=_("Spectacle"),
+        required=False,
+        queryset=Show.objects.none(),
+        empty_label=_("Tous les spectacles"),
+    )
+    figure = forms.ChoiceField(
+        label=_("Chiffres à afficher"), required=False, choices=list(bord.FIGURES.items())
+    )
+    status = forms.ChoiceField(
+        label=_("Statut"),
+        required=False,
+        choices=[("", _("Tous les statuts")), *bord.STATUSES.items()],
+    )
+
+    def __init__(self, *args, tenant=None, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Only this tenant's shows can be chosen: another tenant's id is an invalid value.
+        self.fields["show"].queryset = Show.objects.filter(tenant=tenant).order_by("title")
+
+    def filters(self, today):
+        """The `bord.Filters` for this form; whatever is missing or invalid takes its default."""
+        self.is_valid()
+        data = self.cleaned_data
+        period = data.get("period") or "annee"
+        start, end = data.get("start"), data.get("end")
+        if period == "perso" and start and end and start <= end:
+            bounds = (start, end)
+        else:
+            bounds = bord.period_bounds("annee" if period == "perso" else period, today)
+        return bord.Filters(
+            start=bounds[0],
+            end=bounds[1],
+            show=data.get("show"),
+            figure=data.get("figure") or bord.DEFAULT_FIGURE,
+            status=data.get("status") or "",
+        )

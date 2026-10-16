@@ -49,6 +49,11 @@
 }
 
 @layer base {
+  /* Alpine hides these until it has started (no flash of hidden fields). */
+  [x-cloak] {
+    display: none !important;
+  }
+
   h1 {
     @apply mb-5 text-2xl font-bold tracking-tight text-blue-950;
   }

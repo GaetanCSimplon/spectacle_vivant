@@ -55,6 +55,7 @@ PUBLIC = {
 # `gig` is the gig of A; the audit also replays each route with B's own gig_id.
 ROUTES = [
     ("tenants:person-detail", {"pk": "person"}),
+    ("tenants:bord-status", {"pk": "gig"}),
     ("tenants:person-update", {"pk": "person"}),
     ("tenants:person-delete", {"pk": "person"}),
     ("addressbook:promoter-invite", {"pk": "promoter"}),

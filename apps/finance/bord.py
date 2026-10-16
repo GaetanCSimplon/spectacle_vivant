@@ -241,6 +241,17 @@ def operations(tenant, filters, limit=None):
     return rows[:limit] if limit else rows
 
 
+def upcoming(tenant, filters, today, limit=5):
+    """The next live gigs from today on (options included, cancelled left out).
+
+    Only the show filter applies: "next" does not depend on the chosen period.
+    """
+    gigs = Gig.objects.filter(tenant=tenant, date__gte=today).exclude(status=Gig.Status.CANCELLED)
+    if filters.show:
+        gigs = gigs.filter(show=filters.show)
+    return list(gigs.select_related("show", "venue", "promoter").order_by("date", "pk")[:limit])
+
+
 def _gig_text(gig):
     return f"{gig.date:%d/%m/%Y} — {gig.show.title}"
 
@@ -361,4 +372,5 @@ def summary(tenant, filters, today):
         "attention": attention_items,
         "attention_total": attention_total,
         "operations": operations(tenant, filters),
+        "upcoming": upcoming(tenant, filters, today),
     }

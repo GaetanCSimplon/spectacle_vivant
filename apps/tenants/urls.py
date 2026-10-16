@@ -6,6 +6,7 @@ app_name = "tenants"
 
 urlpatterns = [
     path("", views.BordView.as_view(), name="profile"),
+    path("dates/<int:pk>/statut/", views.BordStatusView.as_view(), name="bord-status"),
     path("informations/", views.TenantSettingsView.as_view(), name="settings"),
     path("supprimer/", views.DeleteTenantView.as_view(), name="delete"),
     path("annuler-suppression/", views.CancelDeletionView.as_view(), name="cancel-deletion"),

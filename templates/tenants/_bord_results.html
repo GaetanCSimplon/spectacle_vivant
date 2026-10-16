@@ -1,0 +1,199 @@
+{% load i18n %}
+{% comment %}Everything under the filters of the Bòrd page. Swapped alone by HTMX when a filter changes.{% endcomment %}
+<p class="mb-4 text-sm text-stone-600">
+  {% blocktranslate with start=filters.start|date:"d/m/Y" end=filters.end|date:"d/m/Y" %}Période du {{ start }} au {{ end }}{% endblocktranslate %}
+  {% if filters.show %}· {{ filters.show.title }}{% endif %}
+  · {% blocktranslate with when=now|date:"d/m/Y H:i" %}chiffres calculés le {{ when }}{% endblocktranslate %}
+</p>
+
+{% if not dates.confirmed and not dates.options and not dates.cancelled and not operations and not upcoming %}
+  <div class="card mb-6">
+    <p>{% translate "Aucune date sur cette période." %}</p>
+    <a href="{% url 'gigs:wizard-show' %}" class="btn btn-primary mt-3">{% translate "+ Nouvelle date" %}</a>
+  </div>
+{% endif %}
+
+<div class="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-5">
+  <section class="card" aria-labelledby="bord-dates">
+    <h2 id="bord-dates" class="stat-label !text-xs !font-semibold">{% translate "Dates" %}</h2>
+    <p class="stat-value">{{ dates.confirmed }}</p>
+    <p class="mt-1 text-sm text-stone-600">{% translate "confirmées (date de la représentation)" %}</p>
+    <ul class="mt-2 space-y-0.5 text-sm text-stone-600">
+      <li>{% blocktranslate count n=dates.options %}{{ n }} option, comptée à part{% plural %}{{ n }} options, comptées à part{% endblocktranslate %}</li>
+      <li>{% blocktranslate count n=dates.cancelled %}{{ n }} annulée{% plural %}{{ n }} annulées{% endblocktranslate %}</li>
+      <li>{% blocktranslate count n=people %}{{ n }} personne mobilisée{% plural %}{{ n }} personnes mobilisées{% endblocktranslate %}</li>
+    </ul>
+    {% if incomplete_dates %}
+      <p class="mt-2 text-sm text-amber-700">{% blocktranslate count n=incomplete_dates %}{{ n }} date confirmée à compléter{% plural %}{{ n }} dates confirmées à compléter{% endblocktranslate %}</p>
+    {% endif %}
+    <a href="{% url 'gigs:list' %}" class="mt-3 inline-flex min-h-11 items-center text-sm font-bold text-blue-700 hover:text-blue-900">{% translate "Voir mes dates" %} →</a>
+  </section>
+
+  <section class="card" aria-labelledby="bord-revenue">
+    <h2 id="bord-revenue" class="stat-label !text-xs !font-semibold">{% translate "Recette" %}</h2>
+    <p class="stat-value">{% if filters.figure == 'planned' %}{{ revenue.planned|floatformat:"0g" }}{% elif filters.figure == 'invoiced' %}{{ revenue.invoiced|floatformat:"0g" }}{% else %}{{ revenue.received|floatformat:"0g" }}{% endif %} €</p>
+    <p class="mt-1 text-sm text-stone-600">{{ figure_label }}</p>
+    <ul class="mt-2 space-y-0.5 text-sm text-stone-600">
+      <li>{% translate "Prévue" %} (HT) : {{ revenue.planned|floatformat:"0g" }} €</li>
+      <li>{% translate "Facturée" %} (HT) : {{ revenue.invoiced|floatformat:"0g" }} €</li>
+      <li>{% translate "Encaissée" %} (TTC) : {{ revenue.received|floatformat:"0g" }} €</li>
+      {% if revenue.options_planned %}<li>{% blocktranslate with amount=revenue.options_planned|floatformat:"0g" %}+ {{ amount }} € HT si les options sont confirmées{% endblocktranslate %}</li>{% endif %}
+    </ul>
+    <a href="#operations" class="mt-3 inline-flex min-h-11 items-center text-sm font-bold text-blue-700 hover:text-blue-900">{% translate "Voir le détail" %} →</a>
+  </section>
+
+  <section class="card" aria-labelledby="bord-expenses">
+    <h2 id="bord-expenses" class="stat-label !text-xs !font-semibold">{% translate "Dépenses" %}</h2>
+    <p class="stat-value">{{ expenses.total|floatformat:"0g" }} €</p>
+    <p class="mt-1 text-sm text-stone-600">{% translate "enregistrées (date de la dépense)" %}</p>
+    <a href="#depenses" class="mt-3 inline-flex min-h-11 items-center text-sm font-bold text-blue-700 hover:text-blue-900">{% translate "Voir le détail" %} →</a>
+  </section>
+
+  <section class="card" aria-labelledby="bord-balance">
+    <h2 id="bord-balance" class="stat-label !text-xs !font-semibold">{% translate "Solde" %}</h2>
+    <p class="stat-value">{% if balance > 0 %}+ {% endif %}{{ balance|floatformat:"0g" }} €</p>
+    <p class="mt-1">
+      {% if balance > 0 %}<span class="pill pill-good">{% translate "Excédent" %}</span>
+      {% elif balance < 0 %}<span class="pill pill-bad">{% translate "Déficit" %}</span>
+      {% else %}<span class="pill pill-neutral">{% translate "Équilibre" %}</span>{% endif %}
+    </p>
+    <p class="mt-1 text-sm text-stone-600">{% blocktranslate with figure=figure_label %}{{ figure }} − dépenses enregistrées{% endblocktranslate %}</p>
+  </section>
+
+  <section class="card" aria-labelledby="bord-receivables">
+    <h2 id="bord-receivables" class="stat-label !text-xs !font-semibold">{% translate "Reste à encaisser" %}</h2>
+    <p class="stat-value">{{ receivables.remaining|floatformat:"0g" }} €</p>
+    <p class="mt-1 text-sm text-stone-600">{% translate "TTC, à ce jour (hors période)" %}</p>
+    {% if receivables.late %}<p class="mt-2"><span class="pill pill-bad">{% blocktranslate with amount=receivables.late|floatformat:"0g" %}dont {{ amount }} € en retard{% endblocktranslate %}</span></p>{% endif %}
+    <a href="#a-encaisser" class="mt-3 inline-flex min-h-11 items-center text-sm font-bold text-blue-700 hover:text-blue-900">{% translate "Voir le détail" %} →</a>
+  </section>
+</div>
+
+<section class="card mb-6" aria-labelledby="bord-attention">
+  <h2 id="bord-attention" class="stat-label !text-xs !font-semibold">{% translate "À traiter maintenant" %}</h2>
+  {% if attention %}
+    <ul class="mt-2 divide-y divide-page-line">
+      {% for item in attention %}
+        <li class="flex flex-wrap items-start justify-between gap-3 py-2 text-sm">
+          <span class="min-w-0">
+            <span class="block font-medium">{{ item.text }} · {{ item.subject }}</span>
+            <span class="block text-stone-600">{{ item.reason }}</span>
+            {% if item.due %}<span class="block text-stone-600">{% translate "Échéance" %} : {{ item.due|date:"d/m/Y" }}</span>{% endif %}
+          </span>
+          <span class="flex shrink-0 items-center gap-3">
+            {% if item.amount is not None %}<strong>{{ item.amount|floatformat:"0g" }} €</strong>{% endif %}
+            <a href="{{ item.url }}" class="btn btn-secondary">{{ item.action }}</a>
+          </span>
+        </li>
+      {% endfor %}
+    </ul>
+    {% if attention_total > attention|length %}
+      <p class="mt-2 text-sm text-stone-600">{% blocktranslate with n=attention_total|add:"-5" %}Et {{ n }} autre(s) point(s) à traiter après ceux-ci.{% endblocktranslate %}</p>
+    {% endif %}
+  {% else %}
+    <p class="mt-2 text-sm text-stone-600">{% translate "Rien à signaler sur les points contrôlés : factures en retard, contrats, échéances de paiement, options." %}</p>
+  {% endif %}
+</section>
+
+<section class="card mb-6" aria-labelledby="bord-upcoming">
+  <h2 id="bord-upcoming" class="stat-label !text-xs !font-semibold">{% translate "Prochaines dates" %}</h2>
+  {% if upcoming %}
+    <ul class="mt-2 divide-y divide-page-line text-sm">
+      {% for gig in upcoming %}
+        <li class="flex flex-wrap items-center justify-between gap-2 py-2">
+          <a href="{% url 'gigs:detail' gig.pk %}" class="min-w-0 font-medium text-blue-700 underline">{{ gig.date|date:"d/m/Y" }} — {{ gig.show.title }}</a>
+          <span class="text-stone-600">{{ gig.venue.name }} · {{ gig.promoter.name }}</span>
+          {% include "gigs/_status_badge.html" %}
+        </li>
+      {% endfor %}
+    </ul>
+  {% else %}
+    <p class="mt-2 text-sm text-stone-600">{% translate "Aucune date à venir." %} <a href="{% url 'gigs:wizard-show' %}" class="font-bold text-blue-700 underline">{% translate "Créer une date" %}</a></p>
+  {% endif %}
+</section>
+
+<section class="card mb-6" id="operations" aria-labelledby="bord-operations">
+  <h2 id="bord-operations" class="stat-label !text-xs !font-semibold">{% translate "Opérations récentes" %}</h2>
+  <p class="mt-1 text-sm text-stone-600">{% blocktranslate with figure=figure_label %}Une ligne par date de la période. Montant affiché : {{ figure }}, toutes factures et paiements de la date.{% endblocktranslate %}</p>
+  {% if operations %}
+    <div class="mt-3 overflow-x-auto">
+      <table class="w-full text-left text-sm">
+        <thead>
+          <tr class="border-b border-page-line text-stone-600">
+            <th scope="col" class="py-2 pr-3 font-semibold">{% translate "Date" %}</th>
+            <th scope="col" class="py-2 pr-3 font-semibold">{% translate "Libellé" %}</th>
+            <th scope="col" class="py-2 pr-3 text-right font-semibold">{% translate "Montant" %}</th>
+            <th scope="col" class="py-2 pr-3 font-semibold">{% translate "Statut" %}</th>
+            <th scope="col" class="py-2 font-semibold">{% translate "Pièces" %}</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-page-line">
+          {% for row in operations|slice:":20" %}
+            <tr>
+              <td class="whitespace-nowrap py-2 pr-3">{{ row.date|date:"d/m/Y" }}</td>
+              <td class="py-2 pr-3"><a href="{% url 'gigs:detail' row.gig.pk %}" class="text-blue-700 underline">{{ row.label }}</a></td>
+              <td class="whitespace-nowrap py-2 pr-3 text-right">{{ row.amount|floatformat:"0g" }} €</td>
+              <td class="py-2 pr-3">
+                <span class="pill {% if row.status == 'paid' %}pill-good{% elif row.status == 'cancelled' %}pill-neutral{% else %}pill-bad{% endif %}">{% if row.status == 'paid' %}{% translate "Payé" %}{% elif row.status == 'cancelled' %}{% translate "Annulé" %}{% else %}{% translate "En attente" %}{% endif %}</span>
+                {% if is_owner %}
+                  {% if row.status == 'cancelled' %}
+                    <form method="post" action="{% url 'tenants:bord-status' row.gig.pk %}" class="mt-1">
+                      {% csrf_token %}<input type="hidden" name="action" value="reactivate"><input type="hidden" name="qs" value="{{ query_string }}">
+                      <button type="submit" class="text-xs text-blue-700 underline">{% translate "Rétablir" %}</button>
+                    </form>
+                  {% else %}
+                    <form method="post" action="{% url 'tenants:bord-status' row.gig.pk %}" class="mt-1" x-data @submit="if (!confirm('{% translate "Annuler cette date ?" %}')) $event.preventDefault()">
+                      {% csrf_token %}<input type="hidden" name="action" value="cancel"><input type="hidden" name="qs" value="{{ query_string }}">
+                      <button type="submit" class="text-xs text-red-700 underline">{% translate "Annuler la date" %}</button>
+                    </form>
+                  {% endif %}
+                {% endif %}
+              </td>
+              <td class="py-2">
+                {% for document in row.documents %}<a href="{{ document.url }}" class="mr-2 inline-block text-blue-700 underline">{{ document.label }}</a>{% empty %}<span class="text-stone-500">—</span>{% endfor %}
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% if operations|length > 20 %}
+      <p class="mt-2 text-sm text-stone-600">{% blocktranslate with n=operations|length|add:"-20" %}{{ n }} autre(s) date(s) : affinez la période ou le spectacle pour les voir.{% endblocktranslate %}</p>
+    {% endif %}
+  {% else %}
+    <p class="mt-3 text-sm text-stone-600">{% translate "Aucune date ne correspond à ces filtres." %}</p>
+  {% endif %}
+</section>
+
+<div class="grid grid-cols-1 gap-4 lg:grid-cols-2">
+  <section class="card" id="depenses" aria-labelledby="bord-expenses-detail">
+    <h2 id="bord-expenses-detail" class="stat-label !text-xs !font-semibold">{% translate "Dépenses par catégorie" %}</h2>
+    {% if expenses.by_category %}
+      <ul class="mt-2 space-y-1 text-sm">
+        {% for row in expenses.by_category %}<li class="flex justify-between"><span>{{ row.category }}</span><span>{{ row.total|floatformat:"0g" }} €</span></li>{% endfor %}
+        <li class="flex justify-between border-t border-page-line pt-1 font-semibold"><span>{% translate "Total" %}</span><span>{{ expenses.total|floatformat:"0g" }} €</span></li>
+      </ul>
+    {% else %}
+      <p class="mt-2 text-sm text-stone-600">{% translate "Aucune dépense enregistrée sur cette période." %}</p>
+    {% endif %}
+  </section>
+
+  <section class="card" id="a-encaisser" aria-labelledby="bord-receivables-detail">
+    <h2 id="bord-receivables-detail" class="stat-label !text-xs !font-semibold">{% translate "Factures à encaisser" %}</h2>
+    {% if receivables.rows %}
+      <ul class="mt-2 divide-y divide-page-line text-sm">
+        {% for row in receivables.rows|slice:":10" %}
+          <li class="flex items-center justify-between gap-3 py-2">
+            <a href="{% url 'finance:page' row.gig.pk %}" class="min-w-0 text-blue-700 underline">{{ row.invoice.number }} · {{ row.gig.show.title }}</a>
+            <span class="shrink-0">
+              {% if row.overdue %}<span class="pill pill-bad mr-1">{% blocktranslate with n=row.late_days %}en retard de {{ n }} j{% endblocktranslate %}</span>{% endif %}
+              <strong>{{ row.remaining|floatformat:"0g" }} €</strong>
+            </span>
+          </li>
+        {% endfor %}
+      </ul>
+    {% else %}
+      <p class="mt-2 text-sm text-stone-600">{% translate "Aucune facture en attente de paiement." %}</p>
+    {% endif %}
+  </section>
+</div>

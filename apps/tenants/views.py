@@ -1,9 +1,11 @@
+from urllib.parse import parse_qsl, urlencode
+
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.exceptions import PermissionDenied
 from django.db.models import Count, Q
 from django.http import FileResponse, Http404
-from django.shortcuts import redirect
+from django.shortcuts import get_object_or_404, redirect
 from django.urls import reverse, reverse_lazy
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
@@ -19,11 +21,20 @@ from django.views.generic import (
 )
 
 from apps.accounts.services import is_tenant_owner
-from apps.core.views import SearchListMixin, TenantScopedMixin
+from apps.core.views import SearchListMixin, TenantScopedMixin, wants_fragment
+from apps.documents.models import Invoice
+from apps.finance import bord
+from apps.gigs import services as gig_services
 from apps.gigs.models import Gig
 
 from .data_export import build_export_zip
-from .forms import DeleteTenantForm, OnboardingForm, PersonForm, TenantProfileForm
+from .forms import (
+    BordFilterForm,
+    DeleteTenantForm,
+    OnboardingForm,
+    PersonForm,
+    TenantProfileForm,
+)
 from .models import Person
 from .services import (
     CannotLeave,
@@ -57,14 +68,41 @@ class OnboardingView(LoginRequiredMixin, FormView):
 
 
 class BordView(LoginRequiredMixin, TemplateView):
-    """ "Bòrd": the administration page of the current tenant (its dashboard)."""
+    """ "Bòrd": the administration page of the tenant, its figures and what needs attention.
+
+    Every member sees it; only the owner gets the buttons that change something.
+    """
 
     template_name = "tenants/bord.html"
+    results_template_name = "tenants/_bord_results.html"
 
     def dispatch(self, request, *args, **kwargs):
         if request.user.is_authenticated and request.tenant is None:
             raise Http404
         return super().dispatch(request, *args, **kwargs)
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        tenant, today = self.request.tenant, timezone.localdate()
+        data = self.request.GET.copy()
+        data.setdefault("period", "annee")
+        data.setdefault("figure", bord.DEFAULT_FIGURE)
+        form = BordFilterForm(data, tenant=tenant)
+        context.update(bord.summary(tenant, form.filters(today), today))
+        context.update(
+            form=form,
+            now=timezone.localtime(),
+            is_owner=is_tenant_owner(self.request.user, tenant),
+            figure_label=bord.FIGURES[context["filters"].figure],
+            statuses=bord.STATUSES,
+            query_string=self.request.GET.urlencode(),
+        )
+        return context
+
+    def get_template_names(self):
+        if wants_fragment(self.request):
+            return [self.results_template_name]
+        return super().get_template_names()
 
 
 class TenantSettingsView(LoginRequiredMixin, UpdateView):
@@ -132,6 +170,43 @@ class OwnerRequiredMixin(TenantScopedMixin):
             if not is_tenant_owner(request.user, request.tenant):
                 raise PermissionDenied
         return super().dispatch(request, *args, **kwargs)
+
+
+class BordStatusView(OwnerRequiredMixin, View):
+    """Cancel or restore a date from the Bòrd table (owner only, POST only)."""
+
+    http_method_names = ["post"]
+
+    def post(self, request, pk):
+        gig = get_object_or_404(Gig, pk=pk, tenant=request.tenant)
+        try:
+            if request.POST.get("action") == "reactivate":
+                gig_services.reactivate_gig(gig)
+                messages.success(request, _("La date est rétablie."))
+            else:
+                gig_services.change_status(gig, Gig.Status.CANCELLED)
+                if (
+                    Invoice.objects.filter(
+                        tenant=request.tenant, gig=gig, status=Invoice.Status.ISSUED
+                    )
+                    .exclude(kind=Invoice.Kind.CREDIT_NOTE)
+                    .exists()
+                ):
+                    messages.warning(
+                        request,
+                        _(
+                            "La date est annulée, mais des factures émises restent à solder : "
+                            "créez un avoir si elle n'aura pas lieu."
+                        ),
+                    )
+                else:
+                    messages.success(request, _("La date est annulée."))
+        except gig_services.InvalidTransition as error:
+            messages.error(request, error.args[0])
+        # Back to the same filters: keep only well-formed key=value pairs of the query string.
+        pairs = parse_qsl(request.POST.get("qs", ""), keep_blank_values=False)
+        url = reverse("tenants:profile")
+        return redirect(f"{url}?{urlencode(pairs)}" if pairs else url)
 
 
 class DeleteTenantView(OwnerRequiredMixin, FormView):
