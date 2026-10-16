@@ -1,13 +1,15 @@
 {% load i18n %}
-{% comment %}Opens the checklist of `gig` in a modal (a plain link to the page without JavaScript).
+{% comment %}Round button fixed at the bottom right of the page: opens the checklist of `gig` in a
+modal (a plain link to the page without JavaScript).
 Needs `<div id="checklist-modal"></div>` somewhere on the page.{% endcomment %}
 <a
   href="{% url 'gigs:checklist' gig.pk %}"
   hx-get="{% url 'gigs:checklist' gig.pk %}"
   hx-target="#checklist-modal"
   hx-swap="innerHTML"
-  class="btn btn-secondary {{ class }}"
+  title="{% translate 'Checklist contractualisation' %}"
+  class="fixed bottom-4 right-4 z-40 inline-flex h-12 w-12 items-center justify-center rounded-full bg-blue-700 text-white shadow-lg transition hover:bg-blue-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-700"
 >
-  <svg aria-hidden="true" width="16" height="16" viewBox="0 0 20 20" fill="currentColor" class="shrink-0"><path fill-rule="evenodd" d="M16.7 5.3a1 1 0 0 1 0 1.4l-7.5 7.5a1 1 0 0 1-1.4 0L3.3 9.7a1 1 0 1 1 1.4-1.4l3.8 3.8 6.8-6.8a1 1 0 0 1 1.4 0Z" clip-rule="evenodd"/></svg>
-  {% translate "Checklist contractualisation" %}
+  <svg aria-hidden="true" width="22" height="22" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M16.7 5.3a1 1 0 0 1 0 1.4l-7.5 7.5a1 1 0 0 1-1.4 0L3.3 9.7a1 1 0 1 1 1.4-1.4l3.8 3.8 6.8-6.8a1 1 0 0 1 1.4 0Z" clip-rule="evenodd"/></svg>
+  <span class="sr-only">{% translate "Checklist contractualisation" %}</span>
 </a>
