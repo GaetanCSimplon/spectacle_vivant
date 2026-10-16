@@ -1,0 +1,16 @@
+{% load i18n %}
+{% comment %}Status of an operation (`row`) and, for the owner only, the cancel / restore button.{% endcomment %}
+<span class="pill {% if row.status == 'paid' %}pill-good{% elif row.status == 'cancelled' %}pill-neutral{% else %}pill-bad{% endif %}">{% if row.status == 'paid' %}{% translate "Payé" %}{% elif row.status == 'cancelled' %}{% translate "Annulé" %}{% else %}{% translate "En attente" %}{% endif %}</span>
+{% if is_owner %}
+  {% if row.status == 'cancelled' %}
+    <form method="post" action="{% url 'tenants:bord-status' row.gig.pk %}" class="mt-1">
+      {% csrf_token %}<input type="hidden" name="action" value="reactivate"><input type="hidden" name="qs" value="{{ query_string }}">
+      <button type="submit" class="text-xs text-blue-700 underline">{% translate "Rétablir" %}</button>
+    </form>
+  {% else %}
+    <form method="post" action="{% url 'tenants:bord-status' row.gig.pk %}" class="mt-1" x-data @submit="if (!confirm('{% translate "Annuler cette date ?" %}')) $event.preventDefault()">
+      {% csrf_token %}<input type="hidden" name="action" value="cancel"><input type="hidden" name="qs" value="{{ query_string }}">
+      <button type="submit" class="text-xs text-red-700 underline">{% translate "Annuler la date" %}</button>
+    </form>
+  {% endif %}
+{% endif %}

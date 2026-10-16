@@ -1,0 +1,2 @@
+{% load i18n %}
+{% for document in row.documents %}<a href="{{ document.url }}" class="mr-2 inline-block text-blue-700 underline">{{ document.label }}</a>{% empty %}<span class="text-stone-500">—</span>{% endfor %}
