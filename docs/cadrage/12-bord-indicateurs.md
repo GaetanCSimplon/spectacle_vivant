@@ -56,12 +56,12 @@ Chaque ligne : libellé clair, date ou facture concernée, échéance, montant s
 5. Date confirmée sans prix verrouillé : *non retenue*, le prix est toujours renseigné.
 S'il n'y a rien à signaler, le message dit « Rien à signaler sur les points contrôlés » et **pas** « tout est à jour ».
 
-## 6. À valider avant de coder
-- [ ] HT pour le prévu/facturé et TTC pour l'encaissé (§3).
-- [ ] Les options ne comptent pas dans la recette prévue (§4).
-- [ ] Seuils : 30 jours (contrat, échéances) et 7 jours (option) (§5).
-- [ ] Statut « payé » calculé, « annulé » modifiable (§4).
-- [ ] Réservé au propriétaire, ou visible par les membres ? (les montants de l'accueil le sont déjà aujourd'hui)
+## 6. Décisions (validées le 2026-10-16)
+- [x] HT pour le prévu et le facturé, TTC pour l'encaissé (§3).
+- [x] Les options ne comptent pas dans la recette prévue (§4).
+- [x] Seuils : 30 jours (contrat, échéances) et 7 jours (option) (§5).
+- [x] Statut « payé » calculé, « annulé » modifiable (§4).
+- [x] **Visible par tous les membres, modifiable par le propriétaire seul** : un membre voit tous les chiffres ; seul le propriétaire a le bouton « annuler / rétablir » de la table des opérations (une modification posée en POST par un membre est refusée côté serveur).
 
 ## 7. Plan de livraison
 1. **Calculs et tests** (`bord.py`) : les indicateurs ci-dessus, avec les cas de la recette de la spec (§11) qui s'appliquent : sans date, options et annulation, règlement partiel, personne sur plusieurs dates, deux structures.
