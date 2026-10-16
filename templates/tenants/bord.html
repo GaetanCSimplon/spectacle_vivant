@@ -2,23 +2,44 @@
 {% load i18n %}
 
 {% block title %}Bòrd — BÒRD PRO{% endblock %}
+{% block main_width %}max-w-6xl{% endblock %}
 
 {% block page_content %}
   <h1 class="mb-2 text-xl font-semibold">{% translate "Bòrd" %}</h1>
   {% include "tenants/_tabs.html" with active="bord" %}
 
-  <ul class="space-y-3 text-sm">
-    <li>
-      <a href="{% url 'tenants:settings' %}" class="inline-flex min-h-11 items-center font-bold text-blue-700 underline">{% translate "Informations de la structure" %}</a>
-      <span class="block text-gray-600">{% translate "Nom, SIRET, adresse, coordonnées bancaires : ce qui apparaît dans vos contrats et vos factures." %}</span>
-    </li>
-    <li>
-      <a href="{% url 'tenants:person-list' %}" class="inline-flex min-h-11 items-center font-bold text-blue-700 underline">{% translate "Équipe" %}</a>
-      <span class="block text-gray-600">{% translate "Les personnes qui jouent ou travaillent avec vous." %}</span>
-    </li>
-    <li>
-      <a href="{% url 'export' %}" class="inline-flex min-h-11 items-center font-bold text-blue-700 underline">{% translate "Exporter mes chiffres (CSV)" %}</a>
-      <span class="block text-gray-600">{% translate "Factures, recettes et dépenses sur la période de votre choix." %}</span>
-    </li>
-  </ul>
+  <form
+    method="get"
+    action="{% url 'tenants:profile' %}"
+    class="card mb-6"
+    x-data="{ period: '{{ form.period.value|default:'annee' }}' }"
+    hx-get="{% url 'tenants:profile' %}"
+    hx-trigger="change"
+    hx-target="#bord-results"
+    hx-swap="innerHTML"
+    hx-push-url="true"
+  >
+    <h2 class="stat-label !text-xs !font-semibold">{% translate "Filtres" %}</h2>
+    <div class="mt-2 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
+      <div>{{ form.period.label_tag }} <select name="period" id="{{ form.period.id_for_label }}" x-model="period">
+        {% for value, label in form.fields.period.choices %}<option value="{{ value }}" {% if form.period.value == value %}selected{% endif %}>{{ label }}</option>{% endfor %}
+      </select></div>
+      <div x-show="period === 'perso'" x-cloak>{{ form.start.label_tag }} {{ form.start }}</div>
+      <div x-show="period === 'perso'" x-cloak>{{ form.end.label_tag }} {{ form.end }}</div>
+      <div>{{ form.show.label_tag }} {{ form.show }}</div>
+      <div>{{ form.figure.label_tag }} {{ form.figure }}</div>
+      <div>{{ form.status.label_tag }} {{ form.status }}</div>
+    </div>
+    <noscript><button type="submit" class="btn btn-secondary mt-3">{% translate "Filtrer" %}</button></noscript>
+  </form>
+
+  <div id="bord-results">
+    {% include "tenants/_bord_results.html" %}
+  </div>
+
+  <p class="mt-8 text-sm text-stone-600">
+    <a href="{% url 'tenants:settings' %}" class="font-bold text-blue-700 underline">{% translate "Informations de la structure" %}</a> ·
+    <a href="{% url 'tenants:person-list' %}" class="font-bold text-blue-700 underline">{% translate "Équipe" %}</a> ·
+    <a href="{% url 'export' %}" class="font-bold text-blue-700 underline">{% translate "Exporter mes chiffres (CSV)" %}</a>
+  </p>
 {% endblock %}
