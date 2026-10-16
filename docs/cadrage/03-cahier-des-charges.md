@@ -152,6 +152,7 @@ Un utilisateur = une structure en MVP (modèle `Membership` prêt pour plusieurs
 - **F-80** Mentions légales, CGU, politique de confidentialité.
 - **F-81** Export des données de la structure (CSV/JSON) et suppression du compte sur demande.
 - **F-82** Consentement pour e-mails non transactionnels si applicable.
+- **F-83** *(demandé le 2026-10-16, spec `spec_popup_checklist_contractualisation.1.md`)* **Checklist contractualisation** d'une date : fenêtre modale de 16 cases à cocher en 6 sections (avant confirmation, contrat, documents techniques, facturation, intervenants / intermittents, clôture), enregistrées à chaque clic, bouton « Réinitialiser » avec confirmation. Une case est faite ou pas faite : **ni alerte, ni blocage, ni statut intermédiaire, ni barre de progression**, et aucun lien avec les devis, contrats ou paiements réels. Une checklist par date (pas de projet ni de tournée, Q10) ; bouton sur la fiche de la date et sur la page du contrat ; tout membre peut cocher ; date de dernière modification affichée, auteur conservé pour l'audit ; incluse dans l'export des données. Routes HTMX, pas d'API REST (`CLAUDE.md` §2). Évolutions prévues dans l'architecture, non codées : cases personnalisées, modèles par type de spectacle, responsable par case, échéances.
 
 ---
 
