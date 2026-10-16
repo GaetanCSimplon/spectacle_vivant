@@ -334,3 +334,33 @@ def test_the_page_says_so_when_there_is_nothing_to_draw(client):
 
     assert "Pas encore de chiffres sur cette période" in content
     assert "<svg" not in content.split("Évolution mensuelle")[1].split("Prochaines dates")[0]
+
+
+def test_the_operations_come_as_a_table_and_as_phone_cards(client):
+    membership = _membership(client)
+    gig = _gig(membership.tenant, price="1200.00")
+    issued_invoice(gig)
+
+    content = client.get(URL).content.decode()
+    operations = content.split('id="operations"')[1].split('id="depenses"')[0]
+
+    table, cards = operations.split('<ul class="mt-3 divide-y divide-page-line md:hidden">')
+    assert "hidden overflow-x-auto md:block" in table and "<table" in table
+    assert "<table" not in cards
+    # the same row, with its amount, status and documents, appears in both layouts
+    for part in (table, cards):
+        assert gig.show.title in part
+        assert "1\xa0200 €" in part
+        assert "En attente" in part
+        assert "Facture" in part
+        assert "Annuler la date" in part
+
+
+def test_a_member_sees_no_button_in_either_layout(client):
+    owner = _membership(client)
+    _gig(owner.tenant)
+    client.force_login(MembershipFactory(role="member", tenant=owner.tenant).user)
+
+    content = client.get(URL).content.decode()
+
+    assert "Annuler la date" not in content and "Rétablir" not in content
