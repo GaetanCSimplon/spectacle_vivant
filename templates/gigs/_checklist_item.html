@@ -1,0 +1,21 @@
+{% load i18n %}
+{% comment %}One box of the checklist (`gig`, `item`): a form of its own, saved when it changes.{% endcomment %}
+<li id="checklist-{{ item.key }}">
+  <form
+    method="post"
+    action="{% url 'gigs:checklist-item' gig.pk %}"
+    hx-post="{% url 'gigs:checklist-item' gig.pk %}"
+    hx-trigger="change"
+    hx-target="#checklist-{{ item.key }}"
+    hx-swap="outerHTML"
+    class="flex items-center gap-3"
+  >
+    {% csrf_token %}
+    <input type="hidden" name="item" value="{{ item.key }}">
+    <label class="flex min-h-11 flex-1 cursor-pointer items-center gap-3">
+      <input type="checkbox" name="value" value="true" {% if item.done %}checked{% endif %} class="h-5 w-5 shrink-0">
+      <span>{{ item.label }}</span>
+    </label>
+    <noscript><button type="submit" class="btn btn-secondary">{% translate "Enregistrer" %}</button></noscript>
+  </form>
+</li>
