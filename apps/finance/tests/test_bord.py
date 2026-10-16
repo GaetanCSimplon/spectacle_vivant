@@ -502,3 +502,99 @@ def test_nothing_of_another_tenant_is_ever_counted(tenant):
     assert result["receivables"]["remaining"] == 0
     assert result["people"] == 0
     assert result["operations"] == [] and result["attention"] == []
+
+
+# --- charts ----------------------------------------------------------------
+
+
+def _month(offset):
+    """First day of the month `offset` months after the current one."""
+    index = TODAY.year * 12 + TODAY.month - 1 + offset
+    return datetime.date(index // 12, index % 12 + 1, 1)
+
+
+def test_the_series_has_one_entry_per_month_even_when_empty(tenant):
+    filters = bord.Filters(start=_month(-2), end=_month(1) + datetime.timedelta(days=5))
+
+    series = bord.monthly_series(tenant, filters)
+
+    assert [row["month"] for row in series] == [_month(-2), _month(-1), _month(0), _month(1)]
+    assert all(row["revenue"] == 0 and row["expenses"] == 0 for row in series)
+
+
+def test_each_figure_is_put_in_the_month_of_its_own_date(tenant):
+    last = _month(-1) + datetime.timedelta(days=4)
+    gig = _gig(tenant, days=(last - TODAY).days, price="1000.00")
+    invoice = issued_invoice(gig)  # issued today
+    _pay(invoice, "300.00", days_ago=(TODAY - last).days)
+    ExpenseFactory(gig=gig, amount="40.00", date=TODAY)
+    filters = bord.Filters(start=_month(-1), end=_month(0) + datetime.timedelta(days=27))
+
+    def by_month(figure):
+        rows = bord.monthly_series(tenant, bord.Filters(**{**filters.__dict__, "figure": figure}))
+        return {row["month"]: row["revenue"] for row in rows}
+
+    assert by_month("planned") == {_month(-1): D("1000.00"), _month(0): D("0")}
+    assert by_month("invoiced") == {_month(-1): D("0"), _month(0): D("1000.00")}
+    assert by_month("received") == {_month(-1): D("300.00"), _month(0): D("0")}
+    assert bord.monthly_series(tenant, filters)[1]["expenses"] == D("40.00")
+
+
+def test_the_series_follows_the_show_and_never_mixes_tenants(tenant):
+    kept = _gig(tenant, days=1, price="1000.00")
+    _gig(tenant, days=1, price="700.00")
+    _gig(TenantFactory(**TENANT_FIELDS), days=1, price="5000.00")
+    filters = _filters(show=kept.show)
+
+    total = sum(row["revenue"] for row in bord.monthly_series(tenant, filters))
+
+    assert total == D("1000.00")
+
+
+def test_a_very_long_period_keeps_the_last_36_months(tenant):
+    filters = bord.Filters(start=datetime.date(2015, 1, 1), end=TODAY)
+
+    series = bord.monthly_series(tenant, filters)
+
+    assert len(series) == 36
+    assert series[-1]["month"] == TODAY.replace(day=1)
+
+
+@pytest.mark.parametrize(
+    ("value", "expected"),
+    [(0, 1), (1, 1), (7, 10), (120, 200), (1500, 2000), (5000, 5000), (5001, 10000)],
+)
+def test_the_chart_scale_is_a_round_number(value, expected):
+    assert bord._nice_ceiling(D(value)) == expected
+
+
+def test_chart_bars_are_proportional_and_never_negative(tenant):
+    series = [
+        {"month": TODAY, "label": "10/26", "revenue": D("1000"), "expenses": D("500")},
+        {"month": TODAY, "label": "11/26", "revenue": D("-200"), "expenses": D("0")},
+    ]
+
+    chart = bord.monthly_chart(series)
+
+    first, second = chart["groups"]
+    assert first["revenue"]["h"] == pytest.approx(2 * first["expenses"]["h"], rel=0.01)
+    assert second["revenue"]["h"] == 0
+    assert chart["ticks"][-1]["label"] == "1 000 €"
+    assert chart["has_data"] is True
+
+
+def test_an_empty_series_gives_a_chart_without_data(tenant):
+    chart = bord.monthly_chart(bord.monthly_series(tenant, _filters()))
+
+    assert chart["has_data"] is False
+    assert all(group["revenue"]["h"] == 0 for group in chart["groups"])
+
+
+def test_category_bars_are_relative_to_the_largest(tenant):
+    gig = _gig(tenant)
+    ExpenseFactory(gig=gig, category=Expense.Category.LODGING, amount="200.00", date=TODAY)
+    ExpenseFactory(gig=gig, category=Expense.Category.TRANSPORT, amount="50.00", date=TODAY)
+
+    rows = bord.expenses(tenant, _filters())["by_category"]
+
+    assert [row["percent"] for row in rows] == [100, 25]
