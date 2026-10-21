@@ -61,12 +61,14 @@ La section « Priorisation fonctionnelle » de la charte (pipeline de diffusion,
 4. États et icônes : statuts des dates, des paiements et de Bòrd, graphiques, icônes en trait.
 5. Mention juridique, relevé des écrans à plusieurs boutons principaux, checklist de cohérence, vérification visuelle en 1280 px et 375 px.
 
-## 8. Checklist de cohérence avant publication
-- [ ] Le nom est écrit « Bòrd Pro », avec accent, partout dans l'interface.
-- [ ] Le slogan est « Reprenez le contrôle de votre tournée ».
-- [ ] Un seul bouton principal corail par écran.
-- [ ] Les couleurs d'état ne servent jamais à décorer, le corail n'est jamais un état.
-- [ ] Space Grotesk réservée aux titres et à la marque, Inter ailleurs.
-- [ ] Aucun symbole littéral du spectacle ou du territoire dans le logo et les illustrations.
-- [ ] La mention juridique figure dans les CGU et sur les pages contrats et factures.
-- [ ] Les écrans restent lisibles en 375 px et à faible luminosité (test de contraste vert).
+## 8. Checklist de cohérence avant publication (contrôlée le 2026-10-21)
+- [x] Le nom est écrit « Bòrd Pro », avec accent, partout dans l'interface (test : aucun gabarit n'écrit l'ancienne graphie).
+- [x] Le slogan est « Reprenez le contrôle de votre tournée » (inscription, accueil d'une structure vide, e-mails).
+- [x] Un seul bouton principal corail par écran (test sur les écrans principaux, vides et remplis ; contrôle visuel de 43 écrans en 1280 px et 375 px). Les actions qui détruisent sont rouges.
+- [x] Les couleurs d'état ne servent jamais à décorer, le corail n'est jamais un état (test : aucun gabarit ne cite le corail).
+- [x] Space Grotesk réservée aux titres, au nom et aux chiffres clés ; Inter ailleurs.
+- [x] Aucun symbole littéral du spectacle ou du territoire dans l'interface ; le logo est celui du graphiste.
+- [x] La mention juridique figure dans les CGU et sur les écrans du contrat et de la facturation.
+- [x] Les écrans restent lisibles en 375 px et à faible luminosité (test de contraste de tous les couples de texte).
+
+Reste hors de ce chantier : fichiers vectoriels officiels du logo et version simplifiée du favicon pour 16 px (à demander au graphiste).

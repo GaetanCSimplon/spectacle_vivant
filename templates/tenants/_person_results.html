@@ -5,7 +5,7 @@
       <p>{% blocktranslate %}Aucune personne ne correspond à « {{ q }} ».{% endblocktranslate %}</p>
     {% else %}
       <p>{% translate "Votre équipe est vide pour l'instant." %}</p>
-      <a href="{% url 'tenants:person-create' %}" class="btn btn-primary mt-4">
+      <a href="{% url 'tenants:person-create' %}" class="btn btn-secondary mt-4">
         {% translate "+ Ajouter une personne" %}
       </a>
     {% endif %}

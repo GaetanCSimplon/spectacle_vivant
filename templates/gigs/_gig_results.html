@@ -3,7 +3,7 @@
 {% if not has_any_gig %}
   <div class="card">
     <p>{% translate "Vous n'avez pas encore de date. Créez la première !" %}</p>
-    <a href="{% url 'gigs:wizard-show' %}" class="btn btn-primary mt-4">
+    <a href="{% url 'gigs:wizard-show' %}" class="btn btn-secondary mt-4">
       {% translate "+ Nouvelle date" %}
     </a>
   </div>
