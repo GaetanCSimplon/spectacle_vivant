@@ -1,4 +1,4 @@
-# BÒRD PRO
+# Bòrd Pro
 
 SaaS de gestion pour artistes et associations du spectacle vivant.
 

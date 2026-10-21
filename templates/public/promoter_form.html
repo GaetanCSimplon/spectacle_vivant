@@ -1,7 +1,7 @@
 {% extends "public/base_public.html" %}
 {% load i18n %}
 
-{% block title %}Vos informations — BÒRD PRO{% endblock %}
+{% block title %}Vos informations — Bòrd Pro{% endblock %}
 
 {% block content %}
   <h1>{% translate "Compléter vos informations" %}</h1>
@@ -31,6 +31,6 @@
   </form>
 
   <p class="mt-4 text-xs text-stone-500">
-    {% blocktranslate with tenant=tenant.name %}Les informations saisies sont transmises à {{ tenant }}, qui les utilise pour établir le contrat de cession et les factures de cette date. Pour les consulter, les corriger ou les faire supprimer, contactez directement {{ tenant }}. BÒRD PRO héberge ce formulaire en France et n'utilise pas ces données pour autre chose.{% endblocktranslate %}
+    {% blocktranslate with tenant=tenant.name %}Les informations saisies sont transmises à {{ tenant }}, qui les utilise pour établir le contrat de cession et les factures de cette date. Pour les consulter, les corriger ou les faire supprimer, contactez directement {{ tenant }}. Bòrd Pro héberge ce formulaire en France et n'utilise pas ces données pour autre chose.{% endblocktranslate %}
   </p>
 {% endblock %}

@@ -16,7 +16,7 @@ PROD_ENV = {
     "S3_SECRET_ACCESS_KEY": "secret",
     "EMAIL_HOST_USER": "smtp-user",
     "EMAIL_HOST_PASSWORD": "smtp-password",
-    "DEFAULT_FROM_EMAIL": "BÒRD PRO <contact@example.com>",
+    "DEFAULT_FROM_EMAIL": "Bòrd Pro <contact@example.com>",
 }
 
 
@@ -127,7 +127,7 @@ def test_e_mails_go_through_a_tls_smtp_relay_and_links_are_https(load_prod):
         True,
     )
     assert prod.EMAIL_HOST_USER == "smtp-user"
-    assert prod.DEFAULT_FROM_EMAIL == prod.SERVER_EMAIL == "BÒRD PRO <contact@example.com>"
+    assert prod.DEFAULT_FROM_EMAIL == prod.SERVER_EMAIL == "Bòrd Pro <contact@example.com>"
     assert prod.ACCOUNT_DEFAULT_HTTP_PROTOCOL == "https"
     assert prod.SITE_DOMAIN == "bord-pro.fr"
 

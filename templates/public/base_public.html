@@ -6,13 +6,18 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="robots" content="noindex, nofollow">
     <meta name="referrer" content="same-origin">
-    <title>{% block title %}BÒRD PRO{% endblock %}</title>
+    <title>{% block title %}Bòrd Pro{% endblock %}</title>
+    <link rel="icon" href="{% static 'brand/favicon.ico' %}" sizes="48x48">
+    <link rel="icon" type="image/png" sizes="32x32" href="{% static 'brand/favicon-32.png' %}">
+    <link rel="icon" type="image/png" sizes="16x16" href="{% static 'brand/favicon-16.png' %}">
+    <link rel="apple-touch-icon" href="{% static 'brand/apple-touch-icon.png' %}">
+    <meta name="theme-color" content="#F7F5F1">
     {% tailwind_css %}
   </head>
   <body class="min-h-screen bg-page text-stone-900">
     <header class="border-b border-page-line bg-white">
-      <div class="mx-auto max-w-xl px-4 py-3">
-        <span class="font-heading text-lg font-semibold tracking-wide text-blue-700" aria-label="BÒRD PRO">BÒRD PRO</span>
+      <div class="mx-auto max-w-xl px-4 py-2">
+        <img src="{% static 'brand/logo-horizontal.png' %}" alt="Bòrd Pro" width="509" height="240" class="h-auto w-32">
       </div>
     </header>
     <main class="mx-auto max-w-xl px-4 py-6">

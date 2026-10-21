@@ -101,7 +101,7 @@ La suppression d'une structure est effective 30 jours après la demande. Il faut
 
 ## 11 à 13. Plus tard (v1 et Phase 4-5)
 
-- **Signature électronique** : décision du 2026-10-12, budget serré. Chaque utilisateur signe avec **son propre compte** chez le service de son choix (DocuSeal, Yousign, DocuSign…), puis ajoute le PDF signé dans l'application (guide sur la page du contrat). Pas de compte, ni de coût, ni de donnée transmise de notre côté. Un branchement par clé d'accès de l'utilisateur (DocuSeal Pro ≈ 20 $/mois à sa charge) viendra seulement s'il est demandé ; un compte partagé BÒRD PRO seulement si l'application génère du revenu.
+- **Signature électronique** : décision du 2026-10-12, budget serré. Chaque utilisateur signe avec **son propre compte** chez le service de son choix (DocuSeal, Yousign, DocuSign…), puis ajoute le PDF signé dans l'application (guide sur la page du contrat). Pas de compte, ni de coût, ni de donnée transmise de notre côté. Un branchement par clé d'accès de l'utilisateur (DocuSeal Pro ≈ 20 $/mois à sa charge) viendra seulement s'il est demandé ; un compte partagé Bòrd Pro seulement si l'application génère du revenu.
 - **Plateforme agréée de facturation électronique** : obligation à anticiper avant 09/2027.
 - **Paiement des abonnements** : Stripe ou équivalent, après décision sur le modèle économique (Q9) et sur le statut juridique de ton activité.
 - **Pages légales** (mentions légales, CGU, politique de confidentialité, RGPD) : à rédiger avant l'ouverture au public ; relecture professionnelle conseillée.
@@ -131,7 +131,7 @@ La suppression d'une structure est effective 30 jours après la demande. Il faut
 | `DATABASE_URL` | addon PostgreSQL Scalingo |
 | `S3_BUCKET_NAME`, `S3_ENDPOINT_URL`, `S3_REGION_NAME`, `S3_ACCESS_KEY_ID`, `S3_SECRET_ACCESS_KEY` | prestataire S3 (noms définis, voir `.env.example`) |
 | `EMAIL_HOST_USER`, `EMAIL_HOST_PASSWORD` | identifiants SMTP du prestataire d'e-mails (Brevo : `EMAIL_HOST` vaut `smtp-relay.brevo.com` par défaut, port 587) |
-| `DEFAULT_FROM_EMAIL` | adresse d'envoi sur ton domaine, ex. `BÒRD PRO <contact@bord-pro.fr>` |
+| `DEFAULT_FROM_EMAIL` | adresse d'envoi sur ton domaine, ex. `Bòrd Pro <contact@bord-pro.fr>` |
 | `DJANGO_SITE_DOMAIN` | ton domaine sans `https://` (ex. `bord-pro.fr`) : sert aux liens des e-mails |
 | `SENTRY_DSN` | Sentry (facultatif : sans valeur, rien n'est envoyé) |
 | `DJANGO_CSRF_TRUSTED_ORIGINS` | ton domaine avec `https://` (ex. `https://mon-domaine.fr`) |

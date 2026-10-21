@@ -1,4 +1,4 @@
-# Documentation — BÒRD PRO
+# Documentation — Bòrd Pro
 
 | Dossier | Contenu |
 |---|---|
