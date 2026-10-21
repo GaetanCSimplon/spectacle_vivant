@@ -16,7 +16,7 @@
     class="-mb-px ml-auto inline-flex items-center gap-1 border-b-2 pb-2 {% if active == 'settings' %}border-blue-700 font-semibold text-blue-700{% else %}border-transparent text-gray-600 hover:text-gray-900{% endif %}"
     {% if active == 'settings' %}aria-current="true"{% endif %}
   >
-    <svg aria-hidden="true" width="16" height="16" viewBox="0 0 20 20" fill="currentColor" class="shrink-0"><path fill-rule="evenodd" d="M11.49 3.17c-.38-1.56-2.6-1.56-2.98 0a1.53 1.53 0 0 1-2.29.95c-1.37-.84-2.94.73-2.1 2.1.54.9.05 2.07-.95 2.29-1.56.38-1.56 2.6 0 2.98 1 .23 1.49 1.4.95 2.29-.84 1.37.73 2.94 2.1 2.1a1.53 1.53 0 0 1 2.29.95c.38 1.56 2.6 1.56 2.98 0a1.53 1.53 0 0 1 2.29-.95c1.37.84 2.94-.73 2.1-2.1a1.53 1.53 0 0 1 .95-2.29c1.56-.38 1.56-2.6 0-2.98a1.53 1.53 0 0 1-.95-2.29c.84-1.37-.73-2.94-2.1-2.1a1.53 1.53 0 0 1-2.29-.95ZM10 13a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z" clip-rule="evenodd"/></svg>
+    {% include "components/_icon.html" with name="settings" size=16 %}
     {% translate "Informations de la structure" %}
   </a>
 </div>

@@ -28,7 +28,7 @@
           <span class="text-gray-600">· {{ row.invoice.get_kind_display }}</span>
           <p class="text-gray-600">{{ row.paid }} € {% translate "reçus sur" %} {{ row.invoice.total_incl_tax }} €</p>
         </div>
-        <span class="badge shrink-0 {% if row.invoice.status == 'paid' %}bg-green-100 text-green-800{% else %}bg-amber-100 text-amber-800{% endif %}">
+        <span class="pill shrink-0 {% if row.invoice.status == 'paid' %}pill-good{% else %}pill-warn{% endif %}">
           {% if row.invoice.status == 'paid' %}{% translate "Payée" %}{% else %}{% translate "Reste" %} {{ row.remaining }} €{% endif %}
         </span>
       </div>

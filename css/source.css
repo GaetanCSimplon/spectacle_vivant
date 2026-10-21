@@ -328,6 +328,12 @@
     color: var(--bord-success-text);
   }
 
+  /* A signed date: the same green as "confirmed" but solid, so the two stay apart without colour. */
+  .pill-good-strong {
+    background: var(--bord-success-text);
+    color: #ffffff;
+  }
+
   .pill-warn {
     background: var(--bord-warning-bg);
     color: var(--bord-warning-text);

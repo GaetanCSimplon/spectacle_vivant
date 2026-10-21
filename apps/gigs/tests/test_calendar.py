@@ -238,7 +238,7 @@ def test_every_status_gets_its_dot_and_a_text_alternative(client):
 
     content = _calendar(client, mois="2031-10").content.decode()
 
-    for color in ("bg-amber-500", "bg-blue-600", "bg-green-600", "bg-gray-400"):
+    for color in ("bg-amber-500", "bg-green-500", "bg-green-700", "bg-gray-400"):
         assert color in content
     for label in ("Option", "Confirmée", "Signée", "Annulée"):
         assert f'<span class="sr-only">{label}</span>' in content
