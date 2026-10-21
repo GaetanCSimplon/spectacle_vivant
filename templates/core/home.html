@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 {% load i18n %}
 
-{% block title %}Accueil — BÒRD PRO{% endblock %}
+{% block title %}Accueil — Bòrd Pro{% endblock %}
 {% block main_width %}max-w-5xl{% endblock %}
 
 {% block page_content %}
@@ -106,7 +106,10 @@
         </section>
       </div>
     {% else %}
-      <p class="card text-sm">{% translate "Vous n'avez pas encore de date. Créez la première !" %}</p>
+      <div class="card">
+        <p class="font-heading text-xl font-medium text-blue-700">{% translate "Reprenez le contrôle de votre tournée." %}</p>
+        <p class="mt-1 text-sm text-gray-600">{% translate "Vous n'avez pas encore de date. Créez la première pour commencer." %}</p>
+      </div>
     {% endif %}
   {% else %}
     <p>{% translate "Aucune structure associée à ce compte pour l'instant." %}</p>

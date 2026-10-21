@@ -13,6 +13,6 @@ class Command(BaseCommand):
         if not domain:
             raise CommandError("DJANGO_SITE_DOMAIN is not set.")
         Site.objects.update_or_create(
-            pk=settings.SITE_ID, defaults={"domain": domain, "name": "BÒRD PRO"}
+            pk=settings.SITE_ID, defaults={"domain": domain, "name": "Bòrd Pro"}
         )
         self.stdout.write(f"Site domain set to {domain}")

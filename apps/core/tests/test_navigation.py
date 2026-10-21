@@ -124,4 +124,4 @@ def test_logged_out_pages_have_no_column_and_keep_their_top_bar(client):
     assert "<aside" not in content
     header = content.split("<header")[1].split(">")[0]
     assert "lg:hidden" not in header
-    assert "BÒRD PRO" in content
+    assert "Bòrd Pro" in content
