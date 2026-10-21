@@ -42,6 +42,8 @@ MARKER = "SECRETA"
 PARAM_ONLY = {"export-csv"}
 
 PUBLIC = {
+    "favicon",  # browsers ask for /favicon.ico before any login
+    "apple-touch-icon",
     "legal-notice",
     "legal-terms",
     "legal-privacy",
