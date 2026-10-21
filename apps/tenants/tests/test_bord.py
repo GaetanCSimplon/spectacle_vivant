@@ -364,3 +364,20 @@ def test_a_member_sees_no_button_in_either_layout(client):
     content = client.get(URL).content.decode()
 
     assert "Annuler la date" not in content and "Rétablir" not in content
+
+
+def test_the_chart_svg_numbers_use_a_dot_not_the_french_comma(client):
+    """`width="20,5"` is not a valid SVG number: the bars vanished under the French locale."""
+    import re
+
+    membership = _membership(client)
+    gig = _gig(membership.tenant, price="1234.00")
+    ExpenseFactory(gig=gig, amount="321.00", date=TODAY)
+
+    content = client.get(URL).content.decode()
+    svg = content.split('role="img"')[1].split("</svg>")[0]
+
+    assert "<rect" in svg
+    assert not re.search(r'\b(x|y|x1|x2|y1|y2|width|height)="[^"]*,[^"]*"', svg)
+    heights = [float(h) for h in re.findall(r'<rect[^>]*height="([0-9.]+)"', svg)]
+    assert max(heights) > 0  # at least one bar is really drawn
