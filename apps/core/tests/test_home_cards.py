@@ -295,8 +295,12 @@ def test_the_home_page_has_the_three_shortcuts(client, tenant):
 # --- identity ----------
 
 
-def test_the_self_hosted_font_is_shipped_and_referenced():
+def test_the_self_hosted_fonts_are_shipped_and_referenced():
     root = Path(__file__).resolve().parents[3]
-    assert (root / "static/fonts/sora-latin.woff2").stat().st_size > 10_000
-    assert "sora-latin.woff2" in (root / "css/source.css").read_text()
+    css = (root / "css/source.css").read_text()
+    for name in ("inter-latin.woff2", "space-grotesk-latin.woff2"):
+        assert (root / "static/fonts" / name).stat().st_size > 10_000
+        assert name in css
+    assert "sora-latin.woff2" not in css
     assert "fonts.googleapis.com" not in (root / "templates/base.html").read_text()
+    assert "fonts.googleapis.com" not in css

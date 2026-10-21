@@ -4,7 +4,7 @@
 {% block title %}Quitter la structure — BÒRD PRO{% endblock %}
 
 {% block page_content %}
-  <h1 class="mb-2 text-lg font-semibold">{% translate "Quitter cette structure" %}</h1>
+  <h1 class="mb-2">{% translate "Quitter cette structure" %}</h1>
   <p class="mb-4 text-sm text-gray-600">
     {% blocktranslate with name=request.tenant.name %}Vous n'aurez plus accès aux données de « {{ name }} ». Les autres membres les conservent.{% endblocktranslate %}
   </p>

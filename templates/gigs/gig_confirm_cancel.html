@@ -4,7 +4,7 @@
 {% block title %}Annuler la date — BÒRD PRO{% endblock %}
 
 {% block page_content %}
-  <h1 class="mb-4 text-lg font-semibold">{% translate "Annuler cette date ?" %}</h1>
+  <h1 class="mb-4">{% translate "Annuler cette date ?" %}</h1>
   <p class="mb-6">
     {% blocktranslate with show=gig.show.title date=gig.date|date:"d/m/Y" %}
       « {{ show }} » le {{ date }} sera marquée comme annulée. Elle restera dans votre historique et vous pourrez la réactiver.

@@ -4,7 +4,7 @@
 {% block title %}Réponse de l'organisateur — BÒRD PRO{% endblock %}
 
 {% block page_content %}
-  <h1 class="mb-1 text-xl font-semibold">{% translate "Réponse de l'organisateur" %}</h1>
+  <h1 class="mb-1">{% translate "Réponse de l'organisateur" %}</h1>
   <p class="mb-4 text-sm text-gray-600">{{ promoter.name }} · {% blocktranslate with date=invitation.completed_at|date:"d/m/Y H:i" %}reçue le {{ date }}{% endblocktranslate %}</p>
 
   <p class="mb-4 rounded-xl bg-blue-50 px-4 py-3 text-sm text-blue-900">

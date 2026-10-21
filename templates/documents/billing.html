@@ -4,7 +4,7 @@
 {% block title %}Devis et factures — BÒRD PRO{% endblock %}
 
 {% block page_content %}
-  <h1 class="mb-1 text-lg font-semibold">{% translate "Devis et factures" %}</h1>
+  <h1 class="mb-1">{% translate "Devis et factures" %}</h1>
   <p class="mb-4 text-sm text-gray-600">{{ gig.show.title }} — {{ gig.date|date:"d/m/Y" }}</p>
 
   {% if gig.status == 'cancelled' %}

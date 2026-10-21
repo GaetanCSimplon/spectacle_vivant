@@ -5,7 +5,7 @@
 
 {% block page_content %}
   <div class="mb-4 flex items-start justify-between gap-3">
-    <h1 class="text-xl font-semibold">{{ venue.name }}</h1>
+    <h1>{{ venue.name }}</h1>
     <a href="{% url 'addressbook:venue-update' venue.pk %}" class="btn btn-secondary">
       {% translate "Modifier" %}
     </a>

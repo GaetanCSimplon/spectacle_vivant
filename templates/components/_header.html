@@ -1,7 +1,7 @@
 {% load i18n %}
-<header class="relative z-40 bg-blue-700 text-white shadow-[0_6px_18px_rgba(15,76,92,0.18)]">
+<header class="relative z-40 border-b border-page-line bg-white">
   <div class="mx-auto flex max-w-5xl items-center justify-between gap-4 px-4 py-3">
-    <a href="{% url 'home' %}" aria-label="BÒRD PRO" class="text-xl font-extrabold tracking-[0.12em] text-white">BÒRD<span class="text-coral-400"> PRO</span></a>
+    <a href="{% url 'home' %}" aria-label="BÒRD PRO" class="font-heading text-xl font-semibold tracking-wide text-blue-700">BÒRD PRO</a>
     {% if user.is_authenticated %}
       {# Desktop: links in the header. #}
       <nav aria-label="{% translate 'Navigation principale' %}" class="header-nav hidden sm:flex sm:flex-1 sm:justify-center sm:gap-2 text-sm">
@@ -9,7 +9,7 @@
       </nav>
       <form method="post" action="{% url 'account_logout' %}" class="hidden sm:block">
         {% csrf_token %}
-        <button type="submit" class="min-h-11 rounded-full px-3 text-sm font-medium text-white/80 hover:bg-white/10 hover:text-white">
+        <button type="submit" class="min-h-11 rounded-lg px-3 text-sm font-medium text-gray-600 hover:bg-gray-100 hover:text-blue-700">
           {% translate "Se déconnecter" %}
         </button>
       </form>
@@ -19,13 +19,13 @@
                x-data
                @click.outside="$el.removeAttribute('open')"
                @keydown.escape.window="$el.removeAttribute('open')">
-        <summary class="flex size-11 cursor-pointer list-none items-center justify-center rounded-full hover:bg-white/10 [&::-webkit-details-marker]:hidden"
+        <summary class="flex size-11 cursor-pointer list-none items-center justify-center rounded-lg text-blue-700 hover:bg-gray-100 [&::-webkit-details-marker]:hidden"
                  aria-label="{% translate 'Menu' %}">
           <svg class="group-open:hidden" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
           <svg class="hidden group-open:block" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>
         </summary>
         <nav aria-label="{% translate 'Navigation principale' %}"
-             class="absolute right-0 top-full mt-2 flex w-64 flex-col gap-1 rounded-2xl border border-page-line bg-white p-2 text-stone-800 shadow-xl">
+             class="absolute right-0 top-full mt-2 flex w-64 flex-col gap-1 rounded-xl border border-page-line bg-white p-2 text-blue-700 shadow-lg">
           {% include "components/_nav.html" with link_class="nav-link flex min-h-11 items-center" active_class="" %}
           <form method="post" action="{% url 'account_logout' %}" class="mt-1 border-t border-page-line pt-1">
             {% csrf_token %}
