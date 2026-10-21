@@ -43,6 +43,7 @@ L'échelle `blue-*` de Tailwind, déjà employée partout pour « la couleur de 
 - Échelle : H1 40 px / H2 28 px / H3 20 px / corps 16 px / libellés 14 px / mentions 12–13 px. Sur téléphone, les titres sont réduits pour tenir en 375 px.
 - Rayons : **8 px** pour les boutons et les champs, **12 px** pour les cartes, forme de pilule pour les pastilles d'état seulement (les boutons ne sont plus des pilules). Ombre très discrète : `0 4px 16px rgb(16 36 63 / 6%)`. Beaucoup d'espace. L'échelle d'espacement de l'associé (4, 8, 12, 16, 24, 32, 48, 64 px) est celle de Tailwind : rien à changer.
 - Focus visible : anneau bleu nuit de 3 px, décalé de 3 px.
+- **Navigation :** colonne fixe à gauche à partir de 1024 px (demande de l'associé, 2026-10-21) ; en dessous, barre du haut avec menu burger. Page active : bleu nuit avec une barre corail.
 - Icônes : trait de 1,5 à 2 px, angles arrondis, `currentColor`. Pas de micro, note de musique, rideau ni guitare.
 - **Une seule action principale (corail) par écran.**
 - Les PDF de contrat, de devis et de facture sont les documents de l'utilisateur : ils **ne reprennent pas** l'habillage de la marque.

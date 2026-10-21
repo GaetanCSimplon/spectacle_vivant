@@ -1,21 +1,12 @@
 {% load i18n %}
-<header class="relative z-40 border-b border-page-line bg-white">
+{% comment %}Top bar: the name on its own when logged out, plus the burger menu below `lg` when logged in
+(from `lg` up the navigation is the left column, see _sidebar.html).{% endcomment %}
+<header class="relative z-40 border-b border-page-line bg-white{% if user.is_authenticated %} lg:hidden{% endif %}">
   <div class="mx-auto flex max-w-5xl items-center justify-between gap-4 px-4 py-3">
     <a href="{% url 'home' %}" aria-label="BÒRD PRO" class="font-heading text-xl font-semibold tracking-wide text-blue-700">BÒRD PRO</a>
     {% if user.is_authenticated %}
-      {# Desktop: links in the header. #}
-      <nav aria-label="{% translate 'Navigation principale' %}" class="header-nav hidden sm:flex sm:flex-1 sm:justify-center sm:gap-2 text-sm">
-        {% include "components/_nav.html" with link_class="nav-link" active_class="" %}
-      </nav>
-      <form method="post" action="{% url 'account_logout' %}" class="hidden sm:block">
-        {% csrf_token %}
-        <button type="submit" class="min-h-11 rounded-lg px-3 text-sm font-medium text-gray-600 hover:bg-gray-100 hover:text-blue-700">
-          {% translate "Se déconnecter" %}
-        </button>
-      </form>
-
-      {# Phone: a burger menu. A <details> element, so it also works without JavaScript. #}
-      <details class="group relative sm:hidden"
+      {# A burger menu. A <details> element, so it also works without JavaScript. #}
+      <details class="group relative"
                x-data
                @click.outside="$el.removeAttribute('open')"
                @keydown.escape.window="$el.removeAttribute('open')">
