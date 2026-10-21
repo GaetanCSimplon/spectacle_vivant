@@ -5,7 +5,7 @@
       <p>{% translate "Aucun organisateur ne correspond à cette recherche." %}</p>
     {% else %}
       <p>{% translate "Vous n'avez pas encore d'organisateur." %}</p>
-      <a href="{% url 'addressbook:promoter-create' %}" class="btn btn-primary mt-4">
+      <a href="{% url 'addressbook:promoter-create' %}" class="btn btn-secondary mt-4">
         {% translate "+ Nouvel organisateur" %}
       </a>
     {% endif %}

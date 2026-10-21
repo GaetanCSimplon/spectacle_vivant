@@ -120,4 +120,6 @@
   <a href="{% url 'documents:billing' gig.pk %}" class="text-sm text-gray-500 hover:text-gray-700">
     {% translate "Retour aux devis et factures" %}
   </a>
+
+  {% include "components/_legal_notice.html" %}
 {% endblock %}
