@@ -6,7 +6,7 @@
 {% block page_content %}
   {% include "addressbook/_tabs.html" with active="promoters" %}
   <div class="mb-6 flex items-center justify-between">
-    <h1 class="!mb-0 text-xl font-semibold">{% translate "Organisateurs" %}</h1>
+    <h1 class="!mb-0">{% translate "Organisateurs" %}</h1>
     {% url 'addressbook:promoter-create' as add_url %}
     {% translate "Nouvel organisateur" as add_label %}
     {% include "components/_add_button.html" with url=add_url label=add_label %}

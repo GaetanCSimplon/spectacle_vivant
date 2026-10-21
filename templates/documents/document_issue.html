@@ -4,7 +4,7 @@
 {% block title %}Émettre — BÒRD PRO{% endblock %}
 
 {% block page_content %}
-  <h1 class="mb-4 text-lg font-semibold">{% translate "Émettre ce document ?" %}</h1>
+  <h1 class="mb-4">{% translate "Émettre ce document ?" %}</h1>
   <div class="card mb-4 space-y-1 text-sm">
     <p>{{ gig.show.title }} — {{ gig.date|date:"d/m/Y" }}</p>
     <p>{% translate "Client" %} : {{ customer.name }}</p>

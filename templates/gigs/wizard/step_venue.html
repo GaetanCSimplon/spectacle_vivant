@@ -4,7 +4,7 @@
 {% block title %}Nouvelle date — Lieu{% endblock %}
 
 {% block wizard_content %}
-  <h1 class="mb-4 text-lg font-semibold">{% translate "Quel lieu ?" %}</h1>
+  <h1 class="mb-4">{% translate "Quel lieu ?" %}</h1>
 
   <div
     x-data="{ mode: '{% if create_form.errors %}new{% elif not has_choices %}new{% else %}existing{% endif %}' }"

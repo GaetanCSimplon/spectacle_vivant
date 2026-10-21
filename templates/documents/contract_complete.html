@@ -4,7 +4,7 @@
 {% block title %}Compléter la date — BÒRD PRO{% endblock %}
 
 {% block page_content %}
-  <h1 class="mb-1 text-lg font-semibold">{% translate "Compléter la date" %}</h1>
+  <h1 class="mb-1">{% translate "Compléter la date" %}</h1>
   <p class="mb-6 text-sm text-gray-600">
     {% blocktranslate with show=gig.show.title date=gig.date|date:"d/m/Y" %}
       Renseignez ce qui manque pour « {{ show }} » le {{ date }}. Tout est facultatif :

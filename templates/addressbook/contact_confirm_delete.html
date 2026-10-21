@@ -4,7 +4,7 @@
 {% block title %}Supprimer {{ contact.name }} — BÒRD PRO{% endblock %}
 
 {% block page_content %}
-  <h1 class="mb-4 text-lg font-semibold">{% translate "Supprimer ce contact ?" %}</h1>
+  <h1 class="mb-4">{% translate "Supprimer ce contact ?" %}</h1>
   <p class="mb-6">
     {% blocktranslate with name=contact.name %}
       Voulez-vous vraiment supprimer « {{ name }} » ? Cette action est irréversible.
