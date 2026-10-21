@@ -325,7 +325,8 @@ def test_an_issued_page_is_read_only_and_shows_the_frozen_data(client):
 
     content = client.get(_detail(gig, invoice)).content.decode()
 
-    assert "Nom modifié après coup" not in content
+    # The left column shows the live name of the structure; the document itself must not.
+    assert "Nom modifié après coup" not in content.split("<main")[1]
     assert "Ajouter une ligne" not in content
     assert "Supprimer le brouillon" not in content
     assert "Émettre" not in content

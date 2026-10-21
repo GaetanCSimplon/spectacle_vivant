@@ -22,7 +22,7 @@ def test_navigation_links_are_shown_when_logged_in(client):
 
     content = client.get(reverse("home")).content.decode()
 
-    assert content.count("Navigation principale") == 2  # header (desktop) + burger menu (phone)
+    assert content.count("Navigation principale") == 2  # left column (desktop) + burger menu
     assert reverse("gigs:list") in content
     assert reverse("addressbook:promoter-list") in content
 
@@ -88,3 +88,40 @@ def test_the_home_cards_grid_has_an_explicit_single_column_on_a_phone(client):
     content = client.get(reverse("home")).content.decode()
 
     assert 'class="grid grid-cols-1 gap-4 md:grid-cols-2"' in content
+
+
+def test_desktop_navigation_is_a_column_on_the_left_and_the_burger_stays_on_a_phone(client):
+    _login(client)
+
+    content = client.get(reverse("home")).content.decode()
+    aside = content.split("<aside")[1].split("</aside>")[0]
+    header = content.split("<header")[1].split("</header>")[0]
+
+    # The column: hidden below 1024 px, then a fixed column with the links and the log-out.
+    assert content.index("<aside") < content.index("<main")
+    assert 'class="hidden ' in aside and "lg:flex" in aside and "lg:w-60" in aside
+    assert reverse("gigs:list") in aside and reverse("account_logout") in aside
+    for label in ("Accueil", "Mes dates", "Spectacles", "Contacts", "Bòrd"):
+        assert label in aside
+    # The top bar is for phones and tablets only, and keeps the burger menu.
+    assert "lg:hidden" in content.split("<header")[1].split(">")[0]
+    assert 'aria-label="Menu"' in header and "<details" in header
+    assert reverse("gigs:list") in header and reverse("account_logout") in header
+
+
+def test_the_column_shows_the_name_of_the_structure(client):
+    membership = MembershipFactory(tenant__name="Compagnie du Soleil")
+    client.force_login(membership.user)
+
+    aside = client.get(reverse("home")).content.decode().split("<aside")[1].split("</aside>")[0]
+
+    assert "Compagnie du Soleil" in aside
+
+
+def test_logged_out_pages_have_no_column_and_keep_their_top_bar(client):
+    content = client.get(reverse("account_login")).content.decode()
+
+    assert "<aside" not in content
+    header = content.split("<header")[1].split(">")[0]
+    assert "lg:hidden" not in header
+    assert "BÒRD PRO" in content
