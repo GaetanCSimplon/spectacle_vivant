@@ -109,3 +109,8 @@ def test_the_dark_tones_of_the_state_scales_are_readable_as_text(scale):
 
 def test_the_navy_scale_is_the_brand_navy_at_700():
     assert SCALES["blue-700"].lower() == _color("brand-navy").lower()
+
+
+def test_the_solid_green_pill_keeps_its_white_text_readable():
+    """`pill-good-strong` (a signed date): white on the dark success green."""
+    assert contrast("#ffffff", _color("success-text")) >= 4.5

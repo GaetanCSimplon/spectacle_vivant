@@ -101,7 +101,7 @@
   {% if chart.has_data %}
     <p class="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-sm">
       <span class="inline-flex items-center gap-1"><span class="inline-block h-3 w-3 rounded-sm bg-blue-700" aria-hidden="true"></span>{% translate "Recette" %} ({{ figure_label }})</span>
-      <span class="inline-flex items-center gap-1"><span class="inline-block h-3 w-3 rounded-sm bg-coral-500" aria-hidden="true"></span>{% translate "Dépenses" %}</span>
+      <span class="inline-flex items-center gap-1"><span class="inline-block h-3 w-3 rounded-sm bg-chart-muted" aria-hidden="true"></span>{% translate "Dépenses" %}</span>
     </p>
     {# SVG numbers need a dot: the French locale would print 20,5 and the bars would vanish. #}
     {% localize off %}
@@ -114,7 +114,7 @@
       {% endfor %}
       {% for group in chart.groups %}
         <rect x="{{ group.revenue.x }}" y="{{ group.revenue.y }}" width="{{ group.revenue.w }}" height="{{ group.revenue.h }}" class="fill-blue-700"/>
-        <rect x="{{ group.expenses.x }}" y="{{ group.expenses.y }}" width="{{ group.expenses.w }}" height="{{ group.expenses.h }}" class="fill-coral-500"/>
+        <rect x="{{ group.expenses.x }}" y="{{ group.expenses.y }}" width="{{ group.expenses.w }}" height="{{ group.expenses.h }}" class="fill-chart-muted"/>
         {% if group.show_label %}<text x="{{ group.label_x }}" y="{{ chart.label_y }}" text-anchor="middle" class="fill-stone-600" font-size="11">{{ group.label }}</text>{% endif %}
       {% endfor %}
     </svg>
@@ -214,7 +214,7 @@
         {% for row in expenses.by_category %}
           <li>
             <span class="flex justify-between"><span>{{ row.category }}</span><span>{{ row.total|floatformat:"0g" }} €</span></span>
-            <span class="mt-0.5 block h-2 rounded-full bg-stone-100" aria-hidden="true"><span class="block h-2 rounded-full bg-coral-500" style="width: {{ row.percent }}%"></span></span>
+            <span class="mt-0.5 block h-2 rounded-full bg-stone-100" aria-hidden="true"><span class="block h-2 rounded-full bg-chart-muted" style="width: {{ row.percent }}%"></span></span>
           </li>
         {% endfor %}
         <li class="flex justify-between border-t border-page-line pt-1 font-semibold"><span>{% translate "Total" %}</span><span>{{ expenses.total|floatformat:"0g" }} €</span></li>

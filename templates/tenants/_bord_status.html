@@ -1,6 +1,6 @@
 {% load i18n %}
 {% comment %}Status of an operation (`row`) and, for the owner only, the cancel / restore button.{% endcomment %}
-<span class="pill {% if row.status == 'paid' %}pill-good{% elif row.status == 'cancelled' %}pill-neutral{% else %}pill-bad{% endif %}">{% if row.status == 'paid' %}{% translate "Payé" %}{% elif row.status == 'cancelled' %}{% translate "Annulé" %}{% else %}{% translate "En attente" %}{% endif %}</span>
+<span class="pill {% if row.status == 'paid' %}pill-good{% elif row.status == 'cancelled' %}pill-neutral{% else %}pill-warn{% endif %}">{% if row.status == 'paid' %}{% translate "Payé" %}{% elif row.status == 'cancelled' %}{% translate "Annulé" %}{% else %}{% translate "En attente" %}{% endif %}</span>
 {% if is_owner %}
   {% if row.status == 'cancelled' %}
     <form method="post" action="{% url 'tenants:bord-status' row.gig.pk %}" class="mt-1">

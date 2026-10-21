@@ -44,7 +44,7 @@ or the quick-edit form. Swapped alone by HTMX. Context: gig (annotated with term
           hx-swap="outerHTML"
           class="inline-flex min-h-11 min-w-11 shrink-0 items-center justify-center text-blue-700 hover:text-blue-900" title="{% translate "Modifier les échéances" %}"
         >
-          <svg aria-hidden="true" width="16" height="16" viewBox="0 0 20 20" fill="currentColor" class="shrink-0"><path d="M13.59 2.59a2 2 0 0 1 2.82 2.82l-.8.8-2.82-2.82.8-.8ZM11.6 4.58 3 13.17V16h2.83l8.6-8.59-2.83-2.83Z"/></svg>
+          {% include "components/_icon.html" with name="pencil" size=16 %}
           <span class="sr-only">{% translate "Modifier les échéances" %}</span>
         </a>
       {% endif %}
