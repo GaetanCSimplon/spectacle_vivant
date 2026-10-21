@@ -1,0 +1,44 @@
+/* Bòrd Pro — tokens proposés ; adapter au projet existant. */
+:root {
+  --bord-brand-navy: #10243f;
+  --bord-brand-coral: #ff6b5b;
+  --bord-brand-offwhite: #f7f5f1;
+  --bord-brand-slate: #5b6673;
+  --bord-brand-green: #2fa37c;
+  --bord-brand-amber: #f2a93b;
+  --bord-brand-red: #d64545;
+  --bord-bg: var(--bord-brand-offwhite);
+  --bord-surface: #ffffff;
+  --bord-text: var(--bord-brand-navy);
+  --bord-text-muted: var(--bord-brand-slate);
+  --bord-border: #d8dde3;
+  --bord-control-border: #768292;
+  --bord-action-bg: var(--bord-brand-coral);
+  --bord-action-text: var(--bord-brand-navy);
+  --bord-focus: var(--bord-brand-navy);
+  /* Teintes sémantiques proposées : vérifier leurs contrastes en contexte. */
+  --bord-success-text: #176445;
+  --bord-success-bg: #e5f3ec;
+  --bord-warning-text: #714700;
+  --bord-warning-bg: #fff1d8;
+  --bord-danger-text: #a52d2d;
+  --bord-danger-bg: #fceaea;
+  --bord-font-heading: 'Space Grotesk', system-ui, sans-serif;
+  --bord-font-body: 'Inter', system-ui, sans-serif;
+  --bord-space-1: 4px;
+  --bord-space-2: 8px;
+  --bord-space-3: 12px;
+  --bord-space-4: 16px;
+  --bord-space-6: 24px;
+  --bord-space-8: 32px;
+  --bord-space-12: 48px;
+  --bord-space-16: 64px;
+  --bord-radius-control: 8px;
+  --bord-radius-card: 12px;
+  --bord-radius-pill: 999px;
+  --bord-shadow-card: 0 4px 16px rgb(16 36 63 / 6%);
+}
+/* Les classes sont des exemples, pas un remplacement automatique du design system. */
+.bord-logo { display: block; max-width: 100%; height: auto; object-fit: contain; }
+.bord-button-primary { background: var(--bord-action-bg); color: var(--bord-action-text); }
+.bord-button-primary:focus-visible { outline: 3px solid var(--bord-focus); outline-offset: 3px; }
