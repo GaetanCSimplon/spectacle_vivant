@@ -133,6 +133,37 @@ def test_no_template_still_spells_the_old_name():
     assert leftovers == []
 
 
+@pytest.mark.parametrize(
+    ("url", "target"),
+    [
+        ("/favicon.ico", "brand/favicon.ico"),
+        ("/apple-touch-icon.png", "brand/apple-touch-icon.png"),
+    ],
+)
+def test_the_default_icon_addresses_lead_to_the_brand_icon_without_a_login(client, url, target):
+    response = client.get(url)
+
+    assert response.status_code == 302
+    assert response.url.endswith(target)
+
+
+def test_the_icon_is_the_monogram_without_the_name():
+    """The favicon is the square monogram: its ratio is about 1, the logo's is about 2.1."""
+    from PIL import Image
+
+    favicon = Image.open(ROOT / "static/brand/favicon-48.png")
+    logo = Image.open(ROOT / "static/brand/logo-horizontal.png")
+
+    assert favicon.width == favicon.height
+    assert logo.width / logo.height > 2
+
+
+def test_the_server_error_page_declares_the_icon_too():
+    page = (ROOT / "templates/500.html").read_text()
+
+    assert 'rel="icon"' in page and "/static/brand/favicon.ico" in page
+
+
 LEGAL_MENTION = (
     "Bòrd Pro facilite la préparation et le suivi administratif ; il ne remplace pas les "
     "obligations légales ni un conseil juridique, social ou comptable personnalisé."

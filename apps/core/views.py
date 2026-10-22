@@ -1,7 +1,8 @@
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db.models import Q
-from django.http import Http404, HttpResponse
+from django.http import Http404, HttpResponse, HttpResponseRedirect
 from django.shortcuts import render
+from django.templatetags.static import static
 from django.utils import timezone
 from django.views import View
 from django.views.generic import TemplateView
@@ -132,3 +133,13 @@ class HelloPdfView(LoginRequiredMixin, View):
     def get(self, request, *args, **kwargs):
         pdf = render_pdf("core/hello_pdf.html")
         return HttpResponse(pdf, content_type="application/pdf")
+
+
+def favicon(request):
+    """Browsers and crawlers ask for /favicon.ico by themselves: send them to the brand icon."""
+    return HttpResponseRedirect(static("brand/favicon.ico"))
+
+
+def apple_touch_icon(request):
+    """iOS asks for /apple-touch-icon.png when a page does not declare one."""
+    return HttpResponseRedirect(static("brand/apple-touch-icon.png"))

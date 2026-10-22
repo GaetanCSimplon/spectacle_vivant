@@ -19,7 +19,7 @@ from django.contrib import admin
 from django.urls import include, path
 
 from apps.addressbook import public_views as addressbook_public_views
-from apps.core.views import HelloPdfView, HomeView
+from apps.core.views import HelloPdfView, HomeView, apple_touch_icon, favicon
 from apps.finance import views as finance_views
 from apps.roadmaps import views as roadmap_views
 from apps.tenants.views import OnboardingView
@@ -27,6 +27,8 @@ from apps.tenants.views import OnboardingView
 urlpatterns = [
     path("", HomeView.as_view(), name="home"),
     path("pdf-test/", HelloPdfView.as_view(), name="pdf-test"),
+    path("favicon.ico", favicon, name="favicon"),
+    path("apple-touch-icon.png", apple_touch_icon, name="apple-touch-icon"),
     path("bienvenue/", OnboardingView.as_view(), name="tenants-onboarding"),
     path("infos/", include("apps.core.urls")),
     path("bord/", include("apps.tenants.urls")),
