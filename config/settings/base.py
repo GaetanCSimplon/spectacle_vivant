@@ -103,6 +103,8 @@ SITE_ID = 1
 
 # Public presentation site (the pages a visitor sees before logging in).
 CONTACT_EMAIL = env("CONTACT_EMAIL", default="contact@bordpro.fr")
+# Messages the contact form may send per hour (a flood stopper, see services.contact_quota_left).
+CONTACT_HOURLY_LIMIT = env.int("CONTACT_HOURLY_LIMIT", default=20)
 # Search engines are kept out until the content and the legal pages are ready.
 SITE_INDEXABLE = env.bool("SITE_INDEXABLE", default=False)
 

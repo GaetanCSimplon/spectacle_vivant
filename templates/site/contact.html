@@ -7,9 +7,38 @@
 {% block content %}
   <div class="max-w-2xl">
     <h1>{% translate "Nous contacter" %}</h1>
-    <p>{% translate "Une question sur Bòrd Pro, ou envie de l'essayer ? Écrivez-nous, nous vous répondons." %}</p>
-    <p class="mt-4">
-      <a href="mailto:{{ contact_email }}" class="font-heading text-xl font-medium text-blue-700 underline">{{ contact_email }}</a>
+    <p class="mb-5">{% translate "Une question sur Bòrd Pro, ou envie de l'essayer ? Écrivez-nous, nous vous répondons." %}</p>
+
+    <form method="post" class="card space-y-1">
+      {% csrf_token %}
+      {% if form.non_field_errors %}
+        <div role="alert" class="message message-error">{{ form.non_field_errors }}</div>
+      {% endif %}
+      {% for field in form.visible_fields %}
+        {% if field.name == "website" %}
+          {# Trap for robots, hidden from people and from screen readers. #}
+          <div class="absolute -left-[9999px]" aria-hidden="true">
+            <label for="{{ field.id_for_label }}">{% translate "Ne pas remplir ce champ" %}</label>
+            {{ field }}
+          </div>
+        {% else %}
+          <p>
+            {{ field.label_tag }}
+            {{ field }}
+            {{ field.errors }}
+          </p>
+        {% endif %}
+      {% endfor %}
+      <button type="submit" class="btn btn-primary btn-block sm:w-auto">{% translate "Envoyer le message" %}</button>
+    </form>
+
+    <p class="mt-4 text-sm !text-gray-600">
+      {% blocktranslate %}Vous préférez écrire depuis votre messagerie ? Notre adresse :{% endblocktranslate %}
+      <a href="mailto:{{ contact_email }}" class="font-bold text-blue-700 underline">{{ contact_email }}</a>
+    </p>
+    <p class="mt-2 text-xs !text-gray-500">
+      {% blocktranslate %}Votre message est envoyé par e-mail à l'équipe et n'est pas enregistré sur ce site. Il ne sert qu'à vous répondre.{% endblocktranslate %}
+      <a href="{% url 'legal-privacy' %}" class="underline">{% translate "Confidentialité" %}</a>
     </p>
   </div>
 {% endblock %}
