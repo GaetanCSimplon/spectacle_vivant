@@ -118,7 +118,7 @@ def test_other_urls_are_left_alone():
 
 
 def test_e_mails_go_through_a_tls_smtp_relay_and_links_are_https(load_prod):
-    prod = load_prod(DJANGO_SITE_DOMAIN="bord-pro.fr")
+    prod = load_prod(DJANGO_SITE_DOMAIN="bordpro.fr")
 
     assert prod.EMAIL_BACKEND == "django.core.mail.backends.smtp.EmailBackend"
     assert (prod.EMAIL_HOST, prod.EMAIL_PORT, prod.EMAIL_USE_TLS) == (
@@ -129,7 +129,7 @@ def test_e_mails_go_through_a_tls_smtp_relay_and_links_are_https(load_prod):
     assert prod.EMAIL_HOST_USER == "smtp-user"
     assert prod.DEFAULT_FROM_EMAIL == prod.SERVER_EMAIL == "Bòrd Pro <contact@example.com>"
     assert prod.ACCOUNT_DEFAULT_HTTP_PROTOCOL == "https"
-    assert prod.SITE_DOMAIN == "bord-pro.fr"
+    assert prod.SITE_DOMAIN == "bordpro.fr"
 
 
 def test_production_refuses_to_start_without_the_sender_address(load_prod, monkeypatch):

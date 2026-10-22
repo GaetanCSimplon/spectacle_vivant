@@ -126,15 +126,29 @@ La suppression d'une structure est effective 30 jours après la demande. Il faut
 | Variable | Origine |
 |---|---|
 | `DJANGO_SETTINGS_MODULE` | `config.settings.prod` |
-| `DJANGO_SECRET_KEY` | générée par toi, longue et aléatoire |
-| `DJANGO_ALLOWED_HOSTS` | ton domaine |
-| `DATABASE_URL` | addon PostgreSQL Scalingo |
+| `DJANGO_SECRET_KEY` | générée par toi (`python -c "import secrets; print(secrets.token_urlsafe(50))"`), sans caractère spécial, différente de celle du `.env` local ; jamais collée dans un message |
+| `DJANGO_ALLOWED_HOSTS` | l'adresse Scalingo puis ton domaine, sans `https://` ni `/` final |
+| `DATABASE_URL` | à construire soi-même : la valeur est `$SCALINGO_POSTGRESQL_URL` (Scalingo la remplace par l'adresse de la base) |
+| `DISABLE_COLLECTSTATIC` | `1` : notre `bin/post_compile` compile Tailwind puis lance `collectstatic` ; l'étape automatique du buildpack passerait avant la compilation du CSS |
 | `S3_BUCKET_NAME`, `S3_ENDPOINT_URL`, `S3_REGION_NAME`, `S3_ACCESS_KEY_ID`, `S3_SECRET_ACCESS_KEY` | prestataire S3 (noms définis, voir `.env.example`) |
 | `EMAIL_HOST_USER`, `EMAIL_HOST_PASSWORD` | identifiants SMTP du prestataire d'e-mails (Brevo : `EMAIL_HOST` vaut `smtp-relay.brevo.com` par défaut, port 587) |
-| `DEFAULT_FROM_EMAIL` | adresse d'envoi sur ton domaine, ex. `Bòrd Pro <contact@bord-pro.fr>` |
-| `DJANGO_SITE_DOMAIN` | ton domaine sans `https://` (ex. `bord-pro.fr`) : sert aux liens des e-mails |
+| `DEFAULT_FROM_EMAIL` | adresse d'envoi sur ton domaine, ex. `Bòrd Pro <contact@bordpro.fr>` |
+| `DJANGO_SITE_DOMAIN` | ton domaine sans `https://` (ex. `bordpro.fr`) : sert aux liens des e-mails |
 | `SENTRY_DSN` | Sentry (facultatif : sans valeur, rien n'est envoyé) |
-| `DJANGO_CSRF_TRUSTED_ORIGINS` | ton domaine avec `https://` (ex. `https://mon-domaine.fr`) |
+| `DJANGO_CSRF_TRUSTED_ORIGINS` | ton domaine avec `https://` mais **sans `/` final** (ex. `https://mon-domaine.fr`) |
+
+## Ce que le premier déploiement a appris (2026-10-22)
+
+Premier déploiement réussi sur Scalingo (région France, adresse `bordpro.osc-fr1.scalingo.io`). À retenir :
+
+- **Toutes les variables obligatoires doivent exister dès le build**, même provisoires : `prod.py` lit `S3_*`, `EMAIL_HOST_USER`, `EMAIL_HOST_PASSWORD` et `DEFAULT_FROM_EMAIL` sans valeur par défaut, et `bin/post_compile` charge les réglages complets. Sans elles, le build s'arrête avec `Set the … environment variable`. On met `placeholder` (et une adresse `https://…` complète pour `S3_ENDPOINT_URL`) en attendant les vrais services.
+- **`DATABASE_URL`** n'est pas fournie d'office : on la définit avec `$SCALINGO_POSTGRESQL_URL`.
+- **`DISABLE_COLLECTSTATIC=1`** est nécessaire (voir le tableau ci-dessous).
+- **Pas de `/` final** dans `DJANGO_CSRF_TRUSTED_ORIGINS` (Django refuse l'origine) ni dans `DJANGO_SITE_DOMAIN`, et `DJANGO_ALLOWED_HOSTS` tient sur une seule ligne.
+- **Changer une variable ne relance pas le build** : refaire un déploiement manuel, puis ouvrir le déploiement le plus récent (chaque build a un numéro de dossier différent).
+- **Avec des identifiants SMTP bidon**, l'inscription répond par une erreur 500 (`SMTPAuthenticationError 535`) : normal tant que le service d'e-mails n'est pas branché. Le compte est créé en base avant l'envoi. Amélioration à prévoir : un message clair au lieu de la page 500 quand l'envoi échoue.
+- **Le domaine d'envoi** (SPF, DKIM, DMARC) se règle dans la zone DNS du registrar ; Brevo propose de déléguer la configuration à la personne qui administre le DNS par un lien sécurisé. Un domaine ne doit avoir qu'**un seul** enregistrement SPF : ajouter Brevo à l'existant.
+- **Compte personnel ou professionnel** : tant que la structure n'existe pas juridiquement, compte personnel ; à faire évoluer avant l'ouverture au public, avec les pages légales.
 
 ## Procédure de premier déploiement (Scalingo)
 

@@ -321,7 +321,7 @@ Charte du 15/10/2026 (`Bord_Pro_Charte_marque_brief_developpeur.md`), appliquée
 - [ ] **Recette** : dérouler la liste de la section 11 du cahier des charges sur staging.
 - [ ] Sauvegarde de la base + **test de restauration**.
 - [x] Fichiers de déploiement Scalingo (2026-10-12) : `Procfile`, `.python-version`, `requirements.txt`, `.buildpacks` + `Aptfile` (WeasyPrint), `bin/post_compile` (Tailwind + `collectstatic`), `bin/post_deploy.sh` (migrations + `set_site_domain`), `cron.json` (purge à 3 h UTC), e-mails SMTP en production. Construction simulée en local avec `config.settings.prod` ; procédure et vérifications dans `docs/guides/06`.
-- [ ] Déploiement en **production** (déclenchement manuel).
+- [ ] Déploiement en **production** (déclenchement manuel). **Premier déploiement réussi sur Scalingo le 2026-10-22** (adresse temporaire, services provisoires) ; restent le bucket S3, les e-mails (Brevo, domaine en attente du DNS), le domaine `bordpro.fr`, Sentry, les sauvegardes et la structure juridique.
 
 **Livrable** : MVP en production.
 **Critère de sortie** : la recette du cahier des charges (§11) passe intégralement.

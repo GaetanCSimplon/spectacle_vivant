@@ -52,11 +52,11 @@ def test_the_build_installs_the_pdf_libraries_and_the_pinned_python():
 
 @pytest.mark.django_db
 def test_set_site_domain_updates_the_site(settings):
-    settings.SITE_DOMAIN = "bord-pro.fr"
+    settings.SITE_DOMAIN = "bordpro.fr"
 
     call_command("set_site_domain")
 
-    assert Site.objects.get(pk=settings.SITE_ID).domain == "bord-pro.fr"
+    assert Site.objects.get(pk=settings.SITE_ID).domain == "bordpro.fr"
 
 
 @pytest.mark.django_db
