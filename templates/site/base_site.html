@@ -1,0 +1,52 @@
+{% load static tailwind_cli i18n %}
+{% comment %}Public presentation site (home, features, contact): no login, no tenant, no data.
+Text is provisional until the content is written; every claim must describe what the app really does.{% endcomment %}
+<!DOCTYPE html>
+<html lang="fr">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    {% if not indexable %}<meta name="robots" content="noindex, nofollow">{% endif %}
+    <title>{% block title %}Bòrd Pro — Prenez le contrôle de votre tournée{% endblock %}</title>
+    <meta name="description" content="{% block description %}Contacts, dates, contrats, budgets et équipe : tout au même endroit.{% endblock %}">
+    <meta property="og:title" content="Bòrd Pro">
+    <meta property="og:description" content="{% translate 'Prenez le contrôle de votre tournée.' %}">
+    <meta property="og:image" content="{% static 'brand/icon-512.png' %}">
+    <link rel="icon" href="{% static 'brand/favicon.ico' %}" sizes="48x48">
+    <link rel="icon" type="image/png" sizes="32x32" href="{% static 'brand/favicon-32.png' %}">
+    <link rel="icon" type="image/png" sizes="16x16" href="{% static 'brand/favicon-16.png' %}">
+    <link rel="apple-touch-icon" href="{% static 'brand/apple-touch-icon.png' %}">
+    <meta name="theme-color" content="#F7F5F1">
+    {% tailwind_css %}
+  </head>
+  <body class="min-h-screen bg-page text-stone-900">
+    <a href="#contenu" class="sr-only focus:not-sr-only focus:absolute focus:left-2 focus:top-2 focus:z-50 focus:rounded-md focus:bg-white focus:px-3 focus:py-2 focus:text-sm">
+      {% translate "Aller au contenu" %}
+    </a>
+    <header class="border-b border-page-line bg-white">
+      <div class="mx-auto flex max-w-5xl flex-wrap items-center justify-between gap-x-6 gap-y-2 px-4 py-2">
+        <a href="{% url 'home' %}" class="inline-block rounded-lg"><img src="{% static 'brand/logo-horizontal.png' %}" alt="Bòrd Pro" width="509" height="240" class="h-auto w-32"></a>
+        <nav aria-label="{% translate 'Navigation du site' %}" class="flex flex-wrap items-center gap-x-4 gap-y-1">
+          <a href="{% url 'site-features' %}" class="nav-link flex min-h-11 items-center"{% if request.resolver_match.url_name == 'site-features' %} aria-current="page"{% endif %}>{% translate "Fonctionnalités" %}</a>
+          <a href="{% url 'site-contact' %}" class="nav-link flex min-h-11 items-center"{% if request.resolver_match.url_name == 'site-contact' %} aria-current="page"{% endif %}>{% translate "Contact" %}</a>
+          {% if user.is_authenticated %}
+            <a href="{% url 'home' %}" class="btn btn-secondary">{% translate "Mon espace" %}</a>
+          {% else %}
+            <a href="{% url 'account_login' %}" class="nav-link flex min-h-11 items-center">{% translate "Se connecter" %}</a>
+          {% endif %}
+        </nav>
+      </div>
+    </header>
+    <main id="contenu" class="mx-auto max-w-5xl px-4 py-10">
+      {% block content %}{% endblock %}
+    </main>
+    <footer class="mx-auto max-w-5xl px-4 pb-8 text-sm text-gray-500">
+      <p class="!text-sm !text-gray-500">
+        <a href="{% url 'legal-notice' %}" class="underline">{% translate "Mentions légales" %}</a>
+        · <a href="{% url 'legal-terms' %}" class="underline">{% translate "Conditions d'utilisation" %}</a>
+        · <a href="{% url 'legal-privacy' %}" class="underline">{% translate "Confidentialité" %}</a>
+      </p>
+      {% include "components/_legal_notice.html" %}
+    </footer>
+  </body>
+</html>

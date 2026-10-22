@@ -1,0 +1,68 @@
+{% extends "site/base_site.html" %}
+{% load i18n %}
+
+{% block title %}Fonctionnalités — Bòrd Pro{% endblock %}
+{% block description %}Dates, contrats de cession, devis et factures, feuille de route, paiements et dépenses : ce que fait Bòrd Pro.{% endblock %}
+
+{% block content %}
+  <h1>{% translate "Fonctionnalités" %}</h1>
+  <p class="max-w-3xl">{% translate "Tout ce que Bòrd Pro fait aujourd'hui pour gérer vos dates de concert." %}</p>
+
+  <div class="mt-8 grid grid-cols-1 gap-4 md:grid-cols-2">
+    <article class="card">
+      <h2 class="!text-xl">{% translate "Vos dates" %}</h2>
+      <ul class="mt-2 list-disc space-y-1 pl-5 text-blue-700">
+        <li>{% translate "Une fiche par date : spectacle, organisateur, lieu, prix, échéances." %}</li>
+        <li>{% translate "Statuts (option, confirmée, signée, annulée), liste et calendrier." %}</li>
+        <li>{% translate "Historique des prix négociés." %}</li>
+        <li>{% translate "Checklist de contractualisation, case par case." %}</li>
+      </ul>
+    </article>
+    <article class="card">
+      <h2 class="!text-xl">{% translate "Contrats, devis et factures" %}</h2>
+      <ul class="mt-2 list-disc space-y-1 pl-5 text-blue-700">
+        <li>{% translate "Contrat de cession en PDF, avec le choix entre quatre modèles." %}</li>
+        <li>{% translate "Versions successives, marquage « signé », PDF conservé tel quel." %}</li>
+        <li>{% translate "Devis, factures et avoirs numérotés sans trou." %}</li>
+        <li>{% translate "Une facture émise ne se modifie plus : on la corrige par un avoir." %}</li>
+      </ul>
+    </article>
+    <article class="card">
+      <h2 class="!text-xl">{% translate "Feuille de route" %}</h2>
+      <ul class="mt-2 list-disc space-y-1 pl-5 text-blue-700">
+        <li>{% translate "Horaires, contacts, hébergement et repas de la date." %}</li>
+        <li>{% translate "Partagée avec l'équipe par un lien secret, sans compte à créer." %}</li>
+        <li>{% translate "Lien révocable à tout moment." %}</li>
+      </ul>
+    </article>
+    <article class="card">
+      <h2 class="!text-xl">{% translate "Argent" %}</h2>
+      <ul class="mt-2 list-disc space-y-1 pl-5 text-blue-700">
+        <li>{% translate "Prévu, facturé et encaissé : trois montants distincts, jamais mélangés." %}</li>
+        <li>{% translate "Paiements reçus et dépenses de chaque date." %}</li>
+        <li>{% translate "Tableau de bord avec solde, créances et rappels." %}</li>
+        <li>{% translate "Exports CSV pour votre comptable." %}</li>
+      </ul>
+    </article>
+    <article class="card">
+      <h2 class="!text-xl">{% translate "Carnet d'adresses et équipe" %}</h2>
+      <ul class="mt-2 list-disc space-y-1 pl-5 text-blue-700">
+        <li>{% translate "Organisateurs, lieux et contacts, avec recherche instantanée." %}</li>
+        <li>{% translate "Un formulaire à envoyer à l'organisateur pour qu'il remplisse lui-même ses informations." %}</li>
+        <li>{% translate "Annuaire de l'équipe, rattaché aux dates et aux feuilles de route." %}</li>
+      </ul>
+    </article>
+    <article class="card">
+      <h2 class="!text-xl">{% translate "Vos données" %}</h2>
+      <ul class="mt-2 list-disc space-y-1 pl-5 text-blue-700">
+        <li>{% translate "Chaque structure ne voit que ses propres données." %}</li>
+        <li>{% translate "Application et base de données hébergées en France." %}</li>
+        <li>{% translate "Export de vos données et suppression du compte sur demande." %}</li>
+      </ul>
+    </article>
+  </div>
+
+  <div class="mt-10">
+    <a href="{% url 'site-contact' %}" class="btn btn-primary">{% translate "Nous contacter" %}</a>
+  </div>
+{% endblock %}

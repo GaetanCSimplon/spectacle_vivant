@@ -34,6 +34,7 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     "django.contrib.sites",
+    "django.contrib.sitemaps",
     "allauth",
     "allauth.account",
     "django_tailwind_cli",
@@ -99,6 +100,11 @@ AUTHENTICATION_BACKENDS = [
 ]
 
 SITE_ID = 1
+
+# Public presentation site (the pages a visitor sees before logging in).
+CONTACT_EMAIL = env("CONTACT_EMAIL", default="contact@bordpro.fr")
+# Search engines are kept out until the content and the legal pages are ready.
+SITE_INDEXABLE = env.bool("SITE_INDEXABLE", default=False)
 
 # django-allauth: login by e-mail only, no username field
 ACCOUNT_USER_MODEL_USERNAME_FIELD = None

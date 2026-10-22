@@ -1,0 +1,15 @@
+{% extends "site/base_site.html" %}
+{% load i18n %}
+
+{% block title %}Contact — Bòrd Pro{% endblock %}
+{% block description %}Une question sur Bòrd Pro, ou envie de l'essayer ? Écrivez-nous.{% endblock %}
+
+{% block content %}
+  <div class="max-w-2xl">
+    <h1>{% translate "Nous contacter" %}</h1>
+    <p>{% translate "Une question sur Bòrd Pro, ou envie de l'essayer ? Écrivez-nous, nous vous répondons." %}</p>
+    <p class="mt-4">
+      <a href="mailto:{{ contact_email }}" class="font-heading text-xl font-medium text-blue-700 underline">{{ contact_email }}</a>
+    </p>
+  </div>
+{% endblock %}

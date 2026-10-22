@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db.models import Q
 from django.http import Http404, HttpResponse, HttpResponseRedirect
@@ -122,6 +123,46 @@ class HomeView(LoginRequiredMixin, TemplateView):
         if wants_fragment(self.request) and self.request.tenant is not None:
             return [self.results_template_name]
         return super().get_template_names()
+
+
+def home(request):
+    """`/`: the dashboard for a logged-in user, the presentation page for a visitor."""
+    if request.user.is_authenticated:
+        return HomeView.as_view()(request)
+    return LandingView.as_view()(request)
+
+
+class SitePageView(TemplateView):
+    """A page of the public presentation site: no login, no tenant, nothing but static text."""
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["contact_email"] = settings.CONTACT_EMAIL
+        context["indexable"] = settings.SITE_INDEXABLE
+        return context
+
+
+class LandingView(SitePageView):
+    template_name = "site/home.html"
+
+
+class FeaturesView(SitePageView):
+    template_name = "site/features.html"
+
+
+class ContactView(SitePageView):
+    template_name = "site/contact.html"
+
+
+def robots_txt(request):
+    """Keep crawlers out of the app, and out of everything while the site is not indexable."""
+    if settings.SITE_INDEXABLE:
+        sitemap = request.build_absolute_uri("/sitemap.xml")
+        lines = ["User-agent: *", "Allow: /$", "Allow: /fonctionnalites/", "Allow: /contact/"]
+        lines += ["Disallow: /", f"Sitemap: {sitemap}"]
+    else:
+        lines = ["User-agent: *", "Disallow: /"]
+    return HttpResponse("\n".join(lines) + "\n", content_type="text/plain")
 
 
 class HelloPdfView(LoginRequiredMixin, View):
