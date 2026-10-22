@@ -1,0 +1,12 @@
+{% extends "site/base_site.html" %}
+{% load i18n %}
+
+{% block title %}Message envoyé — Bòrd Pro{% endblock %}
+
+{% block content %}
+  <div class="max-w-2xl">
+    <h1>{% translate "Message envoyé" %}</h1>
+    <p class="message message-success" role="status">{% translate "Merci, nous vous répondons rapidement." %}</p>
+    <p class="mt-6"><a href="{% url 'home' %}" class="btn btn-secondary">{% translate "Retour à l'accueil" %}</a></p>
+  </div>
+{% endblock %}

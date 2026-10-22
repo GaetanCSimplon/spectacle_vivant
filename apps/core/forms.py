@@ -49,3 +49,27 @@ class MultiSelectDropdown(forms.CheckboxSelectMultiple):
         context["options"] = options
         context["summary"] = ", ".join(str(o["label"]) for o in options if o["selected"])
         return mark_safe(render_to_string("components/_multi_select.html", {"widget": context}))
+
+
+class ContactForm(forms.Form):
+    """The contact form of the presentation site: its content is only e-mailed, never stored."""
+
+    name = forms.CharField(label=_("Votre nom"), max_length=100)
+    email = forms.EmailField(label=_("Votre adresse e-mail"), max_length=254)
+    message = forms.CharField(
+        label=_("Votre message"),
+        min_length=10,
+        max_length=3000,
+        widget=forms.Textarea(attrs={"rows": 6}),
+    )
+    # A trap for robots: a person never sees nor fills this field.
+    website = forms.CharField(
+        required=False, widget=forms.TextInput(attrs={"tabindex": "-1", "autocomplete": "off"})
+    )
+
+    def clean_name(self):
+        return " ".join(self.cleaned_data["name"].split())
+
+    @property
+    def is_spam(self):
+        return bool(self.cleaned_data.get("website"))

@@ -22,6 +22,7 @@ from django.urls import include, path
 from apps.addressbook import public_views as addressbook_public_views
 from apps.core.sitemaps import SitePagesSitemap
 from apps.core.views import (
+    ContactThanksView,
     ContactView,
     FeaturesView,
     HelloPdfView,
@@ -38,6 +39,7 @@ urlpatterns = [
     path("", home, name="home"),
     path("fonctionnalites/", FeaturesView.as_view(), name="site-features"),
     path("contact/", ContactView.as_view(), name="site-contact"),
+    path("contact/merci/", ContactThanksView.as_view(), name="site-contact-thanks"),
     path("robots.txt", robots_txt, name="robots"),
     path(
         "sitemap.xml",

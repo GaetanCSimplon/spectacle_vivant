@@ -46,6 +46,7 @@ PUBLIC = {
     "apple-touch-icon",
     "site-features",  # the presentation site: static text, no data
     "site-contact",
+    "site-contact-thanks",
     "robots",
     "sitemap",
     "legal-notice",

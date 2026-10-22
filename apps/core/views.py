@@ -1,16 +1,23 @@
+import logging
+
 from django.conf import settings
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db.models import Q
 from django.http import Http404, HttpResponse, HttpResponseRedirect
 from django.shortcuts import render
 from django.templatetags.static import static
+from django.urls import reverse_lazy
 from django.utils import timezone
+from django.utils.translation import gettext_lazy as _
 from django.views import View
-from django.views.generic import TemplateView
+from django.views.generic import FormView, TemplateView
 
 from apps.finance.dashboard import build_dashboard
 
-from .services import render_pdf
+from .forms import ContactForm
+from .services import contact_quota_left, render_pdf, send_contact_message
+
+logger = logging.getLogger(__name__)
 
 
 class TenantScopedMixin(LoginRequiredMixin):
@@ -150,8 +157,38 @@ class FeaturesView(SitePageView):
     template_name = "site/features.html"
 
 
-class ContactView(SitePageView):
+class ContactView(SitePageView, FormView):
+    """The contact form: the message is e-mailed to the team, nothing is stored."""
+
     template_name = "site/contact.html"
+    form_class = ContactForm
+    success_url = reverse_lazy("site-contact-thanks")
+
+    def form_valid(self, form):
+        if form.is_spam:  # a robot filled the trap: answer as if it worked, send nothing
+            return super().form_valid(form)
+        if not contact_quota_left():
+            form.add_error(
+                None,
+                _("Nous recevons beaucoup de messages en ce moment. Écrivez à %(email)s.")
+                % {"email": settings.CONTACT_EMAIL},
+            )
+            return self.form_invalid(form)
+        try:
+            send_contact_message(**{k: form.cleaned_data[k] for k in ("name", "email", "message")})
+        except OSError:  # the mail server refused or is down; no personal data in the log
+            logger.exception("Contact message could not be sent")
+            form.add_error(
+                None,
+                _("Votre message n'a pas pu partir. Écrivez-nous directement à %(email)s.")
+                % {"email": settings.CONTACT_EMAIL},
+            )
+            return self.form_invalid(form)
+        return super().form_valid(form)
+
+
+class ContactThanksView(SitePageView):
+    template_name = "site/contact_thanks.html"
 
 
 def robots_txt(request):
