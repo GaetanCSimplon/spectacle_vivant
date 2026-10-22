@@ -162,3 +162,47 @@ def test_the_server_error_page_declares_the_icon_too():
     page = (ROOT / "templates/500.html").read_text()
 
     assert 'rel="icon"' in page and "/static/brand/favicon.ico" in page
+
+
+LEGAL_MENTION = (
+    "Bòrd Pro facilite la préparation et le suivi administratif ; il ne remplace pas les "
+    "obligations légales ni un conseil juridique, social ou comptable personnalisé."
+)
+
+
+def test_the_terms_of_use_carry_the_charter_mention(client):
+    content = client.get(reverse("legal-terms")).content.decode()
+
+    assert " ".join(content.split()).count(LEGAL_MENTION) == 1
+
+
+def test_the_contract_and_billing_screens_carry_the_mention(client):
+    from apps.documents import invoicing
+    from apps.documents.models import Invoice
+    from apps.finance.tests.helpers import TENANT_FIELDS, make_gig
+
+    membership = MembershipFactory(**{f"tenant__{k}": v for k, v in TENANT_FIELDS.items()})
+    client.force_login(membership.user)
+    gig = make_gig(tenant=membership.tenant)
+    invoice = invoicing.create_invoice(gig, Invoice.Kind.FULL)
+    quote = invoicing.create_quote(gig)
+
+    urls = [
+        reverse("documents:contract-history", args=[gig.pk]),
+        reverse("documents:contract-complete", args=[gig.pk]),
+        reverse("documents:billing", args=[gig.pk]),
+        reverse("documents:document-detail", args=[gig.pk, "factures", invoice.pk]),
+        reverse("documents:document-detail", args=[gig.pk, "devis", quote.pk]),
+    ]
+    for url in urls:
+        content = " ".join(client.get(url).content.decode().split())
+        assert LEGAL_MENTION in content, url
+
+
+def test_the_mention_is_not_repeated_on_the_other_screens(client):
+    membership = MembershipFactory()
+    client.force_login(membership.user)
+
+    for name in ("home", "gigs:list", "tenants:profile"):
+        content = " ".join(client.get(reverse(name)).content.decode().split())
+        assert LEGAL_MENTION not in content

@@ -13,7 +13,7 @@
     </ul>
     <p class="mb-6 text-sm text-gray-600">{% translate "Ces traces doivent être conservées. Annulez la date plutôt : elle restera dans votre historique." %}</p>
     <div class="flex flex-col gap-3">
-      <a href="{% url 'gigs:cancel' gig.pk %}" class="btn btn-primary btn-block">{% translate "Annuler la date" %}</a>
+      <a href="{% url 'gigs:cancel' gig.pk %}" class="btn btn-secondary btn-block">{% translate "Annuler la date" %}</a>
       <a href="{% url 'gigs:detail' gig.pk %}" class="text-center text-sm text-gray-500 hover:text-gray-700">{% translate "Retour" %}</a>
     </div>
   {% else %}
@@ -23,7 +23,7 @@
     <p class="mb-6 text-sm text-gray-600">{% translate "Seront aussi effacés : les brouillons de devis et de factures, le contrat non signé et sa feuille de route (le lien partagé cessera de fonctionner). Cette action est irréversible." %}</p>
     <form method="post" action="{% url 'gigs:delete' gig.pk %}" class="flex flex-col gap-3">
       {% csrf_token %}
-      <button type="submit" class="btn btn-primary btn-block">{% translate "Supprimer définitivement" %}</button>
+      <button type="submit" class="btn btn-danger btn-block">{% translate "Supprimer définitivement" %}</button>
       <a href="{% url 'gigs:detail' gig.pk %}" class="text-center text-sm text-gray-500 hover:text-gray-700">{% translate "Retour" %}</a>
     </form>
   {% endif %}

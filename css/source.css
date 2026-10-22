@@ -269,6 +269,11 @@
     @apply bg-coral-500 text-blue-700 hover:bg-coral-600;
   }
 
+  /* Destructive actions (delete, cancel, leave): red, never coral (the charter keeps coral for the main action). */
+  .btn-danger {
+    @apply bg-red-700 text-white hover:bg-red-800;
+  }
+
   .btn-secondary {
     @apply border-2 border-blue-700 bg-white text-blue-700 hover:bg-blue-50;
   }
