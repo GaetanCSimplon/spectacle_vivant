@@ -16,16 +16,35 @@ Including another URLconf
 """
 
 from django.contrib import admin
+from django.contrib.sitemaps.views import sitemap as sitemap_view
 from django.urls import include, path
 
 from apps.addressbook import public_views as addressbook_public_views
-from apps.core.views import HelloPdfView, HomeView, apple_touch_icon, favicon
+from apps.core.sitemaps import SitePagesSitemap
+from apps.core.views import (
+    ContactView,
+    FeaturesView,
+    HelloPdfView,
+    apple_touch_icon,
+    favicon,
+    home,
+    robots_txt,
+)
 from apps.finance import views as finance_views
 from apps.roadmaps import views as roadmap_views
 from apps.tenants.views import OnboardingView
 
 urlpatterns = [
-    path("", HomeView.as_view(), name="home"),
+    path("", home, name="home"),
+    path("fonctionnalites/", FeaturesView.as_view(), name="site-features"),
+    path("contact/", ContactView.as_view(), name="site-contact"),
+    path("robots.txt", robots_txt, name="robots"),
+    path(
+        "sitemap.xml",
+        sitemap_view,
+        {"sitemaps": {"site": SitePagesSitemap}},
+        name="sitemap",
+    ),
     path("pdf-test/", HelloPdfView.as_view(), name="pdf-test"),
     path("favicon.ico", favicon, name="favicon"),
     path("apple-touch-icon.png", apple_touch_icon, name="apple-touch-icon"),

@@ -1,0 +1,46 @@
+{% extends "site/base_site.html" %}
+{% load i18n %}
+
+{% block content %}
+  <section class="max-w-3xl">
+    <h1 class="!mb-3">{% translate "Prenez le contrôle de votre tournée." %}</h1>
+    <p class="text-lg">{% translate "Contacts, dates, contrats, budgets et équipe : tout au même endroit." %}</p>
+    <p class="mt-3 text-sm !text-gray-600">{% translate "Pour les artistes auto-produits, les petites compagnies et les associations du spectacle vivant." %}</p>
+    <div class="mt-6 flex flex-wrap gap-3">
+      <a href="{% url 'site-contact' %}" class="btn btn-primary">{% translate "Nous contacter" %}</a>
+      <a href="{% url 'site-features' %}" class="btn btn-secondary">{% translate "Découvrir les fonctionnalités" %}</a>
+    </div>
+  </section>
+
+  <section class="mt-14" aria-labelledby="themes-title">
+    <h2 id="themes-title" class="sr-only">{% translate "Ce que Bòrd Pro vous apporte" %}</h2>
+    <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
+      <article class="card">
+        <h3>{% translate "Diffusion" %}</h3>
+        <p class="mt-1">{% translate "Du premier contact au dernier cachet, gardez le fil." %}</p>
+        <p class="mt-2 text-sm !text-gray-600">{% translate "Organisateurs, lieux et contacts, avec leur suivi (prospect, négociation, client)." %}</p>
+      </article>
+      <article class="card">
+        <h3>{% translate "Production" %}</h3>
+        <p class="mt-1">{% translate "Vos dates avancent, vos dossiers suivent." %}</p>
+        <p class="mt-2 text-sm !text-gray-600">{% translate "Statuts, calendrier, feuille de route à partager par lien, checklist de contractualisation." %}</p>
+      </article>
+      <article class="card">
+        <h3>{% translate "Administratif" %}</h3>
+        <p class="mt-1">{% translate "Moins de paperasse, plus de scène." %}</p>
+        <p class="mt-2 text-sm !text-gray-600">{% translate "Contrat de cession, devis, factures et avoirs en PDF." %}</p>
+      </article>
+      <article class="card">
+        <h3>{% translate "Budget" %}</h3>
+        <p class="mt-1">{% translate "Chaque date, chaque dépense, chaque euro : au clair." %}</p>
+        <p class="mt-2 text-sm !text-gray-600">{% translate "Prévu, facturé et encaissé séparés, dépenses, solde et exports CSV." %}</p>
+      </article>
+    </div>
+    <p class="mt-6"><a href="{% url 'site-features' %}" class="font-bold text-blue-700 underline">{% translate "Voir toutes les fonctionnalités" %} →</a></p>
+  </section>
+
+  <section class="mt-14 max-w-3xl" aria-labelledby="manifesto-title">
+    <h2 id="manifesto-title">{% translate "Fait pour celles et ceux qui font tout" %}</h2>
+    <p class="mt-2">{% translate "Créer, prospecter, négocier, produire, jouer, facturer, déclarer, payer. Un seul endroit pour vos contacts, vos dates, vos contrats, vos budgets et vos documents." %}</p>
+  </section>
+{% endblock %}

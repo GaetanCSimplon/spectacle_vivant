@@ -44,6 +44,10 @@ PARAM_ONLY = {"export-csv"}
 PUBLIC = {
     "favicon",  # browsers ask for /favicon.ico before any login
     "apple-touch-icon",
+    "site-features",  # the presentation site: static text, no data
+    "site-contact",
+    "robots",
+    "sitemap",
     "legal-notice",
     "legal-terms",
     "legal-privacy",
@@ -360,7 +364,7 @@ def test_every_non_public_route_requires_a_login(client, world):
     dataset = world["a"]
     specs = {name: spec for name, spec in ROUTES}
     for name, route, view in _all_routes():
-        if name in PUBLIC or name == "tenants-onboarding":
+        if name in PUBLIC or name in {"tenants-onboarding", "home"}:  # "/" is public too
             continue
         spec = next((s for n, s in ROUTES if n == name), None)
         if "<" in route and spec is None:

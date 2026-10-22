@@ -6,11 +6,11 @@ from apps.tenants.factories import MembershipFactory
 pytestmark = pytest.mark.django_db
 
 
-def test_home_requires_login(client):
+def test_a_visitor_sees_the_presentation_page_not_the_dashboard(client):
     response = client.get(reverse("home"))
 
-    assert response.status_code == 302
-    assert response.url.startswith(reverse("account_login"))
+    assert response.status_code == 200
+    assert "site/home.html" in [t.name for t in response.templates]
 
 
 def test_home_shows_the_tenant_name(client):
