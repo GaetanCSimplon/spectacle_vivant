@@ -2,6 +2,6 @@
 
 {% block content %}{% endblock content %}
 
-{{ current_site.name }} — Reprenez le contrôle de votre tournée.
+{{ current_site.name }} — Prenez le contrôle de votre tournée.
 {{ current_site.domain }}
 {% endautoescape %}

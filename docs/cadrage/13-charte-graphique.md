@@ -4,7 +4,7 @@ Version 1 — 2026-10-21. Source : `Bord_Pro_Charte_marque_brief_developpeur.md`
 
 ## 1. Nom et ton
 - Le produit s'écrit **Bòrd Pro** (avec l'accent, jamais « Bord Pro »). « BÒRD PRO » en capitales disparaît de l'interface. Le menu de la structure reste « Bòrd ».
-- Slogan : **Reprenez le contrôle de votre tournée.** Sous-titre : *Contacts, dates, contrats, budgets et équipe : tout au même endroit.* Écran de connexion : *Votre activité, au clair.*
+- Slogan : **Prenez le contrôle de votre tournée.** Sous-titre : *Contacts, dates, contrats, budgets et équipe : tout au même endroit.* Écran de connexion : le slogan seul, sans sous-titre (« Votre activité, au clair. » n'est plus utilisé).
 - Ton direct, phrases courtes, verbes d'action, vouvoiement. À éviter : « assistant », « carnet de route », métaphores maritimes, clichés du spectacle.
 - Mention à faire figurer dans les CGU et sur les pages contrats et factures : *Bòrd Pro facilite la préparation et le suivi administratif ; il ne remplace pas les obligations légales ni un conseil juridique, social ou comptable personnalisé.*
 
@@ -63,7 +63,7 @@ La section « Priorisation fonctionnelle » de la charte (pipeline de diffusion,
 
 ## 8. Checklist de cohérence avant publication (contrôlée le 2026-10-21)
 - [x] Le nom est écrit « Bòrd Pro », avec accent, partout dans l'interface (test : aucun gabarit n'écrit l'ancienne graphie).
-- [x] Le slogan est « Reprenez le contrôle de votre tournée » (inscription, accueil d'une structure vide, e-mails).
+- [x] Le slogan est « Prenez le contrôle de votre tournée » (inscription, accueil d'une structure vide, e-mails).
 - [x] Un seul bouton principal corail par écran (test sur les écrans principaux, vides et remplis ; contrôle visuel de 43 écrans en 1280 px et 375 px). Les actions qui détruisent sont rouges.
 - [x] Les couleurs d'état ne servent jamais à décorer, le corail n'est jamais un état (test : aucun gabarit ne cite le corail).
 - [x] Space Grotesk réservée aux titres, au nom et aux chiffres clés ; Inter ailleurs.

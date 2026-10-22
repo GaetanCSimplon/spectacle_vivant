@@ -14,7 +14,7 @@ from apps.tenants.factories import MembershipFactory
 pytestmark = pytest.mark.django_db
 
 ROOT = Path(__file__).resolve().parents[3]
-SLOGAN = "Reprenez le contrôle de votre tournée."
+SLOGAN = "Prenez le contrôle de votre tournée."
 SUBTITLE = "Contacts, dates, contrats, budgets et équipe : tout au même endroit."
 
 
@@ -82,11 +82,12 @@ def test_the_name_is_written_with_its_accent_everywhere_the_user_reads_it(client
         assert "Bord Pro" not in content
 
 
-def test_the_sign_in_page_says_your_activity_at_a_glance(client):
+def test_the_sign_in_page_carries_the_slogan_without_the_subtitle(client):
     content = client.get(reverse("account_login")).content.decode()
 
-    assert "Votre activité, au clair." in content
-    assert SLOGAN not in content
+    assert SLOGAN in content
+    assert SUBTITLE not in content
+    assert "Votre activité, au clair." not in content
 
 
 def test_the_sign_up_page_carries_the_slogan_and_the_subtitle(client):
@@ -112,7 +113,7 @@ def test_the_confirmation_e_mail_is_signed_with_the_name_and_the_slogan(client):
     address.send_confirmation()
 
     body = mail.outbox[-1].body
-    assert "Bòrd Pro — Reprenez le contrôle de votre tournée." in body
+    assert "Bòrd Pro — Prenez le contrôle de votre tournée." in body
     assert "bordpro.example" in body
     assert "Thank you for using" not in body and "Merci d'utiliser" not in body
 
