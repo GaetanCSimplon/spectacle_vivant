@@ -1,3 +1,5 @@
+> **Archive.** Ce document décrit l'état du projet à sa date et n'est plus tenu à jour. Les références qu'il cite utilisaient l'ancien classement des dossiers : voir `docs/README.md`.
+
 # Spectacle Vivant — point d'étape
 
 28 septembre 2026 · @Get

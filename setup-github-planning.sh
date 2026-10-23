@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Crée les labels, puis les issues correspondant aux tâches non cochées
-# de docs/cadrage/04-feuille-de-route.md, avec le bon milestone.
+# de docs/produit/feuille-de-route.md, avec le bon milestone.
 #
 # Pré-requis :
 #   - `gh` (GitHub CLI) installé et authentifié (`gh auth login`)

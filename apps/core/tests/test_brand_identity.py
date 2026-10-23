@@ -1,4 +1,4 @@
-"""Name, logo, icons, slogan and e-mail signature of Bòrd Pro (charter, docs/cadrage/13)."""
+"""Name, logo, icons, slogan and e-mail signature of Bòrd Pro (docs/marque/charte-graphique.md)."""
 
 import re
 from pathlib import Path

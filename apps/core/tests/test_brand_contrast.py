@@ -1,4 +1,4 @@
-"""The brand colours of css/source.css stay readable (charter, docs/cadrage/13-charte-graphique.md).
+"""The brand colours of css/source.css stay readable (charter, docs/marque/charte-graphique.md).
 
 The tokens are read from the `:root` block of the stylesheet, so changing a colour there that
 breaks a pair fails this test. Text needs 4.5:1; the border of a form field, the focus ring and

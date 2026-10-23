@@ -1,4 +1,4 @@
-"""The Bòrd figures: every definition of docs/cadrage/12-bord-indicateurs.md."""
+"""The Bòrd figures: every definition of docs/produit/indicateurs-bord.md."""
 
 import datetime
 from decimal import Decimal

@@ -1,3 +1,5 @@
+> **Archive.** Ce document décrit l'état du projet à sa date et n'est plus tenu à jour. Les références qu'il cite utilisaient l'ancien classement des dossiers : voir `docs/README.md`.
+
 # Synthèse des fonctionnalités réalisées
 
 > **Situation au 2026-10-07.** Phase 3 (MVP) : Sprints 3.1 à 3.7 réalisés, et le code du Sprint 3.8 (légal, sécurité, finition) aussi. Il reste la recette, les sauvegardes et la mise en ligne, qui attendent les comptes d'hébergement (§7).

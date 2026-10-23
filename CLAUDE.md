@@ -1,7 +1,7 @@
 # CLAUDE.md — SaaS « Gestion Spectacle Vivant »
 
 > Ce fichier est lu par Claude Code au début de chaque session. Il doit rester court et à jour.
-> Documentation détaillée : `docs/` (cahier des charges, feuille de route, guides).
+> Documentation détaillée : `docs/` (produit, marque, technique, métier, archives : voir `docs/README.md`).
 
 ## 1. Le projet en 5 lignes
 
@@ -52,7 +52,7 @@ apps/
   finance/        # Payment, Expense, dashboard, export CSV
 templates/        # base.html + un dossier par app
 static/
-docs/
+docs/             # produit/, marque/, technique/, metier/, archives/ (voir docs/README.md)
 ```
 
 Une app = un domaine métier. Ne pas créer d'app supplémentaire sans en parler.
@@ -101,7 +101,7 @@ Une app = un domaine métier. Ne pas créer d'app supplémentaire sans en parler
 
 ### 6.4 Simplicité
 - Pas de sur-ingénierie : pas d'abstraction « au cas où ». Trois lignes répétées valent mieux qu'une abstraction prématurée.
-- Une fonctionnalité du prompt client non listée dans `docs/cadrage/03-cahier-des-charges.md` (MVP) **n'est pas à coder**.
+- Une fonctionnalité du prompt client non listée dans `docs/produit/cahier-des-charges.md` (MVP) **n'est pas à coder**.
 
 ## 7. Conventions de code
 
@@ -110,7 +110,7 @@ Une app = un domaine métier. Ne pas créer d'app supplémentaire sans en parler
 - Vues : préférer les vues basées sur classes génériques de Django ; HTMX renvoie des **fragments de template** (`_partial.html`), détectés via `request.htmx`.
 - Formulaires : Django Forms / ModelForms ; les wizards sont des vues HTMX en plusieurs étapes.
 - Templates : mobile-first (Tailwind), composants réutilisables dans `templates/components/`.
-- Interface : suivre la charte (`docs/cadrage/13-charte-graphique.md`) ; les couleurs d'état ne servent jamais à décorer, le corail est réservé à l'action principale, et toute nouvelle couleur de texte doit passer le test de contraste.
+- Interface : suivre la charte (`docs/marque/charte-graphique.md`) ; les couleurs d'état ne servent jamais à décorer, le corail est réservé à l'action principale, et toute nouvelle couleur de texte doit passer le test de contraste.
 - Alpine.js uniquement pour de petits états d'interface (menu, onglets, modale).
 - Logique métier dans des fonctions/services (`apps/<app>/services.py`), pas dans les vues ni les templates.
 - Migrations : toujours relues avant commit ; jamais éditées après avoir été appliquées en prod.
@@ -123,7 +123,7 @@ Une tâche est terminée quand :
 2. les cas normaux **et** les cas d'erreur sont testés ;
 3. l'isolation des tenants est testée si un modèle ou une vue est concerné ;
 4. la page est utilisable sur mobile (largeur 375 px) ;
-5. `docs/cadrage/04-feuille-de-route.md` est mis à jour (case cochée).
+5. `docs/produit/feuille-de-route.md` est mis à jour (case cochée).
 
 ## 9. Méthode de travail avec moi
 
@@ -136,11 +136,11 @@ Une tâche est terminée quand :
 
 ## 10. Hors périmètre (ne pas coder, ne pas proposer)
 
-Calcul de charges sociales GUSO/intermittence, carte et temps de trajet, connecteur expert-comptable/CAE, aide au choix du statut juridique, billetterie, gestion des droits SACEM, application mobile native. (Voir `docs/cadrage/03-cahier-des-charges.md` pour les évolutions prévues.)
+Calcul de charges sociales GUSO/intermittence, carte et temps de trajet, connecteur expert-comptable/CAE, aide au choix du statut juridique, billetterie, gestion des droits SACEM, application mobile native. (Voir `docs/produit/cahier-des-charges.md` pour les évolutions prévues.)
 
 ## 11. État actuel
 
-- Phase en cours : **Phase 3, fin du MVP, produit testé en local et pas encore déployé** (voir `docs/cadrage/04-feuille-de-route.md`). Les Sprints 3.1 à 3.13 sont terminés (dont la page Bòrd, le prix et les échéances modifiables depuis « Mes dates » avec historique des prix, et la checklist de contractualisation) ; le Sprint 3.14 (charte graphique) est en cours. Reste du Sprint 3.8 : sauvegardes et test de restauration, recette, déploiement. Autres points ouverts : relecture professionnelle des quatre modèles de contrat et des factures ; « n° de compte » de la fiche Équipe (en attente de la réponse de l'associé). Le produit s'appelle **Bòrd Pro** (avec l'accent, jamais « BÒRD PRO » en capitales ni « Bord Pro »). Charte graphique : `docs/cadrage/13-charte-graphique.md` (couleurs, polices, un seul bouton principal par écran). Acquis : onboarding, « Ma structure » (dont IBAN, BIC, téléphone, e-mail), équipe (adresse et n° GUSO visibles du seul propriétaire), navigation, CRUD des organisateurs (qualification à choix multiple et filtres), lieux (avec configuration), contacts et spectacles (durées de balances, nombre d'artistes et de techniciens, code analytique), dates (statuts, calendrier), contrat de cession à **quatre modèles au choix** tant qu'il est en brouillon (versions, marquage « signé », PDF figé), stockage privé, devis, factures et avoirs (IBAN et BIC affichés), feuille de route (lien secret), paiements, dépenses, bilan, accueil, exports CSV (avec code analytique), pages légales, export et suppression de compte, audit d'isolation. Déploiement bloqué par le choix du nom de domaine ; services à prévoir : `docs/guides/06-services-production.md`.
-- Un vrai modèle de contrat de cession et un document de logique métier ont été fournis par le métier, puis complétés par un entretien, un modèle de données plus riche (voir `docs/metier/07-modele-spectacle.md`) et une note de cadrage technique. **Confirmé et livré le 2026-10-13 :** quatre modèles de contrat de cession au choix (sources dans `docs/modeles-contrats/`), tous des contrats de cession ; la coréalisation et la location de salle restent non gérées. Les autres extensions (CRM complet, hiérarchie Projet/Spectacle, coréalisation et location de salle, paie des intermittents, déclarations SACEM, signature électronique par prestataire) **restent hors du MVP tant qu'elles n'ont pas été explicitement confirmées** : voir `docs/cadrage/03-cahier-des-charges.md` §14 (Q1-Q16).
+- Phase en cours : **Phase 3, fin du MVP, produit testé en local et pas encore déployé** (voir `docs/produit/feuille-de-route.md`). Les Sprints 3.1 à 3.13 sont terminés (dont la page Bòrd, le prix et les échéances modifiables depuis « Mes dates » avec historique des prix, et la checklist de contractualisation) ; le Sprint 3.14 (charte graphique) est en cours. Reste du Sprint 3.8 : sauvegardes et test de restauration, recette, déploiement. Autres points ouverts : relecture professionnelle des quatre modèles de contrat et des factures ; « n° de compte » de la fiche Équipe (en attente de la réponse de l'associé). Le produit s'appelle **Bòrd Pro** (avec l'accent, jamais « BÒRD PRO » en capitales ni « Bord Pro »). Charte graphique : `docs/marque/charte-graphique.md` (couleurs, polices, un seul bouton principal par écran). Acquis : onboarding, « Ma structure » (dont IBAN, BIC, téléphone, e-mail), équipe (adresse et n° GUSO visibles du seul propriétaire), navigation, CRUD des organisateurs (qualification à choix multiple et filtres), lieux (avec configuration), contacts et spectacles (durées de balances, nombre d'artistes et de techniciens, code analytique), dates (statuts, calendrier), contrat de cession à **quatre modèles au choix** tant qu'il est en brouillon (versions, marquage « signé », PDF figé), stockage privé, devis, factures et avoirs (IBAN et BIC affichés), feuille de route (lien secret), paiements, dépenses, bilan, accueil, exports CSV (avec code analytique), pages légales, export et suppression de compte, audit d'isolation. Déploiement bloqué par le choix du nom de domaine ; services à prévoir : `docs/technique/services-production.md`.
+- Un vrai modèle de contrat de cession et un document de logique métier ont été fournis par le métier, puis complétés par un entretien, un modèle de données plus riche (voir `docs/metier/modele-spectacle.md`) et une note de cadrage technique. **Confirmé et livré le 2026-10-13 :** quatre modèles de contrat de cession au choix (sources dans `docs/metier/modeles-contrats/`), tous des contrats de cession ; la coréalisation et la location de salle restent non gérées. Les autres extensions (CRM complet, hiérarchie Projet/Spectacle, coréalisation et location de salle, paie des intermittents, déclarations SACEM, signature électronique par prestataire) **restent hors du MVP tant qu'elles n'ont pas été explicitement confirmées** : voir `docs/produit/cahier-des-charges.md` §14 (Q1-Q16).
 - Q8 tranchée (2026-10-01) : la mention « Nécitge 2000 et non assujetti à la TVA : article 293b du CGI » n'est pas conservée dans le contrat.
 - Décisions ouvertes : voir la section « Décisions à prendre » de la feuille de route.

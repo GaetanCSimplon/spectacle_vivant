@@ -1,6 +1,6 @@
 # Bòrd — dictionnaire des indicateurs (Lot 0)
 
-Version 1 — 2026-10-16. Applique la spécification de l'associé (`BORD_PRO_specification_onglet_BORD (1).md`, 15/10/2026) **à ce que le code gère déjà**. Rien de ce document n'est codé tant qu'il n'est pas validé (§6).
+Version 1 — 2026-10-16. Applique la spécification de l'associé (`specification-onglet-bord.md`, 15/10/2026) **à ce que le code gère déjà**. Rien de ce document n'est codé tant qu'il n'est pas validé (§6).
 
 ## 1. Principe
 Bòrd = « Où en suis-je ? » : une synthèse qui ouvre le détail de chaque chiffre. Aucune ressaisie : tout vient des dates, factures, paiements et dépenses existants. Un seul module de calcul (`apps/finance/bord.py`), qui servira aussi à RADAR le jour où il sera défini (Q17).
