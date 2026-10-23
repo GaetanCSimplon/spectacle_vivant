@@ -96,9 +96,9 @@ def test_the_page_shows_the_blocks_to_every_member(client):
 
     for block in (
         "Dates",
-        "Recette",
-        "Dépenses",
-        "Solde",
+        "Ce que les concerts doivent rapporter",
+        "Les frais déjà ajoutés",
+        "reste après ces frais",
         "Reste à encaisser",
         "À traiter maintenant",
     ):
