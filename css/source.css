@@ -522,7 +522,7 @@
  * `components` layer and would win, leaving grey text on the colour blocks.
  */
 :is(.card-navy, .card-accent, .card-info, .card-cream)
-  :is(h2, p, li, a, .stat-label, .stat-value, .text-stone-500, .text-stone-600, .text-blue-700) {
+  :is(h1, h2, p, li, a, .stat-label, .stat-value, .text-stone-500, .text-stone-600, .text-blue-700) {
   color: inherit;
 }
 
