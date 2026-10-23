@@ -312,6 +312,16 @@ Demande de l'utilisateur (F-84) : un site qui présente le produit, **dans l'app
 - [ ] Fermer l'inscription publique (accès sur invitation) en attendant la structure juridique : à planifier (touche à l'authentification).
 - [ ] Textes définitifs de l'associé ; puis `SITE_INDEXABLE=True` ; page Tarifs avec l'abonnement (plus tard).
 
+### Sprint 3.16 — Refonte graphique V06 (2026-10-23)
+
+Sources de l'associé : `docs/marque/sources-associe/` (charte PDF, brief d'intégration, maquette HTML V06). Décisions du 2026-10-23 : logo actuel conservé (le `LOGO_2.pdf` n'est pas fourni), entrées de navigation actuelles conservées, **carte et RADAR mis de côté** jusqu'à la fin de la refonte. Sans migration ; une PR par étape.
+- [x] **PR 1 — jetons et polices** : Archivo, Instrument Sans et IBM Plex Mono hébergées, fond `#F2F5FA`, teintes d'état V06 (vert, ambre, bordeaux), rayons 12 / 20 / 28 px, cibles de 48 px, chiffres clés en mono ; test de contraste étendu ; `docs/marque/charte-graphique.md` en version 2.
+- [ ] **PR 2 — socle** : boutons, champs, cartes en aplats, pastilles icône + mot.
+- [ ] **PR 3 — Bòrd et liste des dates** : cartes de synthèse en aplats, libellés du budget simplifiés (« Les frais déjà ajoutés »…), dates en mono.
+- [ ] **PR 4 — feuille de route** : lecture mobile (chronologie, accès, hôtel, documents).
+- [ ] **PR 5 — recette** : 375 px et 1280 px, clavier, contenus longs, données vides.
+- [ ] Reporté : carte et itinéraire (service de géolocalisation, `CLAUDE.md` §10), RADAR (règles à définir, Q17), logo `LOGO_2.pdf`.
+
 ### Sprint 3.8 — Légal, sécurité, finition, recette
 - [x] Pages : mentions légales, CGU, confidentialité (gabarits à compléter et à faire relire avant la mise en ligne).
 - [x] Export des données (F-81) : ZIP de CSV et de fichiers, page `ma-structure/export-donnees/`.

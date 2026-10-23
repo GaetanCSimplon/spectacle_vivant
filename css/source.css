@@ -1,28 +1,46 @@
 @import "tailwindcss";
 
 /*
- * Tailwind source for Bòrd Pro (charte du 15/10/2026, voir docs/marque/charte-graphique.md):
- * navy blue, one coral action, off-white page, Space Grotesk for titles and Inter for the rest.
+ * Tailwind source for Bòrd Pro (direction V06, voir docs/marque/charte-graphique.md):
+ * navy blue, one coral action, light blue-grey page, colour blocks, Archivo for titles,
+ * Instrument Sans for the text and IBM Plex Mono for dates and amounts.
  * Django form helpers (`{{ form.as_p }}`) render plain HTML with no classes,
  * so the `base` layer below styles raw elements directly: every form in the
  * app gets consistent inputs/labels without touching each template.
  */
 
-/* Self-hosted (no request to a font provider): latin subsets, variable weight. */
+/* Self-hosted (no request to a font provider): latin subsets. */
 @font-face {
-  font-family: "Inter";
+  font-family: "Archivo";
   font-style: normal;
   font-weight: 100 900;
+  font-stretch: 62% 125%;
   font-display: swap;
-  src: url("../fonts/inter-latin.woff2") format("woff2");
+  src: url("../fonts/archivo-latin.woff2") format("woff2");
 }
 
 @font-face {
-  font-family: "Space Grotesk";
+  font-family: "Instrument Sans";
   font-style: normal;
-  font-weight: 300 700;
+  font-weight: 400 700;
   font-display: swap;
-  src: url("../fonts/space-grotesk-latin.woff2") format("woff2");
+  src: url("../fonts/instrument-sans-latin.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "IBM Plex Mono";
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("../fonts/ibm-plex-mono-400-latin.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "IBM Plex Mono";
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url("../fonts/ibm-plex-mono-500-latin.woff2") format("woff2");
 }
 
 /*
@@ -30,38 +48,47 @@
  * pair is checked by apps/core/tests/test_brand_contrast.py, which reads this block.
  */
 :root {
-  --bord-brand-navy: #10243f;
+  --bord-brand-navy: #102440;
   --bord-brand-coral: #ff6b5b;
-  --bord-brand-offwhite: #f7f5f1;
-  --bord-brand-slate: #5b6673;
-  --bord-brand-green: #2fa37c;
-  --bord-brand-amber: #f2a93b;
-  --bord-brand-red: #d64545;
-  --bord-bg: var(--bord-brand-offwhite);
+  --bord-brand-cream: #f5f2ea;
+  --bord-brand-gray: #687080;
+  --bord-brand-green: #1f6b4a;
+  --bord-brand-amber: #e3a21a;
+  --bord-brand-plum: #8e1f3f;
+  --bord-bg: #f2f5fa;
   --bord-surface: #ffffff;
+  --bord-info-bg: #dce8f7;
   --bord-text: var(--bord-brand-navy);
-  --bord-text-muted: var(--bord-brand-slate);
-  --bord-border: #d8dde3;
-  --bord-control-border: #768292;
+  --bord-text-muted: #5b6372;
+  --bord-border: #d8e0eb;
+  --bord-control-border: #6f7a8a;
   --bord-action-bg: var(--bord-brand-coral);
   --bord-action-bg-hover: #f55f4e;
   --bord-action-text: var(--bord-brand-navy);
   --bord-focus: var(--bord-brand-navy);
-  --bord-success-text: #176445;
-  --bord-success-bg: #e5f3ec;
+  --bord-success-text: #1f6b4a;
+  --bord-success-bg: #e4f0e8;
   --bord-warning-text: #714700;
-  --bord-warning-bg: #fff1d8;
-  --bord-danger-text: #a52d2d;
-  --bord-danger-bg: #fceaea;
+  --bord-warning-bg: #fff0c8;
+  --bord-danger-text: #8e1f3f;
+  --bord-danger-bg: #f6e3eb;
   --bord-chart-muted: #838e9b;
-  --bord-radius-control: 8px;
-  --bord-radius-card: 12px;
-  --bord-shadow-card: 0 4px 16px rgb(16 36 63 / 6%);
+  --bord-radius-control: 12px;
+  --bord-radius-card: 20px;
+  --bord-radius-section: 28px;
+  --bord-touch-target: 48px;
+  --bord-shadow-card: 0 4px 16px rgb(16 36 64 / 6%);
 }
 
 @theme {
-  --font-sans: "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
-  --font-heading: "Space Grotesk", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-sans: "Instrument Sans", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-heading: "Archivo", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+
+  /* Shapes: controls 12 px, cards 20 px, big sections 28 px (the classes already in the templates). */
+  --radius-lg: 0.75rem;
+  --radius-xl: 1.25rem;
+  --radius-2xl: 1.75rem;
 
   /*
    * The templates already use Tailwind's `blue-*`, `gray-*`, `stone-*`, `green-*`, `amber-*`
@@ -70,77 +97,77 @@
    * blue = Bleu Nuit; gray and stone = the same neutral scale (500 = Ardoise, 900 = Bleu Nuit);
    * green / amber / red = the three state colours (700 = the readable text tone).
    */
-  --color-blue-50: #eef2f7;
-  --color-blue-100: #d9e2ee;
+  --color-blue-50: #eaf1fa;
+  --color-blue-100: #dce8f7;
   --color-blue-200: #b4c5db;
   --color-blue-300: #8aa2c0;
   --color-blue-400: #5e7ba3;
   --color-blue-500: #3d5a85;
   --color-blue-600: #243f66;
-  --color-blue-700: #10243f;
+  --color-blue-700: #102440;
   --color-blue-800: #0c1b30;
   --color-blue-900: #091524;
   --color-blue-950: #050c16;
 
-  --color-gray-50: #f7f5f1;
+  --color-gray-50: #f2f5fa;
   --color-gray-100: #eef0f3;
-  --color-gray-200: #d8dde3;
+  --color-gray-200: #d8e0eb;
   --color-gray-300: #c0c7d0;
   --color-gray-400: #8a94a1;
-  --color-gray-500: #5b6673;
+  --color-gray-500: #5b6372;
   --color-gray-600: #4b5663;
   --color-gray-700: #36414e;
   --color-gray-800: #222f42;
-  --color-gray-900: #10243f;
+  --color-gray-900: #102440;
   --color-gray-950: #0a1627;
 
-  --color-stone-50: #f7f5f1;
+  --color-stone-50: #f2f5fa;
   --color-stone-100: #eef0f3;
-  --color-stone-200: #d8dde3;
+  --color-stone-200: #d8e0eb;
   --color-stone-300: #c0c7d0;
   --color-stone-400: #8a94a1;
-  --color-stone-500: #5b6673;
+  --color-stone-500: #5b6372;
   --color-stone-600: #4b5663;
   --color-stone-700: #36414e;
   --color-stone-800: #222f42;
-  --color-stone-900: #10243f;
+  --color-stone-900: #102440;
   --color-stone-950: #0a1627;
 
-  --color-green-50: #e5f3ec;
+  --color-green-50: #e4f0e8;
   --color-green-100: #d3ebdf;
   --color-green-200: #a9d9c2;
   --color-green-300: #7bc4a2;
   --color-green-400: #4db388;
-  --color-green-500: #2fa37c;
+  --color-green-500: #2f8a62;
   --color-green-600: #1f8460;
-  --color-green-700: #176445;
+  --color-green-700: #1f6b4a;
   --color-green-800: #124f37;
   --color-green-900: #0e3d2a;
   --color-green-950: #072319;
 
-  --color-amber-50: #fff1d8;
+  --color-amber-50: #fff0c8;
   --color-amber-100: #fde4b8;
   --color-amber-200: #fad08a;
   --color-amber-300: #f7be5f;
   --color-amber-400: #f5b14c;
-  --color-amber-500: #f2a93b;
+  --color-amber-500: #e3a21a;
   --color-amber-600: #a36a00;
   --color-amber-700: #714700;
   --color-amber-800: #5c3a00;
   --color-amber-900: #473000;
   --color-amber-950: #2a1c00;
 
-  --color-red-50: #fceaea;
-  --color-red-100: #f8d3d3;
-  --color-red-200: #f0aaaa;
-  --color-red-300: #e67f7f;
-  --color-red-400: #de5e5e;
-  --color-red-500: #d64545;
-  --color-red-600: #bc3838;
-  --color-red-700: #a52d2d;
-  --color-red-800: #8a2525;
-  --color-red-900: #721f1f;
-  --color-red-950: #3f1010;
+  --color-red-50: #f6e3eb;
+  --color-red-100: #efcad8;
+  --color-red-200: #e0a1b8;
+  --color-red-300: #cc7593;
+  --color-red-400: #b04a6e;
+  --color-red-500: #a02548;
+  --color-red-600: #8e1f3f;
+  --color-red-700: #8e1f3f;
+  --color-red-800: #741934;
+  --color-red-900: #5c142a;
+  --color-red-950: #350a18;
 
   /* Coral: the main action only (one per screen). Text on it is Bleu Nuit, never white. */
   --color-coral-50: #fff1ef;
@@ -155,8 +182,8 @@
   --color-coral-900: #8e2d23;
 
   /* Page background (Blanc Cassé) and the decorative lines between blocks. */
-  --color-page: #f7f5f1;
-  --color-page-line: #d8dde3;
+  --color-page: #f2f5fa;
+  --color-page-line: #d8e0eb;
 
   --color-chart-muted: #838e9b;
 }
@@ -167,24 +194,25 @@
     display: none !important;
   }
 
-  /* Titles: Space Grotesk. H1 40 px, H2 28 px, H3 20 px (a little smaller on a phone). */
+  /* Titles: Archivo 800, wide, tight letter-spacing (V06). Page title 30-34 px, card title 20-24 px. */
   h1,
   h2,
   h3 {
-    @apply font-heading text-blue-700;
+    @apply font-heading font-extrabold tracking-[-0.04em] text-blue-700;
+    font-stretch: 112%;
   }
 
   h1 {
-    @apply mb-5 text-[1.75rem] leading-[1.1] font-semibold sm:text-[2.5rem];
+    @apply mb-5 text-[1.875rem] leading-[1.1] sm:text-[2.125rem];
   }
 
   /* Titles that carry no classes of their own (e.g. a form heading inside a card). */
   h2 {
-    @apply text-[1.375rem] leading-[1.2] font-semibold sm:text-[1.75rem];
+    @apply text-xl leading-[1.2] sm:text-2xl;
   }
 
   h3 {
-    @apply text-xl leading-[1.3] font-medium;
+    @apply text-lg leading-[1.3];
   }
 
   /* Body text: 16 px. Secondary lines carry their own `text-sm text-gray-500` classes. */
@@ -229,8 +257,8 @@
   input[type="url"],
   select,
   textarea {
-    /* 16px text: phones do not zoom in on focus; 44px tall: easy to touch. */
-    @apply block min-h-11 w-full rounded-lg border bg-white px-3 py-2.5 text-base text-blue-700
+    /* 16px text: phones do not zoom in on focus; 48px tall: easy to touch. */
+    @apply block min-h-12 w-full rounded-lg border bg-white px-3 py-2.5 text-base text-blue-700
       focus:border-blue-700;
     border-color: var(--bord-control-border);
   }
@@ -259,7 +287,7 @@
 
 @layer components {
   .btn {
-    @apply inline-flex min-h-11 items-center justify-center gap-2 rounded-lg px-5 py-2.5 text-base
+    @apply inline-flex min-h-12 items-center justify-center gap-2 rounded-lg px-5 py-2.5 text-base
       font-semibold transition-colors active:translate-y-px;
   }
 
@@ -320,7 +348,7 @@
   }
 
   .stat-value {
-    @apply mt-1 font-heading text-4xl font-semibold tracking-tight text-blue-700 tabular-nums;
+    @apply mt-1 font-mono text-4xl font-medium text-blue-700 tabular-nums;
   }
 
   /* Status pills: dark text on a light tint of the state colour (never the colour alone). */
