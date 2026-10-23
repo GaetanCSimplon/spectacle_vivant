@@ -298,7 +298,12 @@ def test_the_home_page_has_the_three_shortcuts(client, tenant):
 def test_the_self_hosted_fonts_are_shipped_and_referenced():
     root = Path(__file__).resolve().parents[3]
     css = (root / "css/source.css").read_text()
-    for name in ("inter-latin.woff2", "space-grotesk-latin.woff2"):
+    for name in (
+        "archivo-latin.woff2",
+        "instrument-sans-latin.woff2",
+        "ibm-plex-mono-400-latin.woff2",
+        "ibm-plex-mono-500-latin.woff2",
+    ):
         assert (root / "static/fonts" / name).stat().st_size > 10_000
         assert name in css
     assert "sora-latin.woff2" not in css

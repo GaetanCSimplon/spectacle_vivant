@@ -38,6 +38,10 @@ TEXT_PAIRS = [
     ("text", "surface", 4.5),
     ("text-muted", "bg", 4.5),
     ("text-muted", "surface", 4.5),
+    ("text", "info-bg", 4.5),
+    ("text-muted", "info-bg", 4.5),
+    ("text", "brand-cream", 4.5),
+    ("text-muted", "brand-cream", 4.5),
     ("action-text", "action-bg", 4.5),
     ("action-text", "action-bg-hover", 4.5),
     ("success-text", "success-bg", 4.5),
@@ -50,8 +54,9 @@ TEXT_PAIRS = [
     ("control-border", "bg", 3.0),
     ("focus", "bg", 3.0),
     ("focus", "action-bg", 3.0),
-    ("chart-muted", "surface", 3.0),
-    ("brand-navy", "chart-muted", 3.0),
+    ("chart-revenue", "surface", 3.0),
+    ("chart-expense", "surface", 3.0),
+    ("chart-revenue", "chart-expense", 1.2),
 ]
 
 
@@ -73,12 +78,14 @@ def test_all_the_charter_tokens_are_present():
     for name in (
         "brand-navy",
         "brand-coral",
-        "brand-offwhite",
-        "brand-slate",
+        "brand-cream",
+        "brand-gray",
         "brand-green",
         "brand-amber",
-        "brand-red",
+        "brand-plum",
+        "bg",
         "surface",
+        "info-bg",
         "border",
         "control-border",
     ):
@@ -95,7 +102,7 @@ def test_white_text_is_never_put_on_coral():
 def test_the_text_greys_of_the_templates_are_readable(scale):
     """`text-gray-500` / `text-stone-500` and darker are used for secondary text everywhere."""
     for step in (500, 600, 700, 800, 900):
-        for background in ("#ffffff", _color("brand-offwhite")):
+        for background in ("#ffffff", _color("bg")):
             ratio = contrast(SCALES[f"{scale}-{step}"], background)
             assert ratio >= 4.5, f"{scale}-{step} on {background}: {ratio:.2f}"
 
