@@ -194,3 +194,16 @@ def test_a_refused_field_and_a_disabled_or_loading_button_have_their_own_look():
 
     assert 'input[aria-invalid="true"]' in css
     assert ".btn.htmx-request" in css and ".btn:disabled" in css
+
+
+def test_the_dashboard_summaries_are_colour_blocks_with_readable_text():
+    """V06: summaries are solid blocks; their text colour is forced outside the CSS layers
+    (Tailwind utilities would otherwise leave grey text on the navy block)."""
+    css = (ROOT / "css/source.css").read_text()
+    results = (TEMPLATES / "tenants/_bord_results.html").read_text()
+
+    for block in ("card-navy", "card-info", "card-cream", "card-accent"):
+        assert f".{block} {{" in css
+        assert block in results
+    unlayered = css.split("\n}\n\n/*\n * Outside any layer")[1]
+    assert ".text-stone-600" in unlayered and "color: inherit" in unlayered
