@@ -18,18 +18,18 @@
   <div class="card mb-6 space-y-1 text-sm">
     <p>
       {% translate "Organisateur" %} :
-      <a href="{% url 'addressbook:promoter-detail' gig.promoter.pk %}" class="text-blue-600">{{ gig.promoter.name }}</a>
+      <a href="{% url 'addressbook:promoter-detail' gig.promoter.pk %}" class="text-blue-700 underline">{{ gig.promoter.name }}</a>
     </p>
     <p>
       {% translate "Lieu" %} :
-      <a href="{% url 'addressbook:venue-detail' gig.venue.pk %}" class="text-blue-600">{{ gig.venue.name }}</a>
+      <a href="{% url 'addressbook:venue-detail' gig.venue.pk %}" class="text-blue-700 underline">{{ gig.venue.name }}</a>
     </p>
     {% if gig.status == 'cancelled' %}
       <p class="text-gray-500"><s>{% translate "Prix de cession" %} : {{ gig.price }} € HT</s> · {% translate "date annulée" %}</p>
     {% else %}
       <p>
         {% translate "Prix de cession" %} : {{ gig.price|floatformat:"-2g" }} € HT
-        · <a href="{% url 'gigs:price' gig.pk %}" class="text-blue-600">{% translate "Modifier le prix" %}</a>
+        · <a href="{% url 'gigs:price' gig.pk %}" class="text-blue-700 underline">{% translate "Modifier le prix" %}</a>
       </p>
     {% endif %}
     {% if gig.status != 'cancelled' %}
@@ -37,7 +37,7 @@
         {% translate "Acompte" %} : {{ gig.deposit_due_on|date:"d/m/Y"|default:"—" }}
         · {% translate "Solde" %} : {{ gig.balance_due_on|date:"d/m/Y"|default:"—" }}
         · {{ gig.get_payment_method_display|default:"—" }}
-        · <a href="{% url 'gigs:terms' gig.pk %}" class="text-blue-600">{% translate "Modifier les échéances" %}</a>
+        · <a href="{% url 'gigs:terms' gig.pk %}" class="text-blue-700 underline">{% translate "Modifier les échéances" %}</a>
       </p>
     {% endif %}
     {% if price_changes|length > 1 %}

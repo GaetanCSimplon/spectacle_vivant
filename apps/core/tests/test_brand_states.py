@@ -207,3 +207,22 @@ def test_the_dashboard_summaries_are_colour_blocks_with_readable_text():
         assert block in results
     unlayered = css.split("\n}\n\n/*\n * Outside any layer")[1]
     assert ".text-stone-600" in unlayered and "color: inherit" in unlayered
+
+
+def test_a_very_long_word_never_pushes_a_page_wider_than_the_screen():
+    """Recette V06: titles and paragraphs break anywhere (a 100-character name, a long URL)."""
+    css = (ROOT / "css/source.css").read_text()
+
+    for selector in ("h1,\n  h2,\n  h3 {", "  p {"):
+        block = css.split(selector)[1].split("}")[0]
+        assert "wrap-anywhere" in block, selector
+    assert "button.underline {" in css  # a link-like button keeps a comfortable target
+
+
+def test_links_in_a_text_are_underlined_and_a_cancelled_list_is_not_faded():
+    """A link must not rely on its colour (1.5:1 against navy text); opacity breaks contrast."""
+    for path in TEMPLATES.rglob("*.html"):
+        for tag in re.findall(r"<a [^>]*>", path.read_text(errors="ignore")):
+            assert "text-blue-600" not in tag, f"{path.name}: {tag[:80]}"
+    gig_results = (TEMPLATES / "gigs/_gig_results.html").read_text()
+    assert "opacity-" not in gig_results

@@ -14,7 +14,7 @@
   <div class="card mb-6 space-y-1 text-sm">
     {% if venue.full_address %}<p>{{ venue.full_address|linebreaksbr }}</p>{% endif %}
     {% if venue.department %}<p class="text-gray-600">{{ venue.get_department_display }}</p>{% endif %}
-    {% if venue.phone %}<p><a href="tel:{{ venue.phone }}" class="text-blue-600">{{ venue.phone }}</a></p>{% endif %}
+    {% if venue.phone %}<p><a href="tel:{{ venue.phone }}" class="text-blue-700 underline">{{ venue.phone }}</a></p>{% endif %}
     {% if venue.capacity %}<p>{% translate "Jauge :" %} {{ venue.capacity }} places</p>{% endif %}
     {% if venue.configuration %}<p>{% translate "Configuration :" %} {{ venue.configuration }}</p>{% endif %}
     {% if venue.access_info %}<p>{% translate "Accès :" %} {{ venue.access_info|linebreaksbr }}</p>{% endif %}
@@ -23,7 +23,7 @@
 
   <div class="mb-2 flex items-center justify-between">
     <h2 class="text-sm font-semibold uppercase text-gray-500">{% translate "Contacts" %}</h2>
-    <a href="{% url 'addressbook:venue-contact-create' venue.pk %}" class="text-sm text-blue-600">
+    <a href="{% url 'addressbook:venue-contact-create' venue.pk %}" class="text-sm text-blue-700 underline">
       {% translate "+ Ajouter un contact" %}
     </a>
   </div>
