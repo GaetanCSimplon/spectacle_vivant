@@ -1,7 +1,7 @@
 @import "tailwindcss";
 
 /*
- * Tailwind source for Bòrd Pro (charte du 15/10/2026, voir docs/cadrage/13-charte-graphique.md):
+ * Tailwind source for Bòrd Pro (charte du 15/10/2026, voir docs/marque/charte-graphique.md):
  * navy blue, one coral action, off-white page, Space Grotesk for titles and Inter for the rest.
  * Django form helpers (`{{ form.as_p }}`) render plain HTML with no classes,
  * so the `base` layer below styles raw elements directly: every form in the

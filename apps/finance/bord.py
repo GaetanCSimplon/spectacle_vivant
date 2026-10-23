@@ -1,4 +1,4 @@
-"""The figures of the Bòrd page (see docs/cadrage/12-bord-indicateurs.md for every definition).
+"""The figures of the Bòrd page (see docs/produit/indicateurs-bord.md for every definition).
 
 Reference dates: gig date (dates, planned), issue date (invoiced), reception date (received),
 expense date (expenses), due date (late). "Still to collect" is a stock as of today: it only

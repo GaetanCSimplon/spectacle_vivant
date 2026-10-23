@@ -1,5 +1,5 @@
 """States and icons follow the charter: green = validated, amber = to watch, red = late or error,
-grey = cancelled; coral only for the action; outline icons (docs/cadrage/13-charte-graphique.md)."""
+grey = cancelled; coral only for the action; outline icons (docs/marque/charte-graphique.md)."""
 
 import datetime
 import re

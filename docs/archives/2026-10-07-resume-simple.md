@@ -1,3 +1,5 @@
+> **Archive.** Ce document décrit l'état du projet à sa date et n'est plus tenu à jour. Les références qu'il cite utilisaient l'ancien classement des dossiers : voir `docs/README.md`.
+
 # Où en est le projet ? — Résumé simple
 
 > Un texte pour comprendre l'essentiel sans connaître la technique.

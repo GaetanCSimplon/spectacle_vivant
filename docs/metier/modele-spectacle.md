@@ -1,6 +1,6 @@
 # Annexe — Modèle de données « Projet – Spectacle » (détaillé)
 
-> Référence pour **Q10** (`docs/cadrage/03-cahier-des-charges.md` §14). Document fourni par le collègue le 2026-09-29, complété le 2026-10-01 par un export Excel détaillant les champs exacts, des exemples et les listes de valeurs. **Non adopté dans le modèle MVP actuel** (`Show`/`Gig`) — conservé ici comme matière pour trancher Q10, pas comme spécification à implémenter.
+> Référence pour **Q10** (`docs/produit/cahier-des-charges.md` §14). Document fourni par le collègue le 2026-09-29, complété le 2026-10-01 par un export Excel détaillant les champs exacts, des exemples et les listes de valeurs. **Non adopté dans le modèle MVP actuel** (`Show`/`Gig`) — conservé ici comme matière pour trancher Q10, pas comme spécification à implémenter.
 >
 > Source : export Excel fourni par le collègue (non versionné dans le dépôt).
 

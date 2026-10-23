@@ -1,10 +1,13 @@
 # Documentation — Bòrd Pro
 
-| Dossier | Contenu |
-|---|---|
-| `cadrage/` | Ce qu'on construit et où on en est : cahier des charges (03), feuille de route (04), points d'étape (05), synthèse des fonctionnalités (08), résumé simple (10), indicateurs de Bòrd (12) et la spécification de l'onglet Bòrd fournie par l'associé |
-| `guides/` | Comprendre et exploiter : architecture (01), métier (02), services de production (06), cas d'usage et schémas (09) |
-| `metier/` | Documents fournis par le métier : modèle de données des spectacles (07) |
-| `modeles-contrats/` | Modèles de contrat de cession fournis par le métier (voir le README du dossier) |
+`CLAUDE.md` (racine du dépôt) donne les règles de travail ; ce dossier contient le reste.
+**Règle : un sujet, un document de référence.** Un document daté ou fourni par l'associé n'est jamais la référence : on le range dans `archives/` ou `marque/sources-associe/`.
 
-`CLAUDE.md` reste à la racine du dépôt.
+| Dossier | Contenu | Statut |
+|---|---|---|
+| `produit/` | Ce qu'on construit : `cahier-des-charges.md`, `feuille-de-route.md`, `specification-onglet-bord.md` (associé), `indicateurs-bord.md`, `specification-checklist-contractualisation.md` (associé), `radar-de-tournee.md` (vide, à rédiger) | Référence, tenue à jour |
+| `marque/` | `charte-graphique.md` (charte appliquée dans le code), `bord-pro.tokens.css` | Référence |
+| `marque/sources-associe/` | Fichiers de l'associé, intacts : brief de marque (15/10), brief d'intégration UI V06 (22/10), charte PDF V06, maquette HTML V06 | Sources, à analyser avant de modifier la charte |
+| `technique/` | `architecture.md`, `services-production.md` (déploiement), `cas-d-usage-et-diagrammes.md` | Référence |
+| `metier/` | `guide-metier.md`, `modele-spectacle.md`, `modeles-contrats/` | Fournis par le métier |
+| `archives/` | Points d'étape datés (28/09, 07/10) | Obsolètes, pour l'historique seulement |

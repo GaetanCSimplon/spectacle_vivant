@@ -1,4 +1,4 @@
-"""One main (coral) action per screen, and red for what destroys (charter, docs/cadrage/13)."""
+"""One main (coral) action per screen, red for what destroys (docs/marque/charte-graphique.md)."""
 
 import re
 
