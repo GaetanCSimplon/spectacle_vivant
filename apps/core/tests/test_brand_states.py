@@ -177,3 +177,20 @@ def test_the_icons_are_used_where_the_filled_ones_were(client):
     assert 'stroke-width="1.75"' in list_page  # the pencils
     assert 'stroke-width="1.75"' in detail  # the checklist button
     assert 'stroke-width="1.75"' in bord  # the gear of "Informations de la structure"
+
+
+def test_every_status_pill_carries_an_icon_as_well_as_a_word():
+    """V06: tick = done, clock = to follow, alert = to complete or problem (CSS masks)."""
+    css = (ROOT / "css/source.css").read_text()
+
+    for pill in ("pill-good", "pill-warn", "pill-bad"):
+        assert f".{pill}::before" in css
+        assert re.search(rf"\.{pill}[^{{]*\{{\s*--pill-icon: url\(", css)
+    assert "mask: var(--pill-icon)" in css
+
+
+def test_a_refused_field_and_a_disabled_or_loading_button_have_their_own_look():
+    css = (ROOT / "css/source.css").read_text()
+
+    assert 'input[aria-invalid="true"]' in css
+    assert ".btn.htmx-request" in css and ".btn:disabled" in css
