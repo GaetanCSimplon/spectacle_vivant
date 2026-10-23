@@ -266,3 +266,26 @@ def test_an_address_cannot_inject_html_through_the_button(client, roadmap):
     text = client.get(_url(roadmap)).content.decode()
 
     assert "<script>alert(1)" not in text
+
+
+def test_the_timeline_marks_the_concert_with_a_word_and_shows_times_in_mono(client):
+    """V06: times in mono, the concert recognisable without colour (bigger dot AND the word)."""
+    roadmap = RoadmapFactory()
+    RoadmapSlotFactory(
+        roadmap=roadmap,
+        tenant=roadmap.tenant,
+        kind="performance",
+        time=datetime.time(20, 30),
+        label="Les Heures Bleues",
+    )
+    RoadmapSlotFactory(
+        roadmap=roadmap, tenant=roadmap.tenant, kind="soundcheck", time=datetime.time(17, 0)
+    )
+    publish(roadmap)
+
+    page = client.get(reverse("roadmap-public", args=[roadmap.token])).content.decode()
+
+    assert re.search(r'class="data[^"]*">20:30<', page)
+    assert 'class="data text-sm text-gray-600">17:00<' in page
+    assert "Les Heures Bleues" in page and ">Concert</span>" in page
+    assert page.count("size-4 rounded-full") == 1  # only the concert has the big filled dot
