@@ -28,7 +28,7 @@ Sources : `docs/marque/sources-associe/charte-graphique-v06.pdf` et le brief du 
 | `warning-text` / `warning-bg` | `#714700` / `#FFF0C8` | « à suivre, option, échéance » : horloge + mot (`brand-amber` `#E3A21A` pour le pictogramme) |
 | `danger-text` / `danger-bg` | `#8E1F3F` / `#F6E3EB` | « à compléter, problème, retard », actions destructrices : alerte + mot (bordeaux) |
 | `focus` | `#102440` | anneau de focus : 3 px, décalé de 3 px |
-| *(ajouté)* `chart-muted` | `#838E9B` | dépenses dans les graphiques |
+| *(ajouté)* `chart-revenue` / `chart-expense` | `#2F6FB5` / `#D9473A` | graphiques : recette en bleu, dépenses en corail foncé (3:1 minimum sur blanc) |
 
 Répartition indicative d'une vue : 60 % de surfaces claires, 25 % de structure bleu nuit, 10 % de supports, 5 % d'actions corail (repère, pas une règle mécanique). **Les cartes de synthèse sont des aplats** (bleu nuit, corail, bleu clair, crème), pas de simples bordures colorées. Le corail n'est jamais un état d'erreur. Une couleur ne porte jamais seule le sens : un pictogramme et un mot l'accompagnent.
 

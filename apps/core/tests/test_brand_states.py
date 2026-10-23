@@ -138,8 +138,8 @@ def test_the_chart_keeps_coral_for_the_action_and_draws_expenses_in_grey(client)
     chart = content.split('id="bord-chart"')[1].split('id="bord-upcoming"')[0]
     categories = content.split('id="depenses"')[1]
 
-    assert "fill-blue-700" in chart and "fill-chart-muted" in chart
-    assert "bg-chart-muted" in chart and "bg-chart-muted" in categories
+    assert "fill-chart-revenue" in chart and "fill-chart-expense" in chart
+    assert "bg-chart-expense" in chart and "bg-chart-revenue" in categories
     assert "coral" not in chart + categories
 
 

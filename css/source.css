@@ -72,7 +72,8 @@
   --bord-warning-bg: #fff0c8;
   --bord-danger-text: #8e1f3f;
   --bord-danger-bg: #f6e3eb;
-  --bord-chart-muted: #838e9b;
+  --bord-chart-revenue: #2f6fb5;
+  --bord-chart-expense: #d9473a;
   --bord-radius-control: 12px;
   --bord-radius-card: 20px;
   --bord-radius-section: 28px;
@@ -185,7 +186,8 @@
   --color-page: #f2f5fa;
   --color-page-line: #d8e0eb;
 
-  --color-chart-muted: #838e9b;
+  --color-chart-revenue: #2f6fb5;
+  --color-chart-expense: #d9473a;
 }
 
 @layer base {
@@ -289,6 +291,11 @@
   .btn {
     @apply inline-flex min-h-12 items-center justify-center gap-2 rounded-lg px-5 py-2.5 text-base
       font-semibold transition-colors active:translate-y-px;
+  }
+
+  /* Floating round button (the checklist of a date): vivid coral, a tool and not the main action. */
+  .fab {
+    @apply bg-coral-500 text-blue-700 hover:bg-coral-600;
   }
 
   /* Combine with `.btn`: class="btn btn-primary". Tailwind v4 can't @apply a custom

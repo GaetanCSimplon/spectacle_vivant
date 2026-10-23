@@ -54,8 +54,9 @@ TEXT_PAIRS = [
     ("control-border", "bg", 3.0),
     ("focus", "bg", 3.0),
     ("focus", "action-bg", 3.0),
-    ("chart-muted", "surface", 3.0),
-    ("brand-navy", "chart-muted", 3.0),
+    ("chart-revenue", "surface", 3.0),
+    ("chart-expense", "surface", 3.0),
+    ("chart-revenue", "chart-expense", 1.2),
 ]
 
 
