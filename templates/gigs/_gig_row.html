@@ -4,8 +4,12 @@ of "Mes dates" (`editable_price`) can hold its own buttons above it.{% endcommen
 <li id="gig-{{ gig.pk }}">
   <div class="card card-link relative">
     <span class="flex items-start justify-between gap-3">
-      <span class="min-w-0">
-        <a href="{% url 'gigs:detail' gig.pk %}" class="block font-medium text-gray-900 after:absolute after:inset-0 after:rounded-2xl">{{ gig.date|date:"d/m/Y" }} — {{ gig.show.title }}</a>
+      <span class="date-tile" aria-hidden="true">
+        <span class="date-tile-day">{{ gig.date|date:"d" }}</span>
+        <span class="date-tile-month">{{ gig.date|date:"M" }}</span>
+      </span>
+      <span class="min-w-0 flex-1">
+        <a href="{% url 'gigs:detail' gig.pk %}" class="block font-medium text-gray-900 after:absolute after:inset-0 after:rounded-2xl"><span class="sr-only">{{ gig.date|date:"d/m/Y" }} — </span>{{ gig.show.title }}</a>
         <span class="block text-sm text-gray-600">{{ gig.venue.name }} · {{ gig.promoter.name }}</span>
         {% include "gigs/_option_expiry.html" %}
       </span>

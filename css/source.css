@@ -342,6 +342,52 @@
     @apply block transition hover:border-blue-300;
   }
 
+  /* Colour blocks (V06): a summary on a solid colour instead of a bordered white card. Combine with
+     `.card`. The text inside takes the block's colour (navy text on coral, info and cream; white
+     on navy); the links are underlined since colour alone must not make them recognisable. */
+  .card-navy {
+    background: var(--bord-brand-navy);
+    border-color: var(--bord-brand-navy);
+    color: var(--bord-surface);
+  }
+
+  .card-accent {
+    background: var(--bord-action-bg);
+    border-color: var(--bord-action-bg);
+    color: var(--bord-text);
+  }
+
+  .card-info {
+    background: var(--bord-info-bg);
+    border-color: var(--bord-info-bg);
+    color: var(--bord-text);
+  }
+
+  .card-cream {
+    background: var(--bord-brand-cream);
+    border-color: var(--bord-brand-cream);
+    color: var(--bord-text);
+  }
+
+  /* Dates, times and amounts: monospaced, aligned digits. */
+  .data {
+    @apply font-mono tabular-nums;
+  }
+
+  /* Date tile of a card: day and month in mono on cream (not a status, so no state colour). */
+  .date-tile {
+    @apply flex size-14 shrink-0 flex-col items-center justify-center rounded-xl bg-[var(--bord-brand-cream)]
+      font-mono leading-none text-blue-700 uppercase;
+  }
+
+  .date-tile-day {
+    @apply text-xl font-medium;
+  }
+
+  .date-tile-month {
+    @apply mt-1 text-[0.6875rem] font-medium;
+  }
+
   .badge {
     @apply inline-flex items-center rounded-full bg-gray-100 px-2.5 py-1 text-xs font-semibold
       text-gray-700;
@@ -469,4 +515,17 @@
   .message-info {
     @apply border-blue-600 bg-blue-50 text-blue-900;
   }
+}
+
+/*
+ * Outside any layer on purpose: Tailwind's utilities (`text-stone-600`...) come after the
+ * `components` layer and would win, leaving grey text on the colour blocks.
+ */
+:is(.card-navy, .card-accent, .card-info, .card-cream)
+  :is(h2, p, li, a, .stat-label, .stat-value, .text-stone-500, .text-stone-600, .text-blue-700) {
+  color: inherit;
+}
+
+:is(.card-navy, .card-accent, .card-info, .card-cream) a {
+  text-decoration: underline;
 }
