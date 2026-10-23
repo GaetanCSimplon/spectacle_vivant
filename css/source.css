@@ -280,6 +280,13 @@
       file:text-blue-800 hover:file:bg-blue-100;
   }
 
+  /* A field the server refused (Django sets aria-invalid): a thicker bordeaux border, plus the message. */
+  input[aria-invalid="true"],
+  select[aria-invalid="true"],
+  textarea[aria-invalid="true"] {
+    @apply border-2 border-red-700;
+  }
+
   input:disabled,
   select:disabled,
   textarea:disabled {
@@ -296,6 +303,13 @@
   /* Floating round button (the checklist of a date): vivid coral, a tool and not the main action. */
   .fab {
     @apply bg-coral-500 text-blue-700 hover:bg-coral-600;
+  }
+
+  /* Disabled and loading (HTMX adds `htmx-request` while the request runs): same shape, paler. */
+  .btn:disabled,
+  .btn[aria-disabled="true"],
+  .btn.htmx-request {
+    @apply cursor-not-allowed opacity-60;
   }
 
   /* Combine with `.btn`: class="btn btn-primary". Tailwind v4 can't @apply a custom
@@ -340,7 +354,7 @@
   }
 
   .nav-link[aria-current="page"] {
-    @apply bg-blue-50 font-semibold text-blue-700;
+    @apply bg-blue-100 font-semibold text-blue-700;
   }
 
   /* The same links in the left column (desktop): the active page gets a coral bar. */
@@ -360,7 +374,32 @@
 
   /* Status pills: dark text on a light tint of the state colour (never the colour alone). */
   .pill {
-    @apply inline-flex items-center rounded-full px-2.5 py-1 text-xs font-semibold;
+    @apply inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-semibold;
+  }
+
+  /* Every status carries an icon AND a word (V06): tick = done, clock = to follow, alert = to
+     complete or problem. The icon is a CSS mask, so it takes the colour of the text. */
+  .pill-good::before,
+  .pill-good-strong::before,
+  .pill-warn::before,
+  .pill-bad::before {
+    content: "";
+    @apply size-3.5 shrink-0 bg-current;
+    mask: var(--pill-icon) center / contain no-repeat;
+    -webkit-mask: var(--pill-icon) center / contain no-repeat;
+  }
+
+  .pill-good,
+  .pill-good-strong {
+    --pill-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M20 6 9 17l-5-5'/%3E%3C/svg%3E");
+  }
+
+  .pill-warn {
+    --pill-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='12' r='9'/%3E%3Cpath d='M12 7v5l3 2'/%3E%3C/svg%3E");
+  }
+
+  .pill-bad {
+    --pill-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 8v5M12 17h.01'/%3E%3Cpath d='M10.3 3.9 2.4 17.6A2 2 0 0 0 4.1 20.6h15.8a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0Z'/%3E%3C/svg%3E");
   }
 
   .pill-good {
