@@ -201,7 +201,7 @@ def test_no_sensitive_data_in_the_pdf_content(roadmap):
 def test_public_context_is_a_whitelist(roadmap):
     assert set(public_context(roadmap)) == {
         "show_title", "group_name", "date", "venue", "crew_headcount", "slots", "lodgings",
-        "meals", "notes", "members", "venue_contacts",
+        "meals", "notes", "version", "updated_at", "members", "venue_contacts",
     }  # fmt: skip
     assert set(public_context(roadmap)["venue"]) == {
         "name", "address", "address_one_line", "access_info", "phone", "tel",
