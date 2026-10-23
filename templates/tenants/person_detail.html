@@ -12,8 +12,8 @@
   <div class="card mb-6 space-y-1 text-sm">
     {% if person.role %}<p>{{ person.role }}</p>{% endif %}
     {% if person.status %}<p class="text-gray-600">{% translate "Statut" %} : {{ person.status }}</p>{% endif %}
-    {% if person.phone %}<p><a href="tel:{{ person.phone }}" class="text-blue-600">{{ person.phone }}</a></p>{% endif %}
-    {% if person.email %}<p><a href="mailto:{{ person.email }}" class="text-blue-600">{{ person.email }}</a></p>{% endif %}
+    {% if person.phone %}<p><a href="tel:{{ person.phone }}" class="text-blue-700 underline">{{ person.phone }}</a></p>{% endif %}
+    {% if person.email %}<p><a href="mailto:{{ person.email }}" class="text-blue-700 underline">{{ person.email }}</a></p>{% endif %}
     {% if is_owner %}
       {% if person.full_address %}<p>{{ person.full_address|linebreaksbr }}</p>{% endif %}
       {% if person.department %}<p class="text-gray-600">{{ person.get_department_display }}</p>{% endif %}

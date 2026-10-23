@@ -20,7 +20,7 @@
     <div class="text-center">
       <h2 class="text-base font-semibold">{{ month_start|date:"F Y"|capfirst }}</h2>
       {% if not is_current_month %}
-        <a href="{% url 'gigs:calendar' %}" class="text-xs text-blue-600">{% translate "Revenir à aujourd'hui" %}</a>
+        <a href="{% url 'gigs:calendar' %}" class="text-xs text-blue-700 underline">{% translate "Revenir à aujourd'hui" %}</a>
       {% endif %}
     </div>
     {% if next_month %}

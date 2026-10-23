@@ -11,7 +11,7 @@
     {% if contact.email %}<a href="mailto:{{ contact.email }}" class="block text-gray-600">{{ contact.email }}</a>{% endif %}
     {% if contact.phone %}<a href="tel:{{ contact.phone }}" class="block text-gray-600">{{ contact.phone }}</a>{% endif %}
   </div>
-  <a href="{% url 'addressbook:contact-update' contact.pk %}" class="shrink-0 text-blue-600">
+  <a href="{% url 'addressbook:contact-update' contact.pk %}" class="shrink-0 text-blue-700 underline">
     {% translate "Modifier" %}
   </a>
 </li>

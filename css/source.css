@@ -200,7 +200,8 @@
   h1,
   h2,
   h3 {
-    @apply font-heading font-extrabold tracking-[-0.04em] text-blue-700;
+    /* wrap-anywhere + min-w-0: a very long word or name never pushes the page wider than the screen. */
+    @apply font-heading font-extrabold tracking-[-0.04em] wrap-anywhere min-w-0 text-blue-700;
     font-stretch: 112%;
   }
 
@@ -219,7 +220,12 @@
 
   /* Body text: 16 px. Secondary lines carry their own `text-sm text-gray-500` classes. */
   p {
-    @apply text-base text-blue-700;
+    @apply text-base wrap-anywhere text-blue-700;
+  }
+
+  /* A button that looks like a link ("Supprimer", "Annuler la date"): still a comfortable target. */
+  button.underline {
+    @apply inline-flex min-h-11 items-center;
   }
 
   /* Keyboard users must always see where they are (charter: 3 px Bleu Nuit ring, 3 px away). */
@@ -275,7 +281,7 @@
   }
 
   input[type="file"] {
-    @apply block w-full text-sm text-stone-700 file:mr-3 file:cursor-pointer file:rounded-lg
+    @apply block min-h-12 w-full text-sm text-stone-700 file:mr-3 file:cursor-pointer file:rounded-lg
       file:border-0 file:bg-blue-50 file:px-4 file:py-2.5 file:text-sm file:font-semibold
       file:text-blue-800 hover:file:bg-blue-100;
   }
