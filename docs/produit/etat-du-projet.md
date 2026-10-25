@@ -1,0 +1,55 @@
+# État du projet — Bòrd Pro
+
+**Mis à jour le 2026-10-25.** Page à lire en premier : ce qui est en cours, ce qui bloque, ce qui reste à faire. Le détail sprint par sprint est dans `feuille-de-route.md` ; ici, une page.
+
+**Règle de tenue** : je mets cette page à jour à chaque PR fusionnée qui change une ligne ci-dessous (la date en tête fait foi).
+
+## Où on en est en une phrase
+Les neuf critères de la recette du MVP (`cahier-des-charges.md` §11) sont couverts par du code (1549 tests) et la refonte graphique V06 est terminée. Un premier déploiement existe sur Scalingo avec des services provisoires. Il reste du durcissement, de la validation par des professionnels et la fin du déploiement, avant d'ouvrir à des testeurs.
+
+## 1. En cours
+| Sujet | État | Qui agit |
+|---|---|---|
+| PR « version et mise à jour de la feuille de route » | Terminée, CI verte, migration `0003` ; à fusionner puis `python manage.py migrate` | Utilisateur |
+| Mise à jour de `CLAUDE.md` (§11 périmé) | Texte à montrer avant de l'écrire | Claude, puis accord de l'utilisateur |
+
+## 2. Déploiement (Scalingo, app `bordpro`)
+Premier déploiement réussi le 2026-10-22 sur `bordpro.osc-fr1.scalingo.io` (adresse temporaire). Variables S3 et e-mail encore à `placeholder`.
+
+| Étape | État | Bloqué par |
+|---|---|---|
+| Application en ligne, migrations automatiques | Fait | — |
+| **Brevo** (e-mails de confirmation d'inscription, formulaire de contact) | **Point d'arrêt** : sans lui l'inscription renvoie une erreur 500 | DNS de `bordpro.fr` à valider par l'associé |
+| Domaine `bordpro.fr` branché sur Scalingo | À faire | L'associé (DNS), puis changer les 3 variables d'adresse |
+| Bucket S3 privé (fichiers, PDF figés) | À faire | Utilisateur (compte Scaleway ou OVH, région UE) |
+| Sentry (UE), sauvegardes + test de restauration, surveillance de disponibilité, tâche planifiée de purge | À faire | Après Brevo et S3 |
+| `check --deploy`, recette §11 sur la production | À faire | Claude, en fin de parcours |
+
+## 3. À développer avant d'ouvrir à des testeurs
+Dans cet ordre :
+1. **Fermer l'inscription publique** (accès sur invitation) : touche l'authentification, plan à valider d'abord.
+2. **Erreur claire** quand l'e-mail de confirmation échoue (au lieu d'une page 500).
+3. **Mot de passe oublié** : tester de bout en bout.
+4. **Contrôle d'accès des téléchargements** (rider, fiche technique) : vérifier.
+5. **Régime de TVA** : vérifier que les mentions suivent chaque régime, puis cocher la case de la feuille de route.
+6. **Logo de la structure sur le PDF du contrat** : à confirmer avec l'associé que c'est voulu pour le MVP.
+
+## 4. Hors code, mais conditionne le lancement
+- Relecture professionnelle (comptable, juriste) des 4 modèles de contrat et des factures : **le point le plus sensible**.
+- Structure juridique, CGU, registre RGPD.
+- Recette réelle sur la production, puis 3 testeurs sans aide.
+- Textes définitifs du site vitrine (associé), puis `SITE_INDEXABLE=True`.
+- Questions à l'associé : « n° de compte » de la fiche Équipe ; Q9 (modèle économique, bloque l'abonnement mais pas la bêta).
+- Logo officiel (`LOGO_2.pdf`, vectoriel) et favicon simplifié 16 px : en attente du graphiste.
+
+## 5. Après le MVP (décidé : rien n'est codé)
+Choisi à partir des retours de la bêta (principe de la feuille de route, Phase 4).
+- **RADAR de tournée et carte** (spécification : `specification-radar.md`). Proposition d'implémentation, à rediscuter le moment venu :
+  1. Un seul moteur de règles qui alimente le panneau RADAR et le bloc « À traiter maintenant » de Bòrd (alertes recalculées, non stockées) ; sans migration.
+  2. « Ignorer / marquer traité », prochaine action sur la date, dépenses prévues contre réelles (indicateur sur la dépense, pas de nouvelle table de lignes de budget).
+  3. Tournée (modèle dédié) et vue chronologique.
+  4. Géographie sans service externe : table locale des communes françaises, distances à vol d'oiseau étiquetées « indicatives », carte schématique ; demande de modifier `CLAUDE.md` §10.
+  5. Plus tard : synthèse de tournée en PDF ou CSV, lien de partage, contacts à proximité.
+  Points à trancher : modèle « tournée » tout de suite ou non, nouvelle app `radar` (à valider, `CLAUDE.md` §4), sens de « ignorée » et « traitée ».
+- Invitation de collaborateurs (aujourd'hui une seule personne par structure) : candidate n°1 après la bêta.
+- Abonnement et Stripe, facturation électronique, rappels automatiques, export iCal, application installable (PWA), hiérarchie Projet/Spectacle (Q10).
