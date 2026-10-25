@@ -12,6 +12,9 @@ class Roadmap(TenantOwnedModel):
     token = models.CharField(max_length=64, blank=True)
     is_published = models.BooleanField(_("partage activé"), default=False)
     notes = models.TextField(_("notes"), blank=True)
+    # Shown to the team: +1 at each saved change made while sharing is on (services.bump_version).
+    version = models.PositiveIntegerField(_("version"), default=1)
+    updated_at = models.DateTimeField(_("dernière mise à jour"), null=True, blank=True)
 
     class Meta:
         constraints = [

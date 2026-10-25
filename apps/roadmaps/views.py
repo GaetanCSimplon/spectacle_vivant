@@ -126,7 +126,8 @@ class RoadmapMixin(TenantScopedMixin):
         return self.render_page(**kwargs)
 
     def done(self):
-        """After a successful change: the refreshed body for HTMX, a redirect otherwise."""
+        """After a successful change: version +1 if shared, then the body (HTMX) or a redirect."""
+        services.bump_version(self.roadmap)
         if wants_fragment(self.request):
             return render(self.request, "roadmaps/_body.html", self.context())
         return redirect("roadmaps:editor", gig_id=self.gig.pk)

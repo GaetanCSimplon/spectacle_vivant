@@ -1,6 +1,8 @@
 import secrets
 
+from django.db.models import F
 from django.urls import reverse
+from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 
 from apps.core.services import render_pdf
@@ -59,11 +61,25 @@ def get_or_create_roadmap(gig):
     return roadmap
 
 
+def bump_version(roadmap):
+    """Version +1 and the time of the change, only while the roadmap is shared.
+
+    Changes made before the first sharing do not count: the first link shows "Version 1".
+    """
+    if not roadmap.is_published:
+        return
+    Roadmap.objects.filter(pk=roadmap.pk).update(
+        version=F("version") + 1, updated_at=timezone.now()
+    )
+    roadmap.refresh_from_db(fields=["version", "updated_at"])
+
+
 def publish(roadmap):
     """Turn sharing on with a brand-new secret token (an old link never comes back)."""
     roadmap.token = secrets.token_urlsafe(32)
     roadmap.is_published = True
-    roadmap.save(update_fields=["token", "is_published"])
+    roadmap.updated_at = timezone.now()
+    roadmap.save(update_fields=["token", "is_published", "updated_at"])
 
 
 def revoke(roadmap):
@@ -115,6 +131,8 @@ def public_context(roadmap):
         "lodgings": list(roadmap.lodgings.all()),
         "meals": list(roadmap.meals.all()),
         "notes": roadmap.notes,
+        "version": roadmap.version,
+        "updated_at": roadmap.updated_at,
         "members": _people(gig.members.all()),
         "venue_contacts": _people(venue.contacts.all()),
     }
