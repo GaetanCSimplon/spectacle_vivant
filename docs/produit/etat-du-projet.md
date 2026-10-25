@@ -1,6 +1,6 @@
 # État du projet — Bòrd Pro
 
-**Mis à jour le 2026-10-25.** Page à lire en premier : ce qui est en cours, ce qui bloque, ce qui reste à faire. Le détail sprint par sprint est dans `feuille-de-route.md` ; ici, une page.
+**Mis à jour le 2026-10-25 (inscription sur invitation faite).** Page à lire en premier : ce qui est en cours, ce qui bloque, ce qui reste à faire. Le détail sprint par sprint est dans `feuille-de-route.md` ; ici, une page.
 
 **Règle de tenue** : je mets cette page à jour à chaque PR fusionnée qui change une ligne ci-dessous (la date en tête fait foi).
 
@@ -10,7 +10,7 @@ Les neuf critères de la recette du MVP (`cahier-des-charges.md` §11) sont couv
 ## 1. En cours
 | Sujet | État | Qui agit |
 |---|---|---|
-| PR « version et mise à jour de la feuille de route » | Terminée, CI verte, migration `0003` ; à fusionner puis `python manage.py migrate` | Utilisateur |
+| Inscription sur invitation | Code prêt (PR en revue) ; migration `accounts/0002` : `python manage.py migrate` après fusion | Utilisateur |
 | Mise à jour de `CLAUDE.md` (§11 périmé) | Texte à montrer avant de l'écrire | Claude, puis accord de l'utilisateur |
 
 ## 2. Déploiement (Scalingo, app `bordpro`)
@@ -27,7 +27,7 @@ Premier déploiement réussi le 2026-10-22 sur `bordpro.osc-fr1.scalingo.io` (ad
 
 ## 3. À développer avant d'ouvrir à des testeurs
 Dans cet ordre :
-1. **Fermer l'inscription publique** (accès sur invitation) : touche l'authentification, plan à valider d'abord.
+1. ~~Fermer l'inscription publique~~ **Fait** (2026-10-25) : liste d'invités dans `/admin/`, procédure dans `docs/technique/services-production.md`. Il faudra créer un compte administrateur sur la production.
 2. **Erreur claire** quand l'e-mail de confirmation échoue (au lieu d'une page 500).
 3. **Mot de passe oublié** : tester de bout en bout.
 4. **Contrôle d'accès des téléchargements** (rider, fiche technique) : vérifier.

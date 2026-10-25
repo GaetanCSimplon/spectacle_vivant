@@ -71,3 +71,26 @@ class Membership(models.Model):
 
     def __str__(self):
         return f"{self.user} @ {self.tenant} ({self.role})"
+
+
+class SignupInvitation(models.Model):
+    """An e-mail address allowed to create an account while `SIGNUP_REQUIRES_INVITATION` is on.
+
+    It exists before the account, like `User`: it belongs to no structure. The address is kept in
+    lower case. `used_at` is filled when the person signs up (see signals.py).
+    """
+
+    email = models.EmailField(_("adresse e-mail"), unique=True)
+    note = models.CharField(_("note"), max_length=200, blank=True)
+    created_at = models.DateTimeField(_("invitée le"), default=timezone.now)
+    used_at = models.DateTimeField(_("inscrit le"), null=True, blank=True)
+
+    class Meta:
+        ordering = ["-created_at"]
+
+    def __str__(self):
+        return self.email
+
+    def save(self, *args, **kwargs):
+        self.email = self.email.strip().lower()
+        super().save(*args, **kwargs)

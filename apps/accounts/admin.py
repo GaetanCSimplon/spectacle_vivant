@@ -1,7 +1,7 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin as DjangoUserAdmin
 
-from .models import Membership, User
+from .models import Membership, SignupInvitation, User
 
 
 @admin.register(User)
@@ -30,3 +30,12 @@ class UserAdmin(DjangoUserAdmin):
 
 
 admin.site.register(Membership)
+
+
+@admin.register(SignupInvitation)
+class SignupInvitationAdmin(admin.ModelAdmin):
+    """The list of invited addresses: add one to let a person sign up."""
+
+    list_display = ["email", "note", "created_at", "used_at"]
+    search_fields = ["email", "note"]
+    readonly_fields = ["used_at"]
