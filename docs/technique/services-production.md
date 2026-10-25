@@ -135,6 +135,7 @@ La suppression d'une structure est effective 30 jours après la demande. Il faut
 | `DEFAULT_FROM_EMAIL` | adresse d'envoi sur ton domaine, ex. `Bòrd Pro <contact@bordpro.fr>` |
 | `DJANGO_SITE_DOMAIN` | ton domaine sans `https://` (ex. `bordpro.fr`) : sert aux liens des e-mails |
 | `SENTRY_DSN` | Sentry (facultatif : sans valeur, rien n'est envoyé) |
+| `SIGNUP_REQUIRES_INVITATION` | facultatif, **`True` par défaut** : seules les adresses de la liste d'invités peuvent s'inscrire. À ne mettre à `False` que pour ouvrir l'inscription au public |
 | `DJANGO_CSRF_TRUSTED_ORIGINS` | ton domaine avec `https://` mais **sans `/` final** (ex. `https://mon-domaine.fr`) |
 
 ## Ce que le premier déploiement a appris (2026-10-22)
@@ -176,3 +177,11 @@ Vérifications après le premier déploiement :
 - **Mettre à jour à la main**, dans un environnement propre : `pip install -U <paquet>`, lancer `pytest`, puis régénérer le fichier avec `pip freeze --exclude-editable` (en gardant les trois lignes de commentaire du début). Une PR Dependabot fait la même chose pour toi.
 
 *Cette liste évoluera avec les sprints. Les noms exacts des variables seront ajoutés ici quand le code les utilisera.*
+
+
+## Inscription sur invitation (depuis 2026-10-25)
+Tant que `SIGNUP_REQUIRES_INVITATION` n'est pas à `False`, seules les adresses de la **liste d'invités** peuvent créer un compte. Pour inviter quelqu'un :
+1. Une fois : créer un compte administrateur sur Scalingo (`scalingo --app bordpro run python manage.py createsuperuser`, ou le terminal de l'application), puis ouvrir `/admin/`.
+2. Section « Invitations d'inscription » : ajouter l'adresse (et une note, ex. « Marie, bêta »).
+3. Prévenir la personne : elle s'inscrit depuis la page de connexion avec cette adresse et reçoit l'e-mail de confirmation (Brevo doit être configuré). La colonne « inscrit le » se remplit toute seule.
+Les comptes existants et « mot de passe oublié » ne sont pas concernés.

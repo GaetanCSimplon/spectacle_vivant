@@ -77,6 +77,7 @@ TEMPLATES = [
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
                 "apps.tenants.context_processors.pending_deletion",
+                "apps.accounts.context_processors.signup_policy",
             ],
         },
     },
@@ -114,6 +115,10 @@ ACCOUNT_LOGIN_METHODS = {"email"}
 ACCOUNT_SIGNUP_FIELDS = ["email*", "password1*", "password2*"]
 ACCOUNT_UNIQUE_EMAIL = True
 ACCOUNT_EMAIL_VERIFICATION = "mandatory"
+ACCOUNT_FORMS = {"signup": "apps.accounts.forms.InvitedSignupForm"}
+# Sign-up only for the addresses of the invitation list (admin). On by default, so that
+# forgetting the variable in production keeps the doors shut; off in dev and tests.
+SIGNUP_REQUIRES_INVITATION = env.bool("SIGNUP_REQUIRES_INVITATION", default=True)
 
 LOGIN_URL = "account_login"
 LOGIN_REDIRECT_URL = "/"

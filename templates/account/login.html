@@ -27,9 +27,17 @@
     {% endelement %}
     {# Visible signup button: a plain sentence was too easy to miss (test feedback). #}
     <div class="mt-6 border-t border-stone-200 pt-6 text-center">
-        <p class="mb-3 text-sm text-stone-600">Vous n'avez pas encore de compte ?</p>
-        {% element button href=signup_url tags="prominent,outline" %}
-            Créer un compte
-        {% endelement %}
+        {% if signup_requires_invitation %}
+            <p class="mb-3 text-sm text-stone-600">Bòrd Pro est ouvert sur invitation pendant la phase de test.</p>
+            {% element button href=signup_url tags="prominent,outline" %}
+                J'ai reçu une invitation : créer un compte
+            {% endelement %}
+            <p class="mt-3 text-sm"><a href="{% url 'site-contact' %}" class="text-blue-700 underline">Demander une invitation</a></p>
+        {% else %}
+            <p class="mb-3 text-sm text-stone-600">Vous n'avez pas encore de compte ?</p>
+            {% element button href=signup_url tags="prominent,outline" %}
+                Créer un compte
+            {% endelement %}
+        {% endif %}
     </div>
 {% endblock content %}

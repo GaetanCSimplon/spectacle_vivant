@@ -5,3 +5,5 @@ PASSWORD_HASHERS = [
 ]
 
 EMAIL_BACKEND = "django.core.mail.backends.locmem.EmailBackend"
+
+SIGNUP_REQUIRES_INVITATION = False
