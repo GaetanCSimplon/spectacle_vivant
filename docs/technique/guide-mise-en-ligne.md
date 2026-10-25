@@ -4,7 +4,7 @@
 
 **Important avant de commencer**
 - Je n'ai pas vu les écrans de Brevo, Scalingo, Scaleway ou Sentry : les noms de menus ci-dessous viennent de leur documentation et peuvent avoir légèrement changé. Si un menu n'est pas là où je le dis, cherche le mot-clé en gras.
-- **Tous les mots de passe, clés et jetons vont dans Bitwarden, tout de suite**, quand ils s'affichent. Une clé qui ne s'affiche qu'une fois (Brevo, Scaleway) est perdue si tu fermes la page.
+- **Tous les mots de passe, clés et jetons vont dans Proton Pass, tout de suite**, quand ils s'affichent. Une clé qui ne s'affiche qu'une fois (Brevo, Scaleway) est perdue si tu fermes la page.
 - **Ne colle jamais un secret** dans un message, dans le dépôt, ni dans un fichier suivi par Git.
 - **Changer une variable Scalingo ne relance pas le build** : après chaque changement, fais un **déploiement manuel**, puis ouvre le **déploiement le plus récent** pour lire son journal.
 - Contexte : application Scalingo `bordpro` (région France), adresse temporaire `https://bordpro.osc-fr1.scalingo.io`, domaine `bordpro.fr` acheté par ton associé.
@@ -31,8 +31,8 @@ Ordre : **1.** Brevo → **2.** domaine → **3.** bucket de fichiers → **4.**
 ### 1.3 Créer la clé SMTP
 1. En haut à droite → **SMTP & API** → onglet **SMTP**.
 2. Note l'**identifiant** (de la forme `xxxxxx@smtp-brevo.com`) et le serveur (`smtp-relay.brevo.com`, port 587 : c'est déjà le réglage par défaut du projet).
-3. **Generate a new SMTP key** : donne-lui un nom (`bordpro-prod`). La clé s'affiche **une seule fois** → **Bitwarden immédiatement**.
-4. **Test :** tu as dans Bitwarden deux éléments : l'identifiant `…@smtp-brevo.com` et la clé SMTP.
+3. **Generate a new SMTP key** : donne-lui un nom (`bordpro-prod`). La clé s'affiche **une seule fois** → **Proton Pass immédiatement**.
+4. **Test :** tu as dans Proton Pass deux éléments : l'identifiant `…@smtp-brevo.com` et la clé SMTP.
 
 ### 1.4 Les donner à Scalingo
 1. Scalingo → application `bordpro` → **Environment** (Environnement).
@@ -48,7 +48,7 @@ Ce test est indépendant du compte et de la liste d'invités. Dans Scalingo, ouv
 python manage.py shell -c "from django.core.mail import send_mail; print(send_mail('Test Bòrd Pro', 'Bonjour, ceci est un test.', None, ['ton.adresse@exemple.fr']))"
 ```
 - **Test :** la commande affiche `1` et l'e-mail arrive (regarde aussi les **spams**).
-- Si elle affiche une erreur `535` : l'identifiant ou la clé est faux (recopie depuis Bitwarden). Erreur de connexion : vérifie que `EMAIL_HOST` n'a pas été modifié.
+- Si elle affiche une erreur `535` : l'identifiant ou la clé est faux (recopie depuis Proton Pass). Erreur de connexion : vérifie que `EMAIL_HOST` n'a pas été modifié.
 
 ### 1.6 Tester le formulaire de contact
 Ouvre `https://bordpro.osc-fr1.scalingo.io/contact/`, envoie un message. **Test :** il arrive dans la boîte `contact@bordpro.fr`.
@@ -79,7 +79,7 @@ Ouvre `https://bordpro.osc-fr1.scalingo.io/contact/`, envoie un message. **Test 
 2. **Object Storage → Create a bucket** : région **Paris (fr-par)**, nom unique (ex. `bordpro-prod-` + quelques lettres), visibilité **Private**.
 3. **IAM → Applications** : crée une application `bordpro-app`, avec une règle d'accès **Object Storage** limitée à ce projet. Puis **API keys → Generate an API key** pour cette application. Tu obtiens :
    - une **clé d'accès** (commence par `SCW…`) ;
-   - une **clé secrète**, affichée **une seule fois** → Bitwarden.
+   - une **clé secrète**, affichée **une seule fois** → Proton Pass.
 4. Dans Scalingo, remplace les `placeholder` :
    - `S3_BUCKET_NAME` = le nom du bucket
    - `S3_ENDPOINT_URL` = `https://s3.fr-par.scw.cloud` (avec `https://`)
@@ -99,7 +99,7 @@ python manage.py shell -c "from django.core.files.base import ContentFile; from 
 
 L'inscription est **sur invitation** : seules les adresses de la liste d'invités peuvent s'inscrire.
 
-1. Dans la console Scalingo : `python manage.py createsuperuser` (adresse e-mail, mot de passe fort → Bitwarden).
+1. Dans la console Scalingo : `python manage.py createsuperuser` (adresse e-mail, mot de passe fort → Proton Pass).
 2. Ouvre `https://bordpro.fr/admin/` (ou l'adresse Scalingo), connecte-toi.
 3. Section **Invitations d'inscription** → **Ajouter** : l'adresse de la personne (et une note, ex. « Marie, bêta »).
 4. **Test complet du parcours :** invite **une de tes adresses** (pas celle de l'administrateur), puis sur la page de connexion clique **« J'ai reçu une invitation : créer un compte »**, inscris-toi, ouvre l'e-mail de confirmation (le lien doit pointer vers `https://bordpro.fr/…`), confirme, connecte-toi, crée ta structure.
@@ -112,7 +112,7 @@ L'inscription est **sur invitation** : seules les adresses de la liste d'invité
 
 1. Crée un compte sur `sentry.io` en choisissant l'**hébergement des données dans l'UE** au moment de l'inscription (ce choix ne se change pas ensuite).
 2. Crée un projet, plateforme **Django**.
-3. Copie le **DSN** (Settings → Projects → ton projet → **Client Keys (DSN)**) → Bitwarden.
+3. Copie le **DSN** (Settings → Projects → ton projet → **Client Keys (DSN)**) → Proton Pass.
 4. Scalingo : `SENTRY_DSN` = le DSN, puis déploiement manuel.
 5. **Test :** dans la console, `python manage.py shell -c "import sentry_sdk; sentry_sdk.capture_message('test bordpro')"` ; l'événement apparaît dans Sentry en une minute. Vérifie qu'il ne contient pas d'adresse e-mail.
 
@@ -120,7 +120,7 @@ L'inscription est **sur invitation** : seules les adresses de la liste d'invité
 
 ## 6. Sauvegardes de la base et test de restauration
 
-1. Scalingo → `bordpro` → **Resources/Addons** → l'addon **PostgreSQL** → onglet **Backups**. Repère : les sauvegardes sont-elles **automatiques**, et pendant **combien de jours** sont-elles conservées ? C'est lié à ton offre (voir le tarif de l'addon). Note la réponse dans Bitwarden (note) ou dans ce fichier.
+1. Scalingo → `bordpro` → **Resources/Addons** → l'addon **PostgreSQL** → onglet **Backups**. Repère : les sauvegardes sont-elles **automatiques**, et pendant **combien de jours** sont-elles conservées ? C'est lié à ton offre (voir le tarif de l'addon). Note la réponse dans Proton Pass (note) ou dans ce fichier.
 2. Lance une sauvegarde manuelle (**Create a backup**) et attends qu'elle soit terminée.
 3. **Test de restauration (indispensable, une sauvegarde jamais testée n'existe pas) :**
    - télécharge la sauvegarde (bouton de téléchargement ; fichier `.pgsql.tar.gz` ou similaire) ;
@@ -167,7 +167,7 @@ Le fichier `cron.json` du projet décrit la tâche, mais Scalingo ne l'exécute 
 | Symptôme | Cause probable | Que faire |
 |---|---|---|
 | Le build s'arrête avec `Set the …` | Une variable obligatoire manque (`S3_*`, `EMAIL_*`, `DEFAULT_FROM_EMAIL`) | La créer, même provisoire, puis redéployer |
-| Erreur 500 à l'inscription, journal `SMTPAuthenticationError 535` | Identifiant ou clé SMTP faux | Recopier depuis Bitwarden ; test 1.5 |
+| Erreur 500 à l'inscription, journal `SMTPAuthenticationError 535` | Identifiant ou clé SMTP faux | Recopier depuis Proton Pass ; test 1.5 |
 | Erreur 400 « Bad Request » sur le site | `DJANGO_ALLOWED_HOSTS` ne contient pas l'adresse utilisée | Ajouter l'adresse, redéployer |
 | Erreur 403 sur un formulaire | `DJANGO_CSRF_TRUSTED_ORIGINS` faux (manque `https://` ou `/` final en trop) | Corriger, redéployer |
 | Page blanche ou CSS absent | `DISABLE_COLLECTSTATIC` n'est pas à `1` | Le remettre à `1`, redéployer |
