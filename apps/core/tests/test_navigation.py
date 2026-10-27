@@ -89,7 +89,7 @@ def test_the_home_cards_grid_has_an_explicit_single_column_on_a_phone(client):
 
     content = client.get(reverse("home")).content.decode()
 
-    assert 'class="grid grid-cols-1 gap-4 md:grid-cols-2"' in content
+    assert 'class="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3"' in content
 
 
 def test_desktop_navigation_is_a_column_on_the_left_and_the_burger_stays_on_a_phone(client):

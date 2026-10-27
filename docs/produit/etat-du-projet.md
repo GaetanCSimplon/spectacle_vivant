@@ -12,6 +12,7 @@ Les neuf critères de la recette du MVP (`cahier-des-charges.md` §11) sont couv
 |---|---|---|
 | Gestion sociale (informations d'équipe) | Faite (fiche, distribution, dépenses à rembourser) | — |
 | Feuille de route enrichie, puis espace équipe (lien personnel) | PR 1 à 3 fusionnées, PR 4 (déclaration de dépense, à ne livrer qu'avec le bucket S3) en revue | Claude |
+| Mise en page pour ordinateur (largeur 1440 px, deux colonnes, tableaux) | PR 1/5 en revue (Bòrd, Accueil) ; suivent Mes dates et fiche de date, listes, formulaires, éditeur de feuille de route | Claude |
 | Charte graphique v1.0 (blanc & contrastes francs) | PR 1 à 4 faites ; reste la revue des pages publiques à 375 px (utilisateur) et l'audit axe | Claude |
 
 ## 2. Déploiement (Scalingo, app `bordpro`)
