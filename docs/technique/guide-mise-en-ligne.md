@@ -40,7 +40,7 @@ Ordre : **1.** Brevo → **2.** domaine → **3.** bucket de fichiers → **4.**
    - `EMAIL_HOST_USER` = l'identifiant `…@smtp-brevo.com`
    - `EMAIL_HOST_PASSWORD` = la clé SMTP
    - `DEFAULT_FROM_EMAIL` = `Bòrd Pro <contact@bordpro.fr>`
-3. Enregistre, puis **Deploy → Manual deployment** sur la branche `main`. Attends la fin et ouvre le déploiement le plus récent : il doit finir par un message de réussite (les journaux du build ne montrent pas d'erreur `Set the ...`).
+3. Enregistre, puis **Deploy → Manual deployment** sur la branche `production` (voir `livraison.md` : `production` n'avance que lorsqu'on livre ; pour un simple changement de variable, déploie la branche telle qu'elle est). Attends la fin et ouvre le déploiement le plus récent : il doit finir par un message de réussite (les journaux du build ne montrent pas d'erreur `Set the ...`).
 
 ### 1.5 Tester l'envoi sans passer par l'inscription
 Ce test est indépendant du compte et de la liste d'invités. Dans Scalingo, ouvre une **console** de l'application (bouton **Run console** / « Exécuter une commande »), puis tape (remplace par une adresse à toi) :
