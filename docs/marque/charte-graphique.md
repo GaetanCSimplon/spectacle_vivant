@@ -85,6 +85,6 @@ La **carte et l'itinéraire** et **RADAR** (voir `docs/produit/specification-rad
 - [x] Aucune ombre floue dans les gabarits (test).
 - [x] Logo adapté au fond : transparent sur blanc, capsule sur nuit.
 - [x] Mention juridique dans les CGU et sur les écrans du contrat et de la facturation.
-- [ ] Revue manuelle à 375 px et sur téléphone réel de la charte v1.0 (non faite).
+- [ ] Revue des pages publiques à 375 px (non faite ; les écrans connectés sont conçus pour l'ordinateur).
 
 Reste hors de ce chantier : fichiers vectoriels officiels du logo si le graphiste en fournit de nouveaux.

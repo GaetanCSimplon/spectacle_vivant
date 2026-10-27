@@ -1,6 +1,6 @@
 # État du projet — Bòrd Pro
 
-**Mis à jour le 2026-10-27 (charte v1.0 faite, revue 375 px à faire).** Page à lire en premier : ce qui est en cours, ce qui bloque, ce qui reste à faire. Le détail sprint par sprint est dans `feuille-de-route.md` ; ici, une page.
+**Mis à jour le 2026-10-27 (charte v1.0 faite, revue pages publiques à faire).** Page à lire en premier : ce qui est en cours, ce qui bloque, ce qui reste à faire. Le détail sprint par sprint est dans `feuille-de-route.md` ; ici, une page.
 
 **Règle de tenue** : je mets cette page à jour à chaque PR fusionnée qui change une ligne ci-dessous (la date en tête fait foi).
 
@@ -10,8 +10,7 @@ Les neuf critères de la recette du MVP (`cahier-des-charges.md` §11) sont couv
 ## 1. En cours
 | Sujet | État | Qui agit |
 |---|---|---|
-| Charte graphique v1.0 (blanc & contrastes francs) | PR 1 à 4 faites ; reste la revue manuelle à 375 px (utilisateur) et l'audit axe | Claude |
-| Mise à jour de `CLAUDE.md` (§11 périmé) | Texte à montrer avant de l'écrire | Claude, puis accord de l'utilisateur |
+| Charte graphique v1.0 (blanc & contrastes francs) | PR 1 à 4 faites ; reste la revue des pages publiques à 375 px (utilisateur) et l'audit axe | Claude |
 
 ## 2. Déploiement (Scalingo, app `bordpro`)
 Guide pas à pas pour toutes les étapes ci-dessous : `docs/technique/guide-mise-en-ligne.md`.
