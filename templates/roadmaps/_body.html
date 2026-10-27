@@ -31,6 +31,14 @@
     {% endif %}
   </div>
 
+  {% if no_map %}
+    <p class="card card-context mb-6 text-sm">
+      {% translate "Pas de carte pour :" %}
+      {% for place in no_map %}<strong>{% if place.name %}{{ place.name }}{% endif %}</strong>{% if not forloop.last %}, {% endif %}{% endfor %}.
+      {% translate "L'adresse n'est pas reconnue par le service de cartes : vérifiez le numéro, la rue, le code postal et la ville (« Itinéraire » et « Copier l'adresse » fonctionnent quand même)." %}
+    </p>
+  {% endif %}
+
   {% for section in sections %}
     <h2 class="mb-2 text-sm font-semibold uppercase text-gray-500">{{ section.title }}</h2>
     <ul class="mb-3 space-y-2">

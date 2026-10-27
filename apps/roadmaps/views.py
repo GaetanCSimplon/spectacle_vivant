@@ -125,6 +125,7 @@ class RoadmapMixin(TenantScopedMixin):
             "sections": sections,
             "notes_form": forms.get("notes") or NotesForm(instance=self.roadmap),
             "team_choices": services.available_team(self.gig),
+            "no_map": services.places_without_map(self.gig, self.roadmap),
             "share_url": self.request.build_absolute_uri(public_path) if public_path else "",
         }
 

@@ -74,6 +74,12 @@ def bump_version(roadmap):
     roadmap.refresh_from_db(fields=["version", "updated_at"])
 
 
+def places_without_map(gig, roadmap):
+    """Places that have an address but no map point (the lookup did not recognise the address)."""
+    places = [gig.venue, *roadmap.lodgings.all()]
+    return [place for place in places if place.one_line_address and not place.has_point]
+
+
 def publish(roadmap):
     """Turn sharing on with a brand-new secret token (an old link never comes back)."""
     roadmap.token = secrets.token_urlsafe(32)
