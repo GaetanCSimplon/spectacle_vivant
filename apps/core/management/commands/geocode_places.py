@@ -14,13 +14,22 @@ PAUSE_SECONDS = 1.1
 class Command(BaseCommand):
     help = "Look up the map point of every venue and lodging whose address has none yet."
 
+    def add_arguments(self, parser):
+        parser.add_argument(
+            "--all",
+            action="store_true",
+            help="Look every address up again, even those already looked up (after a fix).",
+        )
+
     def handle(self, *args, **options):
         done = skipped = 0
         for model in (Venue, Lodging):
             for place in model.objects.iterator():
                 query = place.one_line_address
-                if not query or query == place.geocoded_address:
+                if not query or (query == place.geocoded_address and not options["all"]):
                     continue
+                if options["all"]:
+                    place.geocoded_address = ""  # forces the lookup in save()
                 place.save()  # looks the address up (see GeoPointMixin)
                 if place.geocoded_address == query:
                     done += 1

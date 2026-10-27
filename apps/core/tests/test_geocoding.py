@@ -71,12 +71,15 @@ def _answer(monkeypatch, payload=None, error=None):
 
 def test_a_found_address_gives_a_point(monkeypatch, settings):
     settings.GEOCODING_ENABLED = True
-    seen = _answer(monkeypatch, [{"lat": "43.6108", "lon": "3.8767"}])
+    seen = _answer(
+        monkeypatch,
+        [{"lat": "43.6108", "lon": "3.8767", "address": {"postcode": "34000"}}],
+    )
 
     result = geocoding.geocode("1 place de la Comédie, 34000 Montpellier")
 
     assert result == FOUND
-    assert "nominatim.openstreetmap.org" in seen["url"] and "limit=1" in seen["url"]
+    assert "nominatim.openstreetmap.org" in seen["url"] and "addressdetails=1" in seen["url"]
     assert "BordPro" in seen["agent"] and seen["timeout"] == geocoding.TIMEOUT_SECONDS
 
 
@@ -270,3 +273,108 @@ def test_the_one_line_address_has_no_carriage_return_from_a_text_box():
     )
 
     assert venue.one_line_address == "1 avenue de la République, 30000 Nîmes"
+
+
+# --- a result in another town is refused --------------------------------------------------
+
+
+def _results(*towns):
+    return [
+        {"lat": "43.8", "lon": "4.4", "address": {"postcode": code, "town": name}}
+        for code, name in towns
+    ]
+
+
+def test_a_street_of_a_neighbouring_town_is_not_taken_for_the_address(monkeypatch, settings):
+    """Nominatim finds "Avenue de la République, Redessan (30129)" for "... 30000 Nîmes"."""
+    settings.GEOCODING_ENABLED = True
+    _answer(monkeypatch, _results(("30129", "Redessan"), ("30190", "Moussac")))
+
+    assert geocoding.geocode("1 avenue de la République, 30000 Nîmes").status == "not_found"
+
+
+def test_the_first_result_in_the_right_postal_code_is_kept(monkeypatch, settings):
+    settings.GEOCODING_ENABLED = True
+    right = {"lat": "43.836", "lon": "4.36", "address": {"postcode": "30000", "city": "Nîmes"}}
+    _answer(monkeypatch, [*_results(("30129", "Redessan")), right])
+
+    result = geocoding.geocode("1 boulevard des Arènes, 30000 Nîmes")
+
+    assert result.status == "found" and result.latitude == Decimal("43.836000")
+
+
+def test_a_postal_code_listed_among_several_is_recognised(monkeypatch, settings):
+    settings.GEOCODING_ENABLED = True
+    _answer(monkeypatch, _results(("34200;34202", "Sète")))
+
+    assert geocoding.geocode("Môle Saint-Louis, 34200 Sète").status == "found"
+
+
+def test_without_a_postal_code_in_the_address_the_first_result_is_taken(monkeypatch, settings):
+    settings.GEOCODING_ENABLED = True
+    _answer(monkeypatch, _results(("30129", "Redessan")))
+
+    assert geocoding.geocode("Môle Saint-Louis, Sète").status == "found"
+
+
+def test_the_command_can_redo_every_lookup(lookups, monkeypatch):
+    venue = VenueFactory(address="1 rue A", city="Lyon")
+    monkeypatch.setattr("apps.core.management.commands.geocode_places.PAUSE_SECONDS", 0)
+    lookups.clear()
+
+    call_command("geocode_places")
+    assert lookups == []  # nothing new
+    call_command("geocode_places", "--all")
+
+    assert lookups == ["1 rue A, Lyon"] and Venue.objects.get(pk=venue.pk).has_point
+
+
+def test_the_editor_says_which_places_have_no_map(client, lookups):
+    from apps.tenants.factories import MembershipFactory
+
+    membership = MembershipFactory()
+    client.force_login(membership.user)
+    lookups.answer = Geocode("not_found")
+    gig = GigFactory(
+        tenant=membership.tenant, venue=VenueFactory(tenant=membership.tenant, address="1 rue A")
+    )
+
+    page = client.get(reverse("roadmaps:editor", args=[gig.pk])).content.decode()
+
+    assert "Pas de carte pour" in page and "n'est pas reconnue" in page
+
+
+def test_the_editor_stays_quiet_when_every_place_has_a_map(client, lookups):
+    from apps.tenants.factories import MembershipFactory
+
+    membership = MembershipFactory()
+    client.force_login(membership.user)
+    gig = GigFactory(
+        tenant=membership.tenant, venue=VenueFactory(tenant=membership.tenant, address="1 rue A")
+    )
+
+    page = client.get(reverse("roadmaps:editor", args=[gig.pk])).content.decode()
+
+    assert "Pas de carte pour" not in page
+
+
+def test_a_wrong_postal_code_in_openstreetmap_does_not_hide_the_right_town(monkeypatch, settings):
+    """Place de la Comédie carries 34062 (the commune code) in OpenStreetMap."""
+    settings.GEOCODING_ENABLED = True
+    _answer(monkeypatch, _results(("34062", "Montpellier")))
+
+    assert geocoding.geocode("1 place de la Comédie, 34000 MONTPELLIER").status == "found"
+
+
+def test_the_town_is_compared_without_accents_or_case(monkeypatch, settings):
+    settings.GEOCODING_ENABLED = True
+    _answer(monkeypatch, _results(("30000", "Nîmes")))
+
+    assert geocoding.geocode("1 boulevard des Arènes 30000 NIMES").status == "found"
+
+
+def test_a_result_that_names_no_town_is_kept_as_a_last_resort(monkeypatch, settings):
+    settings.GEOCODING_ENABLED = True
+    _answer(monkeypatch, [{"lat": "43.9", "lon": "4.8", "address": {"tourism": "Palais"}}])
+
+    assert geocoding.geocode("Palais des Papes, 84000 Avignon").status == "found"
