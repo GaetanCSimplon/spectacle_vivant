@@ -204,7 +204,7 @@ def test_public_context_is_a_whitelist(roadmap):
         "meals", "notes", "version", "updated_at", "members", "venue_contacts",
     }  # fmt: skip
     assert set(public_context(roadmap)["venue"]) == {
-        "name", "address", "address_one_line", "access_info", "phone", "tel",
+        "name", "address", "address_one_line", "access_info", "phone", "tel", "map_url",
     }  # fmt: skip
 
 
@@ -289,3 +289,19 @@ def test_the_timeline_marks_the_concert_with_a_word_and_shows_times_in_mono(clie
     assert 'class="data text-sm text-gray-600">17:00<' in page
     assert "Les Heures Bleues" in page and ">Concert</span>" in page
     assert page.count("size-4 rounded-full") == 1  # only the concert has the big filled dot
+
+
+def test_the_copy_button_label_cannot_break_its_alpine_expression(client, roadmap):
+    """`Copier l'adresse` has an apostrophe: raw, it ended the JS string and broke the page."""
+    from apps.addressbook.factories import VenueFactory
+
+    roadmap.gig.venue = VenueFactory(tenant=roadmap.tenant, address="1 rue A", city="Lyon")
+    roadmap.gig.venue.save()
+    roadmap.gig.save()
+    publish(roadmap)
+    roadmap.refresh_from_db()
+
+    page = client.get(_url(roadmap, "roadmap-public")).content.decode()
+    expression = page.split('x-text="')[1].split('"')[0]
+
+    assert "Copier l\\u0027adresse" in expression and "l'adresse" not in expression

@@ -135,6 +135,7 @@ La suppression d'une structure est effective 30 jours après la demande. Il faut
 | `DEFAULT_FROM_EMAIL` | adresse d'envoi sur ton domaine, ex. `Bòrd Pro <contact@bordpro.fr>` |
 | `DJANGO_SITE_DOMAIN` | ton domaine sans `https://` (ex. `bordpro.fr`) : sert aux liens des e-mails |
 | `SENTRY_DSN` | Sentry (facultatif : sans valeur, rien n'est envoyé) |
+| `GEOCODING_ENABLED` | facultatif, `True` par défaut : à l'enregistrement d'une adresse (lieu, hébergement), sa position est demandée à Nominatim (OpenStreetMap, sans compte ni clé) pour l'aperçu de carte des feuilles de route. `False` : pas de carte. Un échec du service n'empêche jamais l'enregistrement |
 | `SIGNUP_REQUIRES_INVITATION` | facultatif, **`True` par défaut** : seules les adresses de la liste d'invités peuvent s'inscrire. À ne mettre à `False` que pour ouvrir l'inscription au public |
 | `DJANGO_CSRF_TRUSTED_ORIGINS` | ton domaine avec `https://` mais **sans `/` final** (ex. `https://mon-domaine.fr`) |
 

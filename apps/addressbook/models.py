@@ -5,7 +5,7 @@ from django.urls import reverse
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 
-from apps.core.models import AddressMixin, TenantOwnedModel
+from apps.core.models import AddressMixin, GeoPointMixin, TenantOwnedModel
 
 
 class Promoter(AddressMixin, TenantOwnedModel):
@@ -143,7 +143,7 @@ class Promoter(AddressMixin, TenantOwnedModel):
         return reverse("addressbook:promoter-detail", args=[self.pk])
 
 
-class Venue(AddressMixin, TenantOwnedModel):
+class Venue(GeoPointMixin, TenantOwnedModel):
     """The physical place (Lieu / Salle) where the gig happens."""
 
     name = models.CharField(_("nom"), max_length=255)

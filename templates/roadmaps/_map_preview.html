@@ -1,0 +1,5 @@
+{% load i18n %}
+{% comment %}Map preview (OpenStreetMap). Needs: map_url. The "Itinéraire" and "Copier l'adresse" buttons stay next to it.{% endcomment %}
+<iframe src="{{ map_url }}" title="{% translate 'Aperçu de la carte' %}" loading="lazy"
+        referrerpolicy="no-referrer" sandbox="allow-scripts allow-same-origin"
+        class="h-48 w-full rounded-lg border border-page-line"></iframe>

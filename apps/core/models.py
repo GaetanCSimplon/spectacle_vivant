@@ -3,6 +3,7 @@ from django.db import models
 from django.utils.translation import gettext_lazy as _
 
 from .addresses import DEPARTMENT_CHOICES, format_address
+from .geocoding import embed_url, geocode
 
 
 class TenantOwnedModel(models.Model):
@@ -51,7 +52,53 @@ class AddressMixin(models.Model):
     @property
     def one_line_address(self):
         """The same address on one line, for a map search or a "copy the address" button."""
-        return self.full_address.replace("\n", ", ")
+        # A street typed in a text box carries "\r\n": one clean line, no stray carriage return.
+        lines = (line.strip() for line in self.full_address.splitlines())
+        return ", ".join(line for line in lines if line)
+
+
+class GeoPointMixin(AddressMixin):
+    """An address that also remembers its place on the map (for the roadmap's map preview).
+
+    The point is looked up when the address changes, at save time, and only then. If the lookup
+    fails, the point is dropped (it would belong to the old address) and the next save tries
+    again; an address the service does not know is remembered, so it is not asked again.
+    """
+
+    latitude = models.DecimalField(max_digits=9, decimal_places=6, null=True, editable=False)
+    longitude = models.DecimalField(max_digits=9, decimal_places=6, null=True, editable=False)
+    # The one-line address the point was looked up for: tells when it is out of date.
+    geocoded_address = models.CharField(max_length=500, blank=True, editable=False)
+
+    class Meta:
+        abstract = True
+
+    def save(self, *args, **kwargs):
+        if kwargs.get("update_fields") is None:
+            self.refresh_point()
+        super().save(*args, **kwargs)
+
+    @property
+    def has_point(self):
+        return self.latitude is not None and self.longitude is not None
+
+    @property
+    def map_embed_url(self):
+        return embed_url(self.latitude, self.longitude) if self.has_point else ""
+
+    def refresh_point(self):
+        """Look the address up again if it changed since the last lookup."""
+        query = self.one_line_address
+        if query == self.geocoded_address:
+            return
+        self.latitude = self.longitude = None
+        if not query:
+            self.geocoded_address = ""
+            return
+        result = geocode(query)
+        if result.status in ("found", "not_found"):
+            self.geocoded_address = query
+            self.latitude, self.longitude = result.latitude, result.longitude
 
 
 class Note(TenantOwnedModel):

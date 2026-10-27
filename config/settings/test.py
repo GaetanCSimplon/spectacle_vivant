@@ -7,3 +7,6 @@ PASSWORD_HASHERS = [
 EMAIL_BACKEND = "django.core.mail.backends.locmem.EmailBackend"
 
 SIGNUP_REQUIRES_INVITATION = False
+
+# No network call from the tests: the ones about geocoding switch it on and fake the answer.
+GEOCODING_ENABLED = False

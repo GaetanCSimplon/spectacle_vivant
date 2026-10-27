@@ -109,6 +109,12 @@ CONTACT_HOURLY_LIMIT = env.int("CONTACT_HOURLY_LIMIT", default=20)
 # Search engines are kept out until the content and the legal pages are ready.
 SITE_INDEXABLE = env.bool("SITE_INDEXABLE", default=False)
 
+# Map preview of a roadmap: an address is turned into a point once, when it is saved
+# (apps/core/geocoding.py, Nominatim from OpenStreetMap). Off, the pages simply have no map.
+GEOCODING_ENABLED = env.bool("GEOCODING_ENABLED", default=True)
+GEOCODING_URL = "https://nominatim.openstreetmap.org/search"
+GEOCODING_USER_AGENT = "BordPro/1.0 (contact@bordpro.fr)"
+
 # django-allauth: login by e-mail only, no username field
 ACCOUNT_USER_MODEL_USERNAME_FIELD = None
 ACCOUNT_LOGIN_METHODS = {"email"}
