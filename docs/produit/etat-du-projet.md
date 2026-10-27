@@ -14,6 +14,8 @@ Les neuf critères de la recette du MVP (`cahier-des-charges.md` §11) sont couv
 | Mise à jour de `CLAUDE.md` (§11 périmé) | Texte à montrer avant de l'écrire | Claude, puis accord de l'utilisateur |
 
 ## 2. Déploiement (Scalingo, app `bordpro`)
+Guide pas à pas pour toutes les étapes ci-dessous : `docs/technique/guide-mise-en-ligne.md`.
+
 Premier déploiement réussi le 2026-10-22 sur `bordpro.osc-fr1.scalingo.io` (adresse temporaire). Variables S3 et e-mail encore à `placeholder`.
 
 | Étape | État | Bloqué par |
