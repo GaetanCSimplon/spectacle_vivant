@@ -1,0 +1,11 @@
+{% extends "public/base_public.html" %}
+{% load i18n %}
+
+{% block title %}{{ gig.show.title }} — Bòrd Pro{% endblock %}
+
+{% block content %}
+  <p class="mb-4"><a href="{{ back_url }}" class="text-blue-700 underline">← {% translate "Mes dates" %}</a></p>
+  <h1 class="!mb-1">{{ gig.show.title }}</h1>
+  <p class="mb-4 text-sm text-gray-600">{{ gig.date|date:"l j F Y" }} · {{ gig.venue.name }}</p>
+  <p class="card text-sm">{% translate "La feuille de route de cette date n'est pas encore prête. Revenez un peu plus tard ou contactez la personne qui s'occupe de la tournée." %}</p>
+{% endblock %}

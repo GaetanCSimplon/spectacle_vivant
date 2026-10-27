@@ -33,6 +33,7 @@ from apps.core.views import (
 )
 from apps.finance import views as finance_views
 from apps.roadmaps import views as roadmap_views
+from apps.tenants import public_views as tenants_public_views
 from apps.tenants.views import OnboardingView
 
 urlpatterns = [
@@ -68,6 +69,17 @@ urlpatterns = [
         "feuille-de-route/<str:token>/pdf/",
         roadmap_views.PublicRoadmapPdfView.as_view(),
         name="roadmap-public-pdf",
+    ),
+    path("equipe/<str:token>/", tenants_public_views.TeamSpaceView.as_view(), name="team-space"),
+    path(
+        "equipe/<str:token>/dates/<int:gig_id>/",
+        tenants_public_views.TeamSpaceGigView.as_view(),
+        name="team-space-gig",
+    ),
+    path(
+        "equipe/<str:token>/dates/<int:gig_id>/pdf/",
+        tenants_public_views.TeamSpacePdfView.as_view(),
+        name="team-space-pdf",
     ),
     path(
         "formulaire-organisateur/merci/",

@@ -16,5 +16,15 @@ urlpatterns = [
     path("equipe/<int:pk>/", views.PersonDetailView.as_view(), name="person-detail"),
     path("equipe/<int:pk>/modifier/", views.PersonUpdateView.as_view(), name="person-update"),
     path("equipe/<int:pk>/supprimer/", views.PersonDeleteView.as_view(), name="person-delete"),
+    path(
+        "equipe/<int:pk>/espace/creer/",
+        views.PersonAccessView.as_view(action="enable"),
+        name="person-access-enable",
+    ),
+    path(
+        "equipe/<int:pk>/espace/revoquer/",
+        views.PersonAccessView.as_view(action="revoke"),
+        name="person-access-revoke",
+    ),
     path("export-donnees/", views.DataExportView.as_view(), name="data-export"),
 ]

@@ -5,6 +5,7 @@ from dataclasses import dataclass
 from django.contrib import messages
 from django.http import Http404, HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
+from django.urls import reverse
 from django.utils.translation import gettext_lazy as _
 from django.views import View
 
@@ -303,7 +304,7 @@ class PublicRoadmapView(View):
     def get(self, request, token):
         roadmap = _shared_roadmap(token)
         context = services.public_context(roadmap)
-        context["token"] = token
+        context["pdf_url"] = reverse("roadmap-public-pdf", args=[token])
         return protect_secret_page(render(request, "roadmaps/public.html", context))
 
 

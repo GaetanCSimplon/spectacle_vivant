@@ -1,0 +1,14 @@
+{% load i18n %}
+<li>
+  <a href="{% url 'team-space-gig' token gig.pk %}" class="card card-link flex items-center gap-4">
+    <span class="date-tile" aria-hidden="true">
+      <span class="date-tile-day">{{ gig.date|date:"d" }}</span>
+      <span class="date-tile-month">{{ gig.date|date:"M" }}</span>
+    </span>
+    <span class="min-w-0">
+      <span class="block font-medium">{{ gig.show.title }}</span>
+      <span class="block text-sm text-gray-600"><span class="sr-only">{{ gig.date|date:"l j F Y" }} · </span>{{ gig.venue.name }}{% if gig.venue.city %} · {{ gig.venue.city }}{% endif %}</span>
+      <span class="block text-sm text-blue-700 underline">{% translate "Voir la feuille de route" %}</span>
+    </span>
+  </a>
+</li>

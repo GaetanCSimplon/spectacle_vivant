@@ -12,6 +12,7 @@
   </head>
   <body class="min-h-screen bg-page text-gray-900">
     <main class="mx-auto max-w-xl px-4 py-6">
+      {% if back_url %}<p class="mb-4"><a href="{{ back_url }}" class="text-blue-700 underline">← {% translate "Mes dates" %}</a></p>{% endif %}
       <header class="card card-navy mb-6 flex items-center gap-4">
         <span class="date-tile" aria-hidden="true">
           <span class="date-tile-day">{{ date|date:"d" }}</span>
@@ -111,7 +112,7 @@
         </ul>
       {% endif %}
 
-      <a href="{% url 'roadmap-public-pdf' token %}" class="btn btn-secondary btn-block">{% translate "Télécharger en PDF" %}</a>
+      <a href="{{ pdf_url }}" class="btn btn-secondary btn-block">{% translate "Télécharger en PDF" %}</a>
     </main>
   </body>
 </html>

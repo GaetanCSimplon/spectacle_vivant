@@ -42,6 +42,8 @@ from .services import (
     cancel_deletion,
     create_tenant_for_user,
     deletion_date,
+    disable_team_space,
+    enable_team_space,
     leave_tenant,
     request_deletion,
 )
@@ -283,6 +285,10 @@ class PersonDetailView(TenantScopedMixin, DetailView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context["is_owner"] = is_tenant_owner(self.request.user, self.request.tenant)
+        if context["is_owner"] and self.object.access_token:
+            context["space_url"] = self.request.build_absolute_uri(
+                reverse("team-space", args=[self.object.access_token])
+            )
         context["gigs"] = (
             Gig.objects.filter(tenant=self.request.tenant, members__person=self.object)
             .select_related("show", "venue")
@@ -294,6 +300,25 @@ class PersonDetailView(TenantScopedMixin, DetailView):
             total=Sum("amount")
         )["total"]
         return context
+
+
+class PersonAccessView(TenantScopedMixin, View):
+    """Owner only, POST only: create or revoke the personal link of a team member."""
+
+    http_method_names = ["post"]
+    action = ""  # "enable" or "revoke", set in urls.py
+
+    def post(self, request, pk):
+        if not is_tenant_owner(request.user, request.tenant):
+            raise PermissionDenied
+        person = get_object_or_404(Person, pk=pk, tenant=request.tenant)
+        if self.action == "enable":
+            enable_team_space(person)
+            messages.success(request, _("Le lien personnel est créé : copiez-le ci-dessous."))
+        else:
+            disable_team_space(person)
+            messages.success(request, _("Le lien est révoqué : il ne marche plus."))
+        return redirect("tenants:person-detail", pk=person.pk)
 
 
 class PersonFormMixin:

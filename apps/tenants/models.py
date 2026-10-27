@@ -113,11 +113,21 @@ class Person(AddressMixin, TenantOwnedModel):
         _("cachet moyen (€)"), max_digits=10, decimal_places=2, null=True, blank=True
     )
     notes = models.TextField(_("notes"), blank=True)
+    # Secret of the personal space (a link, no account): empty = no access. Whoever has it sees
+    # this person's dates, so it is never in an export, a log or a list (see services).
+    access_token = models.CharField(max_length=64, blank=True, editable=False)
 
     class Meta:
         ordering = ["last_name", "first_name"]
         verbose_name = _("personne")
         verbose_name_plural = _("personnes")
+        constraints = [
+            models.UniqueConstraint(
+                fields=["access_token"],
+                condition=~models.Q(access_token=""),
+                name="unique_person_access_token",
+            ),
+        ]
 
     def __str__(self):
         return self.full_name
