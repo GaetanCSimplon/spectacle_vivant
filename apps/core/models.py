@@ -52,7 +52,9 @@ class AddressMixin(models.Model):
     @property
     def one_line_address(self):
         """The same address on one line, for a map search or a "copy the address" button."""
-        return self.full_address.replace("\n", ", ")
+        # A street typed in a text box carries "\r\n": one clean line, no stray carriage return.
+        lines = (line.strip() for line in self.full_address.splitlines())
+        return ", ".join(line for line in lines if line)
 
 
 class GeoPointMixin(AddressMixin):

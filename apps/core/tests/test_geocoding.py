@@ -262,3 +262,11 @@ def test_the_command_locates_the_places_saved_before(lookups, monkeypatch, setti
     assert venue.has_point and lodging.has_point
     call_command("geocode_places")  # second run: nothing left to do
     assert len(lookups) == 2
+
+
+def test_the_one_line_address_has_no_carriage_return_from_a_text_box():
+    venue = VenueFactory.build(
+        address="1 avenue de la République\r\n", postal_code="30000", city="Nîmes"
+    )
+
+    assert venue.one_line_address == "1 avenue de la République, 30000 Nîmes"
