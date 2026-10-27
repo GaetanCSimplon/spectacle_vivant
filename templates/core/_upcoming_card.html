@@ -16,7 +16,7 @@
   </div>
 
   {% if next_gigs %}
-    <ul class="flex flex-col gap-2 [&_.card]:shadow-none">
+    <ul class="flex flex-col gap-2">
       {% for gig in next_gigs %}{% include "gigs/_gig_row.html" %}{% endfor %}
     </ul>
     {% if upcoming_hidden %}

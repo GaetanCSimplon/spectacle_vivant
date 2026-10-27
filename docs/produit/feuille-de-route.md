@@ -323,6 +323,14 @@ Sources de l'associé : `docs/marque/sources-associe/` (charte PDF, brief d'int�
 - [x] **PR 5 — recette** (2026-10-23, sans migration) : audit automatique des 43 écrans à 375 px et 1280 px avec axe-core (WCAG 2.2 AA : contrastes, libellés, noms de boutons) + débordement horizontal + boutons principaux ; comptes vides (9 écrans) ; contenus très longs (nom de 100 caractères, mots de 100 lettres sans espace) sur 8 pages dont la feuille de route publique ; cibles tactiles ; clavier (anneau de focus). Défauts trouvés et corrigés : liste des dates annulées affadie par `opacity-75` (contraste 3,6:1), 18 liens en texte courant sans soulignement (1,5:1 contre le texte), débordement horizontal des titres et paragraphes très longs (fiches organisateur, lieu, spectacle, feuille de route publique), boutons « Supprimer / Annuler la date » de 16 px, champ fichier de 40 px. Résultat final : 0 violation, 0 débordement. Limites : audit automatique (axe-core ne couvre qu'une partie des critères WCAG), pas de lecteur d'écran ni de test sur un vrai téléphone, zoom texte à 200 % non vérifié.
 - [ ] Reporté : carte et itinéraire (service de géolocalisation, `CLAUDE.md` §10), RADAR (règles à définir, Q17), logo `LOGO_2.pdf`.
 
+### Sprint 3.17 — Charte « blanc & contrastes francs » v1.0 (2026-10-27)
+
+Sources de l'associé : `docs/marque/BORD_PRO_charte_visuelle.html`, `BRD_PRO_design-tokens.css` (+ `.md`) et les 5 SVG de `static/brand/`. Décisions du 2026-10-27 : texte d'état ambre gardé en `#714700` (l'ambre `#E3A21A` ne sert qu'au pictogramme, 2:1 sur blanc), bordure de champ plus foncée que `#C4CFDA`, interlettrage des titres −0,04 em, Plex Mono en 400/500 (pas de 450), favicon 16 px à contrôler. Sans migration ; une PR par étape.
+- [x] **PR 1 — jetons** (2026-10-27) : fond blanc, corail `#FF695B`, océan `#007299`, bleu clair `#E2F1F6`, texte secondaire `#465A6C`, séparations `#C4CFDA`, rayons 12 / 16 / 24 / 28, ombre des cartes supprimée ; test de contraste étendu.
+- [ ] **PR 2 — logos et icônes** : 5 SVG rangés, favicons / icônes d'app régénérés, remplacement dans les en-têtes et pages publiques.
+- [ ] **PR 3 — composants** : navigation nuit avec actif corail, blocs océan et bleu clair, boutons, focus océan, statuts ; contrôle à 375 px et sur ordinateur.
+- [ ] **PR 4 — nettoyage et documentation** : anciens logos et sources V06 archivés ou supprimés, `charte-graphique.md` v3.
+
 ### Sprint 3.8 — Légal, sécurité, finition, recette
 - [x] Pages : mentions légales, CGU, confidentialité (gabarits à compléter et à faire relire avant la mise en ligne).
 - [x] Export des données (F-81) : ZIP de CSV et de fichiers, page `ma-structure/export-donnees/`.
