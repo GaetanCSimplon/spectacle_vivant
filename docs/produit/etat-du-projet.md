@@ -10,7 +10,7 @@ Les neuf critères de la recette du MVP (`cahier-des-charges.md` §11) sont couv
 ## 1. En cours
 | Sujet | État | Qui agit |
 |---|---|---|
-| Gestion sociale (informations d'équipe) | PR A en revue ; suivent B (distribution des spectacles) et C (dépenses d'équipe, plan à valider) | Claude |
+| Gestion sociale (informations d'équipe) | PR A (fiche équipe) et B (distribution des spectacles) en revue ; suit C (dépenses d'équipe, plan à valider) | Claude |
 | Charte graphique v1.0 (blanc & contrastes francs) | PR 1 à 4 faites ; reste la revue des pages publiques à 375 px (utilisateur) et l'audit axe | Claude |
 
 ## 2. Déploiement (Scalingo, app `bordpro`)

@@ -32,7 +32,7 @@
       Auteur : ……<br>
       Adaptateur : ……<br>
       Metteur en scène ou chorégraphe : ……<br>
-      Nom des interprètes principaux : {{ show.performers|default:show.group_name|default:"……" }}<br>
+      Nom des interprètes principaux : {{ show.distribution_text|default:show.group_name|default:"……" }}<br>
       Durée du spectacle : {% if show.duration_minutes %}{{ show.duration_minutes }} minutes{% else %}……{% endif %}
     </p>
     <p>B - L’Organisateur s’est assuré de la disposition de la ou des salles suivantes : {{ venue.name }}{% if venue.full_address %}, {{ venue.full_address }}{% endif %} ; du personnel nécessaire à son bon fonctionnement général et dont le Producteur déclare connaître et accepter les caractéristiques techniques (cf. fiche technique du lieu en annexe).</p>
@@ -228,7 +228,7 @@
         Nom du metteur en scène : ……<br>
         Nom du directeur artistique : ……<br>
         Titre de l'œuvre et du (des) auteur(s) : ……<br>
-        Distribution artistique : {{ show.performers|default:"……" }}<br>
+        Distribution artistique : {{ show.distribution_text|default:"……" }}<br>
         Equipe technique : ……<br>
         Liste des mentions obligatoires (par exemple, le nom des coproducteurs, des organismes subventionneurs et autres partenaires financiers, logos, etc.) : ……<br>
         Photos éventuellement à disposition (en précisant « libres de droits » ou « droits réservés ») : ……

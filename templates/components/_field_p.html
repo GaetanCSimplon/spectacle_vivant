@@ -1,0 +1,2 @@
+{% comment %}One field laid out like `form.as_p` does: label, errors, input, then the help text.{% endcomment %}
+<p>{{ field.label_tag }}{{ field.errors }}{{ field }}{% if field.help_text %}<span class="helptext">{{ field.help_text }}</span>{% endif %}</p>

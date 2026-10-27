@@ -11,7 +11,12 @@ class Show(TenantOwnedModel):
 
     title = models.CharField(_("titre"), max_length=255)
     group_name = models.CharField(_("nom du groupe / de l'artiste"), max_length=255, blank=True)
-    performers = models.TextField(_("distribution"), blank=True)
+    # Free text typed before the distribution became a choice among the team: kept, read only,
+    # and shown until at least one member is chosen.
+    performers = models.TextField(_("ancienne distribution (texte)"), blank=True)
+    cast = models.ManyToManyField(
+        "tenants.Person", blank=True, related_name="shows", verbose_name=_("distribution")
+    )
     duration_minutes = models.PositiveIntegerField(_("durée (minutes)"))
     default_price = models.DecimalField(_("prix indicatif"), max_digits=8, decimal_places=2)
     sacem_number = models.CharField(_("n° SACEM"), max_length=50, blank=True)
@@ -47,6 +52,14 @@ class Show(TenantOwnedModel):
 
     def __str__(self):
         return self.title
+
+    @property
+    def distribution_text(self):
+        """Names of the chosen members (a technician only is not a performer), else the old text."""
+        people = [p for p in self.cast.all() if p.is_artist or not p.is_technician]
+        if people:
+            return ", ".join(p.full_name for p in people)
+        return self.performers
 
     def get_absolute_url(self):
         return reverse("catalog:show-detail", args=[self.pk])

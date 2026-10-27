@@ -28,7 +28,6 @@ def _payload(**overrides):
     data = {
         "title": "Nuits d'été",
         "group_name": "Les Nocturnes",
-        "performers": "",
         "duration_minutes": "75",
         "default_price": "800.00",
         "crew_size": "",

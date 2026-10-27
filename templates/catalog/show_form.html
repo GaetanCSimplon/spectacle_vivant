@@ -12,7 +12,13 @@
 
   <form method="post" enctype="multipart/form-data" class="space-y-4">
     {% csrf_token %}
-    {{ form.as_p }}
+    {{ form.non_field_errors }}
+    {% for field in form.main_fields %}{% include "components/_field_p.html" %}{% endfor %}
+    <fieldset class="card space-y-3">
+      <legend class="px-1 text-sm font-semibold">{% translate "Ajouter un autre membre à l'équipe" %}</legend>
+      <p class="text-sm text-gray-600">{% translate "Il rejoint votre équipe (onglet Équipe) et la distribution de ce spectacle. Ses autres informations se complètent ensuite dans l'équipe." %}</p>
+      {% for field in form.new_member_fields %}{% include "components/_field_p.html" %}{% endfor %}
+    </fieldset>
     <button type="submit" class="btn btn-primary btn-block">{% translate "Enregistrer" %}</button>
   </form>
 {% endblock %}

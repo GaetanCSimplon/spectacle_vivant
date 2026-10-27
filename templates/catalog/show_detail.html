@@ -23,7 +23,12 @@
     {% if show.soundcheck_minutes is not None %}<p>{% translate "Balances (minimum)" %} : {{ show.soundcheck_minutes }} min</p>{% endif %}
     {% if show.soundcheck_to_set_minutes is not None %}<p>{% translate "Entre la fin des balances et le set (minimum)" %} : {{ show.soundcheck_to_set_minutes }} min</p>{% endif %}
     {% if show.analytic_code %}<p>{% translate "Code analytique" %} : {{ show.analytic_code }}</p>{% endif %}
-    {% if show.performers %}<p>{% translate "Distribution" %} : {{ show.performers|linebreaksbr }}</p>{% endif %}
+    {% if cast %}
+      <p>{% translate "Distribution" %} : {% for person in cast %}<a href="{{ person.get_absolute_url }}" class="text-blue-700 underline">{{ person.full_name }}</a>{% if not forloop.last %}, {% endif %}{% endfor %}</p>
+    {% elif show.performers %}
+      <p>{% translate "Distribution (ancienne saisie)" %} : {{ show.performers|linebreaksbr }}</p>
+      <p class="text-sm text-gray-600">{% translate "Choisissez des membres de l'équipe dans « Modifier » pour la remplacer." %}</p>
+    {% endif %}
     {% if show.sacem_number %}<p>{% translate "N° SACEM" %} : {{ show.sacem_number }}</p>{% endif %}
     {% if show.sacem_object_number %}<p>{% translate "N° d'objet" %} : {{ show.sacem_object_number }}</p>{% endif %}
     {% if show.epk_url %}
