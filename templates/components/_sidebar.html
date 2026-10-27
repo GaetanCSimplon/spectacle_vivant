@@ -1,16 +1,16 @@
 {% load i18n static %}
 {% comment %}Main navigation on a desktop screen (from `lg`, 1024 px): a fixed column on the left.
 Below that, the top bar with the burger menu (_header.html) is used instead.{% endcomment %}
-<aside class="hidden border-r border-page-line bg-white lg:sticky lg:top-0 lg:flex lg:h-screen lg:w-60 lg:shrink-0 lg:flex-col">
+<aside class="hidden sidebar lg:sticky lg:top-0 lg:flex lg:h-screen lg:w-60 lg:shrink-0 lg:flex-col">
   <div class="px-5 py-5">
-    <a href="{% url 'home' %}" class="inline-block rounded-lg"><img src="{% static 'brand/logo.svg' %}" alt="Bòrd Pro" width="2000" height="800" class="h-auto w-36"></a>
+    <a href="{% url 'home' %}" class="inline-block rounded-lg"><img src="{% static 'brand/logo-capsule.svg' %}" alt="Bòrd Pro" width="2000" height="800" class="h-auto w-36"></a>
   </div>
   <nav aria-label="{% translate 'Navigation principale' %}" class="sidebar-nav flex flex-1 flex-col gap-1 overflow-y-auto px-3 py-2">
     {% include "components/_nav.html" with link_class="nav-link flex min-h-11 items-center" active_class="" %}
   </nav>
-  <div class="border-t border-page-line p-3">
+  <div class="border-t border-white/20 p-3">
     {% if request.tenant %}
-      <p class="mb-2 truncate px-3 text-xs text-gray-500" title="{{ request.tenant.name }}">{{ request.tenant.name }}</p>
+      <p class="mb-2 truncate px-3 text-xs text-blue-200" title="{{ request.tenant.name }}">{{ request.tenant.name }}</p>
     {% endif %}
     <form method="post" action="{% url 'account_logout' %}">
       {% csrf_token %}

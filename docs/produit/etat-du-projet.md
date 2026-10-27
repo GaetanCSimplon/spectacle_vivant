@@ -10,7 +10,7 @@ Les neuf critères de la recette du MVP (`cahier-des-charges.md` §11) sont couv
 ## 1. En cours
 | Sujet | État | Qui agit |
 |---|---|---|
-| Charte graphique v1.0 (blanc & contrastes francs) | PR 1 et 2 faites (jetons, logos et icônes) ; suivent composants, nettoyage | Claude |
+| Charte graphique v1.0 (blanc & contrastes francs) | PR 1 à 3 faites (jetons, logos, composants) ; reste le nettoyage | Claude |
 | Mise à jour de `CLAUDE.md` (§11 périmé) | Texte à montrer avant de l'écrire | Claude, puis accord de l'utilisateur |
 
 ## 2. Déploiement (Scalingo, app `bordpro`)

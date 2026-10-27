@@ -59,7 +59,7 @@
   --bord-brand-plum: #8e1f3f;
   --bord-bg: #ffffff;
   --bord-surface: #ffffff;
-  --bord-info-bg: #dce8f7;
+  --bord-info-bg: var(--bord-brand-ocean);
   --bord-context-bg: #e2f1f6;
   --bord-text: var(--bord-brand-navy);
   --bord-text-muted: #465a6c;
@@ -68,14 +68,14 @@
   --bord-action-bg: var(--bord-brand-coral);
   --bord-action-bg-hover: #f55f4e;
   --bord-action-text: var(--bord-brand-navy);
-  --bord-focus: var(--bord-brand-navy);
+  --bord-focus: var(--bord-brand-ocean);
   --bord-success-text: #1f6b4a;
   --bord-success-bg: #e4f0e8;
   --bord-warning-text: #714700;
   --bord-warning-bg: #fff0c8;
   --bord-danger-text: #8e1f3f;
   --bord-danger-bg: #f6e3eb;
-  --bord-chart-revenue: #2f6fb5;
+  --bord-chart-revenue: var(--bord-brand-ocean);
   --bord-chart-expense: #d9473a;
   --bord-radius-control: 12px;
   --bord-radius-card: 16px;
@@ -190,7 +190,7 @@
   --color-page: #ffffff;
   --color-page-line: #c4cfda;
 
-  --color-chart-revenue: #2f6fb5;
+  --color-chart-revenue: #007299;
   --color-chart-expense: #d9473a;
 }
 
@@ -366,9 +366,17 @@
     color: var(--bord-text);
   }
 
+  /* Ocean block: white text (5.4:1). */
   .card-info {
     background: var(--bord-info-bg);
     border-color: var(--bord-info-bg);
+    color: var(--bord-surface);
+  }
+
+  /* Discreet context (light blue): never the dominant background of a screen. */
+  .card-context {
+    background: var(--bord-context-bg);
+    border-color: var(--bord-context-bg);
     color: var(--bord-text);
   }
 
@@ -409,12 +417,42 @@
   }
 
   .nav-link[aria-current="page"] {
-    @apply bg-blue-100 font-semibold text-blue-700;
+    @apply font-semibold text-blue-700;
+    background: var(--bord-context-bg);
   }
 
-  /* The same links in the left column (desktop): the active page gets a coral bar. */
-  .sidebar-nav .nav-link[aria-current="page"] {
+  /* The left column (desktop) is navy: white links, the current page in bold coral with a coral
+     bar (coral on navy is 5.6:1). The ring of a focused element is white there. */
+  .sidebar {
+    background: var(--bord-brand-navy);
+    color: var(--bord-surface);
+  }
+
+  .sidebar .nav-link {
+    color: var(--bord-surface);
+  }
+
+  .sidebar .nav-link:hover {
+    background: rgb(255 255 255 / 12%);
+    color: var(--bord-surface);
+  }
+
+  .sidebar .nav-link[aria-current="page"] {
+    background: transparent;
+    color: var(--bord-brand-coral);
+    font-weight: 700;
     box-shadow: inset 3px 0 0 var(--bord-brand-coral);
+  }
+
+  .sidebar :focus-visible,
+  .card-navy :focus-visible,
+  .card-info :focus-visible {
+    outline-color: var(--bord-surface);
+  }
+
+  .card-accent :focus-visible,
+  .card-cream :focus-visible {
+    outline-color: var(--bord-text);
   }
 
   /* --- Home page ------------------------------------------------------------------- */
@@ -501,7 +539,9 @@
 
   /* A form that is the main thing to do in its card (e.g. "Enregistrer un paiement"). */
   .form-highlight {
-    @apply rounded-lg border border-blue-200 bg-blue-50 p-3;
+    @apply rounded-lg border p-3;
+    background: var(--bord-context-bg);
+    border-color: var(--bord-context-bg);
   }
 
   /* Flash messages, by level (success / error / warning / info). */
@@ -522,7 +562,9 @@
   }
 
   .message-info {
-    @apply border-blue-600 bg-blue-50 text-blue-900;
+    @apply text-blue-900;
+    border-color: var(--bord-brand-ocean);
+    background: var(--bord-context-bg);
   }
 }
 
@@ -530,11 +572,11 @@
  * Outside any layer on purpose: Tailwind's utilities (`text-stone-600`...) come after the
  * `components` layer and would win, leaving grey text on the colour blocks.
  */
-:is(.card-navy, .card-accent, .card-info, .card-cream)
+:is(.card-navy, .card-accent, .card-info, .card-cream, .card-context)
   :is(h1, h2, p, li, a, .stat-label, .stat-value, .text-stone-500, .text-stone-600, .text-blue-700) {
   color: inherit;
 }
 
-:is(.card-navy, .card-accent, .card-info, .card-cream) a {
+:is(.card-navy, .card-accent, .card-info, .card-cream, .card-context) a {
   text-decoration: underline;
 }
