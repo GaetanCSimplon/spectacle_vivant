@@ -28,13 +28,23 @@ class ShowDetailView(TenantScopedMixin, DetailView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
+        context["cast"] = self.object.cast.all()
         context["gigs"] = self.object.gigs.select_related("show", "promoter", "venue").order_by(
             "-date"
         )
         return context
 
 
-class ShowCreateView(TenantScopedMixin, CreateView):
+class ShowFormMixin:
+    """The form needs the tenant: it limits the team to choose from and receives new members."""
+
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs["tenant"] = self.request.tenant
+        return kwargs
+
+
+class ShowCreateView(ShowFormMixin, TenantScopedMixin, CreateView):
     model = Show
     form_class = ShowForm
     template_name = "catalog/show_form.html"
@@ -45,7 +55,7 @@ class ShowCreateView(TenantScopedMixin, CreateView):
         return response
 
 
-class ShowUpdateView(TenantScopedMixin, UpdateView):
+class ShowUpdateView(ShowFormMixin, TenantScopedMixin, UpdateView):
     model = Show
     form_class = ShowForm
     template_name = "catalog/show_form.html"

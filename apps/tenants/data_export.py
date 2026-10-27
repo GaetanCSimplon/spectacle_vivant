@@ -51,6 +51,7 @@ def shows_rows(tenant):
         "Balances minimum (min)",
         "Entre balances et set minimum (min)",
         "Code analytique",
+        "Distribution",
     ]
     rows = [
         [
@@ -66,8 +67,9 @@ def shows_rows(tenant):
             _number(s.soundcheck_minutes),
             _number(s.soundcheck_to_set_minutes),
             text(s.analytic_code),
+            text(s.distribution_text),
         ]
-        for s in Show.objects.filter(tenant=tenant).order_by("title")
+        for s in Show.objects.filter(tenant=tenant).prefetch_related("cast").order_by("title")
     ]
     return header, rows
 
