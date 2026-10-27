@@ -405,6 +405,31 @@
     @apply mt-1 text-[0.6875rem] font-medium;
   }
 
+  /* Lists on a PC screen (lg and up): a table in a card; on a phone the same rows stay cards. */
+  .data-table {
+    @apply w-full text-left text-sm;
+  }
+
+  .data-table th {
+    @apply border-b border-page-line px-3 py-2 text-xs font-semibold uppercase tracking-wider text-stone-500;
+  }
+
+  .data-table td {
+    @apply border-b border-page-line px-3 py-2.5 align-top text-stone-600;
+  }
+
+  .data-table tbody tr:last-child td {
+    @apply border-b-0;
+  }
+
+  .data-table tbody tr:hover {
+    @apply bg-blue-50;
+  }
+
+  .data-table .cell-main {
+    @apply font-medium text-blue-700 underline;
+  }
+
   .badge {
     @apply inline-flex items-center rounded-full bg-gray-100 px-2.5 py-1 text-xs font-semibold
       text-gray-700;
