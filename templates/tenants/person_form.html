@@ -10,7 +10,17 @@
 
   <form method="post" class="space-y-4">
     {% csrf_token %}
-    {{ form.as_p }}
+    {% for field in form %}
+      {% if field.name == "is_artist" %}
+    <div class="flex flex-wrap items-center gap-x-8 gap-y-2" role="group" aria-label="{% translate 'Artiste ou technicien' %}">
+      <label class="mb-0 inline-flex min-h-11 items-center gap-2 font-medium">{{ form.is_artist }} {% translate "Artiste" %}</label>
+      <label class="mb-0 inline-flex min-h-11 items-center gap-2 font-medium">{{ form.is_technician }} {% translate "Technicien" %}</label>
+    </div>
+    <p class="helptext -mt-3">{% translate "Cochez l'une, l'autre ou les deux." %}</p>
+      {% elif field.name != "is_technician" %}
+        {% include "components/_field_p.html" %}
+      {% endif %}
+    {% endfor %}
     <datalist id="person-roles">{% for value in form.role_options %}<option value="{{ value }}">{% endfor %}</datalist>
     <datalist id="person-statuses">{% for value in form.status_options %}<option value="{{ value }}">{% endfor %}</datalist>
     <button type="submit" class="btn btn-primary btn-block">{% translate "Enregistrer" %}</button>

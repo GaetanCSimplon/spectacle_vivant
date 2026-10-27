@@ -254,3 +254,43 @@ def test_the_export_says_who_paid_and_when_it_was_paid_back(client, tenant, gig)
     assert rows[0][-3:] == ["Dépensé par", "Remboursée le", "Code analytique"]
     assert rows[1][-3:-1] == ["La structure", ""]
     assert rows[2][-3:-1] == ["Léa Durand", "01/04/2026"]
+
+
+# --- the operations table: debit and credit ------------------------------------------------
+
+
+def test_each_operation_has_a_debit_and_a_credit():
+    tenant = TenantFactory(**TENANT_FIELDS)
+    lea = PersonFactory(tenant=tenant)
+    gig = make_gig(tenant=tenant, price="1000.00")
+    ExpenseFactory(gig=gig, amount="100.00")
+    ExpenseFactory(gig=gig, amount="30.00", person=lea)
+    quiet = make_gig(tenant=tenant, price="500.00")
+
+    rows = {row["gig"].pk: row for row in bord.operations(tenant, _filters())}
+
+    assert rows[gig.pk]["debit"] == D("130.00") and rows[gig.pk]["amount"] == D("1000.00")
+    assert rows[quiet.pk]["debit"] == D("0")
+
+
+def test_the_debit_follows_the_spender_filter():
+    tenant = TenantFactory(**TENANT_FIELDS)
+    lea = PersonFactory(tenant=tenant)
+    gig = make_gig(tenant=tenant)
+    ExpenseFactory(gig=gig, amount="100.00")
+    ExpenseFactory(gig=gig, amount="30.00", person=lea)
+
+    only_structure = bord.operations(tenant, _filters(spender="structure"))[0]["debit"]
+    only_lea = bord.operations(tenant, _filters(spender=str(lea.pk)))[0]["debit"]
+
+    assert (only_structure, only_lea) == (D("100.00"), D("30.00"))
+
+
+def test_the_table_has_a_debit_and_a_credit_column(client, tenant, gig):
+    ExpenseFactory(gig=gig, amount="130.00")
+
+    page = client.get(reverse("tenants:profile")).content.decode()
+    table = page.split('id="operations"')[1].split("</table>")[0]
+
+    assert ">Débit<" in table and ">Crédit<" in table and ">Montant<" not in table
+    assert "130 €" in table

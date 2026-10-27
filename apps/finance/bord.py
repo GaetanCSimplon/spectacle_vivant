@@ -317,7 +317,8 @@ def _planned_incl_tax(gig):
 
 
 def operations(tenant, filters, limit=None):
-    """One row per gig of the period: amount of the chosen figure, status and documents.
+    """One row per gig of the period: credit (the chosen figure), debit (its expenses), status
+    and documents.
 
     Amounts are per gig, whatever the date of the invoice or of the payment. Status: cancelled
     = cancelled gig; paid = fully invoiced and every invoice settled; pending = the rest.
@@ -341,6 +342,16 @@ def operations(tenant, filters, limit=None):
         .annotate(total=Sum("amount"))
     ):
         paid_by_gig[row["invoice__gig_id"]] = row["total"]
+
+    spent_rows = Expense.objects.filter(tenant=tenant, gig_id__in=ids)
+    if filters.spender == "structure":
+        spent_rows = spent_rows.filter(person__isnull=True)
+    elif filters.spender:
+        spent_rows = spent_rows.filter(person_id=filters.spender)
+    spent_by_gig = {
+        row["gig_id"]: row["total"]
+        for row in spent_rows.values("gig_id").annotate(total=Sum("amount"))
+    }
 
     rows = []
     for gig in gigs:
@@ -387,7 +398,8 @@ def operations(tenant, filters, limit=None):
                 "gig": gig,
                 "date": gig.date,
                 "label": gig.show.title,
-                "amount": amount,
+                "amount": amount,  # the credit: the figure chosen in the filters
+                "debit": spent_by_gig.get(gig.pk, ZERO),  # every expense of the date
                 "status": status,
                 "documents": documents,
             }

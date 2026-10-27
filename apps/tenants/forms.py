@@ -124,7 +124,7 @@ class PersonForm(AddressModelForm):
 
     # Typed with spaces ("1 85 05 78 006 084 91"): stored without them (see clean_*).
     social_security_number = forms.CharField(
-        label=_("n° de sécurité sociale"),
+        label=_("N° de sécurité sociale"),
         required=False,
         max_length=21,
         validators=[validate_social_security_number],
