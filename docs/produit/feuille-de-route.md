@@ -341,6 +341,14 @@ Demande de l'associé (réunion du 2026-10-27) : réunir les informations utiles
 
 - [x] **Ajustements du 2026-10-27** : tableau « Opérations récentes » de Bòrd avec colonnes **Débit** (toutes les dépenses de la date, filtre « Dépenses faites par » appliqué) et **Crédit** (le chiffre choisi dans les filtres), à la place de « Montant » ; fiche équipe : cases Artiste / Technicien alignées, libellé « N° de sécurité sociale » ; navigation : « Bòrd » juste après « Accueil » et en gras.
 
+### Sprint 3.19 — Feuille de route enrichie et espace équipe (2026-10-28)
+
+Demande du 2026-10-28 : une interface pour les membres de l'équipe en tournée. **Profils** : propriétaire, gestionnaire (rôle « membre »), artiste ou technicien en tournée **sans compte, par lien personnel secret** (décidé). Ordre : feuille de route d'abord, espace équipe ensuite.
+- [x] **PR 1 — contacts des hébergements et des repas** (migration `roadmaps/0004`, une table ajoutée) : le propriétaire ajoute à un hébergement ou à un repas un ou plusieurs contacts (nom, fonction, téléphone ; pas d'e-mail, visible de qui a le lien) depuis l'éditeur ; page publique (bouton « Appeler ») et PDF les affichent ; version de la feuille de route +1 à chaque changement. Les contacts du lieu existent déjà (annuaire : contacts rattachés au lieu).
+- [ ] **PR 2 — aperçu de carte** (migration : latitude et longitude du lieu et de l'hébergement) : géocodage Nominatim à l'enregistrement, cadre d'aperçu OpenStreetMap, liens « Itinéraire » conservés ; `CLAUDE.md` §10 à modifier avec l'accord de l'utilisateur (texte validé le 2026-10-28) ; page de confidentialité.
+- [ ] **PR 3 — espace équipe** : lien personnel secret par membre (jeton sur `Person`), page des dates du membre.
+- [ ] **PR 4 — déclaration de dépense par l'artiste** : proposition « à valider » avec photo du reçu, validée par le propriétaire (devient une dépense faite par ce membre, « à rembourser »). Dépend du bucket S3 en production.
+
 ### Sprint 3.8 — Légal, sécurité, finition, recette
 - [x] Pages : mentions légales, CGU, confidentialité (gabarits à compléter et à faire relire avant la mise en ligne).
 - [x] Export des données (F-81) : ZIP de CSV et de fichiers, page `ma-structure/export-donnees/`.

@@ -9,7 +9,7 @@ from apps.core.services import render_pdf
 from apps.gigs.models import GigMember
 from apps.tenants.models import Person
 
-from .models import Roadmap, RoadmapSlot
+from .models import Roadmap, RoadmapSlot, tel_link
 
 
 class AlreadyOnTheGig(Exception):
@@ -94,9 +94,7 @@ def public_path(token):
     return reverse("roadmap-public", args=[token])
 
 
-def _tel(phone):
-    """A phone number as a tel: link wants it: digits and a leading +, no spaces."""
-    return "".join(c for i, c in enumerate(phone.strip()) if c.isdigit() or (c == "+" and i == 0))
+_tel = tel_link
 
 
 def _people(people):
@@ -128,8 +126,8 @@ def public_context(roadmap):
         },
         "crew_headcount": gig.crew_headcount,
         "slots": list(roadmap.slots.all()),
-        "lodgings": list(roadmap.lodgings.all()),
-        "meals": list(roadmap.meals.all()),
+        "lodgings": list(roadmap.lodgings.prefetch_related("contacts")),
+        "meals": list(roadmap.meals.prefetch_related("contacts")),
         "notes": roadmap.notes,
         "version": roadmap.version,
         "updated_at": roadmap.updated_at,

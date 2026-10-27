@@ -27,7 +27,20 @@ class ShareActionConverter:
         return value
 
 
+class PlaceConverter:
+    """A section whose items can carry contacts."""
+
+    regex = "hebergements|repas"
+
+    def to_python(self, value):
+        return value
+
+    def to_url(self, value):
+        return value
+
+
 register_converter(SectionConverter, "section")
+register_converter(PlaceConverter, "place")
 register_converter(ShareActionConverter, "shareaction")
 
 urlpatterns = [
@@ -36,6 +49,16 @@ urlpatterns = [
     path("notes/", views.NotesView.as_view(), name="notes"),
     path("partage/<shareaction:action>/", views.ShareView.as_view(), name="share"),
     path("equipe/depuis-mon-equipe/", views.TeamMemberAddView.as_view(), name="team-add"),
+    path(
+        "<place:section>/<int:pk>/contacts/ajouter/",
+        views.PlaceContactAddView.as_view(),
+        name="contact-add",
+    ),
+    path(
+        "<place:section>/<int:pk>/contacts/<int:contact_pk>/supprimer/",
+        views.PlaceContactDeleteView.as_view(),
+        name="contact-delete",
+    ),
     path("<section:section>/ajouter/", views.ItemAddView.as_view(), name="item-add"),
     path("<section:section>/<int:pk>/modifier/", views.ItemEditView.as_view(), name="item-edit"),
     path(

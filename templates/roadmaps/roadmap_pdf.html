@@ -43,6 +43,7 @@
         <p><strong>{{ lodging.name }}</strong>{% if lodging.arrival_time %} — arrivée {{ lodging.arrival_time|time:"H:i" }}{% endif %}</p>
         {% if lodging.full_address %}<p>{{ lodging.full_address|linebreaksbr }}</p>{% endif %}
         {% if lodging.notes %}<p class="muted">{{ lodging.notes|linebreaksbr }}</p>{% endif %}
+        {% for contact in lodging.contacts.all %}<p class="muted">Contact : {{ contact.name }}{% if contact.role %} ({{ contact.role }}){% endif %}{% if contact.phone %} — {{ contact.phone }}{% endif %}</p>{% endfor %}
       {% endfor %}
     {% endif %}
 
@@ -52,6 +53,7 @@
       {% for meal in meals %}
         <p><strong>{{ meal.place }}</strong>{% if meal.time %} — {{ meal.time|time:"H:i" }}{% endif %}</p>
         {% if meal.notes %}<p class="muted">{{ meal.notes|linebreaksbr }}</p>{% endif %}
+        {% for contact in meal.contacts.all %}<p class="muted">Contact : {{ contact.name }}{% if contact.role %} ({{ contact.role }}){% endif %}{% if contact.phone %} — {{ contact.phone }}{% endif %}</p>{% endfor %}
       {% endfor %}
     {% endif %}
 

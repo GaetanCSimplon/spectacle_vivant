@@ -5,8 +5,14 @@ from apps.gigs.factories import GigFactory, GigMemberFactory
 from apps.gigs.models import GigMember
 from apps.tenants.factories import TenantFactory
 
-from ..factories import LodgingFactory, MealFactory, RoadmapFactory, RoadmapSlotFactory
-from ..models import Lodging, Meal, Roadmap, RoadmapSlot
+from ..factories import (
+    LodgingFactory,
+    MealFactory,
+    PlaceContactFactory,
+    RoadmapFactory,
+    RoadmapSlotFactory,
+)
+from ..models import Lodging, Meal, PlaceContact, Roadmap, RoadmapSlot
 
 pytestmark = pytest.mark.django_db
 
@@ -15,6 +21,7 @@ CASES = [
     (RoadmapSlot, RoadmapSlotFactory),
     (Lodging, LodgingFactory),
     (Meal, MealFactory),
+    (PlaceContact, PlaceContactFactory),
     (GigMember, GigMemberFactory),
 ]
 
@@ -35,6 +42,8 @@ def test_objects_do_not_mix_between_tenants(model, factory):
 
 def _parent_kwargs(model, tenant):
     gig = GigFactory(tenant=tenant)
+    if model is PlaceContact:
+        return {"lodging": LodgingFactory(roadmap=RoadmapFactory(gig=gig))}
     if model in (Roadmap, GigMember):
         return {"gig": gig}
     return {"roadmap": RoadmapFactory(gig=gig)}

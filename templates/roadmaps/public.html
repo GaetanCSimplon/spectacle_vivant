@@ -70,6 +70,7 @@
                 {% include "roadmaps/_copy_address.html" with address=lodging.one_line_address %}
               {% endif %}
               {% if lodging.notes %}<p class="text-gray-600">{{ lodging.notes|linebreaksbr }}</p>{% endif %}
+              {% if lodging.contacts.all %}{% include "roadmaps/_public_place_contacts.html" with contacts=lodging.contacts.all %}{% endif %}
             </li>
           {% endfor %}
         </ul>
@@ -83,6 +84,7 @@
             <li class="card text-sm">
               <p class="font-medium">{{ meal.place }}{% if meal.time %} · <span class="data">{{ meal.time|time:"H:i" }}</span>{% endif %}</p>
               {% if meal.notes %}<p class="text-gray-600">{{ meal.notes|linebreaksbr }}</p>{% endif %}
+              {% if meal.contacts.all %}{% include "roadmaps/_public_place_contacts.html" with contacts=meal.contacts.all %}{% endif %}
             </li>
           {% endfor %}
         </ul>
