@@ -1,4 +1,7 @@
+from datetime import date
+
 from django import forms
+from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 
 from apps.catalog.models import Show
@@ -7,7 +10,14 @@ from apps.finance import bord
 
 from . import services
 from .models import Person, Tenant
-from .validators import normalize_bic, normalize_code_ape, normalize_iban, validate_code_ape
+from .validators import (
+    normalize_bic,
+    normalize_code_ape,
+    normalize_iban,
+    normalize_social_security_number,
+    validate_code_ape,
+    validate_social_security_number,
+)
 
 
 class OnboardingForm(forms.ModelForm):
@@ -102,7 +112,23 @@ class DeleteTenantForm(forms.Form):
 
 class PersonForm(AddressModelForm):
     # Private data: only the owner sees and changes these (see __init__).
-    PRIVATE_FIELDS = ["address", "postal_code", "city", "department", "guso_number"]
+    PRIVATE_FIELDS = [
+        "address",
+        "postal_code",
+        "city",
+        "department",
+        "guso_number",
+        "birth_date",
+        "social_security_number",
+    ]
+
+    # Typed with spaces ("1 85 05 78 006 084 91"): stored without them (see clean_*).
+    social_security_number = forms.CharField(
+        label=_("n° de sécurité sociale"),
+        required=False,
+        max_length=21,
+        validators=[validate_social_security_number],
+    )
 
     class Meta:
         model = Person
@@ -110,9 +136,13 @@ class PersonForm(AddressModelForm):
             "last_name",
             "first_name",
             "role",
+            "is_artist",
+            "is_technician",
             "status",
             "phone",
             "email",
+            "birth_date",
+            "social_security_number",
             "address",
             "postal_code",
             "city",
@@ -125,6 +155,7 @@ class PersonForm(AddressModelForm):
             "role": forms.TextInput(attrs={"list": "person-roles"}),
             "status": forms.TextInput(attrs={"list": "person-statuses"}),
             "average_fee": forms.NumberInput(attrs={"step": "0.01", "min": "0"}),
+            "birth_date": forms.DateInput(attrs={"type": "date"}, format="%Y-%m-%d"),
             "notes": forms.Textarea(attrs={"rows": 3}),
             "address": forms.Textarea(attrs={"rows": 2}),
         }
@@ -133,10 +164,16 @@ class PersonForm(AddressModelForm):
             "status": _("Choisissez une proposition ou écrivez la vôtre."),
             "address": _("Visible par le propriétaire de la structure seulement."),
             "guso_number": _("Visible par le propriétaire seulement. Pour votre suivi."),
+            "birth_date": _("Visible par le propriétaire seulement."),
+            "social_security_number": _(
+                "Visible par le propriétaire seulement, pour la personne qui gère la paie et "
+                "l'administratif. Il n'apparaît jamais dans vos documents."
+            ),
+            "is_artist": _("Cochez l'une, l'autre ou les deux."),
             "average_fee": _(
                 "Facultatif, pour votre suivi. Il n'apparaît jamais dans vos documents."
             ),
-            "notes": _("N'y notez pas de numéro de sécurité sociale."),
+            "notes": _("N'y notez pas de numéro de sécurité sociale : il a son propre champ."),
         }
 
     def __init__(self, *args, tenant=None, is_owner=False, **kwargs):
@@ -154,6 +191,15 @@ class PersonForm(AddressModelForm):
 
     def clean_status(self):
         return " ".join(self.cleaned_data["status"].split())
+
+    def clean_social_security_number(self):
+        return normalize_social_security_number(self.cleaned_data["social_security_number"])
+
+    def clean_birth_date(self):
+        birth_date = self.cleaned_data["birth_date"]
+        if birth_date is not None and not date(1900, 1, 1) <= birth_date <= timezone.localdate():
+            raise forms.ValidationError(_("Cette date de naissance n'est pas plausible."))
+        return birth_date
 
     def clean_average_fee(self):
         fee = self.cleaned_data["average_fee"]

@@ -254,16 +254,38 @@ def checklists_rows(tenant):
 
 
 def team_rows(tenant, include_private=False):
-    """The private columns (address, GUSO number) are for the owner's export only."""
-    header = ["Nom", "Prénom", "Fonction", "Statut", "Téléphone", "E-mail", "Cachet moyen", "Notes"]
+    """The private columns (address, GUSO number, birth date, social security number) are for
+    the owner's export only."""
+    header = [
+        "Nom",
+        "Prénom",
+        "Fonction",
+        "Artiste",
+        "Technicien",
+        "Statut",
+        "Téléphone",
+        "E-mail",
+        "Cachet moyen",
+        "Notes",
+    ]
     if include_private:
-        header += ["Adresse", "Code postal", "Ville", "Département", "N° GUSO"]
+        header += [
+            "Adresse",
+            "Code postal",
+            "Ville",
+            "Département",
+            "N° GUSO",
+            "Date de naissance",
+            "N° de sécurité sociale",
+        ]
     rows = []
     for p in Person.objects.filter(tenant=tenant):
         row = [
             text(p.last_name),
             text(p.first_name),
             text(p.role),
+            "oui" if p.is_artist else "",
+            "oui" if p.is_technician else "",
             text(p.status),
             text(p.phone),
             text(p.email),
@@ -277,6 +299,8 @@ def team_rows(tenant, include_private=False):
                 text(p.city),
                 text(p.get_department_display()),
                 text(p.guso_number),
+                p.birth_date.strftime("%d/%m/%Y") if p.birth_date else "",
+                text(p.formatted_social_security_number),
             ]
         rows.append(row)
     return header, rows
