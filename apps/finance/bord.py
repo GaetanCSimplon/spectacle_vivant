@@ -19,7 +19,7 @@ from apps.documents.models import Invoice, Quote
 from apps.gigs.models import OPTION_WARNING_DAYS, Gig, GigMember
 
 from .dashboard import awaiting_payment
-from .models import Expense, Payment
+from .models import Expense, ExpenseClaim, Payment
 from .services import INVOICED, ZERO, expense_split
 
 CONFIRMED = (Gig.Status.CONFIRMED, Gig.Status.SIGNED)
@@ -125,6 +125,16 @@ def _expense_rows(tenant, filters):
     elif filters.spender:
         rows = rows.filter(person_id=filters.spender)
     return rows
+
+
+def pending_claims(tenant):
+    """Expenses declared by team members and not yet accepted or refused (whatever the date)."""
+    claims = list(
+        ExpenseClaim.objects.filter(tenant=tenant, status=ExpenseClaim.Status.PENDING)
+        .select_related("person", "gig__show")
+        .order_by("created_at", "id")
+    )
+    return {"rows": claims, "total": sum((claim.amount for claim in claims), ZERO)}
 
 
 def to_reimburse(tenant):
@@ -535,6 +545,7 @@ def summary(tenant, filters, today):
         "revenue": revenue_totals,
         "expenses": expense_totals,
         "to_reimburse": to_reimburse(tenant),
+        "claims": pending_claims(tenant),
         "balance": balance(revenue_totals, expense_totals, filters.figure),
         "receivables": receivables(tenant, today, filters.show),
         "people": people_mobilised(tenant, filters),

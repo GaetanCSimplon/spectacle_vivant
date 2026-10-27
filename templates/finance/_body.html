@@ -87,6 +87,42 @@
     </p>
   {% endfor %}
 
+  {% if claims %}
+    <h2 class="mb-2 mt-6 text-sm font-semibold uppercase text-gray-500">{% translate "Dépenses à valider" %}</h2>
+    <ul class="mb-3 space-y-2">
+      {% for claim in claims %}
+        <li class="card card-context text-sm">
+          <div class="flex items-start justify-between gap-3">
+            <div class="min-w-0">
+              <p class="font-medium">{{ claim.label }}</p>
+              <p>{% blocktranslate with name=claim.person.full_name day=claim.date|date:"d/m/Y" category=claim.get_category_display %}Déclarée par {{ name }} · {{ day }} · {{ category }}{% endblocktranslate %}</p>
+              {% if claim.receipt_file %}
+                <a href="{% url 'finance:claim-receipt' gig.pk claim.pk %}" class="underline">{% translate "Justificatif" %}</a>
+              {% else %}
+                <p>{% translate "Pas de justificatif." %}</p>
+              {% endif %}
+            </div>
+            <p class="data shrink-0 font-medium">{{ claim.amount }} €</p>
+          </div>
+          <div class="mt-3 flex flex-wrap gap-3">
+            <form method="post" action="{% url 'finance:claim-accept' gig.pk claim.pk %}"
+                  hx-post="{% url 'finance:claim-accept' gig.pk claim.pk %}"
+                  hx-target="#finance-body" hx-swap="outerHTML">
+              {% csrf_token %}
+              <button type="submit" class="btn btn-secondary">{% translate "Valider (à rembourser)" %}</button>
+            </form>
+            <form method="post" action="{% url 'finance:claim-refuse' gig.pk claim.pk %}"
+                  hx-post="{% url 'finance:claim-refuse' gig.pk claim.pk %}"
+                  hx-target="#finance-body" hx-swap="outerHTML">
+              {% csrf_token %}
+              <button type="submit" class="text-red-700 underline">{% translate "Refuser" %}</button>
+            </form>
+          </div>
+        </li>
+      {% endfor %}
+    </ul>
+  {% endif %}
+
   <h2 class="mb-2 mt-6 text-sm font-semibold uppercase text-gray-500">{% translate "Dépenses" %}</h2>
   <ul class="mb-3 space-y-2">
     {% for expense in expenses %}

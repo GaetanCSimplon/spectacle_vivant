@@ -6,12 +6,13 @@ from apps.core.tests.isolation_registry import mark_isolation_tested
 from apps.tenants.factories import TenantFactory
 
 from .. import services
-from ..factories import ExpenseFactory
-from ..models import Expense, Payment
+from ..factories import ExpenseClaimFactory, ExpenseFactory
+from ..models import Expense, ExpenseClaim, Payment
 from .helpers import issued_invoice, make_gig
 
 mark_isolation_tested(Payment)
 mark_isolation_tested(Expense)
+mark_isolation_tested(ExpenseClaim)
 
 pytestmark = pytest.mark.django_db
 
@@ -28,6 +29,15 @@ def test_expenses_do_not_mix_between_tenants():
 
     assert list(Expense.objects.filter(tenant=tenant_a)) == [expense_a]
     assert expense_a.tenant == expense_a.gig.tenant
+
+
+def test_expense_claims_do_not_mix_between_tenants():
+    tenant_a, tenant_b = TenantFactory(), TenantFactory()
+    claim_a = ExpenseClaimFactory(gig__tenant=tenant_a)
+    ExpenseClaimFactory(gig__tenant=tenant_b)
+
+    assert list(ExpenseClaim.objects.filter(tenant=tenant_a)) == [claim_a]
+    assert claim_a.tenant == claim_a.gig.tenant == claim_a.person.tenant
 
 
 def test_payments_do_not_mix_between_tenants():

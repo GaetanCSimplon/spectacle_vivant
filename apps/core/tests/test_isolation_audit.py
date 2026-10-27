@@ -24,7 +24,7 @@ from apps.documents import invoicing
 from apps.documents import services as doc_services
 from apps.documents.models import Invoice
 from apps.finance import services as finance_services
-from apps.finance.factories import ExpenseFactory
+from apps.finance.factories import ExpenseClaimFactory, ExpenseFactory
 from apps.finance.models import Payment
 from apps.gigs.factories import GigFactory
 from apps.gigs.models import Gig
@@ -63,6 +63,10 @@ PUBLIC = {
     "team-space",  # the personal link is the access right (tests: tenants/test_team_space.py)
     "team-space-gig",
     "team-space-pdf",
+    "team-expenses",  # the personal link is the access right (finance/test_expense_claims.py)
+    "team-expense-edit",
+    "team-expense-delete",
+    "team-expense-receipt",
     "promoter-form-public",  # the secret link is the access right
     "promoter-form-thanks",
 }
@@ -134,6 +138,9 @@ ROUTES = [
     ("finance:expense-delete", {"gig_id": "gig", "pk": "expense"}),
     ("finance:expense-reimburse", {"gig_id": "gig", "pk": "expense"}),
     ("finance:expense-receipt", {"gig_id": "gig", "pk": "expense"}),
+    ("finance:claim-accept", {"gig_id": "gig", "pk": "claim"}),
+    ("finance:claim-refuse", {"gig_id": "gig", "pk": "claim"}),
+    ("finance:claim-receipt", {"gig_id": "gig", "pk": "claim"}),
     ("documents:contract-complete", {"gig_id": "gig"}),
     ("documents:contract-preview", {"gig_id": "gig"}),
     ("documents:contract-history", {"gig_id": "gig"}),
@@ -212,6 +219,8 @@ def _build_tenant_a():
     line = invoicing.add_line(draft, f"Ligne {MARKER}", "50.00")
     expense = ExpenseFactory(gig=gig, label=f"Dépense {MARKER}")
     expense.receipt_file.save("ticket.pdf", ContentFile(b"%PDF ticket"))
+    claim = ExpenseClaimFactory(gig=gig, label=f"Proposition {MARKER}")
+    claim.receipt_file.save("recu.pdf", ContentFile(b"%PDF recu"))
     roadmap = RoadmapFactory(gig=gig, notes=f"Notes {MARKER}")
     slot = RoadmapSlotFactory(roadmap=roadmap)
     lodging = LodgingFactory(roadmap=roadmap, name=f"Hôtel {MARKER}")
@@ -232,6 +241,7 @@ def _build_tenant_a():
         "draft": draft,
         "line": line,
         "expense": expense,
+        "claim": claim,
         "slot": slot,
         "lodging": lodging,
         "meal": meal,

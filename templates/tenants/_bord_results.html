@@ -209,6 +209,23 @@
   {% endif %}
 </section>
 
+{% if claims.rows %}
+  <section class="card card-context mb-4" id="a-valider" aria-labelledby="bord-claims">
+    <h2 id="bord-claims" class="stat-label !text-xs !font-semibold">{% translate "Dépenses à valider" %}</h2>
+    <p class="stat-value">{{ claims.total|floatformat:"0g" }} €</p>
+    <p class="text-sm">{% translate "Dépenses déclarées par les membres de l'équipe, pas encore comptées : ouvrez la date pour les valider ou les refuser." %}</p>
+    <ul class="mt-2 divide-y divide-page-line text-sm">
+      {% for claim in claims.rows|slice:":10" %}
+        <li class="flex items-center justify-between gap-3 py-2">
+          <a href="{% url 'finance:page' claim.gig.pk %}" class="min-w-0 underline">{{ claim.person.full_name }} · {{ claim.label }} · {{ claim.gig.show.title }}</a>
+          <span class="data shrink-0">{{ claim.amount|floatformat:"0g" }} €</span>
+        </li>
+      {% endfor %}
+    </ul>
+    {% if claims.rows|length > 10 %}<p class="mt-2 text-sm">{% blocktranslate with n=claims.rows|length|add:"-10" %}{{ n }} autre(s) à traiter.{% endblocktranslate %}</p>{% endif %}
+  </section>
+{% endif %}
+
 {% if to_reimburse.people %}
   <section class="card card-context mb-4" id="a-rembourser" aria-labelledby="bord-reimburse">
     <h2 id="bord-reimburse" class="stat-label !text-xs !font-semibold">{% translate "À rembourser aux membres" %}</h2>

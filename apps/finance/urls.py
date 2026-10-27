@@ -22,6 +22,21 @@ urlpatterns = [
         name="expense-reimburse",
     ),
     path(
+        "propositions/<int:pk>/valider/",
+        views.ClaimDecideView.as_view(action="accept"),
+        name="claim-accept",
+    ),
+    path(
+        "propositions/<int:pk>/refuser/",
+        views.ClaimDecideView.as_view(action="refuse"),
+        name="claim-refuse",
+    ),
+    path(
+        "propositions/<int:pk>/justificatif/",
+        views.ClaimReceiptView.as_view(),
+        name="claim-receipt",
+    ),
+    path(
         "depenses/<int:pk>/justificatif/",
         views.ExpenseReceiptView.as_view(),
         name="expense-receipt",

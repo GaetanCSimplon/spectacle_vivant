@@ -3,6 +3,7 @@
 import datetime
 import os
 
+from django.contrib import messages
 from django.http import FileResponse, Http404
 from django.shortcuts import get_object_or_404, redirect, render
 from django.views import View
@@ -13,7 +14,7 @@ from apps.gigs.models import Gig
 
 from . import exports, services
 from .forms import ExpenseForm, PaymentForm, PeriodForm
-from .models import Expense, Payment
+from .models import Expense, ExpenseClaim, Payment
 
 
 class FinanceMixin(TenantScopedMixin):
@@ -34,6 +35,9 @@ class FinanceMixin(TenantScopedMixin):
             invoice__gig=self.gig,
             tenant=self.request.tenant,
         )
+
+    def get_claim(self, pk):
+        return get_object_or_404(ExpenseClaim, pk=pk, gig=self.gig, tenant=self.request.tenant)
 
     def get_expense(self, pk):
         return get_object_or_404(Expense, pk=pk, gig=self.gig, tenant=self.request.tenant)
@@ -63,6 +67,9 @@ class FinanceMixin(TenantScopedMixin):
             "gig": self.gig,
             "balance": services.gig_balance(self.gig),
             "rows": rows,
+            "claims": ExpenseClaim.objects.filter(
+                gig=self.gig, tenant=tenant, status=ExpenseClaim.Status.PENDING
+            ).select_related("person"),
             "expenses": expenses,
             "expense_split": services.expense_split(expenses),
             "expense_form": expense_form or ExpenseForm(tenant=tenant),
@@ -195,6 +202,40 @@ class ExpenseReimburseView(FinanceMixin, View):
         if expense.person_id is not None:
             services.set_reimbursed(expense, request.POST.get("state") != "undo")
         return self.done()
+
+
+class ClaimDecideView(FinanceMixin, View):
+    """The owner accepts (it becomes an expense of the member) or refuses a proposal."""
+
+    http_method_names = ["post"]
+    action = ""  # "accept" or "refuse", set in urls.py
+
+    def post(self, request, gig_id, pk):
+        self.load(gig_id)
+        claim = self.get_claim(pk)
+        try:
+            if self.action == "accept":
+                services.accept_claim(claim)
+            else:
+                services.refuse_claim(claim)
+        except services.ClaimError as error:
+            messages.error(request, error.args[0])
+        return self.done()
+
+
+class ClaimReceiptView(FinanceMixin, View):
+    """The receipt of a pending claim, for the owner only (checks the tenant, no /media/ route)."""
+
+    def get(self, request, gig_id, pk):
+        self.load(gig_id)
+        claim = self.get_claim(pk)
+        if not claim.receipt_file:
+            raise Http404
+        return FileResponse(
+            claim.receipt_file.open("rb"),
+            as_attachment=True,
+            filename=os.path.basename(claim.receipt_file.name),
+        )
 
 
 class ExpenseDeleteView(FinanceMixin, View):
