@@ -17,7 +17,7 @@ from apps.addressbook.models import Contact, Promoter, Venue
 from apps.catalog.models import Show
 from apps.documents.models import Contract, ContractVersion, Invoice, Quote
 from apps.finance import exports as finance_exports
-from apps.finance.models import Expense
+from apps.finance.models import Expense, ExpenseClaim
 from apps.gigs import checklist as gig_checklist
 from apps.gigs.models import Gig, GigChecklist
 
@@ -359,6 +359,9 @@ def stored_files(tenant):
     for model, folder in ((Quote, "devis"), (Invoice, "factures")):
         for doc in model.objects.filter(tenant=tenant).exclude(pdf_file=""):
             yield f"{folder}/{_safe(doc.number or f'brouillon-{doc.pk}')}.pdf", doc.pdf_file
+    for claim in ExpenseClaim.objects.filter(tenant=tenant).exclude(receipt_file=""):
+        name = PurePosixPath(claim.receipt_file.name).name
+        yield f"justificatifs-a-valider/{claim.date}-{claim.pk}-{_safe(name)}", claim.receipt_file
     for expense in Expense.objects.filter(tenant=tenant).exclude(receipt_file=""):
         name = PurePosixPath(expense.receipt_file.name).name
         yield f"justificatifs/{expense.date}-{expense.pk}-{_safe(name)}", expense.receipt_file

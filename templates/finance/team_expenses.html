@@ -1,0 +1,63 @@
+{% extends "public/base_public.html" %}
+{% load i18n %}
+
+{% block title %}{% translate "Mes dépenses" %} — Bòrd Pro{% endblock %}
+
+{% block content %}
+  <p class="mb-4"><a href="{{ back_url }}" class="text-blue-700 underline">← {% translate "Mes dates" %}</a></p>
+  <h1 class="!mb-1">{% translate "Mes dépenses" %}</h1>
+  <p class="mb-6 text-sm text-gray-600">{% translate "Déclarez ici ce que vous avez payé pour une date. La personne qui s'occupe de la gestion vérifie, puis vous rembourse." %}</p>
+
+  <form method="post" enctype="multipart/form-data" class="card mb-8 space-y-4"
+        action="{% if editing %}{% url 'team-expense-edit' token editing.pk %}{% else %}{% url 'team-expenses' token %}{% endif %}">
+    {% csrf_token %}
+    <h2 class="!text-lg">{% if editing %}{% translate "Corriger la dépense" %}{% else %}{% translate "Nouvelle dépense" %}{% endif %}</h2>
+    {{ form.non_field_errors }}
+    {% for field in form %}{% include "components/_field_p.html" %}{% endfor %}
+    <button type="submit" class="btn btn-primary btn-block">{% if editing %}{% translate "Enregistrer" %}{% else %}{% translate "Envoyer la dépense" %}{% endif %}</button>
+    {% if editing %}<a href="{% url 'team-expenses' token %}" class="block text-center text-sm text-gray-500 underline">{% translate "Annuler" %}</a>{% endif %}
+  </form>
+
+  <h2 class="mb-2 text-sm font-semibold uppercase text-gray-500">{% translate "Mes déclarations" %}</h2>
+  {% if claims %}
+    <ul class="mb-6 flex flex-col gap-2">
+      {% for claim in claims %}
+        <li class="card space-y-2 text-sm">
+          <div class="flex items-start justify-between gap-3">
+            <div class="min-w-0">
+              <p class="font-medium">{{ claim.label }}</p>
+              <p class="text-gray-600">{{ claim.date|date:"d/m/Y" }} · {{ claim.get_category_display }} · {{ claim.gig.show.title }}</p>
+            </div>
+            <p class="data shrink-0 font-medium">{{ claim.amount }} €</p>
+          </div>
+          <p class="flex flex-wrap items-center gap-2">
+            {% if claim.status == 'pending' %}
+              <span class="pill pill-warn">{% translate "En attente de validation" %}</span>
+            {% elif claim.status == 'accepted' %}
+              <span class="pill pill-good">{% translate "Validée" %}</span>
+              {% if claim.expense.reimbursed_on %}
+                <span class="pill pill-good">{% blocktranslate with day=claim.expense.reimbursed_on|date:"d/m/Y" %}Remboursée le {{ day }}{% endblocktranslate %}</span>
+              {% else %}
+                <span class="text-gray-600">{% translate "À rembourser" %}</span>
+              {% endif %}
+            {% else %}
+              <span class="pill pill-bad">{% translate "Refusée" %}</span>
+            {% endif %}
+          </p>
+          {% if claim.status == 'pending' %}
+            <div class="flex flex-wrap items-center gap-4">
+              {% if claim.receipt_file %}<a href="{% url 'team-expense-receipt' token claim.pk %}" class="text-blue-700 underline">{% translate "Justificatif" %}</a>{% endif %}
+              <a href="{% url 'team-expense-edit' token claim.pk %}" class="text-blue-700 underline">{% translate "Corriger" %}</a>
+              <form method="post" action="{% url 'team-expense-delete' token claim.pk %}">
+                {% csrf_token %}
+                <button type="submit" class="text-red-700 underline">{% translate "Retirer" %}</button>
+              </form>
+            </div>
+          {% endif %}
+        </li>
+      {% endfor %}
+    </ul>
+  {% else %}
+    <p class="card mb-6 text-sm text-gray-600">{% translate "Vous n'avez encore rien déclaré." %}</p>
+  {% endif %}
+{% endblock %}

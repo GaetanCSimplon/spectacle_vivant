@@ -7,6 +7,8 @@
   <h1 class="!mb-1">{% blocktranslate with name=person.first_name %}Bonjour {{ name }}{% endblocktranslate %}</h1>
   <p class="mb-6 text-sm text-gray-600">{% blocktranslate with name=person.tenant.name %}Voici vos dates avec {{ name }}. Gardez ce lien pour vous : il donne accès à vos feuilles de route.{% endblocktranslate %}</p>
 
+  <a href="{% url 'team-expenses' token %}" class="btn btn-primary btn-block mb-6">{% translate "Déclarer une dépense" %}</a>
+
   <h2 class="mb-2 text-sm font-semibold uppercase text-gray-500">{% translate "Mes prochaines dates" %}</h2>
   {% if coming %}
     <ul class="mb-6 flex flex-col gap-2">

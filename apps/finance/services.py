@@ -14,7 +14,7 @@ from django.utils.translation import gettext_lazy as _
 from apps.documents import invoicing
 from apps.documents.models import Invoice
 
-from .models import Expense, Payment
+from .models import Expense, ExpenseClaim, Payment
 
 ZERO = invoicing.ZERO
 PAYABLE = (Invoice.Status.ISSUED, Invoice.Status.PAID)
@@ -163,6 +163,80 @@ def set_reimbursed(expense, done):
         raise ValueError("Only an expense made by a member can be reimbursed.")
     expense.reimbursed_on = timezone.localdate() if done else None
     expense.save(update_fields=["reimbursed_on"])
+
+
+MAX_PENDING_CLAIMS = 20
+
+
+class ClaimError(Exception):
+    """A claim action is refused; the first argument is a message for the user."""
+
+
+def submit_claim(claim):
+    """Save a new claim of a team member, unless they already have too many waiting."""
+    waiting = ExpenseClaim.objects.filter(
+        tenant=claim.tenant, person=claim.person, status=ExpenseClaim.Status.PENDING
+    ).count()
+    if waiting >= MAX_PENDING_CLAIMS:
+        raise ClaimError(
+            _("Vous avez déjà %(n)s dépenses en attente : attendez qu'elles soient validées.")
+            % {"n": MAX_PENDING_CLAIMS}
+        )
+    claim.save()
+    return claim
+
+
+def save_claim(claim, previous_receipt=""):
+    """Save an edited pending claim; a receipt it no longer uses is removed from the storage."""
+    claim.save()
+    if previous_receipt and previous_receipt != claim.receipt_file.name:
+        _delete_file(previous_receipt)
+
+
+def withdraw_claim(claim):
+    """The member takes a pending proposal back."""
+    name = claim.receipt_file.name
+    claim.delete()
+    _delete_file(name)
+
+
+@transaction.atomic
+def accept_claim(claim):
+    """The owner accepts: the proposal becomes an expense made by this member (to reimburse)."""
+    claim = ExpenseClaim.objects.select_for_update().get(pk=claim.pk, tenant=claim.tenant)
+    if not claim.is_pending:
+        raise ClaimError(_("Cette proposition a déjà été traitée."))
+    expense = Expense(
+        tenant=claim.tenant,
+        gig=claim.gig,
+        category=claim.category,
+        label=claim.label,
+        amount=claim.amount,
+        date=claim.date,
+        person=claim.person,
+    )
+    if claim.receipt_file:
+        expense.receipt_file = claim.receipt_file.name  # the file moves, it is not copied
+    expense.save()
+    claim.status = ExpenseClaim.Status.ACCEPTED
+    claim.decided_at = timezone.now()
+    claim.expense = expense
+    claim.receipt_file = ""
+    claim.save()
+    return expense
+
+
+@transaction.atomic
+def refuse_claim(claim):
+    claim = ExpenseClaim.objects.select_for_update().get(pk=claim.pk, tenant=claim.tenant)
+    if not claim.is_pending:
+        raise ClaimError(_("Cette proposition a déjà été traitée."))
+    name = claim.receipt_file.name
+    claim.status = ExpenseClaim.Status.REFUSED
+    claim.decided_at = timezone.now()
+    claim.receipt_file = ""  # nothing to keep once it is refused
+    claim.save()
+    transaction.on_commit(lambda: _delete_file(name))
 
 
 def _delete_file(name):

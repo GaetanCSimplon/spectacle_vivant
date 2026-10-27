@@ -31,6 +31,7 @@ from apps.core.views import (
     home,
     robots_txt,
 )
+from apps.finance import team_views as finance_team_views
 from apps.finance import views as finance_views
 from apps.roadmaps import views as roadmap_views
 from apps.tenants import public_views as tenants_public_views
@@ -80,6 +81,26 @@ urlpatterns = [
         "equipe/<str:token>/dates/<int:gig_id>/pdf/",
         tenants_public_views.TeamSpacePdfView.as_view(),
         name="team-space-pdf",
+    ),
+    path(
+        "equipe/<str:token>/depenses/",
+        finance_team_views.TeamExpensesView.as_view(),
+        name="team-expenses",
+    ),
+    path(
+        "equipe/<str:token>/depenses/<int:pk>/modifier/",
+        finance_team_views.TeamExpenseEditView.as_view(),
+        name="team-expense-edit",
+    ),
+    path(
+        "equipe/<str:token>/depenses/<int:pk>/supprimer/",
+        finance_team_views.TeamExpenseDeleteView.as_view(),
+        name="team-expense-delete",
+    ),
+    path(
+        "equipe/<str:token>/depenses/<int:pk>/justificatif/",
+        finance_team_views.TeamExpenseReceiptView.as_view(),
+        name="team-expense-receipt",
     ),
     path(
         "formulaire-organisateur/merci/",
