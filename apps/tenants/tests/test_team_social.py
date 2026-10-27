@@ -200,3 +200,16 @@ def test_another_structure_never_reaches_a_card(client):
     foreign = PersonFactory(social_security_number=NIR)
 
     assert client.get(reverse("tenants:person-detail", args=[foreign.pk])).status_code == 404
+
+
+# --- the form -----------------------------------------------------------------------------
+
+
+def test_the_two_boxes_sit_side_by_side_and_the_number_has_its_full_label(client):
+    _login(client, "owner")
+
+    page = client.get(reverse("tenants:person-create")).content.decode()
+    row = page.split('role="group"')[1].split("</div>")[0]
+
+    assert 'name="is_artist"' in row and 'name="is_technician"' in row
+    assert "N° de sécurité sociale" in page and "n° de sécurité sociale :" not in page

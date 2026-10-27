@@ -1,3 +1,5 @@
+import re
+
 import pytest
 from django.urls import reverse
 
@@ -125,3 +127,17 @@ def test_logged_out_pages_have_no_column_and_keep_their_top_bar(client):
     header = content.split("<header")[1].split(">")[0]
     assert "lg:hidden" not in header
     assert "Bòrd Pro" in content
+
+
+def test_bord_comes_right_after_the_home_page_and_is_in_bold(client):
+    client.force_login(MembershipFactory().user)
+
+    content = client.get(reverse("home")).content.decode()
+    sidebar = content.split("<aside")[1].split("</aside>")[0]
+    nav = sidebar.split("<nav")[1].split("</nav>")[0]
+    labels = re.findall(r">(Accueil|Bòrd|Mes dates|Spectacles|Contacts)</a>", nav)
+
+    assert labels == ["Accueil", "Bòrd", "Mes dates", "Spectacles", "Contacts"]
+    bord_link = re.search(r"<a[^>]*>Bòrd</a>", nav.replace("\n", " ")).group(0)
+    assert "font-bold" in bord_link
+    assert "font-bold" not in re.search(r"<a[^>]*>Mes dates</a>", nav.replace("\n", " ")).group(0)

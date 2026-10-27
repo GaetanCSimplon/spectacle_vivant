@@ -10,6 +10,11 @@
     {% if view == 'home' %}aria-current="page"{% endif %}
   >{% translate "Accueil" %}</a>
   <a
+    href="{% url 'tenants:profile' %}"
+    class="{{ link_class }} font-bold {% if ns == 'tenants' %}{{ active_class }}{% endif %}"
+    {% if ns == 'tenants' %}aria-current="page"{% endif %}
+  >{% translate "Bòrd" %}</a>
+  <a
     href="{% url 'gigs:list' %}"
     class="{{ link_class }} {% if ns == 'gigs' or ns == 'documents' %}{{ active_class }}{% endif %}"
     {% if ns == 'gigs' or ns == 'documents' %}aria-current="page"{% endif %}
@@ -24,9 +29,4 @@
     class="{{ link_class }} {% if ns == 'addressbook' %}{{ active_class }}{% endif %}"
     {% if ns == 'addressbook' %}aria-current="page"{% endif %}
   >{% translate "Contacts" %}</a>
-  <a
-    href="{% url 'tenants:profile' %}"
-    class="{{ link_class }} {% if ns == 'tenants' %}{{ active_class }}{% endif %}"
-    {% if ns == 'tenants' %}aria-current="page"{% endif %}
-  >{% translate "Bòrd" %}</a>
 {% endwith %}
