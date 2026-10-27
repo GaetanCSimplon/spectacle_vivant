@@ -23,7 +23,7 @@
       <p class="mt-2 text-sm text-stone-500">{% blocktranslate count n=upcoming_hidden %}et {{ n }} autre date sur cette période.{% plural %}et {{ n }} autres dates sur cette période.{% endblocktranslate %}</p>
     {% endif %}
   {% else %}
-    <p class="rounded-xl bg-blue-50 px-4 py-3 text-sm text-blue-900">
+    <p class="rounded-xl card-context px-4 py-3 text-sm">
       {% if period == "semaine" %}{% translate "Aucune date d'ici la fin de la semaine." %}
       {% elif period == "annee" %}{% translate "Aucune date d'ici la fin de l'année." %}
       {% else %}{% translate "Aucune date d'ici la fin du mois." %}{% endif %}

@@ -226,3 +226,47 @@ def test_links_in_a_text_are_underlined_and_a_cancelled_list_is_not_faded():
             assert "text-blue-600" not in tag, f"{path.name}: {tag[:80]}"
     gig_results = (TEMPLATES / "gigs/_gig_results.html").read_text()
     assert "opacity-" not in gig_results
+
+
+def test_the_desktop_navigation_is_navy_with_the_capsule_logo_and_a_coral_current_page(client):
+    """Charter v1.0: navy navigation, coral selection; the transparent logo vanishes on navy."""
+    client.force_login(MembershipFactory().user)
+    css = (ROOT / "css/source.css").read_text()
+
+    content = client.get(reverse("home")).content.decode()
+    sidebar = content.split("<aside")[1].split("</aside>")[0]
+
+    assert "brand/logo-capsule.svg" in sidebar and "brand/logo.svg" not in sidebar
+    assert "bg-white" not in sidebar.split("<nav")[0]
+    block = css.split('.sidebar .nav-link[aria-current="page"] {')[1].split("}")[0]
+    assert "var(--bord-brand-coral)" in block
+    assert "brand/logo.svg" in content.split("</aside>")[1]  # the top bar stays white
+
+
+def test_the_ocean_block_has_white_text_and_the_light_blue_is_a_discreet_context():
+    css = (ROOT / "css/source.css").read_text()
+
+    ocean = css.split("  .card-info {")[1].split("}")[0]
+    context = css.split("  .card-context {")[1].split("}")[0]
+
+    assert "var(--bord-info-bg)" in ocean and "var(--bord-surface)" in ocean
+    assert "var(--bord-context-bg)" in context and "var(--bord-text)" in context
+
+
+def test_the_focus_ring_is_ocean_and_turns_white_or_navy_on_a_solid_block():
+    css = (ROOT / "css/source.css").read_text()
+
+    assert "outline: 3px solid var(--bord-focus)" in css
+    assert ".sidebar :focus-visible" in css and "outline-color: var(--bord-surface)" in css
+    assert ".card-accent :focus-visible" in css and "outline-color: var(--bord-text)" in css
+
+
+def test_no_blurred_shadow_is_left_on_the_interface():
+    """Charter v1.0: no blurred decorative shadow (menu, dialog and floating button included)."""
+    leftovers = [
+        path.name
+        for path in TEMPLATES.rglob("*.html")
+        if re.search(r"\bshadow-(sm|md|lg|xl|2xl)\b", path.read_text(errors="ignore"))
+    ]
+
+    assert leftovers == []
