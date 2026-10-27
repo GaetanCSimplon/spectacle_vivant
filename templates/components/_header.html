@@ -3,7 +3,7 @@
 (from `lg` up the navigation is the left column, see _sidebar.html).{% endcomment %}
 <header class="relative z-40 border-b border-page-line bg-white{% if user.is_authenticated %} lg:hidden{% endif %}">
   <div class="mx-auto flex max-w-5xl items-center justify-between gap-4 px-4 py-2">
-    <a href="{% url 'home' %}" class="inline-block rounded-lg"><img src="{% static 'brand/logo-horizontal.png' %}" alt="Bòrd Pro" width="509" height="240" class="h-auto w-32"></a>
+    <a href="{% url 'home' %}" class="inline-block rounded-lg"><img src="{% static 'brand/logo.svg' %}" alt="Bòrd Pro" width="2000" height="800" class="h-auto w-36"></a>
     {% if user.is_authenticated %}
       {# A burger menu. A <details> element, so it also works without JavaScript. #}
       <details class="group relative"

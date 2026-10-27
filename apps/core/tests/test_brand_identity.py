@@ -26,8 +26,11 @@ def _login(client):
 
 def test_the_brand_files_are_shipped():
     for name in (
-        "logo-horizontal.png",
-        "logo-mark.png",
+        "logo.svg",
+        "logo-capsule.svg",
+        "icon.svg",
+        "icon-capsule.svg",
+        "radar.svg",
         "favicon.ico",
         "favicon-16.png",
         "favicon-32.png",
@@ -51,7 +54,9 @@ def test_the_icon_sizes_follow_the_charter():
         ("icon-512.png", 512),
     ):
         assert Image.open(ROOT / "static/brand" / name).size == (size, size), name
-    assert Image.open(ROOT / "static/brand/logo-horizontal.png").width >= 120
+
+    # The horizontal logo is delivered as an SVG (viewBox 2000 x 800) and is never edited.
+    assert 'viewBox="0 0 2000 800"' in (ROOT / "static/brand/logo.svg").read_text()
 
 
 def test_the_pages_declare_the_favicons_and_the_logo_has_a_text_alternative(client):
@@ -63,13 +68,13 @@ def test_the_pages_declare_the_favicons_and_the_logo_has_a_text_alternative(clie
     assert 'rel="apple-touch-icon"' in content
     assert 'name="theme-color"' in content
     # The logo is in the left column and in the top bar of a phone: both have the alt text.
-    assert content.count('alt="Bòrd Pro"') == 2 and "brand/logo-horizontal.png" in content
+    assert content.count('alt="Bòrd Pro"') == 2 and "brand/logo.svg" in content
 
 
 def test_logged_out_pages_show_the_logo_and_the_favicons(client):
     content = client.get(reverse("account_login")).content.decode()
 
-    assert 'alt="Bòrd Pro"' in content and "brand/logo-horizontal.png" in content
+    assert 'alt="Bòrd Pro"' in content and "brand/logo.svg" in content
     assert "brand/favicon-32.png" in content
 
 
@@ -149,14 +154,14 @@ def test_the_default_icon_addresses_lead_to_the_brand_icon_without_a_login(clien
 
 
 def test_the_icon_is_the_monogram_without_the_name():
-    """The favicon is the square monogram: its ratio is about 1, the logo's is about 2.1."""
+    """The favicon is the square symbol: its ratio is 1, the horizontal logo's is 2.5."""
     from PIL import Image
 
     favicon = Image.open(ROOT / "static/brand/favicon-48.png")
-    logo = Image.open(ROOT / "static/brand/logo-horizontal.png")
 
     assert favicon.width == favicon.height
-    assert logo.width / logo.height > 2
+    assert 'viewBox="0 0 2000 800"' in (ROOT / "static/brand/logo.svg").read_text()
+    assert 'viewBox="0 0 1024 1024"' in (ROOT / "static/brand/icon.svg").read_text()
 
 
 def test_the_server_error_page_declares_the_icon_too():
