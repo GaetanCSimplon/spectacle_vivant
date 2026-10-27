@@ -365,7 +365,7 @@ def test_home_cards_show_the_lines_of_upcoming_gigs(client):
     GigFactory(
         tenant=membership.tenant,
         price="1000.00",
-        date=datetime.date.today() + datetime.timedelta(days=5),
+        date=datetime.date.today(),
     )
 
     content = client.get(reverse("home")).content.decode()

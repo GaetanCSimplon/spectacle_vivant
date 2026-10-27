@@ -43,6 +43,10 @@ TEXT_PAIRS = [
     ("text-muted", "info-bg", 4.5),
     ("text", "brand-cream", 4.5),
     ("text-muted", "brand-cream", 4.5),
+    ("text", "context-bg", 4.5),
+    ("text-muted", "context-bg", 4.5),
+    ("surface", "brand-ocean", 4.5),
+    ("brand-ocean", "surface", 4.5),
     ("action-text", "action-bg", 4.5),
     ("action-text", "action-bg-hover", 4.5),
     ("success-text", "success-bg", 4.5),
@@ -80,6 +84,8 @@ def test_all_the_charter_tokens_are_present():
         "brand-navy",
         "brand-coral",
         "brand-cream",
+        "brand-ocean",
+        "context-bg",
         "brand-gray",
         "brand-green",
         "brand-amber",
@@ -113,6 +119,22 @@ def test_the_dark_tones_of_the_state_scales_are_readable_as_text(scale):
     for step in (700, 800, 900):
         ratio = contrast(SCALES[f"{scale}-{step}"], "#ffffff")
         assert ratio >= 4.5, f"{scale}-{step}: {ratio:.2f}"
+
+
+def test_the_charter_v1_values_are_adopted():
+    """Charter of 2026-10-26: white page, coral #FF695B, ocean #007299, secondary text #465A6C."""
+    assert _color("bg").lower() == "#ffffff"
+    assert _color("brand-coral").lower() == "#ff695b"
+    assert _color("brand-ocean").lower() == "#007299"
+    assert _color("context-bg").lower() == "#e2f1f6"
+    assert _color("text-muted").lower() == "#465a6c"
+    assert _color("border").lower() == "#c4cfda"
+
+
+def test_a_light_separator_never_identifies_a_field_alone():
+    """The charter's own #C4CFDA is for cards and lines; a field keeps a border that reaches 3:1."""
+    assert contrast(_color("border"), _color("surface")) < 3.0
+    assert contrast(_color("control-border"), _color("surface")) >= 3.0
 
 
 def test_the_navy_scale_is_the_brand_navy_at_700():

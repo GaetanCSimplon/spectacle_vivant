@@ -1,6 +1,6 @@
 # État du projet — Bòrd Pro
 
-**Mis à jour le 2026-10-25 (inscription sur invitation faite).** Page à lire en premier : ce qui est en cours, ce qui bloque, ce qui reste à faire. Le détail sprint par sprint est dans `feuille-de-route.md` ; ici, une page.
+**Mis à jour le 2026-10-27 (charte v1.0 : jetons faits).** Page à lire en premier : ce qui est en cours, ce qui bloque, ce qui reste à faire. Le détail sprint par sprint est dans `feuille-de-route.md` ; ici, une page.
 
 **Règle de tenue** : je mets cette page à jour à chaque PR fusionnée qui change une ligne ci-dessous (la date en tête fait foi).
 
@@ -10,7 +10,7 @@ Les neuf critères de la recette du MVP (`cahier-des-charges.md` §11) sont couv
 ## 1. En cours
 | Sujet | État | Qui agit |
 |---|---|---|
-| Inscription sur invitation | Code prêt (PR en revue) ; migration `accounts/0002` : `python manage.py migrate` après fusion | Utilisateur |
+| Charte graphique v1.0 (blanc & contrastes francs) | PR 1/4 faite (jetons) ; suivent logos, composants, nettoyage | Claude |
 | Mise à jour de `CLAUDE.md` (§11 périmé) | Texte à montrer avant de l'écrire | Claude, puis accord de l'utilisateur |
 
 ## 2. Déploiement (Scalingo, app `bordpro`)

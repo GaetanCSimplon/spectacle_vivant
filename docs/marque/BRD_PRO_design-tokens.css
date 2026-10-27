@@ -1,0 +1,249 @@
+/* =========================================================
+   BRD PRO — DESIGN TOKENS CSS
+   Charte graphique « blanc contrastes francs »
+   Version 1.0 — 26.10.2026
+   À importer en premier dans le projet.
+   ========================================================= */
+
+:root {
+  /* 1. Couleurs de marque */
+  --color-night: #10243F;
+  --color-coral: #FF695B;
+  --color-ocean: #007299;
+  --color-white: #FFFFFF;
+  --color-cream: #F5F2EA;
+  --color-light-blue: #E2F1F6;
+
+  /* 2. Couleurs fonctionnelles */
+  --color-success: #1F6B4A;
+  --color-warning: #E3A21A;
+  --color-danger: #8E1F3F;
+
+  /* 3. Texte et séparations */
+  --color-text-primary: var(--color-night);
+  --color-text-secondary: #465A6C;
+  --color-border: #C4CFDA;
+
+  /* 4. Typographies */
+  --font-display: "Archivo", sans-serif;
+  --font-body: "Instrument Sans", sans-serif;
+  --font-data: "IBM Plex Mono", monospace;
+
+  --font-weight-display: 800;
+  --font-weight-body-regular: 400;
+  --font-weight-body-medium: 500;
+  --font-weight-body-semibold: 600;
+  --font-weight-body-bold: 700;
+  --font-weight-data: 450;
+
+  /* 5. Échelle typographique */
+  --text-page-title-size: 30px;
+  --text-page-title-line-height: 34px;
+  --text-card-title-size: 18px;
+  --text-card-title-line-height: 24px;
+  --text-body-size: 16px;
+  --text-body-line-height: 24px;
+  --text-label-size: 14px;
+  --text-label-line-height: 20px;
+  --text-data-important-size: 24px;
+  --text-data-important-line-height: 40px;
+  --font-data-feature: "tnum";
+
+  /* 6. Espacements — base 4 px */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-10: 40px;
+  --space-12: 48px;
+
+  /* 7. Formes et contrôles */
+  --radius-control: 12px;
+  --radius-card: 16px;
+  --radius-card-large: 24px;
+  --radius-section: 28px;
+  --target-touch: 48px;
+
+  /* 8. Icônes */
+  --icon-size: 24px;
+  --icon-stroke: 2px;
+
+  /* 9. Assets SVG */
+  --logo-symbol: "assets/ICON_FD-TRANSPARENT.svg";
+  --logo-app: "assets/LOGO_FD-TRANSPARENT.svg";
+  --logo-radar: "assets/ICON_RADAR.svg";
+  --logo-cream-background: "assets/LOGO_FD-CAPSULE_CREME.svg";
+
+  --logo-min-size: 32px;
+  --radar-min-size: 36px;
+  --logo-clear-space: 50%;
+}
+
+/* 10. Base */
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: var(--color-white);
+  color: var(--color-text-primary);
+  font-family: var(--font-body);
+  font-size: var(--text-body-size);
+  line-height: var(--text-body-line-height);
+  -webkit-font-smoothing: antialiased;
+}
+
+h1, h2, h3 {
+  margin: 0;
+  font-family: var(--font-display);
+  font-weight: var(--font-weight-display);
+  letter-spacing: .04em;
+  color: var(--color-text-primary);
+  text-align: left;
+}
+
+h1 { font-size: var(--text-page-title-size); line-height: var(--text-page-title-line-height); }
+h2 { font-size: var(--text-card-title-size); line-height: var(--text-card-title-line-height); }
+
+.data, .amount, .date-value {
+  font-family: var(--font-data);
+  font-weight: var(--font-weight-data);
+  font-variant-numeric: var(--font-data-feature);
+}
+
+.data-important {
+  font-size: var(--text-data-important-size);
+  line-height: var(--text-data-important-line-height);
+}
+
+/* 11. Boutons */
+.btn-primary, .btn-secondary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: var(--target-touch);
+  padding: var(--space-3) var(--space-5);
+  border-radius: var(--radius-control);
+  font-family: var(--font-body);
+  font-weight: var(--font-weight-body-semibold);
+  cursor: pointer;
+}
+
+.btn-primary {
+  background: var(--color-coral);
+  color: var(--color-night);
+  border: none;
+}
+
+.btn-secondary {
+  background: var(--color-white);
+  color: var(--color-night);
+  border: 2px solid var(--color-night);
+}
+
+.btn-primary:focus-visible,
+.btn-secondary:focus-visible,
+.field__input:focus-visible {
+  outline: 3px solid var(--color-ocean);
+  outline-offset: 2px;
+}
+
+/* 12. Cartes et blocs */
+.card {
+  background: var(--color-white);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-card);
+  padding: var(--space-5);
+}
+
+.card-highlight {
+  background: var(--color-coral);
+  color: var(--color-night);
+  border-radius: var(--radius-card);
+  padding: var(--space-5);
+}
+
+.info-block {
+  background: var(--color-ocean);
+  color: var(--color-white);
+  border-radius: var(--radius-card);
+  padding: var(--space-5);
+}
+
+.secondary-block {
+  background: var(--color-cream);
+  border-radius: var(--radius-card);
+  padding: var(--space-5);
+}
+
+.discreet-context {
+  background: var(--color-light-blue);
+  border-radius: var(--radius-control);
+  padding: var(--space-4);
+}
+
+/* 13. Navigation */
+.navigation {
+  background: var(--color-night);
+  color: var(--color-white);
+}
+
+.navigation__item--active {
+  color: var(--color-coral);
+  font-weight: var(--font-weight-body-bold);
+}
+
+/* 14. Statuts */
+.status {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-1) var(--space-3);
+  border-radius: var(--radius-control);
+  font-size: var(--text-label-size);
+  font-weight: var(--font-weight-body-semibold);
+}
+
+.status--confirmed { color: var(--color-success); border: 1px solid currentColor; }
+.status--warning { color: var(--color-warning); border: 1px solid currentColor; }
+.status--danger { color: var(--color-danger); border: 1px solid currentColor; }
+
+/* 15. Formulaires */
+.field { display: flex; flex-direction: column; gap: var(--space-2); }
+
+.field__label {
+  font-size: var(--text-label-size);
+  font-weight: var(--font-weight-body-semibold);
+}
+
+.field__input {
+  min-height: var(--target-touch);
+  padding: var(--space-3);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-control);
+  font-family: var(--font-body);
+  font-size: var(--text-body-size);
+}
+
+.field--error .field__input { border-color: var(--color-danger); }
+.field__error { color: var(--color-danger); font-size: var(--text-label-size); }
+
+/* 16. RADAR */
+.radar-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--radar-min-size);
+  height: var(--radar-min-size);
+  border-radius: 50%;
+  background: var(--color-coral);
+  color: var(--color-night);
+  font-family: var(--font-data);
+}
+
+/* 17. Interdits */
+/* Pas de glow, ombre floue décorative, dégradé décoratif,
+   logo recoloré/déformé/filtré, monochrome non fourni,
+   texte corail sur crème, couleur seule pour un statut. */
