@@ -3,7 +3,7 @@
   The "Prochaines dates" card. HTMX swaps it when the period changes (#upcoming-card).
   Needs: period, periods, period_end, next_gigs, upcoming_count, upcoming_hidden.
 {% endcomment %}
-<section id="upcoming-card" class="card md:col-span-2" aria-labelledby="upcoming-title">
+<section id="upcoming-card" class="card md:col-span-2 xl:col-start-1 xl:row-span-3 xl:row-start-1 xl:self-start" aria-labelledby="upcoming-title">
   <div class="mb-3 flex flex-wrap items-center justify-between gap-3">
     <h2 id="upcoming-title" class="stat-label !text-xs !font-semibold">{% translate "Prochaines dates" %}</h2>
     <nav class="segmented" aria-label="{% translate 'Période' %}">
