@@ -13,8 +13,8 @@ from apps.gigs.models import Gig, GigMember
 from apps.tenants.models import Person
 
 from . import services
-from .forms import LodgingForm, MealForm, MemberForm, NotesForm, SlotForm
-from .models import Lodging, Meal, Roadmap, RoadmapSlot
+from .forms import LodgingForm, MealForm, MemberForm, NotesForm, PlaceContactForm, SlotForm
+from .models import Lodging, Meal, PlaceContact, Roadmap, RoadmapSlot
 
 
 @dataclass(frozen=True)
@@ -25,6 +25,7 @@ class Section:
     add_label: str
     item_template: str
     parent: str  # "roadmap" or "gig": the object the items hang from
+    with_contacts: bool = False  # items carry their own list of contacts (PlaceContact)
 
 
 SECTIONS = {
@@ -43,9 +44,16 @@ SECTIONS = {
         _("Ajouter un hébergement"),
         "roadmaps/_item_lodging.html",
         "roadmap",
+        with_contacts=True,
     ),
     "repas": Section(
-        Meal, MealForm, _("Repas"), _("Ajouter un repas"), "roadmaps/_item_meal.html", "roadmap"
+        Meal,
+        MealForm,
+        _("Repas"),
+        _("Ajouter un repas"),
+        "roadmaps/_item_meal.html",
+        "roadmap",
+        with_contacts=True,
     ),
     "equipe": Section(
         GigMember,
@@ -93,6 +101,8 @@ class RoadmapMixin(TenantScopedMixin):
             items = section.model.objects.filter(
                 tenant=self.request.tenant, **{section.parent: parent}
             )
+            if section.with_contacts:
+                items = items.prefetch_related("contacts")
             editing_pk = editing[1] if editing and editing[0] == key else None
             sections.append(
                 {
@@ -104,6 +114,7 @@ class RoadmapMixin(TenantScopedMixin):
                     "editing_pk": editing_pk,
                     "edit_form": forms.get(key) if editing_pk else None,
                     "add_form": None if editing_pk else forms.get(key) or section.form(),
+                    "with_contacts": section.with_contacts,
                 }
             )
         public_path = services.public_path(self.roadmap.token) if self.roadmap.is_published else ""
@@ -216,6 +227,44 @@ class ItemEditView(RoadmapMixin, View):
         if not form.is_valid():
             return self.render_body_or_page(forms={section: form}, editing=(section, item.pk))
         form.save()
+        return self.done()
+
+
+class PlaceContactAddView(RoadmapMixin, View):
+    """POST only: a contact for one lodging or one meal of this roadmap."""
+
+    http_method_names = ["post"]
+
+    def post(self, request, gig_id, section, pk):
+        self.load(gig_id, section)
+        if not self.section.with_contacts:
+            raise Http404
+        place = self.get_item(pk)
+        form = PlaceContactForm(request.POST)
+        if not form.is_valid():
+            messages.error(request, _("Indiquez au moins le nom du contact."))
+            return redirect("roadmaps:editor", gig_id=self.gig.pk)
+        contact = form.save(commit=False)
+        contact.tenant = request.tenant
+        setattr(contact, "lodging" if section == "hebergements" else "meal", place)
+        contact.save()
+        return self.done()
+
+
+class PlaceContactDeleteView(RoadmapMixin, View):
+    http_method_names = ["post"]
+
+    def post(self, request, gig_id, section, pk, contact_pk):
+        self.load(gig_id, section)
+        if not self.section.with_contacts:
+            raise Http404
+        place = self.get_item(pk)
+        get_object_or_404(
+            PlaceContact,
+            pk=contact_pk,
+            tenant=request.tenant,
+            **{"lodging" if section == "hebergements" else "meal": place},
+        ).delete()
         return self.done()
 
 

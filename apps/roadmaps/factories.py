@@ -4,7 +4,7 @@ import factory
 
 from apps.gigs.factories import GigFactory
 
-from .models import Lodging, Meal, Roadmap, RoadmapSlot
+from .models import Lodging, Meal, PlaceContact, Roadmap, RoadmapSlot
 
 
 class RoadmapFactory(factory.django.DjangoModelFactory):
@@ -42,3 +42,15 @@ class MealFactory(_ChildFactory):
         model = Meal
 
     place = "Restaurant de la gare"
+
+
+class PlaceContactFactory(factory.django.DjangoModelFactory):
+    """A contact of a lodging (pass `meal=...` instead for a meal)."""
+
+    class Meta:
+        model = PlaceContact
+
+    lodging = factory.SubFactory(LodgingFactory)
+    tenant = factory.SelfAttribute("lodging.tenant")
+    name = "Accueil de l'hôtel"
+    phone = "04 67 00 00 01"

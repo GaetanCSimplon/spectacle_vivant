@@ -29,7 +29,13 @@ from apps.finance.models import Payment
 from apps.gigs.factories import GigFactory
 from apps.gigs.models import Gig
 from apps.roadmaps import services as roadmap_services
-from apps.roadmaps.factories import LodgingFactory, MealFactory, RoadmapFactory, RoadmapSlotFactory
+from apps.roadmaps.factories import (
+    LodgingFactory,
+    MealFactory,
+    PlaceContactFactory,
+    RoadmapFactory,
+    RoadmapSlotFactory,
+)
 from apps.tenants.factories import MembershipFactory, PersonFactory, TenantFactory
 from apps.tenants.models import Tenant
 
@@ -104,6 +110,16 @@ ROUTES = [
     ("roadmaps:item-delete", {"gig_id": "gig", "section": "=repas", "pk": "meal"}),
     ("roadmaps:item-edit", {"gig_id": "gig", "section": "=hebergements", "pk": "lodging"}),
     ("roadmaps:item-delete", {"gig_id": "gig", "section": "=creneaux", "pk": "slot"}),
+    ("roadmaps:contact-add", {"gig_id": "gig", "section": "=hebergements", "pk": "lodging"}),
+    (
+        "roadmaps:contact-delete",
+        {
+            "gig_id": "gig",
+            "section": "=hebergements",
+            "pk": "lodging",
+            "contact_pk": "place_contact",
+        },
+    ),
     ("finance:page", {"gig_id": "gig"}),
     ("finance:payment-add", {"gig_id": "gig", "invoice_pk": "invoice"}),
     ("finance:payment-edit", {"gig_id": "gig", "pk": "payment"}),
@@ -195,6 +211,7 @@ def _build_tenant_a():
     slot = RoadmapSlotFactory(roadmap=roadmap)
     lodging = LodgingFactory(roadmap=roadmap, name=f"Hôtel {MARKER}")
     meal = MealFactory(roadmap=roadmap, place=f"Resto {MARKER}")
+    place_contact = PlaceContactFactory(lodging=lodging, name=f"Réception {MARKER}")
     roadmap_services.publish(roadmap)
     person = PersonFactory(tenant=tenant, last_name=f"Equipier {MARKER}", average_fee="123.00")
     return {
@@ -213,6 +230,7 @@ def _build_tenant_a():
         "slot": slot,
         "lodging": lodging,
         "meal": meal,
+        "place_contact": place_contact,
         "person": person,
     }
 

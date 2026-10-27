@@ -3,7 +3,7 @@ from django import forms
 from apps.core.forms import AddressModelForm
 from apps.gigs.models import GigMember
 
-from .models import Lodging, Meal, Roadmap, RoadmapSlot
+from .models import Lodging, Meal, PlaceContact, Roadmap, RoadmapSlot
 
 TIME_FORMAT = "%H:%M"
 
@@ -38,6 +38,13 @@ class MealForm(forms.ModelForm):
         model = Meal
         fields = ["place", "time", "notes"]
         widgets = {"time": _time_widget(), "notes": forms.Textarea(attrs={"rows": 2})}
+
+
+class PlaceContactForm(forms.ModelForm):
+    class Meta:
+        model = PlaceContact
+        fields = ["name", "role", "phone"]
+        help_texts = {"phone": "Visible par toute personne qui a le lien de la feuille de route."}
 
 
 class MemberForm(forms.ModelForm):

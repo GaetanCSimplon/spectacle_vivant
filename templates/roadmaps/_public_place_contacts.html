@@ -1,0 +1,13 @@
+{% load i18n %}
+{% comment %}Contacts of a lodging or a meal on the public page. Needs: contacts.{% endcomment %}
+<ul class="space-y-2 border-t border-page-line pt-2">
+  {% for contact in contacts %}
+    <li class="flex items-center justify-between gap-3">
+      <div class="min-w-0">
+        <p class="font-medium">{{ contact.name }}</p>
+        {% if contact.role %}<p class="text-gray-600">{{ contact.role }}</p>{% endif %}
+      </div>
+      {% if contact.tel %}<a href="tel:{{ contact.tel }}" class="btn btn-secondary shrink-0">{{ contact.phone }}</a>{% endif %}
+    </li>
+  {% endfor %}
+</ul>
