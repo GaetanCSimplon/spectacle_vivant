@@ -7,7 +7,8 @@ from dataclasses import dataclass
 from decimal import Decimal
 
 from django.db import transaction
-from django.db.models import Sum
+from django.db.models import Q, Sum
+from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 
 from apps.documents import invoicing
@@ -144,6 +145,24 @@ def gig_balance(gig):
 
 
 # --- expenses --------------------------------------------------------------
+
+
+def expense_split(expenses):
+    """What the structure paid itself, what members advanced, and what it still owes them."""
+    totals = expenses.aggregate(
+        structure=Sum("amount", filter=Q(person__isnull=True)),
+        members=Sum("amount", filter=Q(person__isnull=False)),
+        to_reimburse=Sum("amount", filter=Q(person__isnull=False, reimbursed_on__isnull=True)),
+    )
+    return {key: value or ZERO for key, value in totals.items()}
+
+
+def set_reimbursed(expense, done):
+    """Mark a member's expense as paid back today, or take the mark off (a slip of the finger)."""
+    if expense.person_id is None:
+        raise ValueError("Only an expense made by a member can be reimbursed.")
+    expense.reimbursed_on = timezone.localdate() if done else None
+    expense.save(update_fields=["reimbursed_on"])
 
 
 def _delete_file(name):

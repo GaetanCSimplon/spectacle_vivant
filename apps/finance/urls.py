@@ -17,6 +17,11 @@ urlpatterns = [
     path("depenses/<int:pk>/modifier/", views.ExpenseEditView.as_view(), name="expense-edit"),
     path("depenses/<int:pk>/supprimer/", views.ExpenseDeleteView.as_view(), name="expense-delete"),
     path(
+        "depenses/<int:pk>/remboursement/",
+        views.ExpenseReimburseView.as_view(),
+        name="expense-reimburse",
+    ),
+    path(
         "depenses/<int:pk>/justificatif/",
         views.ExpenseReceiptView.as_view(),
         name="expense-receipt",

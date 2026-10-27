@@ -107,6 +107,16 @@
             <div class="min-w-0">
               <p class="font-medium">{{ expense.label }}</p>
               <p class="text-gray-600">{{ expense.date|date:"d/m/Y" }} · {{ expense.get_category_display }}</p>
+              {% if expense.person %}
+                <p class="mt-1 flex flex-wrap items-center gap-2">
+                  <span>{% blocktranslate with name=expense.person.full_name %}Avancée par {{ name }}{% endblocktranslate %}</span>
+                  {% if expense.reimbursed_on %}
+                    <span class="pill pill-good">{% blocktranslate with day=expense.reimbursed_on|date:"d/m/Y" %}Remboursée le {{ day }}{% endblocktranslate %}</span>
+                  {% else %}
+                    <span class="pill pill-warn">{% translate "À rembourser" %}</span>
+                  {% endif %}
+                </p>
+              {% endif %}
               {% if expense.receipt_file %}
                 <a href="{% url 'finance:expense-receipt' gig.pk expense.pk %}" class="text-blue-700 underline">{% translate "Justificatif" %}</a>
               {% endif %}
@@ -118,6 +128,18 @@
                hx-get="{% url 'finance:expense-edit' gig.pk expense.pk %}"
                hx-target="#finance-body" hx-swap="outerHTML"
                class="text-blue-700 underline">{% translate "Modifier" %}</a>
+            {% if expense.person %}
+              <form method="post" action="{% url 'finance:expense-reimburse' gig.pk expense.pk %}"
+                    hx-post="{% url 'finance:expense-reimburse' gig.pk expense.pk %}"
+                    hx-target="#finance-body" hx-swap="outerHTML">
+                {% csrf_token %}
+                {% if expense.reimbursed_on %}
+                  <button type="submit" name="state" value="undo" class="text-blue-700 underline">{% translate "Annuler le remboursement" %}</button>
+                {% else %}
+                  <button type="submit" name="state" value="done" class="text-blue-700 underline">{% translate "Marquer comme remboursée" %}</button>
+                {% endif %}
+              </form>
+            {% endif %}
             <form method="post" action="{% url 'finance:expense-delete' gig.pk expense.pk %}"
                   hx-post="{% url 'finance:expense-delete' gig.pk expense.pk %}"
                   hx-target="#finance-body" hx-swap="outerHTML">
@@ -131,6 +153,14 @@
       <li class="card text-sm text-gray-600">{% translate "Aucune dépense pour l'instant." %}</li>
     {% endfor %}
   </ul>
+
+  {% if expense_split.members %}
+    <dl class="card mb-3 space-y-1 text-sm">
+      <div class="flex justify-between"><dt>{% translate "Payées par la structure" %}</dt><dd class="data">{{ expense_split.structure }} €</dd></div>
+      <div class="flex justify-between"><dt>{% translate "Avancées par des membres" %}</dt><dd class="data">{{ expense_split.members }} €</dd></div>
+      <div class="flex justify-between font-semibold"><dt>{% translate "Dont à leur rembourser" %}</dt><dd class="data">{{ expense_split.to_reimburse }} €</dd></div>
+    </dl>
+  {% endif %}
 
   <form method="post" action="{% url 'finance:expense-add' gig.pk %}"
         hx-post="{% url 'finance:expense-add' gig.pk %}" hx-encoding="multipart/form-data"

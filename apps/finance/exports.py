@@ -130,11 +130,13 @@ def expenses_rows(tenant, start, end):
         "Spectacle",
         "Date du spectacle",
         "Justificatif",
+        "Dépensé par",
+        "Remboursée le",
         "Code analytique",
     ]
     expenses = (
         Expense.objects.filter(tenant=tenant, date__range=(start, end))
-        .select_related("gig__show")
+        .select_related("gig__show", "person")
         .order_by("date", "id")
     )
     rows = [
@@ -146,6 +148,8 @@ def expenses_rows(tenant, start, end):
             text(e.gig.show.title),
             day(e.gig.date),
             "oui" if e.receipt_file else "non",
+            text(e.person.full_name) if e.person else "La structure",
+            day(e.reimbursed_on) if e.reimbursed_on else "",
             text(e.gig.show.analytic_code),
         ]
         for e in expenses

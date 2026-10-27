@@ -111,6 +111,7 @@ ROUTES = [
     ("finance:expense-add", {"gig_id": "gig"}),
     ("finance:expense-edit", {"gig_id": "gig", "pk": "expense"}),
     ("finance:expense-delete", {"gig_id": "gig", "pk": "expense"}),
+    ("finance:expense-reimburse", {"gig_id": "gig", "pk": "expense"}),
     ("finance:expense-receipt", {"gig_id": "gig", "pk": "expense"}),
     ("documents:contract-complete", {"gig_id": "gig"}),
     ("documents:contract-preview", {"gig_id": "gig"}),
