@@ -129,6 +129,7 @@ Une tâche est terminée quand :
 
 - **Commence par un plan** (liste d'étapes, fichiers touchés) et attends mon accord avant de coder tout ce qui touche aux **modèles, migrations, authentification, multi-tenant ou PDF**.
 - Une tâche = une branche = une petite PR (`feature/<sujet>`). Ne mélange pas plusieurs sujets.
+- `main` = travail, `production` = livré : on livre par avancement de `production` sur `main` (`--ff-only`), jamais de correction directe sauf urgence. Procédure : `docs/technique/livraison.md`.
 - Écris les tests avec le code, pas après.
 - Si une demande contredit ce fichier ou le cahier des charges, **signale-le** au lieu de l'exécuter silencieusement.
 - Si tu hésites entre deux approches, présente les deux avec leurs avantages en quelques lignes.

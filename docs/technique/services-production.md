@@ -153,7 +153,7 @@ Premier déploiement réussi sur Scalingo (région France, adresse `bordpro.osc-
 
 ## Procédure de premier déploiement (Scalingo)
 
-1. **Créer l'application** (région France) et ajouter l'addon PostgreSQL. Lier le dépôt GitHub (branche `main`) ou pousser le code.
+1. **Créer l'application** (région France) et ajouter l'addon PostgreSQL. Lier le dépôt GitHub (branche **`production`**, voir `livraison.md`) ou pousser le code.
 2. **Saisir les variables** du tableau ci-dessus dans l'interface Scalingo. `DJANGO_ALLOWED_HOSTS` contient l'adresse Scalingo de l'application, puis ton domaine une fois branché. `DJANGO_CSRF_TRUSTED_ORIGINS` contient les mêmes adresses avec `https://`.
 3. **Déployer**, puis lire les journaux de construction : le Tailwind doit se compiler, `collectstatic` passer, les migrations s'appliquer.
 4. **Créer ton compte administrateur** : `scalingo --app <nom> run python manage.py createsuperuser`.
