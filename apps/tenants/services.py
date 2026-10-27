@@ -1,3 +1,4 @@
+import secrets
 from datetime import timedelta
 
 from django.db import transaction
@@ -22,6 +23,48 @@ def create_tenant_for_user(user, **tenant_fields):
         tenant = Tenant.objects.create(**tenant_fields)
         Membership.objects.create(user=user, tenant=tenant, role=Membership.Role.OWNER)
     return tenant
+
+
+# --- personal space of a team member (a secret link, no account) ------------------------------
+
+RECENT_DAYS = 30
+
+
+def enable_team_space(person):
+    """Give the person a personal link (a brand-new secret: a revoked one never comes back)."""
+    person.access_token = secrets.token_urlsafe(32)
+    person.save(update_fields=["access_token"])
+
+
+def disable_team_space(person):
+    person.access_token = ""
+    person.save(update_fields=["access_token"])
+
+
+def person_for_token(token):
+    """The person a personal link belongs to, or None. An empty token never matches anybody."""
+    if not token:
+        return None
+    return Person.objects.filter(access_token=token).select_related("tenant").first()
+
+
+def team_space_gigs(person):
+    """The dates of the person: those where they are on the team of the roadmap (picked from
+    the team, so they are linked to their card). Cancelled dates are left out."""
+    return (
+        Gig.objects.filter(tenant=person.tenant, members__person=person)
+        .exclude(status=Gig.Status.CANCELLED)
+        .select_related("show", "venue")
+        .distinct()
+    )
+
+
+def team_space_dates(person, today):
+    """(coming dates, dates of the last RECENT_DAYS days) for the personal page."""
+    gigs = team_space_gigs(person)
+    coming = gigs.filter(date__gte=today).order_by("date")
+    recent = gigs.filter(date__lt=today, date__gte=today - timedelta(days=RECENT_DAYS))
+    return list(coming), list(recent.order_by("-date"))
 
 
 class CannotLeave(Exception):

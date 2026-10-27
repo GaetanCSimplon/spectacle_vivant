@@ -1,0 +1,25 @@
+{% extends "public/base_public.html" %}
+{% load i18n %}
+
+{% block title %}{% translate "Mon espace" %} — Bòrd Pro{% endblock %}
+
+{% block content %}
+  <h1 class="!mb-1">{% blocktranslate with name=person.first_name %}Bonjour {{ name }}{% endblocktranslate %}</h1>
+  <p class="mb-6 text-sm text-gray-600">{% blocktranslate with name=person.tenant.name %}Voici vos dates avec {{ name }}. Gardez ce lien pour vous : il donne accès à vos feuilles de route.{% endblocktranslate %}</p>
+
+  <h2 class="mb-2 text-sm font-semibold uppercase text-gray-500">{% translate "Mes prochaines dates" %}</h2>
+  {% if coming %}
+    <ul class="mb-6 flex flex-col gap-2">
+      {% for gig in coming %}{% include "tenants/_team_space_gig.html" %}{% endfor %}
+    </ul>
+  {% else %}
+    <p class="card mb-6 text-sm text-gray-600">{% translate "Aucune date à venir pour le moment." %}</p>
+  {% endif %}
+
+  {% if recent %}
+    <h2 class="mb-2 text-sm font-semibold uppercase text-gray-500">{% translate "Dates récentes" %}</h2>
+    <ul class="mb-6 flex flex-col gap-2">
+      {% for gig in recent %}{% include "tenants/_team_space_gig.html" %}{% endfor %}
+    </ul>
+  {% endif %}
+{% endblock %}

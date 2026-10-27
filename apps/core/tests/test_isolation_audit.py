@@ -60,6 +60,9 @@ PUBLIC = {
     "legal-privacy",
     "roadmap-public",  # the secret link is the access right
     "roadmap-public-pdf",
+    "team-space",  # the personal link is the access right (tests: tenants/test_team_space.py)
+    "team-space-gig",
+    "team-space-pdf",
     "promoter-form-public",  # the secret link is the access right
     "promoter-form-thanks",
 }
@@ -71,6 +74,8 @@ ROUTES = [
     ("tenants:bord-status", {"pk": "gig"}),
     ("tenants:person-update", {"pk": "person"}),
     ("tenants:person-delete", {"pk": "person"}),
+    ("tenants:person-access-enable", {"pk": "person"}),
+    ("tenants:person-access-revoke", {"pk": "person"}),
     ("addressbook:promoter-invite", {"pk": "promoter"}),
     ("addressbook:promoter-invite-revoke", {"pk": "promoter"}),
     ("addressbook:promoter-answer", {"pk": "promoter"}),

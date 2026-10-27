@@ -49,6 +49,34 @@
     </ul>
   {% endif %}
 
+  {% if is_owner %}
+    <h2 class="mb-2 text-sm font-semibold uppercase text-gray-500">{% translate "Espace personnel" %}</h2>
+    <div class="card mb-6 space-y-3 text-sm">
+      {% if space_url %}
+        <p>{% translate "Cette personne voit ses dates et leurs feuilles de route avec ce lien, sans compte. Envoyez-le-lui directement : toute personne qui l'a voit ses dates." %}</p>
+        <div x-data="{ copied: false }" class="space-y-2">
+          <input type="text" readonly aria-label="{% translate 'Adresse du lien personnel' %}" value="{{ space_url }}" class="w-full" onfocus="this.select()">
+          <button type="button" class="btn btn-secondary btn-block"
+                  @click="navigator.clipboard.writeText('{{ space_url|escapejs }}').then(() => copied = true)">
+            <span x-show="!copied">{% translate "Copier le lien" %}</span>
+            <span x-show="copied" x-cloak>{% translate "Lien copié" %}</span>
+          </button>
+        </div>
+        <form method="post" action="{% url 'tenants:person-access-revoke' person.pk %}">
+          {% csrf_token %}
+          <button type="submit" class="text-red-600 underline">{% translate "Révoquer le lien" %}</button>
+          <p class="mt-1 text-gray-500">{% translate "Le lien actuel ne marchera plus. Un nouveau lien pourra être créé ensuite." %}</p>
+        </form>
+      {% else %}
+        <p>{% translate "Aucun lien : cette personne n'a pas d'espace personnel. En créer un lui permet de consulter ses dates et leurs feuilles de route, sans compte." %}</p>
+        <form method="post" action="{% url 'tenants:person-access-enable' person.pk %}">
+          {% csrf_token %}
+          <button type="submit" class="btn btn-secondary btn-block">{% translate "Créer son lien personnel" %}</button>
+        </form>
+      {% endif %}
+    </div>
+  {% endif %}
+
   <h2 class="mb-2 text-sm font-semibold uppercase text-gray-500">{% blocktranslate count n=gigs|length %}{{ n }} date{% plural %}{{ n }} dates{% endblocktranslate %}</h2>
   {% if gigs %}
     <ul class="mb-6 flex flex-col gap-2">
