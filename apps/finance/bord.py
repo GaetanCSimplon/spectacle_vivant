@@ -20,7 +20,7 @@ from apps.gigs.models import OPTION_WARNING_DAYS, Gig, GigMember
 
 from .dashboard import awaiting_payment
 from .models import Expense, Payment
-from .services import INVOICED, ZERO
+from .services import INVOICED, ZERO, expense_split
 
 CONFIRMED = (Gig.Status.CONFIRMED, Gig.Status.SIGNED)
 SOON_DAYS = 30
@@ -49,6 +49,8 @@ class Filters:
     show: Show | None = None
     figure: str = DEFAULT_FIGURE
     status: str = ""
+    # "" = everyone, "structure" = what the structure paid, else the id of a team member.
+    spender: str = ""
 
 
 def period_bounds(preset, today):
@@ -114,11 +116,39 @@ def revenue(tenant, filters):
     }
 
 
-def expenses(tenant, filters):
-    """Expenses recorded in the period, by category (money really spent, as typed in)."""
+def _expense_rows(tenant, filters):
     rows = Expense.objects.filter(tenant=tenant, date__range=(filters.start, filters.end))
     if filters.show:
         rows = rows.filter(gig__show=filters.show)
+    if filters.spender == "structure":
+        rows = rows.filter(person__isnull=True)
+    elif filters.spender:
+        rows = rows.filter(person_id=filters.spender)
+    return rows
+
+
+def to_reimburse(tenant):
+    """What the structure still owes its members, whatever the period: one row per member."""
+    rows = (
+        Expense.objects.filter(tenant=tenant, person__isnull=False, reimbursed_on__isnull=True)
+        .values("person_id", "person__first_name", "person__last_name")
+        .annotate(total=Sum("amount"))
+        .order_by("person__last_name", "person__first_name")
+    )
+    people = [
+        {
+            "person_id": row["person_id"],
+            "name": f"{row['person__first_name']} {row['person__last_name']}".strip(),
+            "total": row["total"],
+        }
+        for row in rows
+    ]
+    return {"people": people, "total": sum((row["total"] for row in people), ZERO)}
+
+
+def expenses(tenant, filters):
+    """Expenses recorded in the period, by category (money really spent, as typed in)."""
+    rows = _expense_rows(tenant, filters)
     by_category = [
         {"category": Expense.Category(row["category"]).label, "total": row["total"]}
         for row in rows.values("category").annotate(total=Sum("amount")).order_by("-total")
@@ -126,7 +156,11 @@ def expenses(tenant, filters):
     largest = by_category[0]["total"] if by_category else ZERO
     for row in by_category:  # bar length, relative to the largest category
         row["percent"] = int(row["total"] * 100 / largest) if largest else 0
-    return {"total": sum((row["total"] for row in by_category), ZERO), "by_category": by_category}
+    return {
+        "total": sum((row["total"] for row in by_category), ZERO),
+        "by_category": by_category,
+        "split": expense_split(rows),
+    }
 
 
 MAX_MONTHS = 36
@@ -152,9 +186,7 @@ def monthly_series(tenant, filters):
     amount_field = {"planned": "price", "invoiced": "total_excl_tax", "received": "amount"}[
         filters.figure
     ]
-    spent = Expense.objects.filter(tenant=tenant, date__range=(filters.start, filters.end))
-    if filters.show:
-        spent = spent.filter(gig__show=filters.show)
+    spent = _expense_rows(tenant, filters)
     revenue_by_month = {
         row["month"]: row["total"]
         for row in revenue_rows.values("month").annotate(total=Sum(amount_field))
@@ -490,6 +522,7 @@ def summary(tenant, filters, today):
         "dates": date_counts(tenant, filters),
         "revenue": revenue_totals,
         "expenses": expense_totals,
+        "to_reimburse": to_reimburse(tenant),
         "balance": balance(revenue_totals, expense_totals, filters.figure),
         "receivables": receivables(tenant, today, filters.show),
         "people": people_mobilised(tenant, filters),

@@ -3,7 +3,7 @@ from urllib.parse import parse_qsl, urlencode
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.exceptions import PermissionDenied
-from django.db.models import Count, Q
+from django.db.models import Count, ProtectedError, Q, Sum
 from django.http import FileResponse, Http404
 from django.shortcuts import get_object_or_404, redirect
 from django.urls import reverse, reverse_lazy
@@ -24,6 +24,7 @@ from apps.accounts.services import is_tenant_owner
 from apps.core.views import SearchListMixin, TenantScopedMixin, wants_fragment
 from apps.documents.models import Invoice
 from apps.finance import bord
+from apps.finance.models import Expense
 from apps.gigs import services as gig_services
 from apps.gigs.models import Gig
 
@@ -287,6 +288,11 @@ class PersonDetailView(TenantScopedMixin, DetailView):
             .select_related("show", "venue")
             .order_by("-date")
         )
+        expenses = Expense.objects.filter(tenant=self.request.tenant, person=self.object)
+        context["expenses"] = expenses.select_related("gig__show").order_by("-date", "-id")
+        context["owed"] = expenses.filter(reimbursed_on__isnull=True).aggregate(
+            total=Sum("amount")
+        )["total"]
         return context
 
 
@@ -327,6 +333,14 @@ class PersonDeleteView(TenantScopedMixin, DeleteView):
     success_url = reverse_lazy("tenants:person-list")
 
     def form_valid(self, form):
-        response = super().form_valid(form)
+        try:
+            response = super().form_valid(form)
+        except ProtectedError:
+            # Their expenses must keep saying who advanced the money.
+            messages.error(
+                self.request,
+                _("Impossible de supprimer : des dépenses sont enregistrées à son nom."),
+            )
+            return redirect("tenants:person-detail", pk=self.object.pk)
         messages.success(self.request, _("La fiche est supprimée."))
         return response

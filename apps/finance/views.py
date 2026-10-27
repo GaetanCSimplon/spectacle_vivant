@@ -42,6 +42,7 @@ class FinanceMixin(TenantScopedMixin):
         """Bound forms go back to the page after an error; `editing` = ("payment"|"expense", pk)."""
         tenant = self.request.tenant
         payment_forms = payment_forms or {}
+        expenses = Expense.objects.filter(gig=self.gig, tenant=tenant).select_related("person")
         invoices = Invoice.objects.filter(
             gig=self.gig, tenant=tenant, status__in=services.PAYABLE
         ).exclude(kind=Invoice.Kind.CREDIT_NOTE)
@@ -62,8 +63,9 @@ class FinanceMixin(TenantScopedMixin):
             "gig": self.gig,
             "balance": services.gig_balance(self.gig),
             "rows": rows,
-            "expenses": Expense.objects.filter(gig=self.gig, tenant=tenant),
-            "expense_form": expense_form or ExpenseForm(),
+            "expenses": expenses,
+            "expense_split": services.expense_split(expenses),
+            "expense_form": expense_form or ExpenseForm(tenant=tenant),
             "editing": editing,
             "edit_form": edit_form,
         }
@@ -152,7 +154,7 @@ class ExpenseAddView(FinanceMixin, View):
 
     def post(self, request, gig_id):
         self.load(gig_id)
-        form = ExpenseForm(request.POST, request.FILES)
+        form = ExpenseForm(request.POST, request.FILES, tenant=request.tenant)
         if not form.is_valid():
             return self.render_body_or_page(expense_form=form)
         expense = form.save(commit=False)
@@ -168,17 +170,30 @@ class ExpenseEditView(FinanceMixin, View):
     def get(self, request, gig_id, pk):
         self.load(gig_id)
         expense = self.get_expense(pk)
-        form = ExpenseForm(instance=expense)
+        form = ExpenseForm(instance=expense, tenant=request.tenant)
         return self.render_body_or_page(editing=("expense", expense.pk), edit_form=form)
 
     def post(self, request, gig_id, pk):
         self.load(gig_id)
         expense = self.get_expense(pk)
         previous = expense.receipt_file.name
-        form = ExpenseForm(request.POST, request.FILES, instance=expense)
+        form = ExpenseForm(request.POST, request.FILES, instance=expense, tenant=request.tenant)
         if not form.is_valid():
             return self.render_body_or_page(editing=("expense", expense.pk), edit_form=form)
         services.save_expense(form.save(commit=False), previous_receipt=previous)
+        return self.done()
+
+
+class ExpenseReimburseView(FinanceMixin, View):
+    """Mark a member's expense as paid back (`state=done`) or take the mark off (`state=undo`)."""
+
+    http_method_names = ["post"]
+
+    def post(self, request, gig_id, pk):
+        self.load(gig_id)
+        expense = self.get_expense(pk)
+        if expense.person_id is not None:
+            services.set_reimbursed(expense, request.POST.get("state") != "undo")
         return self.done()
 
 

@@ -71,6 +71,17 @@ class Expense(TenantOwnedModel):
         validators=[MinValueValidator(MIN_AMOUNT)],
     )
     date = models.DateField(_("date"))
+    # Empty: the structure paid. Set: a member of the team advanced the money, and the
+    # structure owes it back until `reimbursed_on` is filled (tracking only, no payment made).
+    person = models.ForeignKey(
+        "tenants.Person",
+        on_delete=models.PROTECT,
+        null=True,
+        blank=True,
+        related_name="expenses",
+        verbose_name=_("dépense faite par"),
+    )
+    reimbursed_on = models.DateField(_("remboursée le"), null=True, blank=True)
     receipt_file = models.FileField(_("justificatif"), upload_to=receipt_upload_to, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
@@ -84,3 +95,13 @@ class Expense(TenantOwnedModel):
 
     def __str__(self):
         return f"{self.label} — {self.amount} €"
+
+    @property
+    def to_reimburse(self):
+        """A member advanced it and has not been paid back yet."""
+        return self.person_id is not None and self.reimbursed_on is None
+
+    def save(self, *args, **kwargs):
+        if self.person_id is None:  # nobody to pay back
+            self.reimbursed_on = None
+        super().save(*args, **kwargs)

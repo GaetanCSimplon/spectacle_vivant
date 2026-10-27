@@ -243,11 +243,17 @@ class BordFilterForm(forms.Form):
         required=False,
         choices=[("", _("Tous les statuts")), *bord.STATUSES.items()],
     )
+    spender = forms.ChoiceField(label=_("Dépenses faites par"), required=False)
 
     def __init__(self, *args, tenant=None, **kwargs):
         super().__init__(*args, **kwargs)
         # Only this tenant's shows can be chosen: another tenant's id is an invalid value.
         self.fields["show"].queryset = Show.objects.filter(tenant=tenant).order_by("title")
+        self.fields["spender"].choices = [
+            ("", _("Tout le monde")),
+            ("structure", _("La structure")),
+            *((str(p.pk), p.full_name) for p in Person.objects.filter(tenant=tenant)),
+        ]
 
     def filters(self, today):
         """The `bord.Filters` for this form; whatever is missing or invalid takes its default."""
@@ -265,4 +271,5 @@ class BordFilterForm(forms.Form):
             show=data.get("show"),
             figure=data.get("figure") or bord.DEFAULT_FIGURE,
             status=data.get("status") or "",
+            spender=data.get("spender") or "",
         )

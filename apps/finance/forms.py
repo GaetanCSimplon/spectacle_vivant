@@ -2,6 +2,8 @@ from django import forms
 from django.core.files.uploadedfile import UploadedFile
 from django.utils.translation import gettext_lazy as _
 
+from apps.tenants.models import Person
+
 from .models import Expense, Payment
 
 MAX_RECEIPT_SIZE = 10 * 1024 * 1024
@@ -27,7 +29,13 @@ class PaymentForm(forms.ModelForm):
 class ExpenseForm(forms.ModelForm):
     class Meta:
         model = Expense
-        fields = ["category", "label", "amount", "date", "receipt_file"]
+        fields = ["category", "label", "amount", "date", "person", "receipt_file"]
+        help_texts = {
+            "person": _(
+                "Laissez « La structure » si c'est elle qui a payé. Si un membre a avancé "
+                "l'argent, la dépense sera à lui rembourser."
+            )
+        }
         widgets = {
             "amount": _money_widget(),
             "date": _date_widget(),
@@ -35,6 +43,12 @@ class ExpenseForm(forms.ModelForm):
                 attrs={"accept": "application/pdf,image/jpeg,image/png"}
             ),
         }
+
+    def __init__(self, *args, tenant=None, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Only the people of this structure can be chosen.
+        self.fields["person"].queryset = Person.objects.filter(tenant=tenant)
+        self.fields["person"].empty_label = _("La structure")
 
     def clean_receipt_file(self):
         file = self.cleaned_data["receipt_file"]
