@@ -1,7 +1,7 @@
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 
-from apps.core.models import AddressMixin, TenantOwnedModel
+from apps.core.models import GeoPointMixin, TenantOwnedModel
 
 
 class Roadmap(TenantOwnedModel):
@@ -53,7 +53,7 @@ class RoadmapSlot(TenantOwnedModel):
         return f"{self.time:%H:%M} {self.label or self.get_kind_display()}"
 
 
-class Lodging(AddressMixin, TenantOwnedModel):
+class Lodging(GeoPointMixin, TenantOwnedModel):
     roadmap = models.ForeignKey(Roadmap, on_delete=models.CASCADE, related_name="lodgings")
     name = models.CharField(_("nom"), max_length=255)
     address = models.CharField(_("adresse"), max_length=255, blank=True)

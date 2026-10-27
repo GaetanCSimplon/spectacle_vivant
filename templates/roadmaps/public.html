@@ -30,6 +30,7 @@
         <p class="font-medium">{{ venue.name }}</p>
         {% if venue.address %}<p class="text-gray-600">{{ venue.address|linebreaksbr }}</p>{% endif %}
         {% if venue.access_info %}<p class="text-gray-600">{{ venue.access_info|linebreaksbr }}</p>{% endif %}
+        {% if venue.map_url %}{% include "roadmaps/_map_preview.html" with map_url=venue.map_url %}{% endif %}
         <div class="grid grid-cols-2 gap-3">
           {% if venue.tel %}<a href="tel:{{ venue.tel }}" class="btn btn-primary btn-block">{% translate "Appeler" %}</a>{% endif %}
           {% if venue.address %}
@@ -66,6 +67,7 @@
               <p class="font-medium">{{ lodging.name }}{% if lodging.arrival_time %} · {% translate "arrivée" %} <span class="data">{{ lodging.arrival_time|time:"H:i" }}</span>{% endif %}</p>
               {% if lodging.full_address %}
                 <p class="text-gray-600">{{ lodging.full_address|linebreaksbr }}</p>
+                {% if lodging.has_point %}{% include "roadmaps/_map_preview.html" with map_url=lodging.map_embed_url %}{% endif %}
                 <a href="https://www.openstreetmap.org/search?query={{ lodging.one_line_address|urlencode }}" rel="noopener noreferrer" class="btn btn-secondary btn-block">{% translate "Itinéraire" %}</a>
                 {% include "roadmaps/_copy_address.html" with address=lodging.one_line_address %}
               {% endif %}

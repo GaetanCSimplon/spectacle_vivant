@@ -123,6 +123,7 @@ def public_context(roadmap):
             "access_info": venue.access_info,
             "phone": venue.phone,
             "tel": _tel(venue.phone),
+            "map_url": venue.map_embed_url,
         },
         "crew_headcount": gig.crew_headcount,
         "slots": list(roadmap.slots.all()),

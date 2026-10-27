@@ -204,7 +204,7 @@ def test_public_context_is_a_whitelist(roadmap):
         "meals", "notes", "version", "updated_at", "members", "venue_contacts",
     }  # fmt: skip
     assert set(public_context(roadmap)["venue"]) == {
-        "name", "address", "address_one_line", "access_info", "phone", "tel",
+        "name", "address", "address_one_line", "access_info", "phone", "tel", "map_url",
     }  # fmt: skip
 
 

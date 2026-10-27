@@ -137,7 +137,7 @@ Une tâche est terminée quand :
 
 ## 10. Hors périmètre (ne pas coder, ne pas proposer)
 
-Calcul de charges sociales GUSO/intermittence, carte et temps de trajet, connecteur expert-comptable/CAE, aide au choix du statut juridique, billetterie, gestion des droits SACEM, application mobile native. (Voir `docs/produit/cahier-des-charges.md` pour les évolutions prévues.)
+Calcul de charges sociales GUSO/intermittence, carte interactive, itinéraires calculés et temps de trajet (un simple aperçu de carte OpenStreetMap, sans calcul, est autorisé depuis le 2026-10-28), connecteur expert-comptable/CAE, aide au choix du statut juridique, billetterie, gestion des droits SACEM, application mobile native. (Voir `docs/produit/cahier-des-charges.md` pour les évolutions prévues.)
 
 ## 11. État actuel
 
