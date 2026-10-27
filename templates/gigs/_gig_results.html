@@ -18,21 +18,21 @@
 
 {% if upcoming_gigs %}
   <h2 class="mb-2 text-sm font-semibold uppercase text-gray-500">{% translate "À venir" %}</h2>
-  <ul class="mb-6 flex flex-col gap-2">
+  <ul class="mb-6 grid grid-cols-1 items-start gap-2 xl:grid-cols-2 2xl:grid-cols-3">
     {% for gig in upcoming_gigs %}{% include "gigs/_gig_row.html" %}{% endfor %}
   </ul>
 {% endif %}
 
 {% if past_gigs %}
   <h2 class="mb-2 text-sm font-semibold uppercase text-gray-500">{% translate "Passées" %}</h2>
-  <ul class="mb-6 flex flex-col gap-2">
+  <ul class="mb-6 grid grid-cols-1 items-start gap-2 xl:grid-cols-2 2xl:grid-cols-3">
     {% for gig in past_gigs %}{% include "gigs/_gig_row.html" %}{% endfor %}
   </ul>
 {% endif %}
 
 {% if cancelled_gigs %}
   <h2 class="mb-2 text-sm font-semibold uppercase text-gray-500">{% translate "Annulées" %}</h2>
-  <ul class="flex flex-col gap-2">
+  <ul class="grid grid-cols-1 items-start gap-2 xl:grid-cols-2 2xl:grid-cols-3">
     {% for gig in cancelled_gigs %}{% include "gigs/_gig_row.html" %}{% endfor %}
   </ul>
 {% endif %}

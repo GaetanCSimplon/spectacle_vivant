@@ -2,6 +2,7 @@
 {% load i18n %}
 
 {% block title %}Mes dates — Bòrd Pro{% endblock %}
+{% block main_width %}max-w-[90rem]{% endblock %}
 
 {% block page_content %}
   <div class="mb-2 flex items-center justify-between">
@@ -21,7 +22,7 @@
     <form
       method="get"
       action="{% url 'gigs:list' %}"
-      class="mb-4 grid grid-cols-2 gap-2 sm:grid-cols-3"
+      class="mb-4 grid grid-cols-2 gap-2 sm:grid-cols-3 lg:max-w-4xl"
       hx-get="{% url 'gigs:list' %}"
       hx-trigger="change"
       hx-target="#results"

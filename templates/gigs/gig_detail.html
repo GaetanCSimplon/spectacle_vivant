@@ -2,6 +2,7 @@
 {% load i18n %}
 
 {% block title %}{{ gig.show.title }} — {{ gig.date|date:"d/m/Y" }} — Bòrd Pro{% endblock %}
+{% block main_width %}max-w-6xl{% endblock %}
 
 {% block page_content %}
   <div class="mb-4 flex items-start justify-between gap-3">
@@ -15,6 +16,10 @@
   {% include "gigs/_checklist_button.html" %}
   <div id="checklist-modal"></div>
 
+  {# From lg: the date itself and what to do next on the left, the money and the documents on the right. #}
+  <div class="lg:grid lg:grid-cols-2 lg:items-start lg:gap-x-8">
+  <div class="min-w-0">
+  <h2 class="mb-2 text-sm font-semibold uppercase text-gray-500">{% translate "La date" %}</h2>
   <div class="card mb-6 space-y-1 text-sm">
     <p>
       {% translate "Organisateur" %} :
@@ -102,6 +107,9 @@
     </a>
   </div>
 
+  </div>
+
+  <div class="min-w-0">
   <h2 class="mb-2 text-sm font-semibold uppercase text-gray-500">{% translate "Paiements et dépenses" %}</h2>
   <div class="card mb-6 space-y-3 text-sm">
     <div class="space-y-1">
@@ -139,4 +147,6 @@
       {% translate "Annuler cette date" %}
     </a>
   {% endif %}
+  </div>
+  </div>
 {% endblock %}

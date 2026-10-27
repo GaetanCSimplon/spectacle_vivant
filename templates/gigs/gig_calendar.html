@@ -2,6 +2,7 @@
 {% load i18n %}
 
 {% block title %}Calendrier — Bòrd Pro{% endblock %}
+{% block main_width %}max-w-[90rem]{% endblock %}
 
 {% block page_content %}
   <div class="mb-2 flex items-center justify-between">
@@ -13,6 +14,9 @@
 
   {% include "gigs/_view_tabs.html" with active="calendar" %}
 
+  {# From xl: the month on the left, the dates of the month on the right. #}
+  <div class="xl:grid xl:grid-cols-[minmax(0,48rem)_minmax(0,1fr)] xl:items-start xl:gap-8">
+  <div>
   <div class="mb-3 flex items-center justify-between">
     {% if previous_month %}
       <a href="?mois={{ previous_month|date:'Y-m' }}" class="btn btn-secondary" aria-label="{% translate 'Mois précédent' %}">‹</a>
@@ -37,7 +41,7 @@
         {% if day.gigs %}
           <a
             href="{% if day.gigs|length == 1 %}{% url 'gigs:detail' day.gigs.0.pk %}{% else %}#gig-{{ day.gigs.0.pk }}{% endif %}"
-            class="flex min-h-12 flex-col items-center justify-start gap-1 rounded-md border border-gray-200 bg-white py-1 hover:bg-gray-50 {% if day.is_today %}ring-2 ring-blue-500{% endif %}"
+            class="flex min-h-12 flex-col items-center justify-start gap-1 rounded-md border xl:min-h-20 border-gray-200 bg-white py-1 hover:bg-gray-50 {% if day.is_today %}ring-2 ring-blue-500{% endif %}"
             {% if day.is_today %}aria-current="date"{% endif %}
           >
             <span class="font-medium text-gray-900">{{ day.date.day }}</span>
@@ -48,7 +52,7 @@
           </a>
         {% else %}
           <div
-            class="flex min-h-12 flex-col items-center justify-start rounded-md py-1 {% if day.in_month %}text-gray-700{% else %}text-gray-500{% endif %} {% if day.is_today %}ring-2 ring-blue-500{% endif %}"
+            class="flex min-h-12 flex-col items-center justify-start rounded-md py-1 xl:min-h-20 {% if day.in_month %}text-gray-700{% else %}text-gray-500{% endif %} {% if day.is_today %}ring-2 ring-blue-500{% endif %}"
             {% if day.is_today %}aria-current="date"{% endif %}
           >{{ day.date.day }}</div>
         {% endif %}
@@ -63,6 +67,9 @@
     <li class="flex items-center gap-1"><span class="inline-block h-2 w-2 rounded-full bg-gray-400"></span>{% translate "Annulée" %}</li>
   </ul>
 
+  </div>
+
+  <div>
   {% if gigs %}
     <h2 class="mb-2 text-sm font-semibold uppercase text-gray-500">{% translate "Dates du mois" %}</h2>
     <ul class="flex flex-col gap-2">
@@ -73,4 +80,6 @@
       <p>{% blocktranslate with month=month_start|date:"F Y" %}Aucune date en {{ month }}.{% endblocktranslate %}</p>
     </div>
   {% endif %}
+  </div>
+  </div>
 {% endblock %}
