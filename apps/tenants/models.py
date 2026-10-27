@@ -1,10 +1,16 @@
 from django.db import models
 from django.urls import reverse
+from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 
 from apps.core.models import AddressMixin, TenantOwnedModel
 
-from .validators import validate_bic, validate_iban
+from .validators import (
+    format_social_security_number,
+    validate_bic,
+    validate_iban,
+    validate_social_security_number,
+)
 
 
 class Tenant(AddressMixin, models.Model):
@@ -81,8 +87,9 @@ class Person(AddressMixin, TenantOwnedModel):
     """A member of the structure's team (artist, musician, technician...). Tracking only:
     nothing here is used to compute pay or social contributions (F-06).
 
-    The address and the GUSO number are private: only the owner sees them, and they are
-    never copied to a roadmap.
+    The address, the GUSO number, the birth date and the social security number are private:
+    only the owner sees them (they are there for the person in charge of the accounts and
+    the paperwork), and they are never copied to a roadmap.
     """
 
     first_name = models.CharField(_("prénom"), max_length=100)
@@ -93,6 +100,15 @@ class Person(AddressMixin, TenantOwnedModel):
     email = models.EmailField(_("e-mail"), blank=True)
     address = models.TextField(_("adresse"), blank=True)
     guso_number = models.CharField(_("n° GUSO"), max_length=50, blank=True)
+    birth_date = models.DateField(_("date de naissance"), null=True, blank=True)
+    social_security_number = models.CharField(
+        _("n° de sécurité sociale"),
+        max_length=15,
+        blank=True,
+        validators=[validate_social_security_number],
+    )
+    is_artist = models.BooleanField(_("artiste"), default=False)
+    is_technician = models.BooleanField(_("technicien"), default=False)
     average_fee = models.DecimalField(
         _("cachet moyen (€)"), max_digits=10, decimal_places=2, null=True, blank=True
     )
@@ -109,6 +125,18 @@ class Person(AddressMixin, TenantOwnedModel):
     @property
     def full_name(self):
         return f"{self.first_name} {self.last_name}".strip()
+
+    @property
+    def formatted_social_security_number(self):
+        return format_social_security_number(self.social_security_number)
+
+    def age(self, today=None):
+        """Full years at `today`; None when there is no birth date."""
+        if self.birth_date is None:
+            return None
+        today = today or timezone.localdate()
+        before_birthday = (today.month, today.day) < (self.birth_date.month, self.birth_date.day)
+        return today.year - self.birth_date.year - before_birthday
 
     def get_absolute_url(self):
         return reverse("tenants:person-detail", args=[self.pk])

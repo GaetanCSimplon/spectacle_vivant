@@ -11,12 +11,17 @@
 
   <div class="card mb-6 space-y-1 text-sm">
     {% if person.role %}<p>{{ person.role }}</p>{% endif %}
+    {% if person.is_artist or person.is_technician %}
+      <p class="text-gray-600">{% if person.is_artist %}{% translate "Artiste" %}{% endif %}{% if person.is_artist and person.is_technician %} · {% endif %}{% if person.is_technician %}{% translate "Technicien" %}{% endif %}</p>
+    {% endif %}
     {% if person.status %}<p class="text-gray-600">{% translate "Statut" %} : {{ person.status }}</p>{% endif %}
     {% if person.phone %}<p><a href="tel:{{ person.phone }}" class="text-blue-700 underline">{{ person.phone }}</a></p>{% endif %}
     {% if person.email %}<p><a href="mailto:{{ person.email }}" class="text-blue-700 underline">{{ person.email }}</a></p>{% endif %}
     {% if is_owner %}
       {% if person.full_address %}<p>{{ person.full_address|linebreaksbr }}</p>{% endif %}
       {% if person.department %}<p class="text-gray-600">{{ person.get_department_display }}</p>{% endif %}
+      {% if person.birth_date %}<p class="text-gray-600">{% translate "Né(e) le" %} <span class="data">{{ person.birth_date|date:"d/m/Y" }}</span> ({% blocktranslate count n=person.age %}{{ n }} an{% plural %}{{ n }} ans{% endblocktranslate %})</p>{% endif %}
+      {% if person.social_security_number %}<p class="text-gray-600">{% translate "N° de sécurité sociale" %} : <span class="data">{{ person.formatted_social_security_number }}</span></p>{% endif %}
       {% if person.guso_number %}<p class="text-gray-600">{% translate "N° GUSO" %} : {{ person.guso_number }}</p>{% endif %}
     {% endif %}
     {% if person.average_fee is not None %}<p class="text-gray-600">{% translate "Cachet moyen" %} : {{ person.average_fee }} €</p>{% endif %}

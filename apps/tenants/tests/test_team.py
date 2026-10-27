@@ -173,4 +173,5 @@ def test_the_data_export_holds_only_the_teams_own_people():
 
     assert rows[0][:3] == ["Nom", "Prénom", "Fonction"]
     assert [r[0] for r in rows[1:]] == ["Durand", "Sans"]
-    assert rows[1][6] == "250,00" and rows[2][6] == ""
+    column = rows[0].index("Cachet moyen")
+    assert rows[1][column] == "250,00" and rows[2][column] == ""
