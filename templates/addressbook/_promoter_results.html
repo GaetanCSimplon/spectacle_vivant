@@ -11,6 +11,8 @@
     {% endif %}
   </div>
 {% else %}
+  {% url 'addressbook:promoter-export' as export_url %}
+  {% include "addressbook/_export_link.html" with url=export_url %}
   <ul class="flex flex-col gap-2 lg:hidden">
     {% for promoter in object_list %}
       <li>

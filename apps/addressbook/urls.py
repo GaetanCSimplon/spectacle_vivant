@@ -6,6 +6,7 @@ app_name = "addressbook"
 
 urlpatterns = [
     path("organisateurs/", views.PromoterListView.as_view(), name="promoter-list"),
+    path("organisateurs/export/", views.PromoterExportView.as_view(), name="promoter-export"),
     path("organisateurs/nouveau/", views.PromoterCreateView.as_view(), name="promoter-create"),
     path("organisateurs/<int:pk>/", views.PromoterDetailView.as_view(), name="promoter-detail"),
     path(
@@ -34,6 +35,7 @@ urlpatterns = [
         name="promoter-answer",
     ),
     path("lieux/", views.VenueListView.as_view(), name="venue-list"),
+    path("lieux/export/", views.VenueExportView.as_view(), name="venue-export"),
     path("lieux/nouveau/", views.VenueCreateView.as_view(), name="venue-create"),
     path("lieux/<int:pk>/", views.VenueDetailView.as_view(), name="venue-detail"),
     path("lieux/<int:pk>/modifier/", views.VenueUpdateView.as_view(), name="venue-update"),
@@ -74,6 +76,7 @@ urlpatterns = [
         name="venue-contact-detach",
     ),
     path("contacts/", views.ContactListView.as_view(), name="contact-list"),
+    path("contacts/export/", views.ContactExportView.as_view(), name="contact-export"),
     path("contacts/nouveau/", views.ContactQuickCreateView.as_view(), name="contact-create"),
     path("contacts/<int:pk>/modifier/", views.ContactUpdateView.as_view(), name="contact-update"),
     path("contacts/<int:pk>/supprimer/", views.ContactDeleteView.as_view(), name="contact-delete"),

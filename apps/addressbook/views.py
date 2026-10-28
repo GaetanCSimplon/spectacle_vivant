@@ -9,7 +9,7 @@ from django.views.generic import CreateView, DeleteView, DetailView, ListView, U
 
 from apps.core.views import SearchListMixin, TenantScopedMixin, wants_fragment
 
-from . import services
+from . import exports, services
 from .forms import (
     ContactFilterForm,
     ContactForm,
@@ -449,3 +449,34 @@ class PromoterContactLinkView(ContactLinkView):
 class VenueContactLinkView(ContactLinkView):
     parent_model = Venue
     parent_field = "venues"
+
+
+class ExportMixin:
+    """Send the list a user is looking at (same search and filters) as a CSV file.
+
+    The export views are the list views themselves, so the tenant scope and the filters are the
+    ones of the screen: no second copy of that logic.
+    """
+
+    export_kind = None
+
+    def get(self, request, *args, **kwargs):
+        return exports.csv_response(self.export_kind, self.get_queryset())
+
+
+class PromoterExportView(ExportMixin, PromoterListView):
+    export_kind = "organisateurs"
+
+    def get_queryset(self):
+        return super().get_queryset().prefetch_related("contacts")
+
+
+class VenueExportView(ExportMixin, VenueListView):
+    export_kind = "lieux"
+
+    def get_queryset(self):
+        return super().get_queryset().prefetch_related("promoters")
+
+
+class ContactExportView(ExportMixin, ContactListView):
+    export_kind = "contacts"
