@@ -89,7 +89,7 @@
         <button type="submit" class="btn btn-secondary btn-block">{% translate "Supprimer le brouillon" %}</button>
       </form>
     {% else %}
-      <a href="{% url 'documents:document-pdf' gig.pk doc_type document.pk %}" class="btn btn-primary btn-block">
+      <a href="{% url 'documents:document-pdf' gig.pk doc_type document.pk %}" class="btn btn-primary btn-block btn-download">
         {% translate "Télécharger le PDF" %}
       </a>
     {% endif %}

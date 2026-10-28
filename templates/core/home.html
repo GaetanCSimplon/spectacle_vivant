@@ -82,7 +82,7 @@
               {% endif %}
             </div>
           </details>
-          <a href="{% url 'export' %}" class="mt-1 inline-flex min-h-11 items-center text-sm font-bold text-blue-700 hover:text-blue-900">{% translate "Exporter mes chiffres (CSV)" %} →</a>
+          <a href="{% url 'export' %}" class="btn btn-secondary btn-sm btn-download mt-2">{% translate "Exporter mes chiffres (CSV)" %}</a>
         </section>
 
         {% include "core/_upcoming_card.html" %}

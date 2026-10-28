@@ -10,7 +10,10 @@
     <h1 class="!mb-0">{% translate "Organisateurs" %}</h1>
     {% url 'addressbook:promoter-create' as add_url %}
     {% translate "Nouvel organisateur" as add_label %}
+    <div class="flex items-center gap-2">
+      <a href="{% url 'addressbook:import' %}?type=organisateurs" class="btn btn-secondary btn-sm btn-upload hidden sm:inline-flex">{% translate "Importer (CSV)" %}</a>
     {% include "components/_add_button.html" with url=add_url label=add_label %}
+    </div>
   </div>
 
   {% url 'addressbook:promoter-list' as list_url %}

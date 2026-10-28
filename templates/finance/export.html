@@ -12,13 +12,13 @@
   <form method="get" class="card mb-6 space-y-4">
     {{ form.as_p }}
     <div class="flex flex-col gap-3">
-      <button type="submit" formaction="{% url 'export-csv' 'factures' %}" class="btn btn-primary btn-block">
+      <button type="submit" formaction="{% url 'export-csv' 'factures' %}" class="btn btn-primary btn-block btn-download">
         {% translate "Factures et avoirs émis" %}
       </button>
-      <button type="submit" formaction="{% url 'export-csv' 'recettes' %}" class="btn btn-secondary btn-block">
+      <button type="submit" formaction="{% url 'export-csv' 'recettes' %}" class="btn btn-secondary btn-block btn-download">
         {% translate "Recettes (paiements reçus)" %}
       </button>
-      <button type="submit" formaction="{% url 'export-csv' 'depenses' %}" class="btn btn-secondary btn-block">
+      <button type="submit" formaction="{% url 'export-csv' 'depenses' %}" class="btn btn-secondary btn-block btn-download">
         {% translate "Dépenses" %}
       </button>
     </div>

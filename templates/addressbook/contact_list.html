@@ -10,7 +10,10 @@
     <h1 class="!mb-0">{% translate "Contacts" %}</h1>
     {% url 'addressbook:contact-create' as add_url %}
     {% translate "Nouveau contact" as add_label %}
+    <div class="flex items-center gap-2">
+      <a href="{% url 'addressbook:import' %}?type=contacts" class="btn btn-secondary btn-sm btn-upload hidden sm:inline-flex">{% translate "Importer (CSV)" %}</a>
     {% include "components/_add_button.html" with url=add_url label=add_label %}
+    </div>
   </div>
 
   <p class="mb-4 text-sm text-gray-600">{% translate "Votre annuaire : les personnes avec qui vous travaillez, liées à un ou plusieurs organisateurs ou lieux, ou pas encore." %}</p>

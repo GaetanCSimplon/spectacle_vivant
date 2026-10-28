@@ -97,7 +97,7 @@
               <p class="font-medium">{{ claim.label }}</p>
               <p>{% blocktranslate with name=claim.person.full_name day=claim.date|date:"d/m/Y" category=claim.get_category_display %}Déclarée par {{ name }} · {{ day }} · {{ category }}{% endblocktranslate %}</p>
               {% if claim.receipt_file %}
-                <a href="{% url 'finance:claim-receipt' gig.pk claim.pk %}" class="underline">{% translate "Justificatif" %}</a>
+                <a href="{% url 'finance:claim-receipt' gig.pk claim.pk %}" class="btn btn-secondary btn-sm btn-download">{% translate "Justificatif" %}</a>
               {% else %}
                 <p>{% translate "Pas de justificatif." %}</p>
               {% endif %}
@@ -154,7 +154,7 @@
                 </p>
               {% endif %}
               {% if expense.receipt_file %}
-                <a href="{% url 'finance:expense-receipt' gig.pk expense.pk %}" class="text-blue-700 underline">{% translate "Justificatif" %}</a>
+                <a href="{% url 'finance:expense-receipt' gig.pk expense.pk %}" class="btn btn-secondary btn-sm btn-download">{% translate "Justificatif" %}</a>
               {% endif %}
             </div>
             <p class="shrink-0 font-medium">{{ expense.amount }} €</p>
