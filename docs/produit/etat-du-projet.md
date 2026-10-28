@@ -34,7 +34,7 @@ Premier déploiement réussi le 2026-10-22 sur `bordpro.osc-fr1.scalingo.io` (ad
 ## 3. À développer avant d'ouvrir à des testeurs
 Dans cet ordre :
 1. ~~Fermer l'inscription publique~~ **Fait** (2026-10-25) : liste d'invités dans `/admin/`, procédure dans `docs/technique/services-production.md`. Il faudra créer un compte administrateur sur la production.
-2. **Erreur claire** quand l'e-mail de confirmation échoue (au lieu d'une page 500).
+2. ~~Erreur claire quand l'e-mail de confirmation échoue~~ **Fait** (2026-10-29).
 3. **Mot de passe oublié** : tester de bout en bout.
 4. **Contrôle d'accès des téléchargements** (rider, fiche technique) : vérifier.
 5. **Régime de TVA** : vérifier que les mentions suivent chaque régime, puis cocher la case de la feuille de route.
