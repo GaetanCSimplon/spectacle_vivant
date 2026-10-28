@@ -37,12 +37,12 @@
         {% endfor %}
 
         {% block page_content %}{% endblock %}
+        <footer class="mt-8 text-xs text-gray-500">
+          <a href="{% url 'legal-notice' %}" class="underline">{% translate "Mentions légales" %}</a>
+          · <a href="{% url 'legal-terms' %}" class="underline">{% translate "Conditions d'utilisation" %}</a>
+          · <a href="{% url 'legal-privacy' %}" class="underline">{% translate "Confidentialité" %}</a>
+        </footer>
       </main>
-      <footer class="mx-auto max-w-5xl px-4 pb-6 text-xs text-gray-500">
-        <a href="{% url 'legal-notice' %}" class="underline">{% translate "Mentions légales" %}</a>
-        · <a href="{% url 'legal-terms' %}" class="underline">{% translate "Conditions d'utilisation" %}</a>
-        · <a href="{% url 'legal-privacy' %}" class="underline">{% translate "Confidentialité" %}</a>
-      </footer>
       </div>
     </div>
     {% block extra_body %}{% endblock %}

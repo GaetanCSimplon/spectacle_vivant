@@ -11,7 +11,7 @@
     {% endif %}
   </div>
 {% else %}
-  <ul class="flex flex-col gap-2">
+  <ul class="flex flex-col gap-2 lg:hidden">
     {% for promoter in object_list %}
       <li>
         <a href="{% url 'addressbook:promoter-detail' promoter.pk %}" class="card card-link block">
@@ -31,4 +31,33 @@
       </li>
     {% endfor %}
   </ul>
+  {# No overflow clipping: the status menu opens over the next rows. #}
+  <div class="card hidden !p-0 lg:block">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th scope="col">{% translate "Organisateur" %}</th>
+          <th scope="col">{% translate "Suivi" %}</th>
+          <th scope="col">{% translate "Type" %}</th>
+          <th scope="col">{% translate "Évènements et esthétiques" %}</th>
+          <th scope="col">{% translate "Ville" %}</th>
+          <th scope="col">{% translate "E-mail" %}</th>
+          <th scope="col">{% translate "Téléphone" %}</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for promoter in object_list %}
+          <tr>
+            <td><a href="{% url 'addressbook:promoter-detail' promoter.pk %}" class="cell-main">{{ promoter.name }}</a></td>
+            <td>{% include "addressbook/_follow_up_menu.html" %}</td>
+            <td>{{ promoter.kind_labels|join:", " }}</td>
+            <td>{{ promoter.event_type_labels|join:", " }}{% if promoter.event_types and promoter.aesthetics %} · {% endif %}{{ promoter.aesthetic_labels|join:", " }}</td>
+            <td>{{ promoter.city }}</td>
+            <td>{% if promoter.email %}<a href="mailto:{{ promoter.email }}" class="underline">{{ promoter.email }}</a>{% endif %}</td>
+            <td class="whitespace-nowrap data">{{ promoter.phone }}</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
 {% endif %}

@@ -1,13 +1,29 @@
 from django import forms
 from django.utils.translation import gettext_lazy as _
 
-from apps.core.forms import MultiSelectDropdown
+from apps.core.forms import MultiSelectDropdown, SectionedFormMixin
 from apps.tenants.models import Person
 
 from .models import Show
 
 
-class ShowForm(forms.ModelForm):
+class ShowForm(SectionedFormMixin, forms.ModelForm):
+    layout = [
+        (_("Le spectacle"), ["title", "group_name", "cast", "duration_minutes", "default_price"]),
+        (
+            _("En tournée"),
+            [
+                "crew_size",
+                "artists_count",
+                "technicians_count",
+                "soundcheck_minutes",
+                "soundcheck_to_set_minutes",
+            ],
+        ),
+        (_("Documents"), ["tech_sheet_text", "tech_sheet_file", "rider_file", "epk_url"]),
+        (_("Droits et suivi"), ["sacem_number", "sacem_object_number", "analytic_code"]),
+    ]
+
     # A link typed without a scheme ("exemple.fr/epk") is completed with https://. Said here,
     # on the field, because the global setting that did it is going away with Django 6.
     epk_url = forms.URLField(
@@ -60,8 +76,14 @@ class ShowForm(forms.ModelForm):
         self.fields["cast"].queryset = Person.objects.filter(tenant=tenant)
 
     @property
-    def main_fields(self):
-        return [field for field in self if field.name not in self.NEW_MEMBER_FIELDS]
+    def sections(self):
+        """The titled blocks of the show; the new-member fields have their own card."""
+        blocks = super().sections
+        return [
+            block
+            for block in blocks
+            if not any(field.name in self.NEW_MEMBER_FIELDS for field in block["fields"])
+        ]
 
     @property
     def new_member_fields(self):

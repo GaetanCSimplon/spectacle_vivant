@@ -4,6 +4,7 @@
 {% block title %}
   {% if object %}Modifier un lieu{% else %}Nouveau lieu{% endif %} — Bòrd Pro
 {% endblock %}
+{% block main_width %}max-w-5xl{% endblock %}
 
 {% block page_content %}
   <h1 class="mb-4">
@@ -16,7 +17,9 @@
 
   <form method="post" class="space-y-4">
     {% csrf_token %}
-    {{ form.as_p }}
-    <button type="submit" class="btn btn-primary btn-block">{% translate "Enregistrer" %}</button>
+    {% include "components/_sectioned_form.html" %}
+    <div class="flex justify-end">
+      <button type="submit" class="btn btn-primary w-full md:w-auto md:min-w-64">{% translate "Enregistrer" %}</button>
+    </div>
   </form>
 {% endblock %}

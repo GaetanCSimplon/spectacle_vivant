@@ -11,7 +11,7 @@
     {% endif %}
   </div>
 {% else %}
-  <ul class="flex flex-col gap-2">
+  <ul class="flex flex-col gap-2 lg:hidden">
     {% for venue in object_list %}
       <li>
         <a href="{% url 'addressbook:venue-detail' venue.pk %}" class="card card-link block">
@@ -23,4 +23,28 @@
       </li>
     {% endfor %}
   </ul>
+  <div class="card hidden overflow-x-auto !p-0 lg:block">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th scope="col">{% translate "Lieu" %}</th>
+          <th scope="col">{% translate "Ville" %}</th>
+          <th scope="col" class="text-right">{% translate "Jauge" %}</th>
+          <th scope="col">{% translate "Configuration" %}</th>
+          <th scope="col">{% translate "Téléphone" %}</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for venue in object_list %}
+          <tr>
+            <td><a href="{% url 'addressbook:venue-detail' venue.pk %}" class="cell-main">{{ venue.name }}</a></td>
+            <td>{{ venue.city }}</td>
+            <td class="data whitespace-nowrap text-right">{% if venue.capacity %}{{ venue.capacity }} {% translate "places" %}{% endif %}</td>
+            <td>{{ venue.configuration }}</td>
+            <td class="whitespace-nowrap data">{{ venue.phone }}</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
 {% endif %}

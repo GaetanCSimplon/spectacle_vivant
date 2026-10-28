@@ -1,0 +1,16 @@
+{% extends "account/base_entrance.html" %}
+{% load i18n %}
+{% load allauth %}
+{% comment %}Overrides allauth's page: its text says "we have sent you an e-mail", which is not always
+true (the mail service can be down: see apps/accounts/adapter.py). This wording holds either way.{% endcomment %}
+{% block head_title %}
+    {% trans "Vérifiez votre adresse e-mail" %}
+{% endblock head_title %}
+{% block content %}
+    {% element h1 %}
+        {% trans "Vérifiez votre adresse e-mail" %}
+    {% endelement %}
+    {% element p %}
+        {% blocktrans %}Un e-mail de confirmation doit vous parvenir : cliquez sur le lien qu'il contient pour terminer l'inscription. S'il n'arrive pas dans votre boîte de réception, regardez dans vos courriers indésirables. Au bout de quelques minutes, reconnectez-vous pour le recevoir de nouveau, ou écrivez-nous depuis la page Contact.{% endblocktrans %}
+    {% endelement %}
+{% endblock content %}

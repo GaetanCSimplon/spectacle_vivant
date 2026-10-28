@@ -156,7 +156,8 @@ def apply_response(invitation, keys, with_contact):
             promoter.save(update_fields=chosen)
         contact = answer_contact(locked)
         if with_contact and contact:
-            Contact.objects.create(tenant=locked.tenant, promoter=promoter, **contact)
+            created = Contact.objects.create(tenant=locked.tenant, **contact)
+            created.promoters.add(promoter)
         close_review(locked)
     return chosen
 

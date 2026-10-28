@@ -6,6 +6,29 @@ from django.utils.translation import gettext_lazy as _
 from .addresses import department_from_postal_code, normalize_postal_code
 
 
+class SectionedFormMixin:
+    """A long form laid out in titled blocks (two columns of fields on a PC screen).
+
+    `layout` is `[(title, [field names])]`. A field the form no longer has (the private ones of
+    the team card for a simple member) is skipped, and a block left empty disappears. Any field
+    missing from `layout` is still shown, in a last untitled block, so one can never be lost.
+    """
+
+    layout = []
+
+    @property
+    def sections(self):
+        placed = {name for _title, names in self.layout for name in names}
+        blocks = [
+            {"title": title, "fields": [self[name] for name in names if name in self.fields]}
+            for title, names in self.layout
+        ]
+        leftovers = [self[name] for name in self.fields if name not in placed]
+        if leftovers:
+            blocks.append({"title": "", "fields": leftovers})
+        return [block for block in blocks if block["fields"]]
+
+
 class AddressModelForm(forms.ModelForm):
     """Base of the forms of a model with `AddressMixin`: tidy postal code, guess the department.
 

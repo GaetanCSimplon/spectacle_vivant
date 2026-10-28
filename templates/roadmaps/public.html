@@ -12,6 +12,7 @@
   </head>
   <body class="min-h-screen bg-page text-gray-900">
     <main class="mx-auto max-w-xl px-4 py-6">
+      {% if preview %}<p class="mb-4 rounded-lg bg-blue-50 px-3 py-2 text-sm text-blue-900">{% translate "Aperçu : c'est ce que voit une personne qui ouvre la feuille de route." %}</p>{% endif %}
       {% if back_url %}<p class="mb-4"><a href="{{ back_url }}" class="text-blue-700 underline">← {% translate "Mes dates" %}</a></p>{% endif %}
       <header class="card card-navy mb-6 flex items-center gap-4">
         <span class="date-tile" aria-hidden="true">

@@ -167,7 +167,7 @@ Le fichier `cron.json` du projet décrit la tâche, mais Scalingo ne l'exécute 
 | Symptôme | Cause probable | Que faire |
 |---|---|---|
 | Le build s'arrête avec `Set the …` | Une variable obligatoire manque (`S3_*`, `EMAIL_*`, `DEFAULT_FROM_EMAIL`) | La créer, même provisoire, puis redéployer |
-| Erreur 500 à l'inscription, journal `SMTPAuthenticationError 535` | Identifiant ou clé SMTP faux | Recopier depuis Proton Pass ; test 1.5 |
+| Message « Nous n'avons pas pu envoyer l'e-mail » à l'inscription ; journal `An account e-mail could not be sent (SMTPAuthenticationError)` | Identifiant ou clé SMTP faux (ou service d'e-mails indisponible) | Recopier depuis Proton Pass ; test 1.5 ; l'utilisateur peut se reconnecter après 3 minutes pour recevoir de nouveau le lien |
 | Erreur 400 « Bad Request » sur le site | `DJANGO_ALLOWED_HOSTS` ne contient pas l'adresse utilisée | Ajouter l'adresse, redéployer |
 | Erreur 403 sur un formulaire | `DJANGO_CSRF_TRUSTED_ORIGINS` faux (manque `https://` ou `/` final en trop) | Corriger, redéployer |
 | Page blanche ou CSS absent | `DISABLE_COLLECTSTATIC` n'est pas à `1` | Le remettre à `1`, redéployer |

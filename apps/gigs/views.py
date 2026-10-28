@@ -10,6 +10,7 @@ from django.utils.translation import gettext_lazy as _
 from django.views import View
 from django.views.generic import DetailView, ListView, TemplateView
 
+from apps.addressbook.models import Promoter
 from apps.core.views import TenantScopedMixin, wants_fragment
 from apps.documents.models import Invoice
 from apps.finance import services as finance_services
@@ -162,13 +163,21 @@ class GigWizardPromoterStepView(GigWizardMixin, View):
 class GigWizardVenueStepView(GigWizardMixin, View):
     template_name = "gigs/wizard/step_venue.html"
 
+    def chosen_promoter(self, data):
+        """The organiser picked at the previous step (this structure's own, or None)."""
+        return Promoter.objects.filter(
+            tenant=self.request.tenant, pk=data.get("promoter_id")
+        ).first()
+
     def get(self, request):
         redirect_response = self.require_wizard_data("show_id", "promoter_id")
         if redirect_response:
             return redirect_response
         data = self.get_wizard_data()
         choice_form = GigVenueStepForm(
-            tenant=request.tenant, initial={"venue": data.get("venue_id")}
+            tenant=request.tenant,
+            promoter=self.chosen_promoter(data),
+            initial={"venue": data.get("venue_id")},
         )
         create_form = VenueQuickCreateForm()
         return render(request, self.template_name, self._context(choice_form, create_form))
@@ -180,15 +189,24 @@ class GigWizardVenueStepView(GigWizardMixin, View):
 
         if request.POST.get("mode") == "new":
             create_form = VenueQuickCreateForm(request.POST)
-            choice_form = GigVenueStepForm(tenant=request.tenant)
+            choice_form = GigVenueStepForm(
+                tenant=request.tenant, promoter=self.chosen_promoter(self.get_wizard_data())
+            )
             if create_form.is_valid():
                 venue = create_form.save(commit=False)
                 venue.tenant = request.tenant
                 venue.save()
+                promoter = self.chosen_promoter(self.get_wizard_data())
+                if promoter is not None:  # a new venue is linked to the organiser of this date
+                    venue.promoters.add(promoter)
                 self.update_wizard_data(venue_id=venue.pk)
                 return redirect("gigs:wizard-details")
         else:
-            choice_form = GigVenueStepForm(request.POST, tenant=request.tenant)
+            choice_form = GigVenueStepForm(
+                request.POST,
+                tenant=request.tenant,
+                promoter=self.chosen_promoter(self.get_wizard_data()),
+            )
             create_form = VenueQuickCreateForm()
             if choice_form.is_valid():
                 self.update_wizard_data(venue_id=choice_form.cleaned_data["venue"].pk)

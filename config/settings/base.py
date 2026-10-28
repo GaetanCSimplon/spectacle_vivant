@@ -117,7 +117,12 @@ GEOCODING_USER_AGENT = "BordPro/1.0 (contact@bordpro.fr)"
 
 # django-allauth: login by e-mail only, no username field
 ACCOUNT_USER_MODEL_USERNAME_FIELD = None
+ACCOUNT_ADAPTER = "apps.accounts.adapter.AccountAdapter"
 ACCOUNT_LOGIN_METHODS = {"email"}
+# A password reset for an address without an account sends nothing: allauth's default e-mail to
+# such an address says "you can sign up with the link below", but sign-up is on invitation only
+# (and the same page is shown either way, so nothing tells whether an address has an account).
+ACCOUNT_EMAIL_UNKNOWN_ACCOUNTS = False
 ACCOUNT_SIGNUP_FIELDS = ["email*", "password1*", "password2*"]
 ACCOUNT_UNIQUE_EMAIL = True
 ACCOUNT_EMAIL_VERIFICATION = "mandatory"

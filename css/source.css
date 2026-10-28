@@ -61,6 +61,13 @@
   --bord-surface: #ffffff;
   --bord-info-bg: var(--bord-brand-ocean);
   --bord-context-bg: #e2f1f6;
+  /* The three kinds of entity of the address book, told apart by colour AND icon AND a word. */
+  --bord-promoter-bg: var(--bord-context-bg);
+  --bord-promoter-text: var(--bord-brand-ocean);
+  --bord-venue-bg: var(--bord-brand-cream);
+  --bord-venue-text: var(--bord-brand-navy);
+  --bord-contact-bg: var(--bord-brand-navy);
+  --bord-contact-text: var(--bord-surface);
   --bord-text: var(--bord-brand-navy);
   --bord-text-muted: #465a6c;
   --bord-border: #c4cfda;
@@ -243,7 +250,8 @@
     outline-offset: 3px;
   }
 
-  form p {
+  form p,
+  form .field {
     @apply mb-4;
   }
 
@@ -403,6 +411,98 @@
 
   .date-tile-month {
     @apply mt-1 text-[0.6875rem] font-medium;
+  }
+
+  /* The fields of a form block: one column on a phone, two from md. A text box takes the whole row. */
+  .form-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    column-gap: 1.5rem;
+  }
+
+  @media (min-width: 48rem) {
+    .form-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .form-grid > :is(p, .field):has(textarea),
+    .form-grid > .form-wide {
+      grid-column: 1 / -1;
+    }
+  }
+
+  /* Address book: an organiser, a venue and a contact each have their colour, an icon and, for
+     a screen reader, the word ("Organisateur", "Lieu"). Colour is never the only signal. */
+  .entity-tag {
+    @apply inline-flex max-w-full items-center gap-1 rounded-full border px-2.5 py-0.5 text-xs font-semibold;
+  }
+
+  .entity-tag::before {
+    content: "";
+    @apply size-3.5 shrink-0 bg-current;
+    mask: var(--entity-icon) center / contain no-repeat;
+    -webkit-mask: var(--entity-icon) center / contain no-repeat;
+  }
+
+  .entity-promoter {
+    --entity-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M3 21h18M5 21V7l7-4 7 4v14M9 9h1M14 9h1M9 13h1M14 13h1M10 21v-4h4v4'/%3E%3C/svg%3E");
+    background: var(--bord-promoter-bg);
+    border-color: var(--bord-promoter-text);
+    color: var(--bord-promoter-text);
+  }
+
+  .entity-venue {
+    --entity-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 21s-7-6.2-7-11a7 7 0 1 1 14 0c0 4.8-7 11-7 11z'/%3E%3Ccircle cx='12' cy='10' r='2.5'/%3E%3C/svg%3E");
+    background: var(--bord-venue-bg);
+    border-color: rgb(16 36 64 / 35%);
+    color: var(--bord-venue-text);
+  }
+
+  /* The initials of a contact (the person of the address book). */
+  .entity-contact {
+    @apply inline-flex size-8 shrink-0 items-center justify-center rounded-full text-xs font-bold;
+    background: var(--bord-contact-bg);
+    color: var(--bord-contact-text);
+  }
+
+  /* A detail shown on hover or keyboard focus, like an alternative text but readable on several
+     lines. The tag it describes stays the only focusable thing. */
+  .tip {
+    @apply relative inline-block max-w-full;
+  }
+
+  .tip-body {
+    @apply invisible absolute top-full left-0 z-30 mt-1 w-64 rounded-xl border border-page-line bg-white p-3 text-left text-sm font-normal normal-case text-stone-700 opacity-0 transition-opacity;
+  }
+
+  .tip:hover .tip-body,
+  .tip:focus-within .tip-body {
+    @apply visible opacity-100;
+  }
+
+  /* Lists on a PC screen (lg and up): a table in a card; on a phone the same rows stay cards. */
+  .data-table {
+    @apply w-full text-left text-sm;
+  }
+
+  .data-table th {
+    @apply border-b border-page-line px-3 py-2 text-xs font-semibold uppercase tracking-wider text-stone-500;
+  }
+
+  .data-table td {
+    @apply border-b border-page-line px-3 py-2.5 align-top text-stone-600;
+  }
+
+  .data-table tbody tr:last-child td {
+    @apply border-b-0;
+  }
+
+  .data-table tbody tr:hover {
+    @apply bg-blue-50;
+  }
+
+  .data-table .cell-main {
+    @apply font-medium text-blue-700 underline;
   }
 
   .badge {

@@ -1,0 +1,29 @@
+{% load i18n %}
+{% comment %}A coloured tag for an organiser or a venue, with its details on hover or keyboard focus.
+Needs: kind ("promoter" or "venue"), entity, uid (makes the tooltip id unique on the page).
+The tag is the link to the entity's page; the word "Organisateur" / "Lieu" is there for screen
+readers, since colour and icon are not enough alone.{% endcomment %}
+<span class="tip">
+  <a href="{% if kind == 'promoter' %}{% url 'addressbook:promoter-detail' entity.pk %}{% else %}{% url 'addressbook:venue-detail' entity.pk %}{% endif %}"
+     class="entity-tag {% if kind == 'promoter' %}entity-promoter{% else %}entity-venue{% endif %}"
+     aria-describedby="tip-{{ kind }}-{{ entity.pk }}-{{ uid }}">
+    <span class="sr-only">{% if kind == 'promoter' %}{% translate "Organisateur" %}{% else %}{% translate "Lieu" %}{% endif %} :</span>
+    <span class="truncate">{{ entity.name }}</span>
+  </a>
+  <span role="tooltip" id="tip-{{ kind }}-{{ entity.pk }}-{{ uid }}" class="tip-body">
+    <strong class="block text-xs font-semibold uppercase tracking-wider text-stone-500">{% if kind == 'promoter' %}{% translate "Organisateur" %}{% else %}{% translate "Lieu" %}{% endif %}</strong>
+    <span class="block font-semibold text-gray-900">{{ entity.name }}</span>
+    {% with address=entity.one_line_address %}
+      <span class="mt-1 block">{% if address %}{{ address }}{% else %}<span class="text-stone-500">{% translate "Adresse non renseignée" %}</span>{% endif %}</span>
+    {% endwith %}
+    {% with people=entity.contacts.all %}
+      <span class="mt-1 block text-stone-600">
+        {% if people %}
+          {% translate "Contacts" %} : {% for person in people|slice:":4" %}{{ person.name }}{% if not forloop.last %}, {% endif %}{% endfor %}{% if people|length > 4 %} {% blocktranslate with n=people|length|add:"-4" %}et {{ n }} autre(s){% endblocktranslate %}{% endif %}
+        {% else %}
+          {% translate "Aucun contact" %}
+        {% endif %}
+      </span>
+    {% endwith %}
+  </span>
+</span>

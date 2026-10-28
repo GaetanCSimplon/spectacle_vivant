@@ -1,0 +1,16 @@
+{% load i18n %}
+{% comment %}"Rattacher un contact existant": pick someone of the directory who is not here yet.
+Needs: attach_url, attachable_contacts.{% endcomment %}
+{% if attachable_contacts %}
+  <form method="post" action="{{ attach_url }}" class="card card-context mb-6 flex flex-col gap-3 sm:flex-row sm:items-end">
+    {% csrf_token %}
+    <div class="min-w-0 flex-1">
+      <label for="attach-contact" class="!mb-1.5">{% translate "Rattacher un contact existant" %}</label>
+      <select name="contact" id="attach-contact" required>
+        <option value="">{% translate "Choisir dans l'annuaire…" %}</option>
+        {% for contact in attachable_contacts %}<option value="{{ contact.pk }}">{{ contact.name }}{% if contact.role %} — {{ contact.role }}{% endif %}</option>{% endfor %}
+      </select>
+    </div>
+    <button type="submit" class="btn btn-secondary">{% translate "Rattacher" %}</button>
+  </form>
+{% endif %}
