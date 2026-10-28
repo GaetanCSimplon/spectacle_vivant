@@ -1,6 +1,7 @@
 """The personal space of a team member: a secret link, no account, only their own dates."""
 
 import datetime
+import re
 
 import pytest
 from django.urls import reverse
@@ -276,3 +277,36 @@ def test_another_tenants_token_never_shows_this_tenants_dates(client):
     page = _space(client, theirs).content.decode()
 
     assert "Spectacle de B" in page and "Spectacle de A" not in page
+
+
+# --- seeing the space as the person does ---------------------------------------------------------
+
+
+def test_the_owner_can_open_the_space_from_the_card(client):
+    tenant = _owner(client)
+    person = _with_space(PersonFactory(tenant=tenant))
+
+    card = client.get(reverse("tenants:person-detail", args=[person.pk])).content.decode()
+
+    assert "Voir son espace" in card
+    link = re.search(r'<a href="([^"]+)"[^>]*>Voir son espace</a>', card).group(1)
+    assert link.endswith(f"/equipe/{person.access_token}/")
+    assert 'target="_blank"' in card.split("Voir son espace")[0].rsplit("<a ", 1)[1]
+
+
+def test_without_a_link_there_is_nothing_to_open(client):
+    tenant = _owner(client)
+    person = PersonFactory(tenant=tenant)
+
+    card = client.get(reverse("tenants:person-detail", args=[person.pk])).content.decode()
+
+    assert "Voir son espace" not in card and "Créer son lien personnel" in card
+
+
+def test_a_simple_member_never_gets_the_link_to_the_space(client):
+    tenant = _owner(client, role="member")
+    person = _with_space(PersonFactory(tenant=tenant))
+
+    card = client.get(reverse("tenants:person-detail", args=[person.pk])).content.decode()
+
+    assert "Voir son espace" not in card and person.access_token not in card
