@@ -358,6 +358,9 @@ Constat : presque toutes les pages tiennent dans une colonne d'environ 768 px, a
 - [x] **PR 4 — Formulaires par blocs, sur deux colonnes** : organisateur (l'organisateur, qualification, informations légales, adresse de facturation, notes), lieu (le lieu, adresse, accès et notes), spectacle (le spectacle, en tournée, documents, droits et suivi, puis ajout d'un membre), fiche d'équipe (la personne, contact, informations privées, suivi) et « Informations de la structure » (la structure, adresse, contact, TVA, coordonnées bancaires, représentant et tribunal) : un bloc par carte, deux colonnes de champs dès 768 px (une seule sur téléphone), zones de texte sur toute la largeur, largeur 1024 px, bouton d'enregistrement à droite ; « Compléter la date » : champs sur deux colonnes. Chaque formulaire déclare sa disposition (`layout`) ; un champ oublié s'afficherait quand même dans un dernier bloc, et un test vérifie qu'aucun ne se perd. Non faits : contact (4 champs seulement), étapes de l'assistant de création d'une date, formulaires des pages publiques.
 - [ ] PR 5 — Éditeur de feuille de route : édition à gauche, aperçu à droite.
 
+### Outil — données de démonstration (2026-10-29)
+- [x] Commande `python manage.py seed_demo` (développement seulement) : structure fictive « Compagnie des Nuits d'Été » avec 3 spectacles, 6 membres, 6 organisateurs, 6 lieux, 15 dates, contrats signés, factures et paiements, dépenses (dont à rembourser et à valider), feuilles de route et lien d'espace équipe ; `--reset`, `--remove`, `--no-map` ; ne touche pas aux données de l'utilisateur. Voir `docs/technique/donnees-de-demonstration.md`.
+
 ### Sprint 3.8 — Légal, sécurité, finition, recette
 - [x] Pages : mentions légales, CGU, confidentialité (gabarits à compléter et à faire relire avant la mise en ligne).
 - [x] Export des données (F-81) : ZIP de CSV et de fichiers, page `ma-structure/export-donnees/`.
