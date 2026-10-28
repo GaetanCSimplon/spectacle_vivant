@@ -1,0 +1,6 @@
+{% load i18n %}
+{% comment %}"Exporter (CSV)" for the list on screen: same search and filters (the query string).
+Needs: url (the export route).{% endcomment %}
+<p class="mb-2 text-right text-sm">
+  <a href="{{ url }}{% if request.GET %}?{{ request.GET.urlencode }}{% endif %}" class="text-gray-700 underline hover:text-gray-900">{% translate "Exporter (CSV)" %}</a>
+</p>

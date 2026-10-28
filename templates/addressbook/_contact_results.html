@@ -9,6 +9,8 @@
     {% endif %}
   </div>
 {% else %}
+  {% url 'addressbook:contact-export' as export_url %}
+  {% include "addressbook/_export_link.html" with url=export_url %}
   <ul class="flex flex-col gap-2 lg:hidden">
     {% for contact in object_list %}{% include "addressbook/_contact_row.html" with show_parent=True %}{% endfor %}
   </ul>
