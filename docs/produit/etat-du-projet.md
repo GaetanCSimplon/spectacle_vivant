@@ -40,6 +40,8 @@ Dans cet ordre :
 5. **Régime de TVA** : vérifier que les mentions suivent chaque régime, puis cocher la case de la feuille de route.
 6. **Logo de la structure sur le PDF du contrat** : à confirmer avec l'associé que c'est voulu pour le MVP.
 
+Rappels de l'Accueil regroupés à partir de trois du même genre (2026-10-29).
+
 ## 4. Hors code, mais conditionne le lancement
 - Relecture professionnelle (comptable, juriste) des 4 modèles de contrat et des factures : **le point le plus sensible**.
 - Structure juridique, CGU, registre RGPD.

@@ -309,3 +309,107 @@ def test_the_self_hosted_fonts_are_shipped_and_referenced():
     assert "sora-latin.woff2" not in css
     assert "fonts.googleapis.com" not in (root / "templates/base.html").read_text()
     assert "fonts.googleapis.com" not in css
+
+
+# --- grouped reminders -------------------------------------------------------------------------
+
+
+def _confirmed(tenant, days):
+    return GigFactory(
+        tenant=tenant,
+        status=Gig.Status.CONFIRMED,
+        date=datetime.date.today() + datetime.timedelta(days=days),
+    )
+
+
+def test_two_gigs_without_contract_stay_two_lines():
+    tenant = TenantFactory()
+    _confirmed(tenant, 30)
+    _confirmed(tenant, 40)
+
+    texts = [a["text"] for a in _alerts(tenant)["items"]]
+
+    assert sum("contrat à générer" in t for t in texts) == 2
+
+
+def test_three_or_more_gigs_without_contract_become_one_line_with_a_count():
+    tenant = TenantFactory()
+    soonest = _confirmed(tenant, 20)
+    for days in (30, 40, 50, 60):
+        _confirmed(tenant, days)
+
+    items = _alerts(tenant)["items"]
+    grouped = [a for a in items if "sans contrat" in a["text"]]
+
+    assert len(grouped) == 1 and not any("contrat à générer" in a["text"] for a in items)
+    assert "5 dates confirmées sans contrat" in grouped[0]["text"]
+    assert f"{soonest.date:%d/%m}" in grouped[0]["text"]
+    assert grouped[0]["url"] == reverse("documents:contract-history", args=[soonest.pk])
+
+
+def test_three_contracts_to_sign_become_one_line():
+    from apps.documents.models import Contract, ContractVersion
+
+    tenant = TenantFactory()
+    gigs = [_confirmed(tenant, days) for days in (3, 6, 9)]
+    for gig in gigs:
+        contract = Contract.objects.create(gig=gig, tenant=tenant, reference=f"C-{gig.pk}")
+        ContractVersion.objects.create(tenant=tenant, contract=contract, number=1)
+
+    items = _alerts(tenant)["items"]
+
+    grouped = [a for a in items if "contrats à faire signer d'ici" in a["text"]]
+    assert len(grouped) == 1 and grouped[0]["text"].startswith("3 contrats à faire signer")
+    assert not any("contrat à faire signer (dans" in a["text"] for a in items)
+
+
+def test_expenses_without_receipt_on_three_dates_become_one_line_counting_all_of_them():
+    tenant = TenantFactory()
+    gigs = [
+        make_gig(
+            tenant=tenant, gig_fields={"date": datetime.date.today() - datetime.timedelta(days=d)}
+        )
+        for d in (5, 10, 15)
+    ]
+    ExpenseFactory(gig=gigs[0])
+    ExpenseFactory(gig=gigs[0])
+    ExpenseFactory(gig=gigs[1])
+    ExpenseFactory(gig=gigs[2])
+
+    items = _alerts(tenant)["items"]
+    grouped = [a for a in items if "sans justificatif" in a["text"]]
+
+    assert len(grouped) == 1
+    assert grouped[0]["text"].startswith("4 dépenses sans justificatif, sur 3 dates")
+    assert f"{gigs[0].date:%d/%m}" in grouped[0]["text"]  # the most recent one
+    assert grouped[0]["url"] == reverse("finance:page", args=[gigs[0].pk])
+
+
+def test_urgent_money_and_options_are_never_grouped_and_stay_first():
+    tenant = TenantFactory()
+    today = datetime.date.today()
+    for days in (30, 40, 50):
+        _confirmed(tenant, days)
+    for days in (1, 2, 3):
+        GigFactory(
+            tenant=tenant,
+            status=Gig.Status.OPTION,
+            date=today + datetime.timedelta(days=60 + days),
+            option_expires_on=today + datetime.timedelta(days=days),
+        )
+
+    items = _alerts(tenant)["items"]
+    options = [a for a in items if a["text"].startswith("Option du")]
+
+    assert len(options) == 3  # one by one
+    assert [a["level"] for a in items[:3]] == ["red", "red", "red"]
+    assert any("sans contrat" in a["text"] for a in items[3:])
+
+
+def test_the_home_page_shows_the_grouped_line_instead_of_a_long_list(client, tenant):
+    for days in (20, 30, 40, 50, 60, 70):
+        _confirmed(tenant, days)
+
+    page = client.get(reverse("home")).content.decode()
+
+    assert "6 dates confirmées sans contrat" in page and page.count("contrat à générer") == 0
