@@ -199,6 +199,15 @@ class Contact(TenantOwnedModel):
         return self.name
 
     @property
+    def initials(self):
+        """Two letters for the avatar of a contact: "Julie Garnier" -> "JG"."""
+        words = [word for word in self.name.replace("-", " ").split() if word[:1].isalpha()]
+        letters = (
+            [words[0][0], words[-1][0]] if len(words) > 1 else [c for c in self.name.strip()[:2]]
+        )
+        return "".join(letters).upper() or "?"
+
+    @property
     def attachments(self):
         """The organisers then the venues this contact works for (for a list or a page)."""
         return [*self.promoters.all(), *self.venues.all()]

@@ -1,3 +1,8 @@
 {% load i18n %}
-{% comment %}Where a contact works: its organisers, its venues, or "Sans rattachement". Needs: contact.{% endcomment %}
-{% for promoter in contact.promoters.all %}<a href="{% url 'addressbook:promoter-detail' promoter.pk %}" class="underline">{{ promoter.name }}</a>{% if not forloop.last or contact.venues.all %}, {% endif %}{% endfor %}{% for venue in contact.venues.all %}<a href="{% url 'addressbook:venue-detail' venue.pk %}" class="underline">{{ venue.name }}</a>{% if not forloop.last %}, {% endif %}{% endfor %}{% if not contact.promoters.all and not contact.venues.all %}<span class="pill pill-neutral">{% translate "Sans rattachement" %}</span>{% endif %}
+{% comment %}Where a contact works: its organisers and venues as coloured tags (details on hover), or
+"Sans rattachement". Needs: contact.{% endcomment %}
+<span class="flex flex-wrap items-center gap-1.5">
+  {% for promoter in contact.promoters.all %}{% include "addressbook/_entity_tag.html" with kind="promoter" entity=promoter uid=contact.pk %}{% endfor %}
+  {% for venue in contact.venues.all %}{% include "addressbook/_entity_tag.html" with kind="venue" entity=venue uid=contact.pk %}{% endfor %}
+  {% if not contact.promoters.all and not contact.venues.all %}<span class="pill pill-neutral">{% translate "Sans rattachement" %}</span>{% endif %}
+</span>

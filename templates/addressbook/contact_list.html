@@ -41,6 +41,13 @@
     <noscript><button type="submit" class="btn btn-secondary">{% translate "Filtrer" %}</button></noscript>
   </form>
 
+  <ul class="mb-3 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-stone-600" aria-label="{% translate 'Légende des couleurs' %}">
+    <li class="flex items-center gap-1.5"><span class="entity-contact !size-6 !text-[0.625rem]" aria-hidden="true">AB</span>{% translate "Contact" %}</li>
+    <li class="flex items-center gap-1.5"><span class="entity-tag entity-promoter" aria-hidden="true">{% translate "Organisateur" %}</span></li>
+    <li class="flex items-center gap-1.5"><span class="entity-tag entity-venue" aria-hidden="true">{% translate "Lieu" %}</span></li>
+    <li class="text-stone-500">{% translate "Passez la souris sur une étiquette pour voir son adresse et ses contacts." %}</li>
+  </ul>
+
   <div id="results">
     {% include "addressbook/_contact_results.html" %}
   </div>

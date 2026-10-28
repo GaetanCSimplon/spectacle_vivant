@@ -24,7 +24,7 @@
   <h2 class="mb-2 text-sm font-semibold uppercase text-gray-500">{% translate "Organisateurs" %}</h2>
   {% if venue.promoters.all %}
     <ul class="mb-6 flex flex-wrap gap-2 text-sm">
-      {% for promoter in venue.promoters.all %}<li><a href="{% url 'addressbook:promoter-detail' promoter.pk %}" class="pill pill-neutral underline">{{ promoter.name }}</a></li>{% endfor %}
+      {% for promoter in venue.promoters.all %}<li>{% include "addressbook/_entity_tag.html" with kind="promoter" entity=promoter uid="page" %}</li>{% endfor %}
     </ul>
   {% else %}
     <p class="mb-6 text-sm text-gray-600">{% translate "Aucun organisateur rattaché (facultatif)." %}</p>

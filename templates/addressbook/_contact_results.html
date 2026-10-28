@@ -12,7 +12,8 @@
   <ul class="flex flex-col gap-2 lg:hidden">
     {% for contact in object_list %}{% include "addressbook/_contact_row.html" with show_parent=True %}{% endfor %}
   </ul>
-  <div class="card hidden overflow-x-auto !p-0 lg:block">
+  {# No overflow clipping: the details of a tag open over the next rows. #}
+  <div class="card hidden !p-0 lg:block">
     <table class="data-table">
       <thead>
         <tr>
@@ -27,7 +28,7 @@
       <tbody>
         {% for contact in object_list %}
           <tr>
-            <td class="font-medium text-gray-900">{{ contact.name }}</td>
+            <td class="font-medium text-gray-900"><span class="flex items-center gap-2"><span class="entity-contact" aria-hidden="true">{{ contact.initials }}</span>{{ contact.name }}</span></td>
             <td>{{ contact.role }}</td>
             <td>{% include "addressbook/_contact_links.html" %}</td>
             <td class="whitespace-nowrap">{% if contact.email %}<a href="mailto:{{ contact.email }}" class="underline">{{ contact.email }}</a>{% endif %}</td>
