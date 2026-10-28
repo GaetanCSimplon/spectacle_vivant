@@ -300,3 +300,22 @@ class PromoterPublicForm(PromoterIdentifiersMixin, AddressModelForm):
         if not self.errors and not any(answered):
             raise forms.ValidationError(_("Merci de remplir au moins un champ."))
         return cleaned
+
+
+class ImportUploadForm(forms.Form):
+    """What to import and the CSV file (size and content are checked when it is read)."""
+
+    KINDS = [
+        ("contacts", _("Des contacts")),
+        ("lieux", _("Des lieux")),
+        ("organisateurs", _("Des organisateurs")),
+    ]
+
+    kind = forms.ChoiceField(label=_("Que voulez-vous importer ?"), choices=KINDS)
+    file = forms.FileField(label=_("Fichier CSV"))
+
+    def clean_file(self):
+        upload = self.cleaned_data["file"]
+        if not upload.name.lower().endswith(".csv"):
+            raise forms.ValidationError(_("Seuls les fichiers .csv sont acceptés."))
+        return upload
