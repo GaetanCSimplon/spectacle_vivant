@@ -38,11 +38,16 @@
   </div>
   {% if venue.contacts.all %}
     <ul class="mb-6 flex flex-col gap-2">
-      {% for contact in venue.contacts.all %}{% include "addressbook/_contact_row.html" %}{% endfor %}
+      {% for contact in venue.contacts.all %}
+        {% url 'addressbook:venue-contact-detach' venue.pk contact.pk as detach_url %}
+        {% include "addressbook/_contact_row.html" %}
+      {% endfor %}
     </ul>
   {% else %}
-    <p class="mb-6">{% translate "Aucun contact enregistré." %}</p>
+    <p class="mb-4">{% translate "Aucun contact enregistré." %}</p>
   {% endif %}
+  {% url 'addressbook:venue-contact-attach' venue.pk as attach_url %}
+  {% include "addressbook/_attach_contact.html" %}
 
   <h2 class="mb-2 text-sm font-semibold uppercase text-gray-500">{% translate "Historique des dates" %}</h2>
   {% if gigs %}

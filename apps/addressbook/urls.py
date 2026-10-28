@@ -48,6 +48,31 @@ urlpatterns = [
         views.VenueContactCreateView.as_view(),
         name="venue-contact-create",
     ),
+    path(
+        "organisateurs/<int:pk>/suivi/",
+        views.PromoterFollowUpView.as_view(),
+        name="promoter-follow-up",
+    ),
+    path(
+        "organisateurs/<int:pk>/contacts/rattacher/",
+        views.PromoterContactLinkView.as_view(action="attach"),
+        name="promoter-contact-attach",
+    ),
+    path(
+        "organisateurs/<int:pk>/contacts/<int:contact_pk>/retirer/",
+        views.PromoterContactLinkView.as_view(action="detach"),
+        name="promoter-contact-detach",
+    ),
+    path(
+        "lieux/<int:pk>/contacts/rattacher/",
+        views.VenueContactLinkView.as_view(action="attach"),
+        name="venue-contact-attach",
+    ),
+    path(
+        "lieux/<int:pk>/contacts/<int:contact_pk>/retirer/",
+        views.VenueContactLinkView.as_view(action="detach"),
+        name="venue-contact-detach",
+    ),
     path("contacts/", views.ContactListView.as_view(), name="contact-list"),
     path("contacts/nouveau/", views.ContactQuickCreateView.as_view(), name="contact-create"),
     path("contacts/<int:pk>/modifier/", views.ContactUpdateView.as_view(), name="contact-update"),
