@@ -8,7 +8,33 @@
     {% endif %}
   </div>
 {% else %}
-  <ul class="flex flex-col gap-2">
+  <ul class="flex flex-col gap-2 lg:hidden">
     {% for contact in object_list %}{% include "addressbook/_contact_row.html" with show_parent=True %}{% endfor %}
   </ul>
+  <div class="card hidden overflow-x-auto !p-0 lg:block">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th scope="col">{% translate "Contact" %}</th>
+          <th scope="col">{% translate "Fonction" %}</th>
+          <th scope="col">{% translate "Rattaché à" %}</th>
+          <th scope="col">{% translate "E-mail" %}</th>
+          <th scope="col">{% translate "Téléphone" %}</th>
+          <th scope="col"><span class="sr-only">{% translate "Actions" %}</span></th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for contact in object_list %}
+          <tr>
+            <td class="font-medium text-gray-900">{{ contact.name }}</td>
+            <td>{{ contact.role }}</td>
+            <td>{% if contact.promoter %}<a href="{% url 'addressbook:promoter-detail' contact.promoter.pk %}" class="underline">{{ contact.promoter }}</a>{% elif contact.venue %}<a href="{% url 'addressbook:venue-detail' contact.venue.pk %}" class="underline">{{ contact.venue }}</a>{% endif %}</td>
+            <td>{% if contact.email %}<a href="mailto:{{ contact.email }}" class="underline">{{ contact.email }}</a>{% endif %}</td>
+            <td class="whitespace-nowrap data">{% if contact.phone %}<a href="tel:{{ contact.phone }}" class="underline">{{ contact.phone }}</a>{% endif %}</td>
+            <td class="text-right"><a href="{% url 'addressbook:contact-update' contact.pk %}" class="text-blue-700 underline">{% translate "Modifier" %}</a></td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
 {% endif %}

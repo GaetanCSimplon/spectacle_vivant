@@ -11,7 +11,7 @@
     {% endif %}
   </div>
 {% else %}
-  <ul class="flex flex-col gap-2">
+  <ul class="flex flex-col gap-2 lg:hidden">
     {% for person in object_list %}
       <li>
         <a href="{% url 'tenants:person-detail' person.pk %}" class="card card-link block">
@@ -27,4 +27,32 @@
       </li>
     {% endfor %}
   </ul>
+  <div class="card hidden overflow-x-auto !p-0 lg:block">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th scope="col">{% translate "Personne" %}</th>
+          <th scope="col">{% translate "Artiste / technicien" %}</th>
+          <th scope="col">{% translate "Fonction" %}</th>
+          <th scope="col">{% translate "Statut" %}</th>
+          <th scope="col">{% translate "E-mail" %}</th>
+          <th scope="col">{% translate "Téléphone" %}</th>
+          <th scope="col" class="text-right">{% blocktranslate %}Dates en {{ year }}{% endblocktranslate %}</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for person in object_list %}
+          <tr>
+            <td><a href="{% url 'tenants:person-detail' person.pk %}" class="cell-main">{{ person.full_name }}</a></td>
+            <td>{% if person.is_artist %}{% translate "Artiste" %}{% endif %}{% if person.is_artist and person.is_technician %} · {% endif %}{% if person.is_technician %}{% translate "Technicien" %}{% endif %}</td>
+            <td>{{ person.role }}</td>
+            <td>{{ person.status }}</td>
+            <td>{% if person.email %}<a href="mailto:{{ person.email }}" class="underline">{{ person.email }}</a>{% endif %}</td>
+            <td class="whitespace-nowrap data">{{ person.phone }}</td>
+            <td class="data text-right">{{ person.year_gigs }}</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
 {% endif %}

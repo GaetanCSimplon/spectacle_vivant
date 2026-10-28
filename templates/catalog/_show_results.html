@@ -11,7 +11,7 @@
     {% endif %}
   </div>
 {% else %}
-  <ul class="flex flex-col gap-2">
+  <ul class="flex flex-col gap-2 lg:hidden">
     {% for show in object_list %}
       <li>
         <a href="{% url 'catalog:show-detail' show.pk %}" class="card card-link block">
@@ -23,4 +23,30 @@
       </li>
     {% endfor %}
   </ul>
+  <div class="card hidden overflow-x-auto !p-0 lg:block">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th scope="col">{% translate "Spectacle" %}</th>
+          <th scope="col">{% translate "Groupe ou artiste" %}</th>
+          <th scope="col" class="text-right">{% translate "Durée" %}</th>
+          <th scope="col" class="text-right">{% translate "Prix indicatif" %}</th>
+          <th scope="col" class="text-right">{% translate "Artistes" %}</th>
+          <th scope="col" class="text-right">{% translate "Techniciens" %}</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for show in object_list %}
+          <tr>
+            <td><a href="{% url 'catalog:show-detail' show.pk %}" class="cell-main">{{ show.title }}</a></td>
+            <td>{{ show.group_name }}</td>
+            <td class="data whitespace-nowrap text-right">{{ show.duration_minutes }} min</td>
+            <td class="data whitespace-nowrap text-right">{{ show.default_price|floatformat:"-2g" }} €</td>
+            <td class="data text-right">{{ show.artists_count|default_if_none:"" }}</td>
+            <td class="data text-right">{{ show.technicians_count|default_if_none:"" }}</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
 {% endif %}
