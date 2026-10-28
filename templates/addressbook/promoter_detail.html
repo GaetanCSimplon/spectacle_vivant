@@ -12,7 +12,7 @@
   </div>
 
   <div class="card mb-6 space-y-1 text-sm">
-    {% if promoter.follow_up %}<p>{% include "addressbook/_follow_up_badge.html" %}</p>{% endif %}
+    <p>{% include "addressbook/_follow_up_menu.html" %}</p>
     {% for title, labels in promoter.qualification_tags %}
       <p class="text-gray-600">{{ title }} : {{ labels|join:", " }}</p>
     {% endfor %}
@@ -83,11 +83,16 @@
   </div>
   {% if promoter.contacts.all %}
     <ul class="mb-6 flex flex-col gap-2">
-      {% for contact in promoter.contacts.all %}{% include "addressbook/_contact_row.html" %}{% endfor %}
+      {% for contact in promoter.contacts.all %}
+        {% url 'addressbook:promoter-contact-detach' promoter.pk contact.pk as detach_url %}
+        {% include "addressbook/_contact_row.html" %}
+      {% endfor %}
     </ul>
   {% else %}
-    <p class="mb-6">{% translate "Aucun contact enregistré." %}</p>
+    <p class="mb-4">{% translate "Aucun contact enregistré." %}</p>
   {% endif %}
+  {% url 'addressbook:promoter-contact-attach' promoter.pk as attach_url %}
+  {% include "addressbook/_attach_contact.html" %}
 
   <h2 class="mb-2 text-sm font-semibold uppercase text-gray-500">{% translate "Historique des dates" %}</h2>
   {% if gigs %}

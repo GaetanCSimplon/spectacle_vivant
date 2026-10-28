@@ -11,7 +11,15 @@
     {% if contact.email %}<a href="mailto:{{ contact.email }}" class="block text-gray-600">{{ contact.email }}</a>{% endif %}
     {% if contact.phone %}<a href="tel:{{ contact.phone }}" class="block text-gray-600">{{ contact.phone }}</a>{% endif %}
   </div>
-  <a href="{% url 'addressbook:contact-update' contact.pk %}" class="shrink-0 text-blue-700 underline">
-    {% translate "Modifier" %}
-  </a>
+  <div class="flex shrink-0 flex-col items-end gap-1">
+    <a href="{% url 'addressbook:contact-update' contact.pk %}" class="text-blue-700 underline">
+      {% translate "Modifier" %}
+    </a>
+    {% if detach_url %}
+      <form method="post" action="{{ detach_url }}">
+        {% csrf_token %}
+        <button type="submit" class="min-h-11 text-gray-600 underline" title="{% translate 'Le contact reste dans votre annuaire' %}">{% translate "Retirer d'ici" %}</button>
+      </form>
+    {% endif %}
+  </div>
 </li>

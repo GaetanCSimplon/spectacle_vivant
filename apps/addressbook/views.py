@@ -1,12 +1,13 @@
 from django.contrib import messages
 from django.db.models import ProtectedError
+from django.http import HttpResponseBadRequest
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse, reverse_lazy
 from django.utils.translation import gettext_lazy as _
 from django.views import View
 from django.views.generic import CreateView, DeleteView, DetailView, ListView, UpdateView
 
-from apps.core.views import SearchListMixin, TenantScopedMixin
+from apps.core.views import SearchListMixin, TenantScopedMixin, wants_fragment
 
 from . import services
 from .forms import (
@@ -60,6 +61,9 @@ class PromoterDetailView(TenantScopedMixin, DetailView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
+        context["attachable_contacts"] = Contact.objects.filter(tenant=self.request.tenant).exclude(
+            promoters=self.object
+        )
         context["gigs"] = self.object.gigs.select_related("show", "venue").order_by("-date")
         invitation = services.latest_invitation(self.object)
         context["invitation"] = invitation
@@ -206,6 +210,9 @@ class VenueDetailView(TenantScopedMixin, DetailView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
+        context["attachable_contacts"] = Contact.objects.filter(tenant=self.request.tenant).exclude(
+            venues=self.object
+        )
         context["gigs"] = self.object.gigs.select_related("show", "promoter").order_by("-date")
         return context
 
@@ -374,3 +381,69 @@ class ContactDeleteView(TenantScopedMixin, DeleteView):
         response = super().form_valid(form)
         messages.success(self.request, _("Le contact a été supprimé."))
         return response
+
+
+class PromoterFollowUpView(TenantScopedMixin, View):
+    """POST only: change the follow-up (the "statut") of an organiser from the list or its page.
+
+    HTMX gets the menu back (`#follow-up-<id>`); without JavaScript the page is simply reloaded.
+    """
+
+    http_method_names = ["post"]
+
+    def post(self, request, pk):
+        promoter = get_object_or_404(Promoter, pk=pk, tenant=request.tenant)
+        value = request.POST.get("follow_up", "")
+        if value not in {key for key, _label in Promoter.FollowUp.choices} | {""}:
+            return HttpResponseBadRequest()
+        promoter.follow_up = value
+        promoter.save(update_fields=["follow_up"])
+        if wants_fragment(request):
+            return render(request, "addressbook/_follow_up_menu.html", {"promoter": promoter})
+        messages.success(request, _("Le statut est enregistré."))
+        return redirect(request.POST.get("next") or "addressbook:promoter-list")
+
+
+class ContactLinkView(TenantScopedMixin, View):
+    """POST only: attach an existing contact of the directory to an organiser or a venue, or
+    take it off (the contact itself is never deleted here)."""
+
+    http_method_names = ["post"]
+    parent_model = None
+    parent_field = None  # "promoters" or "venues": the contact's field that holds the parent
+    action = ""  # "attach" or "detach", set in urls.py
+
+    def post(self, request, pk, contact_pk=None):
+        parent = get_object_or_404(self.parent_model, pk=pk, tenant=request.tenant)
+        if self.action == "attach":
+            contact_pk = request.POST.get("contact", "")
+            if not contact_pk.isdigit():
+                messages.error(request, _("Choisissez un contact dans la liste."))
+                return redirect(parent)
+        contact = get_object_or_404(Contact, pk=contact_pk, tenant=request.tenant)
+        links = getattr(contact, self.parent_field)
+        if self.action == "attach":
+            links.add(parent)
+            messages.success(
+                request,
+                _("« %(name)s » est rattaché à %(parent)s.")
+                % {"name": contact.name, "parent": parent},
+            )
+        else:
+            links.remove(parent)
+            messages.success(
+                request,
+                _("« %(name)s » n'est plus rattaché à %(parent)s (il reste dans l'annuaire).")
+                % {"name": contact.name, "parent": parent},
+            )
+        return redirect(parent)
+
+
+class PromoterContactLinkView(ContactLinkView):
+    parent_model = Promoter
+    parent_field = "promoters"
+
+
+class VenueContactLinkView(ContactLinkView):
+    parent_model = Venue
+    parent_field = "venues"

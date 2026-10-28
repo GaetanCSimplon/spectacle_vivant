@@ -1,0 +1,33 @@
+{% load i18n %}
+{% comment %}The follow-up of an organiser as a small drop-down: the label (as before) with an arrow
+that opens the choices. A <details> element, so it also works without JavaScript; HTMX swaps it
+alone. Needs: promoter.{% endcomment %}
+<div id="follow-up-{{ promoter.pk }}" class="relative inline-block"
+     x-data @click.outside="$el.querySelector('details').removeAttribute('open')"
+     @keydown.escape="$el.querySelector('details').removeAttribute('open')">
+  <details>
+    <summary class="inline-flex min-h-8 cursor-pointer list-none items-center gap-1 rounded-full">
+      {% if promoter.follow_up %}{% include "addressbook/_follow_up_badge.html" %}{% else %}<span class="badge bg-gray-100 text-gray-700">{% translate "Statut" %}</span>{% endif %}
+      <span aria-hidden="true" class="text-xs text-stone-600">▾</span>
+      <span class="sr-only">{% blocktranslate with name=promoter.name %}Changer le statut de {{ name }}{% endblocktranslate %}</span>
+    </summary>
+    <form method="post" action="{% url 'addressbook:promoter-follow-up' promoter.pk %}"
+          hx-post="{% url 'addressbook:promoter-follow-up' promoter.pk %}"
+          hx-target="#follow-up-{{ promoter.pk }}" hx-swap="outerHTML"
+          class="absolute left-0 top-full z-20 mt-1 w-52 rounded-xl border border-page-line bg-white p-1">
+      {% csrf_token %}
+      <input type="hidden" name="next" value="{{ request.get_full_path }}">
+      {% for value, label in promoter.FollowUp.choices %}
+        <button type="submit" name="follow_up" value="{{ value }}"
+                class="flex min-h-11 w-full items-center justify-between rounded-lg px-3 text-left text-sm hover:bg-blue-50"
+                {% if promoter.follow_up == value %}aria-current="true"{% endif %}>
+          {{ label }}{% if promoter.follow_up == value %}<span aria-hidden="true">✓</span>{% endif %}
+        </button>
+      {% endfor %}
+      <button type="submit" name="follow_up" value=""
+              class="flex min-h-11 w-full items-center rounded-lg px-3 text-left text-sm text-gray-600 hover:bg-blue-50">
+        {% translate "Aucun statut" %}
+      </button>
+    </form>
+  </details>
+</div>
