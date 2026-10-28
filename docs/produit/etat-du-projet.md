@@ -19,7 +19,7 @@ Les neuf critères de la recette du MVP (`cahier-des-charges.md` §11) sont couv
 | Charte graphique v1.0 (blanc & contrastes francs) | PR 1 à 4 faites ; audit axe relancé le 2026-10-29 (0 violation, `docs/technique/audit-accessibilite.md`) ; reste la revue des pages publiques à 375 px et les vérifications manuelles (clavier, lecteur d'écran, zoom 200 %) | Utilisateur |
 
 ## 2. Déploiement (Scalingo, app `bordpro`)
-Branches : `main` (travail) et `production` (livré, créée le 2026-10-28, identique à `main` pour l'instant) ; procédure et liste de contrôle : `docs/technique/livraison.md`. **À faire côté Scalingo** : suivre la branche `production`. Première livraison : à décider, après sauvegarde de la base.
+Branches : `main` (travail) et `production` (livré). **Première livraison faite le 2026-10-29** (étiquette `v2026-10-29`, `production` = `main` à ce jour) ; procédure et liste de contrôle : `docs/technique/livraison.md`. **À faire côté Scalingo** : suivre la branche `production`, puis déploiement manuel, `migrate`, `geocode_places`.
 Guide pas à pas pour toutes les étapes ci-dessous : `docs/technique/guide-mise-en-ligne.md`.
 
 Premier déploiement réussi le 2026-10-22 sur `bordpro.osc-fr1.scalingo.io` (adresse temporaire). Variables S3 et e-mail encore à `placeholder`.
