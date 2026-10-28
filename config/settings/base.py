@@ -117,6 +117,7 @@ GEOCODING_USER_AGENT = "BordPro/1.0 (contact@bordpro.fr)"
 
 # django-allauth: login by e-mail only, no username field
 ACCOUNT_USER_MODEL_USERNAME_FIELD = None
+ACCOUNT_ADAPTER = "apps.accounts.adapter.AccountAdapter"
 ACCOUNT_LOGIN_METHODS = {"email"}
 ACCOUNT_SIGNUP_FIELDS = ["email*", "password1*", "password2*"]
 ACCOUNT_UNIQUE_EMAIL = True
