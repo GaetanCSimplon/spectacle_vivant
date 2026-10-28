@@ -8,8 +8,8 @@
     {% if show_parent %}
       <span class="block text-gray-500">{% include "addressbook/_contact_links.html" %}</span>
     {% endif %}
-    {% if contact.email %}<a href="mailto:{{ contact.email }}" class="block text-gray-600">{{ contact.email }}</a>{% endif %}
-    {% if contact.phone %}<a href="tel:{{ contact.phone }}" class="block text-gray-600">{{ contact.phone }}</a>{% endif %}
+    {% if contact.email %}<a href="mailto:{{ contact.email }}" class="flex min-h-6 items-center text-gray-600">{{ contact.email }}</a>{% endif %}
+    {% if contact.phone %}<a href="tel:{{ contact.phone }}" class="flex min-h-6 items-center text-gray-600">{{ contact.phone }}</a>{% endif %}
   </div>
   <div class="flex shrink-0 flex-col items-end gap-1">
     <a href="{% url 'addressbook:contact-update' contact.pk %}" class="text-blue-700 underline">

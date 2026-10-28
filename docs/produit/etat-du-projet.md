@@ -16,7 +16,7 @@ Les neuf critères de la recette du MVP (`cahier-des-charges.md` §11) sont couv
 | Annuaire de contacts, rattachements multiples (contacts ↔ organisateurs et lieux) | Fait, fusionné ; migrations `addressbook/0013` à `0015` à appliquer à la première livraison (`migrate`) | Utilisateur |
 | Code couleur de l'annuaire (contacts / organisateurs / lieux) et infobulles au survol | Fait, fusionné (PR #260) ; aucune migration | — |
 | Annuaire : export et import CSV (demande de l'associé) | Faits (PR en revue) ; aucune migration | Utilisateur |
-| Charte graphique v1.0 (blanc & contrastes francs) | PR 1 à 4 faites ; reste la revue des pages publiques à 375 px (utilisateur) et l'audit axe | Claude |
+| Charte graphique v1.0 (blanc & contrastes francs) | PR 1 à 4 faites ; audit axe relancé le 2026-10-29 (0 violation, `docs/technique/audit-accessibilite.md`) ; reste la revue des pages publiques à 375 px et les vérifications manuelles (clavier, lecteur d'écran, zoom 200 %) | Utilisateur |
 
 ## 2. Déploiement (Scalingo, app `bordpro`)
 Branches : `main` (travail) et `production` (livré, créée le 2026-10-28, identique à `main` pour l'instant) ; procédure et liste de contrôle : `docs/technique/livraison.md`. **À faire côté Scalingo** : suivre la branche `production`. Première livraison : à décider, après sauvegarde de la base.
