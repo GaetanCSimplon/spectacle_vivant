@@ -6,6 +6,7 @@
 <div id="roadmap-body">
   <h2 class="mb-2 text-sm font-semibold uppercase text-gray-500">{% translate "Partage" %}</h2>
   <div class="card mb-6 space-y-3 text-sm">
+    <a href="{% url 'roadmaps:preview' gig.pk %}" target="_blank" class="text-blue-700 underline xl:hidden">{% translate "Voir ce que verra l'artiste" %}</a>
     {% if roadmap.is_published %}
       <p>{% translate "Toute personne qui a ce lien peut voir la feuille de route, sans compte." %}</p>
       <div x-data="{ copied: false }" class="space-y-2">

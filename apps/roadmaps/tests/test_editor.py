@@ -270,3 +270,50 @@ def test_an_item_is_only_reachable_through_its_own_gig(client, tenant, gig):
     assert Meal.objects.count() == 1
     assert GigMember.objects.count() == 1
     assert RoadmapSlot.objects.filter(roadmap__gig=other_gig).exists()
+
+
+# --- the preview beside the editor ----------------------------------------------------------
+
+
+def test_the_preview_shows_what_the_reader_sees_even_before_sharing(client, tenant, gig):
+    roadmap = get_or_create_roadmap(gig)
+    LodgingFactory(roadmap=roadmap, tenant=tenant, name="Hôtel Mistral")
+    assert not roadmap.is_published
+
+    response = client.get(reverse("roadmaps:preview", args=[gig.pk]))
+    page = response.content.decode()
+
+    assert response.status_code == 200 and "Hôtel Mistral" in page
+    assert "Aperçu : c&#x27;est ce que voit" in page or "Aperçu : c'est ce que voit" in page
+    assert response["X-Frame-Options"] == "SAMEORIGIN"
+    assert response["Cache-Control"] == "no-store"
+
+
+def test_the_preview_shows_no_money(client, tenant):
+    gig = GigFactory(tenant=tenant, price="7777.00")
+
+    page = client.get(reverse("roadmaps:preview", args=[gig.pk])).content.decode()
+
+    assert "7777" not in page
+
+
+def test_the_preview_creates_nothing_for_another_structure_and_is_a_404(client, tenant):
+    other_gig = GigFactory()
+
+    assert client.get(reverse("roadmaps:preview", args=[other_gig.pk])).status_code == 404
+
+
+def test_the_preview_needs_a_login(client):
+    gig = GigFactory()
+
+    response = client.get(reverse("roadmaps:preview", args=[gig.pk]))
+
+    assert response.status_code == 302 and "login" in response.url
+
+
+def test_the_editor_frames_the_preview_from_xl_and_reloads_it_after_a_change(client, tenant, gig):
+    page = client.get(reverse("roadmaps:editor", args=[gig.pk])).content.decode()
+
+    assert f'src="{reverse("roadmaps:preview", args=[gig.pk])}"' in page
+    assert "htmx:after-swap.window" in page and 'x-ref="preview"' in page
+    assert "Ce que voit l&#x27;artiste" in page or "Ce que voit l'artiste" in page
