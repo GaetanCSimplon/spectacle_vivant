@@ -130,3 +130,14 @@ def test_the_export_and_import_links_are_buttons_with_an_icon_class(client, tena
     import_tag = page.split(reverse("addressbook:import"))[1].split(">")[0]
     assert "btn btn-secondary" in export_tag and "btn-download" in export_tag
     assert "btn btn-secondary" in import_tag and "btn-upload" in import_tag
+
+
+def test_mail_and_phone_links_of_a_contact_are_at_least_24_px_high(client, tenant):
+    """WCAG 2.2 AA (target size): a 20 px link line was found by the accessibility audit."""
+    ContactFactory(tenant=tenant, email="lea@ex.org", phone="0601020304")
+
+    page = client.get(reverse("addressbook:contact-list")).content.decode()
+
+    for target in ("mailto:lea@ex.org", "tel:0601020304"):
+        tag = page.split(f'href="{target}"')[1].split(">")[0]
+        assert "min-h-6" in tag

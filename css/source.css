@@ -349,6 +349,11 @@
     @apply w-full;
   }
 
+  /* The help line under a field (allauth's "Mot de passe oublié ?"): a target of at least 24 px. */
+  .helptext a {
+    @apply inline-flex min-h-6 items-center;
+  }
+
   /* A smaller button for a row or a list header (still 44 px high: a finger needs it). */
   .btn-sm {
     @apply min-h-11 px-4 py-2 text-sm;
