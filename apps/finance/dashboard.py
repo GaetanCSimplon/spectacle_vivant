@@ -134,6 +134,10 @@ def active_shows_count(tenant, today):
 
 ALERT_LIMIT = 8
 UNSIGNED_CONTRACT_DAYS = 14
+# Three or more reminders of the same kind (contracts to write, to sign, receipts missing) become
+# one line with a count: the list stays readable on a busy structure. Money and options stay
+# one by one, they are urgent and few.
+GROUP_FROM = 3
 
 
 def _gig_label(gig):
@@ -185,14 +189,26 @@ def alerts(tenant, today, awaiting=None):
                 }
             )
 
-    for gig in gigs_without_contract(tenant, today):
+    no_contract = list(gigs_without_contract(tenant, today))
+    if len(no_contract) >= GROUP_FROM:
+        soonest = no_contract[0]  # ordered by date
         found.append(
             {
                 "level": "amber",
-                "text": _("Date du %(date)s : contrat à générer") % {"date": _gig_label(gig)},
-                "url": reverse("documents:contract-history", args=[gig.pk]),
+                "text": _("%(n)s dates confirmées sans contrat (la plus proche : %(date)s)")
+                % {"n": len(no_contract), "date": _gig_label(soonest)},
+                "url": reverse("documents:contract-history", args=[soonest.pk]),
             }
         )
+    else:
+        for gig in no_contract:
+            found.append(
+                {
+                    "level": "amber",
+                    "text": _("Date du %(date)s : contrat à générer") % {"date": _gig_label(gig)},
+                    "url": reverse("documents:contract-history", args=[gig.pk]),
+                }
+            )
 
     unsigned = (
         Gig.objects.filter(
@@ -204,15 +220,29 @@ def alerts(tenant, today, awaiting=None):
         .distinct()
         .order_by("date")
     )
-    for gig in unsigned:
+    unsigned = list(unsigned)
+    if len(unsigned) >= GROUP_FROM:
+        soonest = unsigned[0]
         found.append(
             {
                 "level": "amber",
-                "text": _("Date du %(date)s : contrat à faire signer (dans %(n)s jour(s))")
-                % {"date": _gig_label(gig), "n": (gig.date - today).days},
-                "url": reverse("documents:contract-history", args=[gig.pk]),
+                "text": _(
+                    "%(n)s contrats à faire signer d'ici %(days)s jours (le plus proche : %(date)s)"
+                )
+                % {"n": len(unsigned), "days": UNSIGNED_CONTRACT_DAYS, "date": _gig_label(soonest)},
+                "url": reverse("documents:contract-history", args=[soonest.pk]),
             }
         )
+    else:
+        for gig in unsigned:
+            found.append(
+                {
+                    "level": "amber",
+                    "text": _("Date du %(date)s : contrat à faire signer (dans %(n)s jour(s))")
+                    % {"date": _gig_label(gig), "n": (gig.date - today).days},
+                    "url": reverse("documents:contract-history", args=[gig.pk]),
+                }
+            )
 
     no_receipt = (
         Expense.objects.filter(tenant=tenant, receipt_file="")
@@ -220,15 +250,34 @@ def alerts(tenant, today, awaiting=None):
         .annotate(n=Count("pk"))
         .order_by("-gig__date")
     )
-    for row in no_receipt:
+    no_receipt = list(no_receipt)
+    if len(no_receipt) >= GROUP_FROM:
+        latest = no_receipt[0]  # ordered from the most recent date
         found.append(
             {
                 "level": "amber",
-                "text": _("Date du %(date)s : %(n)s dépense(s) sans justificatif")
-                % {"date": f"{row['gig__date']:%d/%m}", "n": row["n"]},
-                "url": reverse("finance:page", args=[row["gig_id"]]),
+                "text": _(
+                    "%(n)s dépenses sans justificatif, sur %(dates)s dates "
+                    "(la plus récente : %(date)s)"
+                )
+                % {
+                    "n": sum(row["n"] for row in no_receipt),
+                    "dates": len(no_receipt),
+                    "date": f"{latest['gig__date']:%d/%m}",
+                },
+                "url": reverse("finance:page", args=[latest["gig_id"]]),
             }
         )
+    else:
+        for row in no_receipt:
+            found.append(
+                {
+                    "level": "amber",
+                    "text": _("Date du %(date)s : %(n)s dépense(s) sans justificatif")
+                    % {"date": f"{row['gig__date']:%d/%m}", "n": row["n"]},
+                    "url": reverse("finance:page", args=[row["gig_id"]]),
+                }
+            )
 
     for invitation in pending_answers(tenant):
         found.append(
