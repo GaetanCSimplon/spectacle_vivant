@@ -1,4 +1,5 @@
-"""The "Nouveau contact" form of the home page: the user picks the organiser or venue."""
+"""The "Nouveau contact" form of the address book: a person of the directory, with optional
+organisers and venues."""
 
 import pytest
 from django.urls import reverse
@@ -24,23 +25,37 @@ def test_a_contact_can_be_created_for_an_organiser(client):
     promoter = PromoterFactory(tenant=tenant)
 
     response = client.post(
-        reverse(URL),
-        {"parent": f"promoter:{promoter.pk}", "name": "Julien Blanc", "role": "Accueil"},
+        reverse(URL), {"name": "Julien Blanc", "role": "Accueil", "promoters": [promoter.pk]}
     )
 
     contact = Contact.objects.get()
-    assert (contact.promoter, contact.venue, contact.tenant) == (promoter, None, tenant)
-    assert response.url == promoter.get_absolute_url()
+    assert contact.tenant == tenant and list(contact.promoters.all()) == [promoter]
+    assert not contact.venues.exists()
+    assert response.url == reverse("addressbook:contact-list")
 
 
-def test_a_contact_can_be_created_for_a_venue(client):
+def test_a_contact_can_work_for_several_organisers_and_venues(client):
     tenant = _login(client)
+    first, second = PromoterFactory(tenant=tenant), PromoterFactory(tenant=tenant)
     venue = VenueFactory(tenant=tenant)
 
-    client.post(reverse(URL), {"parent": f"venue:{venue.pk}", "name": "Sophie Garnier"})
+    client.post(
+        reverse(URL),
+        {"name": "Sophie Garnier", "promoters": [first.pk, second.pk], "venues": [venue.pk]},
+    )
 
     contact = Contact.objects.get()
-    assert (contact.venue, contact.promoter) == (venue, None)
+    assert set(contact.promoters.all()) == {first, second} and list(contact.venues.all()) == [venue]
+
+
+def test_a_contact_can_be_created_without_any_attachment(client):
+    tenant = _login(client)
+
+    response = client.post(reverse(URL), {"name": "Nouvelle rencontre"})
+
+    assert response.status_code == 302
+    contact = Contact.objects.get()
+    assert contact.tenant == tenant and contact.attachments == []
 
 
 def test_both_kinds_are_offered_but_only_this_tenants_objects(client):
@@ -56,33 +71,26 @@ def test_both_kinds_are_offered_but_only_this_tenants_objects(client):
     assert "étrangère" not in content
 
 
-def test_another_tenants_organiser_cannot_be_chosen(client):
+def test_another_tenants_organiser_or_venue_cannot_be_chosen(client):
     _login(client)
-    foreign = PromoterFactory()
+    foreign_promoter, foreign_venue = PromoterFactory(), VenueFactory()
 
-    response = client.post(reverse(URL), {"parent": f"promoter:{foreign.pk}", "name": "Pirate"})
+    by_promoter = client.post(reverse(URL), {"name": "Pirate", "promoters": [foreign_promoter.pk]})
+    by_venue = client.post(reverse(URL), {"name": "Pirate", "venues": [foreign_venue.pk]})
 
-    assert response.status_code == 200
+    assert by_promoter.status_code == 200 and by_venue.status_code == 200
     assert not Contact.objects.exists()
 
 
-@pytest.mark.parametrize("value", ["", "promoter:", "venue:abc", "other:1", "promoter:999999"])
-def test_a_missing_or_made_up_parent_is_refused(client, value):
+@pytest.mark.parametrize("value", ["abc", "999999", "-1"])
+def test_a_made_up_choice_is_refused(client, value):
     tenant = _login(client)
     PromoterFactory(tenant=tenant)
 
-    response = client.post(reverse(URL), {"parent": value, "name": "X"})
+    response = client.post(reverse(URL), {"name": "X", "promoters": [value]})
 
     assert response.status_code == 200
     assert not Contact.objects.exists()
-
-
-def test_without_organiser_or_venue_the_page_explains_what_to_create_first(client):
-    _login(client)
-    content = client.get(reverse(URL)).content.decode()
-    assert "Créez d" in content
-    assert reverse("addressbook:promoter-create") in content
-    assert reverse("addressbook:venue-create") in content
 
 
 def test_the_form_needs_a_login_and_the_contact_list_links_to_it(client):

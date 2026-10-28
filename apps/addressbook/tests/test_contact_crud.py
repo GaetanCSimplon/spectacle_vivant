@@ -43,25 +43,46 @@ def test_create_a_contact_for_a_promoter(client):
     promoter = PromoterFactory(tenant=tenant)
 
     response = client.post(
-        reverse("addressbook:promoter-contact-create", args=[promoter.pk]), _payload()
+        reverse("addressbook:promoter-contact-create", args=[promoter.pk]),
+        _payload(promoters=[promoter.pk]),  # the box is already ticked on the page
     )
 
     assert response.status_code == 302
     assert response.url == reverse("addressbook:promoter-detail", args=[promoter.pk])
     contact = Contact.objects.get()
-    assert (contact.tenant, contact.promoter, contact.venue) == (tenant, promoter, None)
+    assert contact.tenant == tenant
+    assert list(contact.promoters.all()) == [promoter] and not contact.venues.exists()
+
+
+def test_the_organiser_is_preselected_and_others_can_be_added(client):
+    tenant = _login(client)
+    promoter = PromoterFactory(tenant=tenant)
+    other = PromoterFactory(tenant=tenant)
+    venue = VenueFactory(tenant=tenant)
+    url = reverse("addressbook:promoter-contact-create", args=[promoter.pk])
+
+    page = client.get(url).content.decode()
+    client.post(url, _payload(promoters=[promoter.pk, other.pk], venues=[venue.pk]))
+
+    assert f'value="{promoter.pk}" data-label="{promoter.name}"' in page and "checked" in page
+    contact = Contact.objects.get()
+    assert set(contact.promoters.all()) == {promoter, other}
+    assert list(contact.venues.all()) == [venue]
 
 
 def test_create_a_contact_for_a_venue(client):
     tenant = _login(client)
     venue = VenueFactory(tenant=tenant)
 
-    response = client.post(reverse("addressbook:venue-contact-create", args=[venue.pk]), _payload())
+    response = client.post(
+        reverse("addressbook:venue-contact-create", args=[venue.pk]), _payload(venues=[venue.pk])
+    )
 
     assert response.status_code == 302
     assert response.url == reverse("addressbook:venue-detail", args=[venue.pk])
     contact = Contact.objects.get()
-    assert (contact.tenant, contact.promoter, contact.venue) == (tenant, None, venue)
+    assert contact.tenant == tenant
+    assert list(contact.venues.all()) == [venue] and not contact.promoters.exists()
 
 
 def test_name_is_required_to_create_a_contact(client):
@@ -98,19 +119,21 @@ def test_create_form_is_not_offered_for_another_tenants_venue(client):
     assert not Contact.objects.exists()
 
 
-def test_form_ignores_tenant_and_parent_fields_sent_by_the_client(client):
+def test_form_ignores_the_tenant_and_refuses_another_structures_organisers_and_venues(client):
     tenant = _login(client)
     promoter = PromoterFactory(tenant=tenant)
     other_promoter = PromoterFactory()
     other_venue = VenueFactory()
+    url = reverse("addressbook:promoter-contact-create", args=[promoter.pk])
 
-    client.post(
-        reverse("addressbook:promoter-contact-create", args=[promoter.pk]),
-        _payload(tenant=other_promoter.tenant_id, promoter=other_promoter.pk, venue=other_venue.pk),
-    )
+    ignored = client.post(url, _payload(tenant=other_promoter.tenant_id, promoters=[promoter.pk]))
+    foreign_promoter = client.post(url, _payload(promoters=[promoter.pk, other_promoter.pk]))
+    foreign_venue = client.post(url, _payload(venues=[other_venue.pk]))
 
-    contact = Contact.objects.get()
-    assert (contact.tenant, contact.promoter, contact.venue) == (tenant, promoter, None)
+    assert ignored.status_code == 302
+    assert foreign_promoter.status_code == 200 and foreign_venue.status_code == 200
+    contact = Contact.objects.get()  # only the first one was saved
+    assert contact.tenant == tenant and list(contact.promoters.all()) == [promoter]
 
 
 def test_promoter_detail_links_to_the_contact_form(client):
@@ -133,20 +156,33 @@ def test_update_a_contact(client):
     )
 
     assert response.status_code == 302
-    assert response.url == reverse("addressbook:promoter-detail", args=[contact.promoter_id])
+    assert response.url == reverse("addressbook:contact-list")
     contact.refresh_from_db()
     assert contact.name == "Nouveau"
 
 
-def test_updating_a_contact_keeps_its_parent(client):
+def test_updating_a_contact_changes_its_attachments(client):
     tenant = _login(client)
-    venue = VenueFactory(tenant=tenant)
-    contact = ContactFactory(tenant=tenant, promoter=None, venue=venue)
+    old = PromoterFactory(tenant=tenant)
+    new_venue = VenueFactory(tenant=tenant)
+    contact = ContactFactory(tenant=tenant, promoter=old)
+
+    client.post(
+        reverse("addressbook:contact-update", args=[contact.pk]), _payload(venues=[new_venue.pk])
+    )
+
+    contact.refresh_from_db()
+    assert not contact.promoters.exists() and list(contact.venues.all()) == [new_venue]
+
+
+def test_a_contact_can_be_detached_from_everything(client):
+    tenant = _login(client)
+    contact = ContactFactory(tenant=tenant, promoter=PromoterFactory(tenant=tenant))
 
     client.post(reverse("addressbook:contact-update", args=[contact.pk]), _payload())
 
     contact.refresh_from_db()
-    assert (contact.promoter, contact.venue) == (None, venue)
+    assert contact.attachments == []
 
 
 def test_cannot_update_another_tenants_contact(client):
@@ -170,7 +206,7 @@ def test_delete_a_contact(client):
     response = client.post(reverse("addressbook:contact-delete", args=[contact.pk]))
 
     assert response.status_code == 302
-    assert response.url == reverse("addressbook:venue-detail", args=[venue.pk])
+    assert response.url == reverse("addressbook:contact-list")
     assert not Contact.objects.exists()
 
 
@@ -184,11 +220,13 @@ def test_cannot_delete_another_tenants_contact(client):
     assert Contact.objects.filter(pk=other.pk).exists()
 
 
-def test_deleting_a_promoter_deletes_its_contacts(client):
+def test_deleting_a_promoter_keeps_its_contacts_in_the_directory(client):
     tenant = _login(client)
     promoter = PromoterFactory(tenant=tenant)
-    ContactFactory(tenant=tenant, promoter=promoter)
+    contact = ContactFactory(tenant=tenant, promoter=promoter)
 
     client.post(reverse("addressbook:promoter-delete", args=[promoter.pk]))
 
-    assert not Contact.objects.exists()
+    assert Contact.objects.filter(pk=contact.pk).exists()
+    page = client.get(reverse("addressbook:contact-list")).content.decode()
+    assert contact.name in page and "Sans rattachement" in page

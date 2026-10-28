@@ -9,7 +9,13 @@ from django.views.generic import CreateView, DeleteView, DetailView, ListView, U
 from apps.core.views import SearchListMixin, TenantScopedMixin
 
 from . import services
-from .forms import ContactForm, NewContactForm, PromoterFilterForm, PromoterForm, VenueForm
+from .forms import (
+    ContactFilterForm,
+    ContactForm,
+    PromoterFilterForm,
+    PromoterForm,
+    VenueForm,
+)
 from .models import Contact, Promoter, Venue
 
 
@@ -50,7 +56,7 @@ class PromoterDetailView(TenantScopedMixin, DetailView):
     template_name = "addressbook/promoter_detail.html"
 
     def get_queryset(self):
-        return super().get_queryset().prefetch_related("contacts")
+        return super().get_queryset().prefetch_related("contacts", "venues")
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -196,7 +202,7 @@ class VenueDetailView(TenantScopedMixin, DetailView):
     template_name = "addressbook/venue_detail.html"
 
     def get_queryset(self):
-        return super().get_queryset().prefetch_related("contacts")
+        return super().get_queryset().prefetch_related("contacts", "promoters")
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -204,7 +210,16 @@ class VenueDetailView(TenantScopedMixin, DetailView):
         return context
 
 
-class VenueCreateView(DetailRedirectMixin, TenantScopedMixin, CreateView):
+class TenantFormKwargsMixin:
+    """The form only offers this structure's own organisers."""
+
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs["tenant"] = self.request.tenant
+        return kwargs
+
+
+class VenueCreateView(TenantFormKwargsMixin, DetailRedirectMixin, TenantScopedMixin, CreateView):
     model = Venue
     form_class = VenueForm
     template_name = "addressbook/venue_form.html"
@@ -216,7 +231,7 @@ class VenueCreateView(DetailRedirectMixin, TenantScopedMixin, CreateView):
         return response
 
 
-class VenueUpdateView(DetailRedirectMixin, TenantScopedMixin, UpdateView):
+class VenueUpdateView(TenantFormKwargsMixin, DetailRedirectMixin, TenantScopedMixin, UpdateView):
     model = Venue
     form_class = VenueForm
     template_name = "addressbook/venue_form.html"
@@ -247,28 +262,65 @@ class VenueDeleteView(TenantScopedMixin, DeleteView):
 
 
 class ContactListView(TenantScopedMixin, SearchListMixin, ListView):
+    """The address book: every contact, with the organisers and venues it works for."""
+
     model = Contact
     template_name = "addressbook/contact_list.html"
     results_template_name = "addressbook/_contact_results.html"
-    search_fields = ["name", "role", "email", "promoter__name", "venue__name"]
+    search_fields = ["name", "role", "email", "promoters__name", "venues__name"]
+
+    def get_filter_form(self):
+        if not hasattr(self, "_filter_form"):
+            self._filter_form = ContactFilterForm(self.request.GET)
+        return self._filter_form
 
     def get_queryset(self):
-        return super().get_queryset().select_related("promoter", "venue").order_by("name")
+        queryset = super().get_queryset().prefetch_related("promoters", "venues")
+        return self.get_filter_form().apply(queryset).distinct().order_by("name")
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["filter_form"] = self.get_filter_form()
+        form = self.get_filter_form()
+        context["filtered"] = bool(context["q"] or (form.is_valid() and form.cleaned_data["link"]))
+        context["has_any_contact"] = Contact.objects.filter(tenant=self.request.tenant).exists()
+        return context
 
 
-class ContactCreateView(TenantScopedMixin, CreateView):
-    """Create a contact from the detail page of its Promoter or Venue.
+class ContactFormMixin:
+    """The form only offers this structure's own organisers and venues."""
 
-    The parent comes from the URL and is looked up inside the current tenant,
-    so a contact can never be attached to another tenant's organiser or venue.
-    """
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs["tenant"] = self.request.tenant
+        return kwargs
+
+
+class ContactQuickCreateView(ContactFormMixin, TenantScopedMixin, CreateView):
+    """ "Nouveau contact" from the address book or the home page: a person of the directory,
+    with the organisers and venues it works for (none is fine: "Sans rattachement")."""
 
     model = Contact
     form_class = ContactForm
     template_name = "addressbook/contact_form.html"
+    success_url = reverse_lazy("addressbook:contact-list")
+
+    def form_valid(self, form):
+        response = super().form_valid(form)
+        messages.success(self.request, _("Le contact a été créé."))
+        return response
+
+
+class ContactCreateView(ContactQuickCreateView):
+    """Create a contact from the page of an organiser or a venue, which is pre-selected.
+
+    The parent comes from the URL and is looked up inside the current tenant. The person can
+    still tick other organisers and venues.
+    """
+
     parent_model = None
     parent_kwarg = None
-    parent_field = None
+    parent_field = None  # "promoters" or "venues": the field that holds the parent
 
     def get_parent(self):
         if not hasattr(self, "_parent"):
@@ -277,13 +329,8 @@ class ContactCreateView(TenantScopedMixin, CreateView):
             )
         return self._parent
 
-    def get_form_kwargs(self):
-        kwargs = super().get_form_kwargs()
-        # Set before validation so Contact.clean() can compare tenants.
-        kwargs["instance"] = Contact(
-            tenant=self.request.tenant, **{self.parent_field: self.get_parent()}
-        )
-        return kwargs
+    def get_initial(self):
+        return {**super().get_initial(), self.parent_field: [self.get_parent()]}
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -293,62 +340,24 @@ class ContactCreateView(TenantScopedMixin, CreateView):
     def get_success_url(self):
         return self.get_parent().get_absolute_url()
 
-    def form_valid(self, form):
-        response = super().form_valid(form)
-        messages.success(self.request, _("Le contact a été créé."))
-        return response
-
-
-class ContactQuickCreateView(TenantScopedMixin, CreateView):
-    """ "Nouveau contact" from the home page: the form asks which organiser or venue it is for."""
-
-    model = Contact
-    form_class = NewContactForm
-    template_name = "addressbook/contact_form.html"
-
-    def get_form_kwargs(self):
-        kwargs = super().get_form_kwargs()
-        kwargs["tenant"] = self.request.tenant
-        # Set before validation so Contact.clean() can compare tenants.
-        kwargs["instance"] = Contact(tenant=self.request.tenant)
-        return kwargs
-
-    def get_success_url(self):
-        return (self.object.promoter or self.object.venue).get_absolute_url()
-
-    def form_valid(self, form):
-        response = super().form_valid(form)
-        messages.success(self.request, _("Le contact a été créé."))
-        return response
-
 
 class PromoterContactCreateView(ContactCreateView):
     parent_model = Promoter
     parent_kwarg = "promoter_pk"
-    parent_field = "promoter"
+    parent_field = "promoters"
 
 
 class VenueContactCreateView(ContactCreateView):
     parent_model = Venue
     parent_kwarg = "venue_pk"
-    parent_field = "venue"
+    parent_field = "venues"
 
 
-class ContactUpdateView(TenantScopedMixin, UpdateView):
+class ContactUpdateView(ContactFormMixin, TenantScopedMixin, UpdateView):
     model = Contact
     form_class = ContactForm
     template_name = "addressbook/contact_form.html"
-
-    def get_queryset(self):
-        return super().get_queryset().select_related("promoter", "venue")
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context["parent"] = self.object.promoter or self.object.venue
-        return context
-
-    def get_success_url(self):
-        return (self.object.promoter or self.object.venue).get_absolute_url()
+    success_url = reverse_lazy("addressbook:contact-list")
 
     def form_valid(self, form):
         response = super().form_valid(form)
@@ -359,12 +368,7 @@ class ContactUpdateView(TenantScopedMixin, UpdateView):
 class ContactDeleteView(TenantScopedMixin, DeleteView):
     model = Contact
     template_name = "addressbook/contact_confirm_delete.html"
-
-    def get_queryset(self):
-        return super().get_queryset().select_related("promoter", "venue")
-
-    def get_success_url(self):
-        return (self.object.promoter or self.object.venue).get_absolute_url()
+    success_url = reverse_lazy("addressbook:contact-list")
 
     def form_valid(self, form):
         response = super().form_valid(form)

@@ -1,5 +1,4 @@
 from django.conf import settings
-from django.core.exceptions import ValidationError
 from django.db import models
 from django.urls import reverse
 from django.utils import timezone
@@ -147,6 +146,13 @@ class Venue(GeoPointMixin, TenantOwnedModel):
     """The physical place (Lieu / Salle) where the gig happens."""
 
     name = models.CharField(_("nom"), max_length=255)
+    promoters = models.ManyToManyField(
+        Promoter,
+        blank=True,
+        related_name="venues",
+        verbose_name=_("organisateurs"),
+        help_text=_("Les organisateurs qui font des dates dans ce lieu (facultatif)."),
+    )
     address = models.TextField(_("adresse"), blank=True)
     capacity = models.PositiveIntegerField(_("jauge (places)"), null=True, blank=True)
     configuration = models.CharField(
@@ -167,13 +173,19 @@ class Venue(GeoPointMixin, TenantOwnedModel):
 
 
 class Contact(TenantOwnedModel):
-    """A person (Contact) attached to either a Promoter or a Venue, never both."""
+    """A person of the address book (Contact).
 
-    promoter = models.ForeignKey(
-        Promoter, on_delete=models.CASCADE, related_name="contacts", null=True, blank=True
+    It can work for several organisers and several venues, or for none yet ("Sans
+    rattachement": the address book is also a directory the user builds over time). Deleting an
+    organiser or a venue never deletes its contacts. The tenant of the organisers and venues is
+    checked by the forms (they only offer this tenant's own).
+    """
+
+    promoters = models.ManyToManyField(
+        Promoter, blank=True, related_name="contacts", verbose_name=_("organisateurs")
     )
-    venue = models.ForeignKey(
-        Venue, on_delete=models.CASCADE, related_name="contacts", null=True, blank=True
+    venues = models.ManyToManyField(
+        Venue, blank=True, related_name="contacts", verbose_name=_("lieux")
     )
     name = models.CharField(_("nom"), max_length=255)
     role = models.CharField(_("fonction"), max_length=255, blank=True)
@@ -181,26 +193,15 @@ class Contact(TenantOwnedModel):
     phone = models.CharField(_("téléphone"), max_length=30, blank=True)
 
     class Meta:
-        constraints = [
-            models.CheckConstraint(
-                condition=(
-                    models.Q(promoter__isnull=False, venue__isnull=True)
-                    | models.Q(promoter__isnull=True, venue__isnull=False)
-                ),
-                name="contact_belongs_to_promoter_or_venue",
-            ),
-        ]
-
-    def clean(self):
-        super().clean()
-        parent = self.promoter or self.venue
-        if parent and parent.tenant_id != self.tenant_id:
-            raise ValidationError(
-                _("Le contact doit appartenir à la même structure que son organisateur ou lieu.")
-            )
+        ordering = ["name"]
 
     def __str__(self):
         return self.name
+
+    @property
+    def attachments(self):
+        """The organisers then the venues this contact works for (for a list or a page)."""
+        return [*self.promoters.all(), *self.venues.all()]
 
 
 class PromoterInvitation(TenantOwnedModel):

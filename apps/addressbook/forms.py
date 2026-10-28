@@ -160,8 +160,16 @@ class PromoterFilterForm(forms.Form):
 
 
 class VenueForm(SectionedFormMixin, AddressModelForm):
+    promoters = forms.ModelMultipleChoiceField(
+        label=_("Organisateurs"),
+        required=False,
+        queryset=Promoter.objects.none(),
+        widget=MultiSelectDropdown,
+        help_text=_("Les organisateurs qui font des dates dans ce lieu (facultatif)."),
+    )
+
     layout = [
-        (_("Le lieu"), ["name", "capacity", "configuration", "phone"]),
+        (_("Le lieu"), ["name", "capacity", "configuration", "phone", "promoters"]),
         (_("Adresse"), ["address", "postal_code", "city", "department"]),
         (_("Accès et notes"), ["access_info", "notes"]),
     ]
@@ -177,6 +185,7 @@ class VenueForm(SectionedFormMixin, AddressModelForm):
             "capacity",
             "configuration",
             "phone",
+            "promoters",
             "access_info",
             "notes",
         ]
@@ -186,54 +195,64 @@ class VenueForm(SectionedFormMixin, AddressModelForm):
             "notes": forms.Textarea(attrs={"rows": 3}),
         }
 
+    def __init__(self, *args, tenant=None, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields["promoters"].queryset = Promoter.objects.filter(tenant=tenant).order_by("name")
+
+
+class ContactFilterForm(forms.Form):
+    """The "Rattachement" filter of the address book: everyone, organisers, venues or none."""
+
+    LINKS = [
+        ("", _("Tous les contacts")),
+        ("promoters", _("Liés à un organisateur")),
+        ("venues", _("Liés à un lieu")),
+        ("none", _("Sans rattachement")),
+    ]
+
+    link = forms.ChoiceField(label=_("Rattachement"), required=False, choices=LINKS)
+
+    def apply(self, queryset):
+        link = self.cleaned_data.get("link") if self.is_valid() else ""
+        if link == "promoters":
+            return queryset.filter(promoters__isnull=False)
+        if link == "venues":
+            return queryset.filter(venues__isnull=False)
+        if link == "none":
+            return queryset.filter(promoters__isnull=True, venues__isnull=True)
+        return queryset
+
 
 class ContactForm(forms.ModelForm):
-    """The parent (Promoter or Venue) is set by the view, never chosen in the form."""
+    """A contact of the address book, with the organisers and venues it works for (all optional).
+
+    Only this tenant's organisers and venues are offered: another structure's id is an invalid
+    choice. A contact with none is simply "sans rattachement" (a directory entry).
+    """
+
+    promoters = forms.ModelMultipleChoiceField(
+        label=_("Organisateurs"),
+        required=False,
+        queryset=Promoter.objects.none(),
+        widget=MultiSelectDropdown,
+    )
+    venues = forms.ModelMultipleChoiceField(
+        label=_("Lieux"), required=False, queryset=Venue.objects.none(), widget=MultiSelectDropdown
+    )
 
     class Meta:
         model = Contact
-        fields = ["name", "role", "email", "phone"]
+        fields = ["name", "role", "email", "phone", "promoters", "venues"]
         # Suggestions only (Accueil, Technique, Comm'...): the role stays free text.
         widgets = {"role": forms.TextInput(attrs={"list": "contact-roles"})}
-
-
-class NewContactForm(ContactForm):
-    """A contact created from the home page: the user picks the organiser or venue here.
-
-    Only this tenant's organisers and venues are offered, so a choice that is not in the list
-    (another tenant's id, a made-up value) is an invalid choice, never a hidden link.
-    """
-
-    parent = forms.ChoiceField(label=_("Rattaché à"))
-    field_order = ["parent", "name", "role", "email", "phone"]
-
-    def __init__(self, *args, tenant, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.promoters = {
-            str(p.pk): p for p in Promoter.objects.filter(tenant=tenant).order_by("name")
+        help_texts = {
+            "role": _("Une seule fonction : « Programmation / Direction » s'il y en a deux."),
         }
-        self.venues = {str(v.pk): v for v in Venue.objects.filter(tenant=tenant).order_by("name")}
-        groups = []
-        if self.promoters:
-            groups.append(
-                (
-                    _("Organisateurs"),
-                    [(f"promoter:{pk}", p.name) for pk, p in self.promoters.items()],
-                )
-            )
-        if self.venues:
-            groups.append((_("Lieux"), [(f"venue:{pk}", v.name) for pk, v in self.venues.items()]))
-        self.fields["parent"].choices = [("", _("Choisir…")), *groups]
-        self.has_parents = bool(groups)
 
-    def clean(self):
-        cleaned = super().clean()
-        kind, _sep, pk = cleaned.get("parent", "").partition(":")
-        if kind == "promoter":
-            self.instance.promoter, self.instance.venue = self.promoters.get(pk), None
-        elif kind == "venue":
-            self.instance.venue, self.instance.promoter = self.venues.get(pk), None
-        return cleaned
+    def __init__(self, *args, tenant=None, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields["promoters"].queryset = Promoter.objects.filter(tenant=tenant).order_by("name")
+        self.fields["venues"].queryset = Venue.objects.filter(tenant=tenant).order_by("name")
 
 
 class PromoterPublicForm(PromoterIdentifiersMixin, AddressModelForm):

@@ -21,6 +21,15 @@
     {% if venue.notes %}<p class="text-gray-600">{{ venue.notes|linebreaksbr }}</p>{% endif %}
   </div>
 
+  <h2 class="mb-2 text-sm font-semibold uppercase text-gray-500">{% translate "Organisateurs" %}</h2>
+  {% if venue.promoters.all %}
+    <ul class="mb-6 flex flex-wrap gap-2 text-sm">
+      {% for promoter in venue.promoters.all %}<li><a href="{% url 'addressbook:promoter-detail' promoter.pk %}" class="pill pill-neutral underline">{{ promoter.name }}</a></li>{% endfor %}
+    </ul>
+  {% else %}
+    <p class="mb-6 text-sm text-gray-600">{% translate "Aucun organisateur rattaché (facultatif)." %}</p>
+  {% endif %}
+
   <div class="mb-2 flex items-center justify-between">
     <h2 class="text-sm font-semibold uppercase text-gray-500">{% translate "Contacts" %}</h2>
     <a href="{% url 'addressbook:venue-contact-create' venue.pk %}" class="text-sm text-blue-700 underline">

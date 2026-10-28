@@ -1,10 +1,11 @@
 {% load i18n %}
 {% if not object_list %}
   <div class="card">
-    {% if q %}
-      <p>{% blocktranslate %}Aucun contact ne correspond à « {{ q }} ».{% endblocktranslate %}</p>
+    {% if filtered %}
+      <p>{% translate "Aucun contact ne correspond à cette recherche." %}</p>
     {% else %}
-      <p>{% translate "Aucun contact pour l'instant. Ajoutez-les depuis la fiche d'un organisateur ou d'un lieu." %}</p>
+      <p>{% translate "Votre annuaire est vide pour l'instant. Ajoutez vos contacts ici, ou depuis la fiche d'un organisateur ou d'un lieu." %}</p>
+      <a href="{% url 'addressbook:contact-create' %}" class="btn btn-secondary mt-4">{% translate "+ Nouveau contact" %}</a>
     {% endif %}
   </div>
 {% else %}
@@ -28,10 +29,10 @@
           <tr>
             <td class="font-medium text-gray-900">{{ contact.name }}</td>
             <td>{{ contact.role }}</td>
-            <td>{% if contact.promoter %}<a href="{% url 'addressbook:promoter-detail' contact.promoter.pk %}" class="underline">{{ contact.promoter }}</a>{% elif contact.venue %}<a href="{% url 'addressbook:venue-detail' contact.venue.pk %}" class="underline">{{ contact.venue }}</a>{% endif %}</td>
-            <td>{% if contact.email %}<a href="mailto:{{ contact.email }}" class="underline">{{ contact.email }}</a>{% endif %}</td>
+            <td>{% include "addressbook/_contact_links.html" %}</td>
+            <td class="whitespace-nowrap">{% if contact.email %}<a href="mailto:{{ contact.email }}" class="underline">{{ contact.email }}</a>{% endif %}</td>
             <td class="whitespace-nowrap data">{% if contact.phone %}<a href="tel:{{ contact.phone }}" class="underline">{{ contact.phone }}</a>{% endif %}</td>
-            <td class="text-right"><a href="{% url 'addressbook:contact-update' contact.pk %}" class="text-blue-700 underline">{% translate "Modifier" %}</a></td>
+            <td class="whitespace-nowrap text-right"><a href="{% url 'addressbook:contact-update' contact.pk %}" class="text-blue-700 underline">{% translate "Modifier" %}</a></td>
           </tr>
         {% endfor %}
       </tbody>

@@ -1,4 +1,5 @@
 from django import forms
+from django.db.models import Case, IntegerField, When
 from django.utils.translation import gettext_lazy as _
 
 from apps.addressbook.models import Promoter, Venue
@@ -45,11 +46,28 @@ class PromoterQuickCreateForm(AddressModelForm):
 
 
 class GigVenueStepForm(forms.Form):
+    """The venue of the date: the usual venues of the chosen organiser come first."""
+
     venue = forms.ModelChoiceField(label=_("Lieu"), queryset=Venue.objects.none())
 
-    def __init__(self, *args, tenant=None, **kwargs):
+    def __init__(self, *args, tenant=None, promoter=None, **kwargs):
         super().__init__(*args, **kwargs)
-        self.fields["venue"].queryset = Venue.objects.filter(tenant=tenant)
+        venues = Venue.objects.filter(tenant=tenant)
+        self.usual = set()
+        if promoter is not None:
+            self.usual = set(venues.filter(promoters=promoter).values_list("pk", flat=True))
+            venues = venues.annotate(
+                is_usual=Case(
+                    When(pk__in=self.usual, then=0), default=1, output_field=IntegerField()
+                )
+            )
+            venues = venues.order_by("is_usual", "name")
+        else:
+            venues = venues.order_by("name")
+        self.fields["venue"].queryset = venues
+        self.fields["venue"].label_from_instance = lambda venue: (
+            f"{venue.name} ({_('lieu habituel')})" if venue.pk in self.usual else venue.name
+        )
 
 
 class VenueQuickCreateForm(AddressModelForm):
