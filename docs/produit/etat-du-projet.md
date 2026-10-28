@@ -37,7 +37,7 @@ Dans cet ordre :
 1. ~~Fermer l'inscription publique~~ **Fait** (2026-10-25) : liste d'invités dans `/admin/`, procédure dans `docs/technique/services-production.md`. Il faudra créer un compte administrateur sur la production.
 2. ~~Erreur claire quand l'e-mail de confirmation échoue~~ **Fait** (2026-10-29).
 3. ~~Mot de passe oublié : tester de bout en bout~~ **Fait** (2026-10-29), un défaut corrigé (e-mail d'invitation à s'inscrire envoyé aux adresses inconnues).
-4. **Contrôle d'accès des téléchargements** (rider, fiche technique) : vérifier.
+4. ~~Contrôle d'accès des téléchargements~~ **Fait** (2026-10-29) : aucun défaut, test dédié.
 5. **Régime de TVA** : vérifier que les mentions suivent chaque régime, puis cocher la case de la feuille de route.
 6. **Logo de la structure sur le PDF du contrat** : à confirmer avec l'associé que c'est voulu pour le MVP.
 
