@@ -4,6 +4,7 @@
 {% block title %}
   {% if object %}Modifier un spectacle{% else %}Nouveau spectacle{% endif %} — Bòrd Pro
 {% endblock %}
+{% block main_width %}max-w-5xl{% endblock %}
 
 {% block page_content %}
   <h1 class="mb-4">
@@ -12,9 +13,8 @@
 
   <form method="post" enctype="multipart/form-data" class="space-y-4">
     {% csrf_token %}
-    {{ form.non_field_errors }}
-    {% for field in form.main_fields %}{% include "components/_field_p.html" %}{% endfor %}
-    <fieldset class="card space-y-3">
+    {% include "components/_sectioned_form.html" %}
+    <fieldset class="card mb-6 space-y-3">
       <legend class="px-1 text-sm font-semibold">{% translate "Ajouter un autre membre à l'équipe" %}</legend>
       <p class="text-sm text-gray-600">{% translate "Il rejoint votre équipe (onglet Équipe) et la distribution de ce spectacle. Ses autres informations se complètent ensuite dans l'équipe." %}</p>
       {% for field in form.new_member_fields %}
@@ -28,6 +28,8 @@
         {% endif %}
       {% endfor %}
     </fieldset>
-    <button type="submit" class="btn btn-primary btn-block">{% translate "Enregistrer" %}</button>
+    <div class="flex justify-end">
+      <button type="submit" class="btn btn-primary w-full md:w-auto md:min-w-64">{% translate "Enregistrer" %}</button>
+    </div>
   </form>
 {% endblock %}

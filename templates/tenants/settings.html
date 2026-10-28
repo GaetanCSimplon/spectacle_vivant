@@ -2,6 +2,7 @@
 {% load i18n %}
 
 {% block title %}Informations de la structure — Bòrd Pro{% endblock %}
+{% block main_width %}max-w-5xl{% endblock %}
 
 {% block page_content %}
   <h1 class="mb-2">{% translate "Bòrd" %}</h1>
@@ -18,11 +19,13 @@
 
   <form method="post" class="space-y-4">
     {% csrf_token %}
-    {{ form.as_p }}
+    {% include "components/_sectioned_form.html" %}
     {% if is_owner %}
-      <button type="submit" class="btn btn-primary btn-block">
-        {% translate "Enregistrer" %}
-      </button>
+      <div class="flex justify-end">
+        <button type="submit" class="btn btn-primary w-full md:w-auto md:min-w-64">
+          {% translate "Enregistrer" %}
+        </button>
+      </div>
     {% endif %}
   </form>
 

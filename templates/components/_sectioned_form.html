@@ -1,0 +1,24 @@
+{% load i18n %}
+{% comment %}The blocks of a form that has `layout` (SectionedFormMixin): one card per block, the
+fields in two columns from md. The team card's artist / technician boxes sit on one line.{% endcomment %}
+{{ form.non_field_errors }}
+{% for section in form.sections %}
+  <fieldset class="card mb-6">
+    {% if section.title %}<legend class="px-1 font-heading text-lg font-extrabold text-blue-700">{{ section.title }}</legend>{% endif %}
+    <div class="form-grid mt-2">
+      {% for field in section.fields %}
+        {% if field.name == "is_artist" %}
+          <div class="form-wide mb-4" role="group" aria-label="{% translate 'Artiste ou technicien' %}">
+            <div class="flex flex-wrap items-center gap-x-8 gap-y-2">
+              <label class="mb-0 inline-flex min-h-11 items-center gap-2 font-medium">{{ form.is_artist }} {% translate "Artiste" %}</label>
+              <label class="mb-0 inline-flex min-h-11 items-center gap-2 font-medium">{{ form.is_technician }} {% translate "Technicien" %}</label>
+            </div>
+            <span class="helptext">{% translate "Cochez l'une, l'autre ou les deux." %}</span>
+          </div>
+        {% elif field.name != "is_technician" %}
+          {% include "components/_field_p.html" %}
+        {% endif %}
+      {% endfor %}
+    </div>
+  </fieldset>
+{% endfor %}

@@ -1,7 +1,7 @@
 from django import forms
 from django.utils.translation import gettext_lazy as _
 
-from apps.core.forms import AddressModelForm, MultiSelectDropdown
+from apps.core.forms import AddressModelForm, MultiSelectDropdown, SectionedFormMixin
 from apps.tenants.validators import normalize_code_ape, validate_code_ape
 
 from . import services
@@ -42,13 +42,43 @@ def _criterion(field):
     return OrderedMultipleChoiceField(label=title, choices=choices.choices, required=False)
 
 
-class PromoterForm(PromoterIdentifiersMixin, AddressModelForm):
+class PromoterForm(SectionedFormMixin, PromoterIdentifiersMixin, AddressModelForm):
     kinds = _criterion("kinds")
     event_types = _criterion("event_types")
     aesthetics = _criterion("aesthetics")
     formats = _criterion("formats")
     usual_periods = _criterion("usual_periods")
     event_roles = _criterion("event_roles")
+
+    layout = [
+        (_("L'organisateur"), ["name", "follow_up", "email", "phone"]),
+        (
+            _("Qualification"),
+            [
+                "kinds",
+                "event_types",
+                "aesthetics",
+                "formats",
+                "indicative_capacity",
+                "usual_periods",
+                "event_roles",
+                "qualification_other",
+            ],
+        ),
+        (
+            _("Informations légales"),
+            [
+                "siret",
+                "code_ape",
+                "vat_number",
+                "licence_number",
+                "representative_name",
+                "representative_role",
+            ],
+        ),
+        (_("Adresse de facturation"), ["billing_address", "postal_code", "city", "department"]),
+        (_("Notes"), ["notes"]),
+    ]
 
     class Meta:
         model = Promoter
@@ -129,7 +159,13 @@ class PromoterFilterForm(forms.Form):
         return any(self.cleaned_data.get(name) for name in self.fields)
 
 
-class VenueForm(AddressModelForm):
+class VenueForm(SectionedFormMixin, AddressModelForm):
+    layout = [
+        (_("Le lieu"), ["name", "capacity", "configuration", "phone"]),
+        (_("Adresse"), ["address", "postal_code", "city", "department"]),
+        (_("Accès et notes"), ["access_info", "notes"]),
+    ]
+
     class Meta:
         model = Venue
         fields = [

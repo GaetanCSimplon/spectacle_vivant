@@ -5,7 +5,7 @@ from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 
 from apps.catalog.models import Show
-from apps.core.forms import AddressModelForm
+from apps.core.forms import AddressModelForm, SectionedFormMixin
 from apps.finance import bord
 
 from . import services
@@ -29,7 +29,19 @@ class OnboardingForm(forms.ModelForm):
         }
 
 
-class TenantProfileForm(AddressModelForm):
+class TenantProfileForm(SectionedFormMixin, AddressModelForm):
+    layout = [
+        (_("La structure"), ["name", "legal_form", "siret", "code_ape", "licence_number"]),
+        (_("Adresse"), ["address", "postal_code", "city", "department"]),
+        (_("Contact"), ["phone", "email"]),
+        (_("TVA"), ["vat_regime", "vat_rate", "vat_number"]),
+        (_("Coordonnées bancaires"), ["iban", "bic"]),
+        (
+            _("Représentant et tribunal"),
+            ["representative_name", "representative_role", "jurisdiction_city"],
+        ),
+    ]
+
     # Declared here because people type "90.01 Z": the model's 5 characters apply after cleaning.
     code_ape = forms.CharField(
         label=_("Code APE"),
@@ -110,7 +122,28 @@ class DeleteTenantForm(forms.Form):
         return password
 
 
-class PersonForm(AddressModelForm):
+class PersonForm(SectionedFormMixin, AddressModelForm):
+    layout = [
+        (
+            _("La personne"),
+            ["last_name", "first_name", "role", "status", "is_artist", "is_technician"],
+        ),
+        (_("Contact"), ["phone", "email"]),
+        (
+            _("Informations privées (propriétaire seulement)"),
+            [
+                "birth_date",
+                "social_security_number",
+                "address",
+                "postal_code",
+                "city",
+                "department",
+                "guso_number",
+            ],
+        ),
+        (_("Suivi"), ["average_fee", "notes"]),
+    ]
+
     # Private data: only the owner sees and changes these (see __init__).
     PRIVATE_FIELDS = [
         "address",

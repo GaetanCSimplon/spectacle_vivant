@@ -3,6 +3,8 @@
 
 {% block title %}Compléter la date — Bòrd Pro{% endblock %}
 
+{% block main_width %}max-w-5xl{% endblock %}
+
 {% block page_content %}
   <h1 class="mb-1">{% translate "Compléter la date" %}</h1>
   <p class="mb-6 text-sm text-gray-600">
@@ -18,22 +20,22 @@
     <fieldset class="space-y-3 rounded-md border border-gray-200 p-4"
               x-data="{ free: {{ forms.gig.is_free.value|yesno:'true,false' }} }">
       <legend class="px-1 text-sm font-semibold">{% translate "La date" %}</legend>
-      {{ forms.gig.as_p }}
+      <div class="form-grid">{{ forms.gig.as_p }}</div>
     </fieldset>
 
     <fieldset class="space-y-3 rounded-md border border-gray-200 p-4">
       <legend class="px-1 text-sm font-semibold">{% translate "Le spectacle" %}</legend>
-      {{ forms.show.as_p }}
+      <div class="form-grid">{{ forms.show.as_p }}</div>
     </fieldset>
 
     <fieldset class="space-y-3 rounded-md border border-gray-200 p-4">
       <legend class="px-1 text-sm font-semibold">{% translate "Le lieu" %}</legend>
-      {{ forms.venue.as_p }}
+      <div class="form-grid">{{ forms.venue.as_p }}</div>
     </fieldset>
 
     <fieldset class="space-y-3 rounded-md border border-gray-200 p-4">
       <legend class="px-1 text-sm font-semibold">{% translate "L'organisateur" %}</legend>
-      {{ forms.promoter.as_p }}
+      <div class="form-grid">{{ forms.promoter.as_p }}</div>
     </fieldset>
 
     <p class="text-sm text-gray-600">

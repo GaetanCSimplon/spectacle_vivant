@@ -243,7 +243,8 @@
     outline-offset: 3px;
   }
 
-  form p {
+  form p,
+  form .field {
     @apply mb-4;
   }
 
@@ -403,6 +404,24 @@
 
   .date-tile-month {
     @apply mt-1 text-[0.6875rem] font-medium;
+  }
+
+  /* The fields of a form block: one column on a phone, two from md. A text box takes the whole row. */
+  .form-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    column-gap: 1.5rem;
+  }
+
+  @media (min-width: 48rem) {
+    .form-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .form-grid > :is(p, .field):has(textarea),
+    .form-grid > .form-wide {
+      grid-column: 1 / -1;
+    }
   }
 
   /* Lists on a PC screen (lg and up): a table in a card; on a phone the same rows stay cards. */
