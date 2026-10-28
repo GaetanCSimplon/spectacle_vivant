@@ -327,7 +327,8 @@ def test_the_review_screen_compares_and_the_user_applies_the_checked_fields(clie
     )
     assert promoter.representative_name == "Ancien"  # not checked: untouched
     contact = Contact.objects.get()
-    assert (contact.promoter, contact.name, contact.role) == (promoter, "Julien Blanc", "Accueil")
+    assert (contact.name, contact.role) == ("Julien Blanc", "Accueil")
+    assert list(contact.promoters.all()) == [promoter]
     invitation = PromoterInvitation.objects.get()
     assert invitation.status == PromoterInvitation.Status.REVIEWED and invitation.response == {}
 

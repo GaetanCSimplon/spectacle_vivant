@@ -13,9 +13,33 @@
     {% include "components/_add_button.html" with url=add_url label=add_label %}
   </div>
 
+  <p class="mb-4 text-sm text-gray-600">{% translate "Votre annuaire : les personnes avec qui vous travaillez, liées à un ou plusieurs organisateurs ou lieux, ou pas encore." %}</p>
+
   {% url 'addressbook:contact-list' as list_url %}
   {% translate "Rechercher un contact" as search_placeholder %}
-  {% include "components/_search.html" with url=list_url placeholder=search_placeholder %}
+  <form
+    method="get"
+    action="{{ list_url }}"
+    class="mb-4 grid grid-cols-1 items-end gap-2 sm:grid-cols-3 lg:max-w-4xl"
+    role="search"
+    hx-get="{{ list_url }}"
+    hx-trigger="input changed delay:300ms from:find input[type=search], change from:find select"
+    hx-target="#results"
+    hx-swap="innerHTML"
+    hx-push-url="true"
+  >
+    <input
+      type="search"
+      name="q"
+      value="{{ q }}"
+      placeholder="{{ search_placeholder }}"
+      aria-label="{{ search_placeholder }}"
+      autocomplete="off"
+      class="w-full rounded-md border border-gray-300 px-3 py-2 text-sm sm:col-span-2"
+    >
+    <div>{{ filter_form.link.label_tag }} {{ filter_form.link }}</div>
+    <noscript><button type="submit" class="btn btn-secondary">{% translate "Filtrer" %}</button></noscript>
+  </form>
 
   <div id="results">
     {% include "addressbook/_contact_results.html" %}

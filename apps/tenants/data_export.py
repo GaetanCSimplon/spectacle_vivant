@@ -136,6 +136,7 @@ def venues_rows(tenant):
         "Code postal",
         "Ville",
         "Département",
+        "Organisateurs",
     ]
     rows = [
         [
@@ -148,16 +149,19 @@ def venues_rows(tenant):
             text(v.postal_code),
             text(v.city),
             text(v.get_department_display()),
+            text(" ; ".join(p.name for p in v.promoters.all())),
         ]
-        for v in Venue.objects.filter(tenant=tenant).order_by("name")
+        for v in Venue.objects.filter(tenant=tenant).prefetch_related("promoters").order_by("name")
     ]
     return header, rows
 
 
 def contacts_rows(tenant):
-    header = ["Nom", "Fonction", "E-mail", "Téléphone", "Rattaché à"]
+    header = ["Nom", "Fonction", "E-mail", "Téléphone", "Organisateurs", "Lieux"]
     contacts = (
-        Contact.objects.filter(tenant=tenant).select_related("promoter", "venue").order_by("name")
+        Contact.objects.filter(tenant=tenant)
+        .prefetch_related("promoters", "venues")
+        .order_by("name")
     )
     rows = [
         [
@@ -165,7 +169,8 @@ def contacts_rows(tenant):
             text(c.role),
             text(c.email),
             text(c.phone),
-            text(c.promoter or c.venue),
+            text(" ; ".join(p.name for p in c.promoters.all())),
+            text(" ; ".join(v.name for v in c.venues.all())),
         ]
         for c in contacts
     ]

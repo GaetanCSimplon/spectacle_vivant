@@ -360,54 +360,68 @@ class Command(BaseCommand):
         ]
 
     def contacts(self, tenant, promoters, venues):
-        for promoter, (name, role) in zip(
-            promoters,
-            [
-                ("Julie Garnier", "Programmation"),
-                ("Thomas Petit", "Direction"),
-                ("Nadia Cherif", "Culture"),
-                ("Éric Vidal", "Animation"),
-                ("Sandrine Lopez", "Trésorerie"),
-                ("Yann Roche", "Programmation"),
-            ],
-            strict=True,
-        ):
-            Contact.objects.create(
-                tenant=tenant,
-                promoter=promoter,
-                name=name,
-                role=role,
-                email=f"{name.split()[0].lower()}@example.org",
-                phone="06 10 20 30 40",
+        """The address book: contacts of one organiser or venue, one who works for two
+        organisers, one for a venue and an organiser, and two kept "sans rattachement"."""
+
+        def add(name, role, email, phone, promoter_list=(), venue_list=()):
+            contact = Contact.objects.create(
+                tenant=tenant, name=name, role=role, email=email, phone=phone
             )
-        for venue, (name, role) in zip(
-            venues,
-            [
-                ("Marc Aubert", "Régisseur"),
-                ("Clara Dupuis", "Accueil artistes"),
-                ("Omar Haddad", "Régisseur"),
-                ("Léa Fontaine", "Technique"),
-                ("Bruno Colin", "Gardien"),
-                ("Anna Costa", "Accueil"),
-            ],
-            strict=True,
-        ):
-            Contact.objects.create(
-                tenant=tenant,
-                venue=venue,
-                name=name,
-                role=role,
-                email=f"{name.split()[0].lower()}.salle@example.org",
-                phone="06 50 60 70 80",
+            contact.promoters.set(promoter_list)
+            contact.venues.set(venue_list)
+            return contact
+
+        people = [
+            ("Julie Garnier", "Programmation"),
+            ("Thomas Petit", "Direction"),
+            ("Nadia Cherif", "Culture"),
+            ("Éric Vidal", "Animation"),
+            ("Sandrine Lopez", "Trésorerie"),
+            ("Yann Roche", "Programmation"),
+        ]
+        for promoter, (name, role) in zip(promoters, people, strict=True):
+            add(name, role, f"{name.split()[0].lower()}@example.org", "06 10 20 30 40", [promoter])
+        staff = [
+            ("Marc Aubert", "Régisseur"),
+            ("Clara Dupuis", "Accueil artistes"),
+            ("Omar Haddad", "Régisseur"),
+            ("Léa Fontaine", "Technique"),
+            ("Bruno Colin", "Gardien"),
+            ("Anna Costa", "Accueil"),
+        ]
+        for venue, (name, role) in zip(venues, staff, strict=True):
+            add(
+                name,
+                role,
+                f"{name.split()[0].lower()}.salle@example.org",
+                "06 50 60 70 80",
+                (),
+                [venue],
             )
-        # An organiser's second contact: the same person can work for several structures later.
-        Contact.objects.create(
-            tenant=tenant,
-            promoter=promoters[0],
-            name="Pierre Mallet",
-            role="Technique",
-            phone="06 12 12 12 12",
+        # One person, several organisations: a technician who works for two organisers and a venue.
+        add(
+            "Pierre Mallet",
+            "Technique",
+            "pierre@example.org",
+            "06 12 12 12 12",
+            promoters[:2],
+            venues[:1],
         )
+        # A freelance programmer for two festivals.
+        add(
+            "Sabine Roy",
+            "Programmation / Direction",
+            "sabine@example.org",
+            "06 77 88 99 00",
+            [promoters[1], promoters[4]],
+        )
+        # The directory also keeps people met along the way, not linked to anything yet.
+        add("Karim Benzema (rencontré au salon)", "Programmateur", "karim@example.org", "", ())
+        add("Hélène Vasseur", "Presse locale", "helene@example.org", "06 01 02 03 04", ())
+        # Venues that work with several organisers.
+        venues[0].promoters.set([promoters[0], promoters[1]])
+        venues[1].promoters.set([promoters[1]])
+        venues[4].promoters.set([promoters[4], promoters[2]])
 
     def gigs(self, tenant, shows, promoters, venues, people):
         plan = [  # (days from today, show, promoter, venue, status, price)

@@ -66,6 +66,15 @@
     {% endif %}
   </section>
 
+  <h2 class="mb-2 text-sm font-semibold uppercase text-gray-500">{% translate "Lieux" %}</h2>
+  {% if promoter.venues.all %}
+    <ul class="mb-6 flex flex-wrap gap-2 text-sm">
+      {% for venue in promoter.venues.all %}<li><a href="{% url 'addressbook:venue-detail' venue.pk %}" class="pill pill-neutral underline">{{ venue.name }}</a></li>{% endfor %}
+    </ul>
+  {% else %}
+    <p class="mb-6 text-sm text-gray-600">{% translate "Aucun lieu rattaché. Rattachez cet organisateur depuis la fiche d'un lieu." %}</p>
+  {% endif %}
+
   <div class="mb-2 flex items-center justify-between">
     <h2 class="text-sm font-semibold uppercase text-gray-500">{% translate "Contacts" %}</h2>
     <a href="{% url 'addressbook:promoter-contact-create' promoter.pk %}" class="text-sm text-blue-700 underline">

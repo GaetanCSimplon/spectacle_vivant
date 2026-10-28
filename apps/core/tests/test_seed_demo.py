@@ -59,7 +59,10 @@ def test_it_creates_a_full_demo_in_its_own_structure():
     assert Person.objects.filter(tenant=demo).count() == 6
     assert Promoter.objects.filter(tenant=demo).count() == 6
     assert Venue.objects.filter(tenant=demo).count() == 6
-    assert Contact.objects.filter(tenant=demo).count() >= 12
+    assert Contact.objects.filter(tenant=demo).count() == 16
+    assert Contact.objects.filter(tenant=demo, promoters=None, venues=None).count() == 2
+    assert Contact.objects.filter(tenant=demo, promoters__isnull=False).distinct().count() >= 7
+    assert Venue.objects.filter(tenant=demo, promoters__isnull=False).distinct().count() == 3
     assert Contract.objects.filter(tenant=demo, status="signed").count() == 7
     assert Invoice.objects.filter(tenant=demo).count() == 12
     assert (

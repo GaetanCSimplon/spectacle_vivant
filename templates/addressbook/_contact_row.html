@@ -6,7 +6,7 @@
       {{ contact.name }}{% if contact.role %} — {{ contact.role }}{% endif %}
     </span>
     {% if show_parent %}
-      <span class="block text-gray-500">{{ contact.promoter|default:contact.venue }}</span>
+      <span class="block text-gray-500">{% include "addressbook/_contact_links.html" %}</span>
     {% endif %}
     {% if contact.email %}<a href="mailto:{{ contact.email }}" class="block text-gray-600">{{ contact.email }}</a>{% endif %}
     {% if contact.phone %}<a href="tel:{{ contact.phone }}" class="block text-gray-600">{{ contact.phone }}</a>{% endif %}
