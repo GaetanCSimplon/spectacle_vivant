@@ -282,7 +282,9 @@ class ContactListView(TenantScopedMixin, SearchListMixin, ListView):
         return self._filter_form
 
     def get_queryset(self):
-        queryset = super().get_queryset().prefetch_related("promoters", "venues")
+        queryset = (
+            super().get_queryset().prefetch_related("promoters__contacts", "venues__contacts")
+        )
         return self.get_filter_form().apply(queryset).distinct().order_by("name")
 
     def get_context_data(self, **kwargs):
