@@ -33,10 +33,15 @@
   <section class="mt-6 text-sm text-gray-700">
     <h2 class="mb-2 text-base">{% translate "Préparer le fichier" %}</h2>
     <p class="mb-2">{% translate "La première ligne donne les titres des colonnes ; la colonne « Nom » est obligatoire. Le plus simple : exporter votre annuaire, ou télécharger un modèle vide." %}</p>
+    <div class="mb-3 flex flex-wrap gap-2">
+      <a class="btn btn-secondary btn-sm btn-download" href="{% url 'addressbook:import-template' 'contacts' %}">{% translate "Modèle : contacts" %}</a>
+      <a class="btn btn-secondary btn-sm btn-download" href="{% url 'addressbook:import-template' 'lieux' %}">{% translate "Modèle : lieux" %}</a>
+      <a class="btn btn-secondary btn-sm btn-download" href="{% url 'addressbook:import-template' 'organisateurs' %}">{% translate "Modèle : organisateurs" %}</a>
+    </div>
     <ul class="mb-2 list-disc pl-5">
-      <li><a class="underline" href="{% url 'addressbook:import-template' 'contacts' %}">{% translate "Modèle pour des contacts" %}</a> : Nom, Fonction, E-mail, Téléphone, Organisateurs, Lieux</li>
-      <li><a class="underline" href="{% url 'addressbook:import-template' 'lieux' %}">{% translate "Modèle pour des lieux" %}</a> : Nom, Adresse, Code postal, Ville, Jauge, Téléphone, Organisateurs</li>
-      <li><a class="underline" href="{% url 'addressbook:import-template' 'organisateurs' %}">{% translate "Modèle pour des organisateurs" %}</a> : Nom, Statut, Type, SIRET, Adresse, Code postal, Ville, E-mail, Téléphone</li>
+      <li>{% translate "Contacts" %} : Nom, Fonction, E-mail, Téléphone, Organisateurs, Lieux</li>
+      <li>{% translate "Lieux" %} : Nom, Adresse, Code postal, Ville, Jauge, Téléphone, Organisateurs</li>
+      <li>{% translate "Organisateurs" %} : Nom, Statut, Type, SIRET, Adresse, Code postal, Ville, E-mail, Téléphone</li>
     </ul>
     <p>{% translate "Pour rattacher plusieurs organisateurs ou lieux à une ligne, séparez les noms par « | ». Un nom qui n'existe pas dans votre annuaire est signalé et ignoré : il n'est jamais créé tout seul." %}</p>
   </section>

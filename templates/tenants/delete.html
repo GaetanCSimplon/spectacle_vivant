@@ -11,7 +11,7 @@
     <p>{% translate "Attention : les factures émises doivent en principe être conservées 10 ans. Téléchargez vos données avant de continuer." %}</p>
   </div>
   <p class="mb-4 text-sm">
-    <a href="{% url 'tenants:data-export' %}" class="text-blue-700 underline">{% translate "Télécharger mes données" %}</a>
+    <a href="{% url 'tenants:data-export' %}" class="btn btn-secondary btn-sm btn-download">{% translate "Télécharger mes données" %}</a>
   </p>
 
   <form method="post" class="card mb-6 space-y-4">

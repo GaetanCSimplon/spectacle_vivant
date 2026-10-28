@@ -349,6 +349,28 @@
     @apply w-full;
   }
 
+  /* A smaller button for a row or a list header (still 44 px high: a finger needs it). */
+  .btn-sm {
+    @apply min-h-11 px-4 py-2 text-sm;
+  }
+
+  /* Download / upload arrow before the label: with the word, never the only signal. */
+  .btn-download::before,
+  .btn-upload::before {
+    content: "";
+    @apply size-4 shrink-0 bg-current;
+    mask: var(--btn-icon) center / contain no-repeat;
+    -webkit-mask: var(--btn-icon) center / contain no-repeat;
+  }
+
+  .btn-download {
+    --btn-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 3v12m0 0l-5-5m5 5l5-5M4 21h16'/%3E%3C/svg%3E");
+  }
+
+  .btn-upload {
+    --btn-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 15V3m0 0L7 8m5-5l5 5M4 21h16'/%3E%3C/svg%3E");
+  }
+
   /* min-w-0: in a grid or flex row a card never grows past its column because of a long word. */
   .card {
     @apply wrap-anywhere min-w-0 rounded-xl border border-page-line bg-white p-4;

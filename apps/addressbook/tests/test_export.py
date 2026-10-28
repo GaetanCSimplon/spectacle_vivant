@@ -119,3 +119,14 @@ def test_each_list_offers_the_export_with_its_current_filters(client, tenant):
     assert reverse("addressbook:promoter-export") in promoters
     assert reverse("addressbook:venue-export") in venues
     assert "Exporter (CSV)" in contacts
+
+
+def test_the_export_and_import_links_are_buttons_with_an_icon_class(client, tenant):
+    ContactFactory(tenant=tenant, promoter=None, venue=None)
+
+    page = client.get(reverse("addressbook:contact-list")).content.decode()
+
+    export_tag = page.split(reverse("addressbook:contact-export"))[1].split(">")[0]
+    import_tag = page.split(reverse("addressbook:import"))[1].split(">")[0]
+    assert "btn btn-secondary" in export_tag and "btn-download" in export_tag
+    assert "btn btn-secondary" in import_tag and "btn-upload" in import_tag

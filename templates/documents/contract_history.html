@@ -20,7 +20,7 @@
         {% if template_choices|length > 1 %}· {{ contract.get_template_display }}{% endif %}
       </p>
       {% if contract.signed_pdf %}
-        <a href="{% url 'documents:contract-signed-pdf' gig.pk %}" class="btn btn-secondary btn-block">
+        <a href="{% url 'documents:contract-signed-pdf' gig.pk %}" class="btn btn-secondary btn-block btn-download">
           {% translate "Télécharger le PDF signé" %}
         </a>
       {% elif can_add_signed_pdf %}
@@ -97,7 +97,7 @@
             <br>
             <span class="text-gray-500">{{ version.created_at|date:"d/m/Y H:i" }}</span>
           </span>
-          <a href="{% url 'documents:contract-version-download' gig.pk version.number %}" class="text-blue-700 underline">
+          <a href="{% url 'documents:contract-version-download' gig.pk version.number %}" class="btn btn-secondary btn-sm btn-download shrink-0">
             {% translate "Télécharger" %}
           </a>
         </li>

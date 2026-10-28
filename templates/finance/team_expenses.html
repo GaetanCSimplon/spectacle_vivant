@@ -46,7 +46,7 @@
           </p>
           {% if claim.status == 'pending' %}
             <div class="flex flex-wrap items-center gap-4">
-              {% if claim.receipt_file %}<a href="{% url 'team-expense-receipt' token claim.pk %}" class="text-blue-700 underline">{% translate "Justificatif" %}</a>{% endif %}
+              {% if claim.receipt_file %}<a href="{% url 'team-expense-receipt' token claim.pk %}" class="btn btn-secondary btn-sm btn-download">{% translate "Justificatif" %}</a>{% endif %}
               <a href="{% url 'team-expense-edit' token claim.pk %}" class="text-blue-700 underline">{% translate "Corriger" %}</a>
               <form method="post" action="{% url 'team-expense-delete' token claim.pk %}">
                 {% csrf_token %}

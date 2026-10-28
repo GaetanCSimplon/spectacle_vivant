@@ -17,7 +17,7 @@
           <span x-show="copied" x-cloak>{% translate "Lien copié" %}</span>
         </button>
       </div>
-      <a href="{% url 'roadmaps:pdf' gig.pk %}" target="_blank" class="btn btn-secondary btn-block">{% translate "Télécharger en PDF" %}</a>
+      <a href="{% url 'roadmaps:pdf' gig.pk %}" target="_blank" class="btn btn-secondary btn-block btn-download">{% translate "Télécharger en PDF" %}</a>
       <form method="post" action="{% url 'roadmaps:share' gig.pk 'arreter' %}">
         {% csrf_token %}
         <button type="submit" class="text-red-600 underline">{% translate "Arrêter le partage" %}</button>

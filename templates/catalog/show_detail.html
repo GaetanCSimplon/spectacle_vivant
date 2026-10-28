@@ -46,14 +46,14 @@
       {% if show.tech_sheet_text %}<p>{{ show.tech_sheet_text|linebreaksbr }}</p>{% endif %}
       {% if show.tech_sheet_file %}
         <p>
-          <a href="{% url 'catalog:show-file' show.pk 'fiche-technique' %}" class="text-blue-700 underline">
+          <a href="{% url 'catalog:show-file' show.pk 'fiche-technique' %}" class="btn btn-secondary btn-sm btn-download">
             {% translate "Télécharger la fiche technique (PDF)" %}
           </a>
         </p>
       {% endif %}
       {% if show.rider_file %}
         <p>
-          <a href="{% url 'catalog:show-file' show.pk 'rider' %}" class="text-blue-700 underline">
+          <a href="{% url 'catalog:show-file' show.pk 'rider' %}" class="btn btn-secondary btn-sm btn-download">
             {% translate "Télécharger le rider" %}
           </a>
         </p>
