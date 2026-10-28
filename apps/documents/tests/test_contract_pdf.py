@@ -204,12 +204,19 @@ def test_contract_free_gig_hides_the_ticket_price():
     assert "prix des places est fixé à 15" in paid
 
 
-@pytest.mark.parametrize("regime", ["franchise", "not_taxable"])
-def test_contract_vat_exempt_regimes_show_the_legal_mention(regime):
-    html = _render(GigFactory(tenant__vat_regime=regime))
+def test_contract_franchise_regime_quotes_article_293_b():
+    html = _render(GigFactory(tenant__vat_regime="franchise"))
 
     assert "TVA 0 €" in html
     assert "article 293 B du CGI" in html
+
+
+def test_contract_not_taxable_regime_says_vat_does_not_apply_without_the_article():
+    """Article 293 B is the franchise en base: a structure not subject to VAT does not quote it."""
+    html = _render(GigFactory(tenant__vat_regime="not_taxable"))
+
+    assert "TVA 0 €" in html and "TVA non applicable." in html
+    assert "293 B" not in html
 
 
 def test_contract_taxable_regime_leaves_vat_to_fill_in_without_a_rate():

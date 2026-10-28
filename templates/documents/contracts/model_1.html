@@ -140,7 +140,7 @@
         précède, sur présentation de facture, la somme de :
         {% if vat_exempt %}
           {{ gig.price }} € + TVA 0 € = {{ gig.price }} € T.T.C.<br>
-          TVA non applicable — article 293 B du CGI.
+          {% if tenant.vat_regime == "franchise" %}TVA non applicable — article 293 B du CGI.{% else %}TVA non applicable.{% endif %}
         {% elif vat_amount is not None %}
           {{ gig.price }} € HT + TVA ({{ tenant.vat_rate }} %) {{ vat_amount }} € =
           {{ total_with_vat }} € T.T.C.
