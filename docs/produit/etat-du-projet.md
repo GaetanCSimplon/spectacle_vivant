@@ -1,20 +1,20 @@
 # État du projet — Bòrd Pro
 
-**Mis à jour le 2026-10-27 (charte v1.0 faite ; gestion sociale en cours).** Page à lire en premier : ce qui est en cours, ce qui bloque, ce qui reste à faire. Le détail sprint par sprint est dans `feuille-de-route.md` ; ici, une page.
+**Mis à jour le 2026-10-29 (tout le code des chantiers en cours est fusionné ; reste le déploiement et le hors-code).** Page à lire en premier : ce qui est en cours, ce qui bloque, ce qui reste à faire. Le détail sprint par sprint est dans `feuille-de-route.md` ; ici, une page.
 
 **Règle de tenue** : je mets cette page à jour à chaque PR fusionnée qui change une ligne ci-dessous (la date en tête fait foi).
 
 ## Où on en est en une phrase
-Les neuf critères de la recette du MVP (`cahier-des-charges.md` §11) sont couverts par du code (1549 tests) et la refonte graphique V06 est terminée. Un premier déploiement existe sur Scalingo avec des services provisoires. Il reste du durcissement, de la validation par des professionnels et la fin du déploiement, avant d'ouvrir à des testeurs.
+Les neuf critères de la recette du MVP (`cahier-des-charges.md` §11) sont couverts par du code (1856 tests) et la refonte graphique V06 est terminée. Un premier déploiement existe sur Scalingo avec des services provisoires. Il reste du durcissement, de la validation par des professionnels et la fin du déploiement, avant d'ouvrir à des testeurs.
 
 ## 1. En cours
 | Sujet | État | Qui agit |
 |---|---|---|
 | Gestion sociale (informations d'équipe) | Faite (fiche, distribution, dépenses à rembourser) | — |
-| Feuille de route enrichie, puis espace équipe (lien personnel) | PR 1 à 3 fusionnées, PR 4 (déclaration de dépense, à ne livrer qu'avec le bucket S3) en revue | Claude |
-| Mise en page pour ordinateur (largeur 1440 px, deux colonnes, tableaux) | PR 1 à 4 faites (Bòrd, Accueil, Mes dates, fiche de date, listes, formulaires), PR 5 en revue (éditeur de feuille de route avec aperçu) | Claude |
-| Annuaire de contacts, rattachements multiples (contacts ↔ organisateurs et lieux) | Fait, PR en revue ; migrations `addressbook/0013` à `0015` à appliquer (`migrate`) | Utilisateur |
-| Code couleur de l'annuaire (contacts / organisateurs / lieux) et infobulles au survol | Fait, PR en revue ; aucune migration | Utilisateur |
+| Feuille de route enrichie, puis espace équipe (lien personnel) | Faits et fusionnés (PR 1 à 4). La déclaration de dépense par photo ne se livre qu'avec le bucket S3 ; à tester depuis un vrai téléphone | Utilisateur |
+| Mise en page pour ordinateur (largeur 1440 px, deux colonnes, tableaux) | PR 1 à 4 faites (Bòrd, Accueil, Mes dates, fiche de date, listes, formulaires), PR 5 (éditeur de feuille de route avec aperçu) : fait, fusionné | — |
+| Annuaire de contacts, rattachements multiples (contacts ↔ organisateurs et lieux) | Fait, fusionné ; migrations `addressbook/0013` à `0015` à appliquer à la première livraison (`migrate`) | Utilisateur |
+| Code couleur de l'annuaire (contacts / organisateurs / lieux) et infobulles au survol | Fait, fusionné (PR #260) ; aucune migration | — |
 | Charte graphique v1.0 (blanc & contrastes francs) | PR 1 à 4 faites ; reste la revue des pages publiques à 375 px (utilisateur) et l'audit axe | Claude |
 
 ## 2. Déploiement (Scalingo, app `bordpro`)
