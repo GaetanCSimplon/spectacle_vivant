@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}Importer dans l'annuaire — Bòrd Pro{% endblock %}
+{% block main_width %}max-w-3xl{% endblock %}
+
+{% block page_content %}
+  <h1 class="mb-2">{% translate "Importer dans l'annuaire" %}</h1>
+  <p class="mb-6 text-sm text-gray-600">
+    {% translate "Envoyez un fichier CSV (un tableur enregistré en « CSV »). Vous verrez ce qui sera créé avant que rien ne soit enregistré." %}
+  </p>
+
+  <form method="post" enctype="multipart/form-data" class="card space-y-4">
+    {% csrf_token %}
+    {{ form.non_field_errors }}
+    <div class="field">
+      {{ form.kind.label_tag }}
+      {{ form.kind }}
+      {{ form.kind.errors }}
+    </div>
+    <div class="field">
+      {{ form.file.label_tag }}
+      <input type="file" name="file" id="{{ form.file.id_for_label }}" accept=".csv,text/csv" required class="block w-full text-sm">
+      <p class="mt-1 text-xs text-gray-600">{% translate "Un fichier .csv de 2 Mo et 1 000 lignes au plus." %}</p>
+      {{ form.file.errors }}
+    </div>
+    <div class="flex flex-col-reverse items-center gap-3 md:flex-row md:justify-end md:gap-6">
+      <a href="{% url 'addressbook:contact-list' %}" class="text-sm text-gray-500 underline hover:text-gray-700">{% translate "Annuler" %}</a>
+      <button type="submit" class="btn btn-primary w-full md:w-auto md:min-w-64">{% translate "Voir ce qui sera importé" %}</button>
+    </div>
+  </form>
+
+  <section class="mt-6 text-sm text-gray-700">
+    <h2 class="mb-2 text-base">{% translate "Préparer le fichier" %}</h2>
+    <p class="mb-2">{% translate "La première ligne donne les titres des colonnes ; la colonne « Nom » est obligatoire. Le plus simple : exporter votre annuaire, ou télécharger un modèle vide." %}</p>
+    <ul class="mb-2 list-disc pl-5">
+      <li><a class="underline" href="{% url 'addressbook:import-template' 'contacts' %}">{% translate "Modèle pour des contacts" %}</a> : Nom, Fonction, E-mail, Téléphone, Organisateurs, Lieux</li>
+      <li><a class="underline" href="{% url 'addressbook:import-template' 'lieux' %}">{% translate "Modèle pour des lieux" %}</a> : Nom, Adresse, Code postal, Ville, Jauge, Téléphone, Organisateurs</li>
+      <li><a class="underline" href="{% url 'addressbook:import-template' 'organisateurs' %}">{% translate "Modèle pour des organisateurs" %}</a> : Nom, Statut, Type, SIRET, Adresse, Code postal, Ville, E-mail, Téléphone</li>
+    </ul>
+    <p>{% translate "Pour rattacher plusieurs organisateurs ou lieux à une ligne, séparez les noms par « | ». Un nom qui n'existe pas dans votre annuaire est signalé et ignoré : il n'est jamais créé tout seul." %}</p>
+  </section>
+{% endblock %}

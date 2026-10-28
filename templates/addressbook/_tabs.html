@@ -16,4 +16,5 @@
     class="-mb-px border-b-2 pb-2 {% if active == 'contacts' %}border-blue-700 font-semibold text-blue-700{% else %}border-transparent text-gray-600 hover:text-gray-900{% endif %}"
     {% if active == 'contacts' %}aria-current="true"{% endif %}
   >{% translate "Contacts" %}</a>
+  <a href="{% url 'addressbook:import' %}?type={% if active == 'promoters' %}organisateurs{% elif active == 'venues' %}lieux{% else %}contacts{% endif %}" class="ml-auto pb-2 text-gray-600 underline hover:text-gray-900">{% translate "Importer (CSV)" %}</a>
 </div>

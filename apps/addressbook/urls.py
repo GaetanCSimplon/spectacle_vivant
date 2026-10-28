@@ -75,6 +75,13 @@ urlpatterns = [
         views.VenueContactLinkView.as_view(action="detach"),
         name="venue-contact-detach",
     ),
+    path("annuaire/importer/", views.ImportView.as_view(), name="import"),
+    path("annuaire/importer/confirmer/", views.ImportConfirmView.as_view(), name="import-confirm"),
+    path(
+        "annuaire/importer/modele/<slug:kind>/",
+        views.ImportTemplateView.as_view(),
+        name="import-template",
+    ),
     path("contacts/", views.ContactListView.as_view(), name="contact-list"),
     path("contacts/export/", views.ContactExportView.as_view(), name="contact-export"),
     path("contacts/nouveau/", views.ContactQuickCreateView.as_view(), name="contact-create"),

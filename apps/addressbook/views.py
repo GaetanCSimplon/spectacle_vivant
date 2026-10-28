@@ -1,6 +1,6 @@
 from django.contrib import messages
 from django.db.models import ProtectedError
-from django.http import HttpResponseBadRequest
+from django.http import Http404, HttpResponse, HttpResponseBadRequest
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse, reverse_lazy
 from django.utils.translation import gettext_lazy as _
@@ -9,10 +9,11 @@ from django.views.generic import CreateView, DeleteView, DetailView, ListView, U
 
 from apps.core.views import SearchListMixin, TenantScopedMixin, wants_fragment
 
-from . import exports, services
+from . import exports, imports, services
 from .forms import (
     ContactFilterForm,
     ContactForm,
+    ImportUploadForm,
     PromoterFilterForm,
     PromoterForm,
     VenueForm,
@@ -480,3 +481,77 @@ class VenueExportView(ExportMixin, VenueListView):
 
 class ContactExportView(ExportMixin, ContactListView):
     export_kind = "contacts"
+
+
+IMPORT_SESSION_KEY = "addressbook_import"
+IMPORT_LISTS = {
+    "contacts": "addressbook:contact-list",
+    "lieux": "addressbook:venue-list",
+    "organisateurs": "addressbook:promoter-list",
+}
+
+
+class ImportView(TenantScopedMixin, View):
+    """Steps 1 and 2 of the CSV import: the file, then what it would do (nothing is saved)."""
+
+    def get(self, request):
+        kind = request.GET.get("type")
+        form = ImportUploadForm(initial={"kind": kind if kind in imports.MODELS else "contacts"})
+        return render(request, "addressbook/import.html", {"form": form})
+
+    def post(self, request):
+        form = ImportUploadForm(request.POST, request.FILES)
+        if not form.is_valid():
+            return render(request, "addressbook/import.html", {"form": form})
+        kind, upload = form.cleaned_data["kind"], form.cleaned_data["file"]
+        try:
+            raw_rows, ignored = imports.read_file(upload, kind)
+        except imports.ImportFileError as error:
+            form.add_error("file", str(error))
+            return render(request, "addressbook/import.html", {"form": form})
+        rows = imports.analyse(request.tenant, kind, raw_rows)
+        # The file is kept in the session (not in the database) until the user confirms.
+        request.session[IMPORT_SESSION_KEY] = {"kind": kind, "rows": raw_rows}
+        context = {
+            "kind": kind,
+            "rows": rows,
+            "counts": imports.summary(rows),
+            "ignored_columns": ignored,
+            "problems": [row for row in rows if row.errors or row.warnings],
+        }
+        return render(request, "addressbook/import_preview.html", context)
+
+
+class ImportConfirmView(TenantScopedMixin, View):
+    """Step 3: do the import the user has just looked at."""
+
+    http_method_names = ["post"]
+
+    def post(self, request):
+        saved = request.session.pop(IMPORT_SESSION_KEY, None)
+        if not saved or saved.get("kind") not in imports.MODELS:
+            messages.error(request, _("Ce fichier n'est plus là : envoyez-le de nouveau."))
+            return redirect("addressbook:import")
+        update = request.POST.get("duplicates") == "update"
+        counts = imports.apply(request.tenant, saved["kind"], saved["rows"], update=update)
+        messages.success(
+            request,
+            _(
+                "Import terminé : %(created)s créé(s), %(updated)s mis à jour, "
+                "%(ignored)s ignoré(s)."
+            )
+            % counts,
+        )
+        return redirect(IMPORT_LISTS[saved["kind"]])
+
+
+class ImportTemplateView(TenantScopedMixin, View):
+    """An empty file with the right columns, to fill in and send back."""
+
+    def get(self, request, kind):
+        if kind not in exports.EXPORTS:
+            raise Http404
+        response = HttpResponse(content_type="text/csv; charset=utf-8")
+        response["Content-Disposition"] = f'attachment; filename="modele-{kind}.csv"'
+        response.write(exports.BOM + ";".join(exports.EXPORTS[kind][0]) + "\r\n")
+        return response

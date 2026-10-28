@@ -45,7 +45,7 @@ MARKER = "SECRETA"
 
 # Routes that work without an account, by design.
 # Routes whose parameter is not the id of an object (they only act on the user's own tenant).
-PARAM_ONLY = {"export-csv"}
+PARAM_ONLY = {"export-csv", "addressbook:import-template"}
 
 PUBLIC = {
     "favicon",  # browsers ask for /favicon.ico before any login
