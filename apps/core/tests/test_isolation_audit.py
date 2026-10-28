@@ -114,6 +114,7 @@ ROUTES = [
     ("roadmaps:notes", {"gig_id": "gig"}),
     ("roadmaps:share", {"gig_id": "gig", "action": "=activer"}),
     ("roadmaps:share", {"gig_id": "gig", "action": "=arreter"}),
+    ("roadmaps:preview", {"gig_id": "gig"}),
     ("roadmaps:item-add", {"gig_id": "gig", "section": "=repas"}),
     ("roadmaps:item-edit", {"gig_id": "gig", "section": "=repas", "pk": "meal"}),
     ("roadmaps:item-delete", {"gig_id": "gig", "section": "=repas", "pk": "meal"}),

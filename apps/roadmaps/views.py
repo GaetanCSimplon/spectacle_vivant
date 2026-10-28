@@ -6,8 +6,10 @@ from django.contrib import messages
 from django.http import Http404, HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
+from django.utils.decorators import method_decorator
 from django.utils.translation import gettext_lazy as _
 from django.views import View
+from django.views.decorators.clickjacking import xframe_options_sameorigin
 
 from apps.core.views import TenantScopedMixin, protect_secret_page, wants_fragment
 from apps.gigs.models import Gig, GigMember
@@ -277,6 +279,22 @@ class ItemDeleteView(RoadmapMixin, View):
         self.load(gig_id, section)
         self.get_item(pk).delete()
         return self.done()
+
+
+class PreviewView(RoadmapMixin, View):
+    """The page the reader will see, for the signed-in owner: shown beside the editor in a frame.
+
+    Same content as the public link (built from the same whitelist) but reached by the owner's
+    session, so it works before sharing is turned on. Only this site may frame it.
+    """
+
+    @method_decorator(xframe_options_sameorigin)
+    def get(self, request, gig_id):
+        self.load(gig_id)
+        context = services.public_context(self.roadmap)
+        context["pdf_url"] = reverse("roadmaps:pdf", args=[self.gig.pk])
+        context["preview"] = True
+        return protect_secret_page(render(request, "roadmaps/public.html", context))
 
 
 class PdfView(RoadmapMixin, View):
