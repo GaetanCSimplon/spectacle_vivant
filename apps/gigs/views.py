@@ -16,7 +16,7 @@ from apps.documents.models import Invoice
 from apps.finance import services as finance_services
 from apps.tenants.models import Person
 
-from . import checklist, services
+from . import checklist, ical, services
 from .forms import (
     GigDetailsStepForm,
     GigFilterForm,
@@ -372,6 +372,34 @@ class GigCalendarView(TenantScopedMixin, TemplateView):
             is_current_month=month_start == timezone.localdate().replace(day=1),
         )
         return context
+
+
+class GigCalendarExportView(TenantScopedMixin, View):
+    """The upcoming dates of the structure as an .ics file (cancelled ones are left out)."""
+
+    def get(self, request):
+        gigs = (
+            Gig.objects.filter(tenant=request.tenant, date__gte=timezone.localdate())
+            .select_related("show", "venue", "promoter")
+            .order_by("date", "pk")
+        )
+        content = ical.build(
+            gigs, lambda gig: request.build_absolute_uri(reverse("gigs:detail", args=[gig.pk]))
+        )
+        return ical.response(content, "mes-dates.ics")
+
+
+class GigIcalView(TenantScopedMixin, View):
+    """One date as an .ics file."""
+
+    def get(self, request, pk):
+        gig = get_object_or_404(
+            Gig.objects.select_related("show", "venue", "promoter"), pk=pk, tenant=request.tenant
+        )
+        content = ical.build(
+            [gig], lambda g: request.build_absolute_uri(reverse("gigs:detail", args=[g.pk]))
+        )
+        return ical.response(content, f"date-{gig.date:%Y-%m-%d}.ics")
 
 
 class GigDetailView(TenantScopedMixin, DetailView):

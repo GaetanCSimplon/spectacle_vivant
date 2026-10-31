@@ -63,4 +63,4 @@ Choisi à partir des retours de la bêta (principe de la feuille de route, Phase
   Points à trancher : modèle « tournée » tout de suite ou non, nouvelle app `radar` (à valider, `CLAUDE.md` §4), sens de « ignorée » et « traitée ».
 - **Annuaire en vue carte** (demande de l'associé, 2026-10-29) : liste à gauche (contacts, lieux, organisateurs), plan à droite avec la position de chacun, les filtres de la liste changeant le plan. Décision : **après le MVP**, avec le RADAR. À prévoir : point géographique et géocodage des organisateurs (migration), un contact étant placé à l'endroit de son organisateur ou de son lieu ; bibliothèque de carte légère et tuiles OpenStreetMap (confidentialité et conditions d'usage à vérifier) ; modification de `CLAUDE.md` §10 sur accord.
 - Invitation de collaborateurs (aujourd'hui une seule personne par structure) : candidate n°1 après la bêta.
-- Abonnement et Stripe, facturation électronique, rappels automatiques, export iCal, application installable (PWA), hiérarchie Projet/Spectacle (Q10).
+- Abonnement et Stripe, facturation électronique, rappels automatiques, application installable (PWA), hiérarchie Projet/Spectacle (Q10).
