@@ -528,7 +528,7 @@ def test_each_figure_is_put_in_the_month_of_its_own_date(tenant):
     invoice = issued_invoice(gig)  # issued today
     _pay(invoice, "300.00", days_ago=(TODAY - last).days)
     ExpenseFactory(gig=gig, amount="40.00", date=TODAY)
-    filters = bord.Filters(start=_month(-1), end=_month(0) + datetime.timedelta(days=27))
+    filters = bord.Filters(start=_month(-1), end=_month(1) - datetime.timedelta(days=1))
 
     def by_month(figure):
         rows = bord.monthly_series(tenant, bord.Filters(**{**filters.__dict__, "figure": figure}))
