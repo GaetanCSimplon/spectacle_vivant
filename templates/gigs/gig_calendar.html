@@ -9,7 +9,10 @@
     <h1 class="!mb-0">{% translate "Mes dates" %}</h1>
     {% url 'gigs:wizard-show' as add_url %}
     {% translate "Nouvelle date" as add_label %}
-    {% include "components/_add_button.html" with url=add_url label=add_label %}
+    <div class="flex items-center gap-3">
+      <a href="{% url 'gigs:calendar-export' %}" class="btn btn-secondary btn-sm btn-download hidden sm:inline-flex">{% translate "Exporter vers mon agenda" %}</a>
+      {% include "components/_add_button.html" with url=add_url label=add_label %}
+    </div>
   </div>
 
   {% include "gigs/_view_tabs.html" with active="calendar" %}
