@@ -20,7 +20,7 @@ env:
 
 jobs:
   test:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
 
     services:
       postgres:
@@ -92,7 +92,7 @@ jobs:
   # Known vulnerabilities in the installed packages. A separate job, so that a new advisory
   # shows up in red without blocking the tests of an unrelated change.
   audit:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
 
     steps:
       - uses: actions/checkout@v7
