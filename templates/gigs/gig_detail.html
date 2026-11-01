@@ -58,6 +58,9 @@
       </p>
     {% endif %}
     {% if gig.conditions %}<p class="text-gray-600">{{ gig.conditions|linebreaksbr }}</p>{% endif %}
+    {% if gig.status != 'cancelled' %}
+      <a href="{% url 'gigs:ical' gig.pk %}" class="btn btn-secondary btn-sm btn-download">{% translate "Ajouter à mon agenda" %}</a>
+    {% endif %}
   </div>
 
   <h2 class="mb-2 text-sm font-semibold uppercase text-gray-500">{% translate "Prochaine action" %}</h2>

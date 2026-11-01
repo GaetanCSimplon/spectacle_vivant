@@ -104,6 +104,7 @@ ROUTES = [
     ("catalog:show-file", {"pk": "show", "kind": "=rider"}),
     ("catalog:show-file", {"pk": "show", "kind": "=fiche-technique"}),
     ("gigs:detail", {"pk": "gig"}),
+    ("gigs:ical", {"pk": "gig"}),
     ("gigs:price", {"pk": "gig"}),
     ("gigs:checklist", {"pk": "gig"}),
     ("gigs:checklist-item", {"pk": "gig"}),

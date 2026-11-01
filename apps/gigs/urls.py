@@ -16,7 +16,9 @@ urlpatterns = [
     path("nouvelle/details/", views.GigWizardDetailsStepView.as_view(), name="wizard-details"),
     path("nouvelle/recapitulatif/", views.GigWizardRecapView.as_view(), name="wizard-recap"),
     path("calendrier/", views.GigCalendarView.as_view(), name="calendar"),
+    path("calendrier/export/", views.GigCalendarExportView.as_view(), name="calendar-export"),
     path("<int:pk>/", views.GigDetailView.as_view(), name="detail"),
+    path("<int:pk>/agenda/", views.GigIcalView.as_view(), name="ical"),
     path("<int:pk>/checklist/", views.GigChecklistView.as_view(), name="checklist"),
     path("<int:pk>/checklist/case/", views.GigChecklistItemView.as_view(), name="checklist-item"),
     path(
