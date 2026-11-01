@@ -1,6 +1,6 @@
 # État du projet — Bòrd Pro
 
-**Mis à jour le 2026-10-29 (tout le code des chantiers en cours est fusionné ; reste le déploiement et le hors-code).** Page à lire en premier : ce qui est en cours, ce qui bloque, ce qui reste à faire. Le détail sprint par sprint est dans `feuille-de-route.md` ; ici, une page.
+**Mis à jour le 2026-11-01 (tout le code des chantiers en cours est fusionné ; reste le déploiement et le hors-code).** Page à lire en premier : ce qui est en cours, ce qui bloque, ce qui reste à faire. Le détail sprint par sprint est dans `feuille-de-route.md` ; ici, une page.
 
 **Règle de tenue** : je mets cette page à jour à chaque PR fusionnée qui change une ligne ci-dessous (la date en tête fait foi).
 
@@ -15,11 +15,13 @@ Les neuf critères de la recette du MVP (`cahier-des-charges.md` §11) sont couv
 | Mise en page pour ordinateur (largeur 1440 px, deux colonnes, tableaux) | PR 1 à 4 faites (Bòrd, Accueil, Mes dates, fiche de date, listes, formulaires), PR 5 (éditeur de feuille de route avec aperçu) : fait, fusionné | — |
 | Annuaire de contacts, rattachements multiples (contacts ↔ organisateurs et lieux) | Fait, fusionné ; migrations `addressbook/0013` à `0015` à appliquer à la première livraison (`migrate`) | Utilisateur |
 | Code couleur de l'annuaire (contacts / organisateurs / lieux) et infobulles au survol | Fait, fusionné (PR #260) ; aucune migration | — |
-| Annuaire : export et import CSV (demande de l'associé) | Faits (PR en revue) ; aucune migration | Utilisateur |
+| Annuaire : export et import CSV (demande de l'associé) | Faits, fusionnés ; aucune migration | — |
+| Export iCal des dates (#271) | Fait, fusionné (2026-10-31) : fichier `.ics` pour une date ou toutes les dates à venir, sans aucun montant ; pas de lien d'abonnement ni de Google Agenda (Q12 écartée) ; aucune migration. Pas encore sur `production` | — |
+| CI sur `ubuntu-24.04` (#272) | Fait, fusionné : l'ancien `ubuntu-latest` ne trouvait plus un paquet de WeasyPrint | — |
 | Charte graphique v1.0 (blanc & contrastes francs) | PR 1 à 4 faites ; audit axe relancé le 2026-10-29 (0 violation, `docs/technique/audit-accessibilite.md`) ; reste la revue des pages publiques à 375 px et les vérifications manuelles (clavier, lecteur d'écran, zoom 200 %) | Utilisateur |
 
 ## 2. Déploiement (Scalingo, app `bordpro`)
-Branches : `main` (travail) et `production` (livré). **Première livraison faite le 2026-10-29** (étiquette `v2026-10-29`, `production` = `main` à ce jour) ; procédure et liste de contrôle : `docs/technique/livraison.md`. **À faire côté Scalingo** : suivre la branche `production`, puis déploiement manuel, `migrate`, `geocode_places`.
+Branches : `main` (travail) et `production` (livré). **Première livraison faite le 2026-10-29** (étiquette `v2026-10-29`, 31 PR). `production` a ensuite 5 commits de retard sur `main` : l'export iCal (#271) et la correction de la CI et d'un test de la finance (#272), à livrer à la prochaine livraison (aucune migration) ; procédure et liste de contrôle : `docs/technique/livraison.md`. **À faire côté Scalingo** : suivre la branche `production`, puis déploiement manuel, `migrate`, `geocode_places`.
 Guide pas à pas pour toutes les étapes ci-dessous : `docs/technique/guide-mise-en-ligne.md`.
 
 Premier déploiement réussi le 2026-10-22 sur `bordpro.osc-fr1.scalingo.io` (adresse temporaire). Variables S3 et e-mail encore à `placeholder`.
