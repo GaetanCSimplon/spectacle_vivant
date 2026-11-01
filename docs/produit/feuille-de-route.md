@@ -457,6 +457,7 @@ Décision du 2026-10-12 (budget serré) : la signature reste **à la charge de l
 - [ ] Rappels d'échéances administratives (déclarations, AG d'association).
 
 ### 5.5 Confort et partage
+- [x] Retrait de la vue jetable `pdf-test/` (2026-11-01, sans migration) : elle ne servait qu'à vérifier WeasyPrint avant les vrais PDF.
 - [x] Export **iCal** (2026-10-31, sans migration) : fichier `.ics` à télécharger, une date (« Ajouter à mon agenda ») ou toutes les dates à venir (« Exporter vers mon agenda »), lisible par Google Agenda, Apple Calendrier et Outlook. Rien de financier dans le fichier (il se partage à l'équipe) ; dates annulées exclues, options marquées provisoires. **Décision :** pas de lien d'abonnement (il aurait demandé un jeton secret, une migration et une route publique).
 - [ ] *(idée du 28/09, à confirmer — Q12 §14)* Connexion bidirectionnelle avec Google Calendar, au-delà du simple export iCal (écartée le 2026-10-31).
 - [ ] **PWA** de la feuille de route : mode hors-ligne, installation sur l'écran d'accueil.

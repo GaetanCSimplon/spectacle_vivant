@@ -9,13 +9,12 @@ from django.templatetags.static import static
 from django.urls import reverse_lazy
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
-from django.views import View
 from django.views.generic import FormView, TemplateView
 
 from apps.finance.dashboard import build_dashboard
 
 from .forms import ContactForm
-from .services import contact_quota_left, render_pdf, send_contact_message
+from .services import contact_quota_left, send_contact_message
 
 logger = logging.getLogger(__name__)
 
@@ -200,17 +199,6 @@ def robots_txt(request):
     else:
         lines = ["User-agent: *", "Disallow: /"]
     return HttpResponse("\n".join(lines) + "\n", content_type="text/plain")
-
-
-class HelloPdfView(LoginRequiredMixin, View):
-    """Disposable view: validates that WeasyPrint works end to end.
-
-    To be removed once a real PDF (e.g. generate_contract_pdf) exists.
-    """
-
-    def get(self, request, *args, **kwargs):
-        pdf = render_pdf("core/hello_pdf.html")
-        return HttpResponse(pdf, content_type="application/pdf")
 
 
 def favicon(request):
