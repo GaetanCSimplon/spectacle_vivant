@@ -380,7 +380,7 @@ def _no_id_routes():
 
 
 def test_pages_without_identifier_never_show_data_of_another_tenant(client, world):
-    skipped = {"pdf-test", "tenants:delete", "tenants:leave", "tenants:cancel-deletion"}
+    skipped = {"tenants:delete", "tenants:leave", "tenants:cancel-deletion"}
     for name, _route, view in _no_id_routes():
         if name in skipped or "GET" not in _methods(view):
             continue

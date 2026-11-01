@@ -18,6 +18,7 @@ Les neuf critères de la recette du MVP (`cahier-des-charges.md` §11) sont couv
 | Annuaire : export et import CSV (demande de l'associé) | Faits, fusionnés ; aucune migration | — |
 | Export iCal des dates (#271) | Fait, fusionné (2026-10-31) : fichier `.ics` pour une date ou toutes les dates à venir, sans aucun montant ; pas de lien d'abonnement ni de Google Agenda (Q12 écartée) ; aucune migration. Pas encore sur `production` | — |
 | CI sur `ubuntu-24.04` (#272) | Fait, fusionné : l'ancien `ubuntu-latest` ne trouvait plus un paquet de WeasyPrint | — |
+| Retrait de la vue jetable `pdf-test/` | Fait (2026-11-01) : vue, route, gabarit et test supprimés ; les vrais PDF restent testés dans `documents` ; aucune migration | — |
 | Charte graphique v1.0 (blanc & contrastes francs) | PR 1 à 4 faites ; audit axe relancé le 2026-10-29 (0 violation, `docs/technique/audit-accessibilite.md`) ; reste la revue des pages publiques à 375 px et les vérifications manuelles (clavier, lecteur d'écran, zoom 200 %) | Utilisateur |
 
 ## 2. Déploiement (Scalingo, app `bordpro`)
