@@ -44,3 +44,4 @@ Une migration qui a ajouté des colonnes ne se défait pas automatiquement : rev
 | Date | Étiquette | Contenu |
 |---|---|---|
 | 2026-10-22 | — | premier déploiement (depuis `main`, avant la création de `production`) |
+| 2026-10-29 | `v2026-10-29` | première livraison depuis `production` : 31 PR (annuaire avec rattachements multiples, import/export CSV, espace équipe et dépenses, feuille de route avec carte, mise en page ordinateur, charte v1.0, gestion sociale, corrections TVA et accessibilité). Migrations : `addressbook/0012` à `0015` (0014 copie les liens des contacts, 0015 supprime les anciennes colonnes), `finance/0004`, `roadmaps/0005`, `tenants/0014`. Sauvegarde de la base à faire avant ; après le déploiement : `migrate` (automatique), puis `geocode_places`. Ne pas donner de lien d'espace équipe avant le bucket S3. |
