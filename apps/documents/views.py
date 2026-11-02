@@ -5,12 +5,13 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.utils.translation import gettext_lazy as _
 from django.views import View
 
-from apps.core.views import TenantScopedMixin
+from apps.core.views import TenantScopedMixin, wants_fragment
 from apps.gigs.models import Gig
 
 from . import services
 from .forms import (
     ContractCompletionForm,
+    DocumentFilterForm,
     GigCompletionForm,
     PromoterCompletionForm,
     ShowCompletionForm,
@@ -261,3 +262,21 @@ class ContractCompleteView(TenantScopedMixin, View):
                 form.save()
         messages.success(request, _("Les informations ont bien été enregistrées."))
         return redirect("gigs:detail", pk=self.gig.pk)
+
+
+class DocumentLibraryView(TenantScopedMixin, View):
+    """The "Documents" tab: every issued document of the tenant, with filters."""
+
+    def get(self, request):
+        form = DocumentFilterForm(request.GET, tenant=request.tenant)
+        context = {
+            "filter_form": form,
+            "documents": form.documents(),
+            "filtered": any(request.GET.get(name) for name in form.fields),
+        }
+        template = (
+            "documents/_library_results.html"
+            if wants_fragment(request)
+            else "documents/library.html"
+        )
+        return render(request, template, context)

@@ -6,8 +6,10 @@ from django.utils.translation import gettext_lazy as _
 from apps.addressbook.forms import PromoterIdentifiersMixin
 from apps.addressbook.models import Promoter, Venue
 from apps.catalog.models import Show
+from apps.core.forms import MultiSelectDropdown
 from apps.gigs.models import Gig
 
+from . import library
 from .models import Contract
 
 TIME_FORMAT = "%H:%M"
@@ -201,3 +203,54 @@ class DocumentLineForm(forms.Form):
             "vat_rate": line.vat_rate,
         }
         return cls(data, initial=initial, show_vat=show_vat, prefix=f"line{line.pk}")
+
+
+class DocumentFilterForm(forms.Form):
+    """Filters of the "Documents" tab. Every field is optional; an invalid value is ignored."""
+
+    types = forms.MultipleChoiceField(
+        label=_("Types de document"),
+        required=False,
+        choices=library.DocType.CHOICES,
+        widget=MultiSelectDropdown,
+    )
+    start = forms.DateField(
+        label=_("Émis du"),
+        required=False,
+        widget=forms.DateInput(attrs={"type": "date"}, format="%Y-%m-%d"),
+    )
+    end = forms.DateField(
+        label=_("au"),
+        required=False,
+        widget=forms.DateInput(attrs={"type": "date"}, format="%Y-%m-%d"),
+    )
+    shows = forms.ModelMultipleChoiceField(
+        label=_("Spectacles"),
+        required=False,
+        queryset=Show.objects.none(),
+        widget=MultiSelectDropdown,
+    )
+
+    def __init__(self, *args, tenant=None, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Only this tenant's shows can be chosen: another tenant's id is an invalid value.
+        self.fields["shows"].queryset = Show.objects.filter(tenant=tenant).order_by("title")
+        self.tenant = tenant
+
+    def clean(self):
+        cleaned = super().clean()
+        start, end = cleaned.get("start"), cleaned.get("end")
+        if start and end and start > end:
+            self.add_error("end", _("La date de fin doit être après la date de début."))
+        return cleaned
+
+    def documents(self):
+        self.is_valid()  # fills cleaned_data with the valid fields, drops the invalid ones
+        data = self.cleaned_data
+        return library.issued_documents(
+            self.tenant,
+            types=data.get("types", []),
+            start=data.get("start"),
+            end=data.get("end"),
+            shows=data.get("shows", []),
+        )
