@@ -30,6 +30,7 @@ from apps.core.views import (
     home,
     robots_txt,
 )
+from apps.documents.views import DocumentLibraryView
 from apps.finance import team_views as finance_team_views
 from apps.finance import views as finance_views
 from apps.roadmaps import views as roadmap_views
@@ -55,6 +56,7 @@ urlpatterns = [
     path("bord/", include("apps.tenants.urls")),
     path("", include("apps.addressbook.urls")),
     path("spectacles/", include("apps.catalog.urls")),
+    path("documents/", DocumentLibraryView.as_view(), name="document-library"),
     path("dates/", include("apps.gigs.urls")),
     path("dates/<int:gig_id>/feuille-de-route/", include("apps.roadmaps.urls")),
     path("dates/<int:gig_id>/finances/", include("apps.finance.urls")),

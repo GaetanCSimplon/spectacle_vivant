@@ -20,6 +20,11 @@
     {% if ns == 'gigs' or ns == 'documents' %}aria-current="page"{% endif %}
   >{% translate "Mes dates" %}</a>
   <a
+    href="{% url 'document-library' %}"
+    class="{{ link_class }} {% if view == 'document-library' %}{{ active_class }}{% endif %}"
+    {% if view == 'document-library' %}aria-current="page"{% endif %}
+  >{% translate "Documents" %}</a>
+  <a
     href="{% url 'catalog:show-list' %}"
     class="{{ link_class }} {% if ns == 'catalog' %}{{ active_class }}{% endif %}"
     {% if ns == 'catalog' %}aria-current="page"{% endif %}
