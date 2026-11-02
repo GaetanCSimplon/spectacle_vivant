@@ -371,7 +371,7 @@ def test_home_cards_show_the_lines_of_upcoming_gigs(client):
     content = client.get(reverse("home")).content.decode()
 
     assert "Acompte" in content
-    assert "300 € ·" in content
+    assert "300 €</span>" in content
     assert "à facturer" in content
 
 

@@ -26,9 +26,10 @@ Swapped alone by HTMX. Context: gig (annotated with price_locked), form (None = 
     </form>
   {% else %}
     <div class="flex items-center justify-between gap-3">
-      <span>
-        {% translate "Prix de cession" %} : <strong>{{ gig.price|floatformat:"-2g" }} € HT</strong>
-        {% if saved %}<span role="status" class="ml-1 text-green-700">{% translate "Enregistré" %}</span>{% endif %}
+      <span class="inline-flex items-center gap-2">
+        {% include "components/_icon.html" with name="euro" size=16 %}
+        <span>{% translate "Prix de cession" %} : <strong>{{ gig.price|floatformat:"-2g" }} € HT</strong>
+        {% if saved %}<span role="status" class="ml-1 text-green-700">{% translate "Enregistré" %}</span>{% endif %}</span>
       </span>
       {% if gig.price_locked %}
         <span class="text-xs text-gray-500" title="{% translate 'Contrat signé, facture émise ou date annulée : le prix ne peut plus changer.' %}">

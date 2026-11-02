@@ -53,6 +53,7 @@ Les cartes de synthèse sont des **aplats** (nuit, corail, océan, crème) ; une
 - Rayons : **12 px** contrôles, **16 px** cartes, **24 px** grandes cartes, **28 px** sections ; pilule pour les pastilles d'état. Espacement de base 4 px. **Aucune ombre floue, aucun dégradé décoratif** (les dégradés propres aux SVG livrés restent tels quels).
 - **Navigation** : colonne nuit à gauche à partir de 1024 px (logo capsule, page active en corail gras avec une barre) ; en dessous, barre blanche du haut avec menu burger. La barre de navigation du bas évoquée par la charte n'est pas faite.
 - Icônes : trait de 2 px, angles arrondis, `currentColor`. Pas de micro, note de musique, rideau ni guitare.
+- **Cartes de date** (2026-11-02) : la carte reste blanche. Le pavé de date et la pastille d'icône du lieu sont crème, celle de l'organisateur bleu clair avec une icône océan (le code couleur de l'annuaire), celle de la feuille de route océan plein avec une icône blanche ; les paiements sont posés sur une bande crème. Les couleurs d'état (vert, ambre) restent réservées aux statuts, jamais à la décoration. Les pastilles (`.icon-chip-*`) sont décoratives : le libellé est toujours écrit à côté.
 - Les PDF de contrat, de devis et de facture sont les documents de l'utilisateur : ils **ne reprennent pas** l'habillage de la marque.
 
 ## 5. Logos et icônes (`static/brand/`)

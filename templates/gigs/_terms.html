@@ -26,11 +26,12 @@ or the quick-edit form. Swapped alone by HTMX. Context: gig (annotated with term
     </form>
   {% else %}
     <div class="flex items-center justify-between gap-3">
-      <span>
-        {% translate "Acompte" %} : {% if gig.deposit_due_on %}{{ gig.deposit_due_on|date:"d/m/Y" }}{% else %}<span class="text-gray-500">{% translate "à définir" %}</span>{% endif %}
+      <span class="inline-flex items-start gap-2">
+        <span class="mt-0.5">{% include "components/_icon.html" with name="calendar" size=16 %}</span>
+        <span>{% translate "Acompte" %} : {% if gig.deposit_due_on %}{{ gig.deposit_due_on|date:"d/m/Y" }}{% else %}<span class="text-gray-500">{% translate "à définir" %}</span>{% endif %}
         · {% translate "Solde" %} : {% if gig.balance_due_on %}{{ gig.balance_due_on|date:"d/m/Y" }}{% else %}<span class="text-gray-500">{% translate "à définir" %}</span>{% endif %}
         · {% if gig.payment_method %}{{ gig.get_payment_method_display }}{% else %}<span class="text-gray-500">{% translate "paiement à définir" %}</span>{% endif %}
-        {% if saved %}<span role="status" class="ml-1 text-green-700">{% translate "Enregistré" %}</span>{% endif %}
+        {% if saved %}<span role="status" class="ml-1 text-green-700">{% translate "Enregistré" %}</span>{% endif %}</span>
       </span>
       {% if gig.terms_locked %}
         <span class="shrink-0 text-xs text-gray-500" title="{% translate 'Contrat signé : ces informations ne peuvent plus changer.' %}">
