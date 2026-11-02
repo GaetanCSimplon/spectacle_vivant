@@ -1,6 +1,6 @@
 # État du projet — Bòrd Pro
 
-**Mis à jour le 2026-11-01 (tout le code des chantiers en cours est fusionné ; reste le déploiement et le hors-code).** Page à lire en premier : ce qui est en cours, ce qui bloque, ce qui reste à faire. Le détail sprint par sprint est dans `feuille-de-route.md` ; ici, une page.
+**Mis à jour le 2026-11-02 (tout le code des chantiers en cours est fusionné ; reste le déploiement et le hors-code).** Page à lire en premier : ce qui est en cours, ce qui bloque, ce qui reste à faire. Le détail sprint par sprint est dans `feuille-de-route.md` ; ici, une page.
 
 **Règle de tenue** : je mets cette page à jour à chaque PR fusionnée qui change une ligne ci-dessous (la date en tête fait foi).
 
@@ -66,4 +66,4 @@ Choisi à partir des retours de la bêta (principe de la feuille de route, Phase
   Points à trancher : modèle « tournée » tout de suite ou non, nouvelle app `radar` (à valider, `CLAUDE.md` §4), sens de « ignorée » et « traitée ».
 - **Annuaire en vue carte** (demande de l'associé, 2026-10-29) : liste à gauche (contacts, lieux, organisateurs), plan à droite avec la position de chacun, les filtres de la liste changeant le plan. Décision : **après le MVP**, avec le RADAR. À prévoir : point géographique et géocodage des organisateurs (migration), un contact étant placé à l'endroit de son organisateur ou de son lieu ; bibliothèque de carte légère et tuiles OpenStreetMap (confidentialité et conditions d'usage à vérifier) ; modification de `CLAUDE.md` §10 sur accord.
 - Invitation de collaborateurs (aujourd'hui une seule personne par structure) : candidate n°1 après la bêta.
-- Abonnement et Stripe, facturation électronique, rappels automatiques, application installable (PWA), hiérarchie Projet/Spectacle (Q10).
+- Abonnement et Stripe, facturation électronique (note de cadrage : `note-facture-electronique.md`), rappels automatiques, application installable (PWA), hiérarchie Projet/Spectacle (Q10).
