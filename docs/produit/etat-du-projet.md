@@ -19,6 +19,7 @@ Les neuf critères de la recette du MVP (`cahier-des-charges.md` §11) sont couv
 | Export iCal des dates (#271) | Fait, fusionné (2026-10-31) : fichier `.ics` pour une date ou toutes les dates à venir, sans aucun montant ; pas de lien d'abonnement ni de Google Agenda (Q12 écartée) ; aucune migration. Pas encore sur `production` | — |
 | CI sur `ubuntu-24.04` (#272) | Fait, fusionné : l'ancien `ubuntu-latest` ne trouvait plus un paquet de WeasyPrint | — |
 | Onglet « Documents » (F-85, demande de l'associé) | Fait, fusionné (2026-11-02) : documents émis, filtres type / période / spectacles ; aucune migration | Utilisateur |
+| Refonte visuelle des cartes de date (pastilles d'icône, couleurs de la charte) | Fait, PR en revue (2026-11-02), empilée sur celle du raccourci ; aucune migration | Utilisateur |
 | Raccourci « Feuille de route » et état du partage dans « Mes dates » | Fait, PR en revue (2026-11-02) : lien et interrupteur d'état (lecture seule) ; aucune migration | Utilisateur |
 | Retrait de la vue jetable `pdf-test/` | Fait (2026-11-01) : vue, route, gabarit et test supprimés ; les vrais PDF restent testés dans `documents` ; aucune migration | — |
 | Charte graphique v1.0 (blanc & contrastes francs) | PR 1 à 4 faites ; audit axe relancé le 2026-10-29 (0 violation, `docs/technique/audit-accessibilite.md`) ; reste la revue des pages publiques à 375 px et les vérifications manuelles (clavier, lecteur d'écran, zoom 200 %) | Utilisateur |

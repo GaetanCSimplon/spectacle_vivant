@@ -1,6 +1,9 @@
 {% load i18n %}
 {% comment %}A gig card. The title link covers the whole card (after:absolute), so the price block
-of "Mes dates" (`editable_price`) can hold its own buttons above it.{% endcomment %}
+of "Mes dates" (`editable_price`) can hold its own buttons above it.
+Colour: the date tile and the venue badge are cream, the promoter badge light blue (the colour code
+of the address book), the payments sit on a cream band, the roadmap badge is ocean. State colours
+(green, amber) stay on the statuses only.{% endcomment %}
 <li id="gig-{{ gig.pk }}">
   <div class="card card-link relative">
     <span class="flex items-start justify-between gap-3">
@@ -9,19 +12,29 @@ of "Mes dates" (`editable_price`) can hold its own buttons above it.{% endcommen
         <span class="date-tile-month">{{ gig.date|date:"M" }}</span>
       </span>
       <span class="min-w-0 flex-1">
-        <a href="{% url 'gigs:detail' gig.pk %}" class="block font-medium text-gray-900 after:absolute after:inset-0 after:rounded-2xl"><span class="sr-only">{{ gig.date|date:"d/m/Y" }} — </span>{{ gig.show.title }}</a>
-        <span class="block text-sm text-gray-600">{{ gig.venue.name }} · {{ gig.promoter.name }}</span>
+        <a href="{% url 'gigs:detail' gig.pk %}" class="block text-lg font-semibold leading-snug text-gray-900 after:absolute after:inset-0 after:rounded-2xl"><span class="sr-only">{{ gig.date|date:"d/m/Y" }} — </span>{{ gig.show.title }}</a>
         {% include "gigs/_option_expiry.html" %}
       </span>
       {% include "gigs/_status_badge.html" %}
     </span>
+    <span class="mt-3 block space-y-2 text-sm text-gray-700">
+      <span class="flex items-center gap-2.5">
+        <span class="icon-chip icon-chip-venue">{% include "components/_icon.html" with name="pin" size=18 %}</span>
+        <span class="min-w-0"><span class="sr-only">{% translate "Lieu" %} : </span>{{ gig.venue.name }}</span>
+      </span>
+      <span class="flex items-center gap-2.5">
+        <span class="icon-chip icon-chip-promoter">{% include "components/_icon.html" with name="building" size=18 %}</span>
+        <span class="min-w-0"><span class="sr-only">{% translate "Organisateur" %} : </span>{{ gig.promoter.name }}</span>
+      </span>
+    </span>
     {% if gig.payment_lines %}
-      <span class="mt-2 block space-y-0.5 border-t border-stone-200 pt-1.5 text-xs">
+      <span class="mt-3 block space-y-1.5 rounded-xl bg-[var(--bord-brand-cream)] px-3 py-2.5 text-sm">
         {% for line in gig.payment_lines %}
-          <span class="flex justify-between gap-3">
-            <span class="text-gray-600">{{ line.label }}</span>
-            <span class="text-right {% if line.state == 'paid' %}text-green-700{% elif line.state == 'to_collect' %}text-amber-700{% else %}text-gray-500{% endif %}">
-              {{ line.amount|floatformat:"0g" }} € ·
+          <span class="flex items-center justify-between gap-3">
+            <span class="text-gray-700">{{ line.label }}</span>
+            <span class="flex items-center gap-1.5 text-right font-medium {% if line.state == 'paid' %}text-green-700{% elif line.state == 'to_collect' %}text-amber-700{% else %}text-gray-600{% endif %}">
+              {% if line.state == 'paid' %}{% include "components/_icon.html" with name="check" size=14 %}{% elif line.state == 'to_collect' %}{% include "components/_icon.html" with name="clock" size=14 %}{% else %}{% include "components/_icon.html" with name="file" size=14 %}{% endif %}
+              <span class="data">{{ line.amount|floatformat:"0g" }} €</span> ·
               {% if line.state == 'paid' %}{% translate "encaissé" %}{% elif line.state == 'to_collect' %}{% translate "à encaisser" %}{% else %}{% translate "à facturer" %}{% endif %}
             </span>
           </span>

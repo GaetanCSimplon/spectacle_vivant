@@ -3,7 +3,8 @@
 services.with_roadmap_sharing). The switch only shows the state: sharing is turned on or off in
 the roadmap editor, where the person sees what is shared. The state is always written out too.{% endcomment %}
 <div class="relative z-10 mt-2 flex flex-wrap items-center justify-between gap-x-4 border-t border-stone-200 pt-1.5 text-sm">
-  <a href="{% url 'roadmaps:editor' gig.pk %}" class="inline-flex min-h-11 items-center underline">
+  <a href="{% url 'roadmaps:editor' gig.pk %}" class="inline-flex min-h-11 items-center gap-2.5 font-medium underline">
+    <span class="icon-chip icon-chip-ocean">{% include "components/_icon.html" with name="route" size=18 %}</span>
     {% translate "Feuille de route" %}<span class="sr-only"> — {{ gig.show.title }}, {{ gig.date|date:"d/m/Y" }}</span>
   </a>
   <a href="{% url 'roadmaps:editor' gig.pk %}#partage" class="inline-flex min-h-11 items-center gap-2 {% if gig.roadmap_shared %}text-green-700{% else %}text-stone-700{% endif %}">

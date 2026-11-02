@@ -440,6 +440,27 @@
     @apply mt-1 text-[0.6875rem] font-medium;
   }
 
+  /* Round icon badge of a gig card. Venue and promoter use the colour code of the address book
+     (cream / light blue); the roadmap is solid ocean. Decorative: the label is always written. */
+  .icon-chip {
+    @apply inline-flex size-9 shrink-0 items-center justify-center rounded-full;
+  }
+
+  .icon-chip-venue {
+    background: var(--bord-venue-bg);
+    color: var(--bord-venue-text);
+  }
+
+  .icon-chip-promoter {
+    background: var(--bord-promoter-bg);
+    color: var(--bord-promoter-text);
+  }
+
+  .icon-chip-ocean {
+    background: var(--bord-info-bg);
+    color: var(--bord-surface);
+  }
+
   /* The fields of a form block: one column on a phone, two from md. A text box takes the whole row. */
   .form-grid {
     display: grid;
