@@ -13,6 +13,7 @@ from apps.addressbook.models import Promoter, Venue
 from apps.catalog.models import Show
 from apps.documents.models import Contract, ContractVersion, Invoice, Quote
 from apps.finance.models import Expense
+from apps.roadmaps.models import Roadmap
 
 from .models import Gig, PriceChange
 
@@ -257,6 +258,12 @@ def with_locks(queryset):
             output_field=BooleanField(),
         ),
     )
+
+
+def with_roadmap_sharing(queryset):
+    """Annotate gigs with `roadmap_shared`: whether the secret link of the roadmap is active."""
+    shared = Roadmap.objects.filter(gig=OuterRef("pk"), is_published=True)
+    return queryset.annotate(roadmap_shared=Exists(shared))
 
 
 class CannotChangeTerms(Exception):

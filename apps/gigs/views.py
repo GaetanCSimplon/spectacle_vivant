@@ -314,7 +314,8 @@ class GigListView(TenantScopedMixin, ListView):
 
     def get_queryset(self):
         queryset = super().get_queryset().select_related("show", "venue", "promoter")
-        return services.with_locks(self.get_filter_form().apply(queryset))
+        queryset = self.get_filter_form().apply(queryset)
+        return services.with_roadmap_sharing(services.with_locks(queryset))
 
     def get_template_names(self):
         if wants_fragment(self.request):
@@ -334,6 +335,7 @@ class GigListView(TenantScopedMixin, ListView):
         context["cancelled_gigs"] = cancelled.order_by("-date")
         context["filter_form"] = self.get_filter_form()
         context["editable_price"] = True
+        context["roadmap_shortcut"] = True
         context["has_any_gig"] = Gig.objects.filter(tenant=self.request.tenant).exists()
         context["year"] = today.year
         context["year_count"] = services.count_gigs_for_year(self.request.tenant, today.year)

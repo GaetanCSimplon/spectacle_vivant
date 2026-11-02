@@ -28,6 +28,9 @@ of "Mes dates" (`editable_price`) can hold its own buttons above it.{% endcommen
         {% endfor %}
       </span>
     {% endif %}
+    {% if roadmap_shortcut and gig.status != 'cancelled' %}
+      {% include "gigs/_roadmap_shortcut.html" %}
+    {% endif %}
     {% if editable_price %}
       <div class="relative z-10">
         {% include "gigs/_price.html" with form=None saved=False %}
