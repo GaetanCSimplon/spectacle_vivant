@@ -309,3 +309,15 @@ def test_empty_deposit_percent_keeps_the_current_value(client):
 
     gig.refresh_from_db()
     assert gig.deposit_percent == Decimal("45.00")
+
+
+def test_the_completion_page_and_its_link_are_named_after_the_contract(client):
+    tenant = _login(client)
+    gig = GigFactory(tenant=tenant, status="option")
+
+    detail = client.get(reverse("gigs:detail", args=[gig.pk])).content.decode()
+    page = client.get(_url(gig)).content.decode()
+
+    assert "Compléter le contrat" in detail
+    assert "Compléter le contrat — Bòrd Pro" in page
+    assert "Compléter la date" not in detail + page

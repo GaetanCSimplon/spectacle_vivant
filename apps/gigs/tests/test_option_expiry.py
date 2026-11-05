@@ -132,7 +132,7 @@ def test_wizard_details_step_keeps_the_expiry_when_going_back(client):
     assert f'value="{_days(10).isoformat()}"' in content
 
 
-# --- "Compléter la date" form -------------------------------------------
+# --- "Compléter le contrat" form -------------------------------------------
 
 
 def _complete_url(gig):

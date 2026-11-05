@@ -42,7 +42,7 @@ flowchart LR
         UC5(["Créer une date"])
         UC6(["Suivre et filtrer ses dates<br/>liste et calendrier"])
         UC7(["Confirmer, annuler, réactiver une date"])
-        UC8(["Compléter la date"])
+        UC8(["Compléter le contrat"])
         UC9(["Générer le contrat de cession"])
         UC10(["Marquer le contrat signé"])
         UC11(["Créer un devis ou une facture"])
@@ -113,7 +113,7 @@ Le membre fait tout ce que fait l'artiste **sauf modifier « Ma structure »** (
 
 **UC9 — Générer le contrat**
 - *Précondition* : date non annulée.
-- *Scénario* : « Compléter la date » (facultatif) → « Aperçu » → « Générer le contrat » → une version numérotée est enregistrée → téléchargement.
+- *Scénario* : « Compléter le contrat » (facultatif) → « Aperçu » → « Générer le contrat » → une version numérotée est enregistrée → téléchargement.
 - *Variante* : régénérer ajoute une version, les anciennes restent.
 - *Cas d'erreur* : date annulée sans contrat → refus ; contrat signé → plus de génération.
 
@@ -177,7 +177,7 @@ flowchart TD
     B --> C{L'organisateur<br/>confirme ?}
     C -- non --> X[Annuler la date]
     C -- oui --> D[Confirmer la date<br/>statut : confirmée]
-    D --> E[Compléter la date<br/>horaires, conditions, acompte]
+    D --> E[Compléter le contrat<br/>horaires, conditions, acompte]
     E --> F[Générer le contrat<br/>version 1, référence C-2026-001]
     F --> G[Envoyer le PDF à l'organisateur]
     G --> H[Signature hors de l'application]
