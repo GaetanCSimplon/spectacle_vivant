@@ -40,7 +40,8 @@ Adresse de l'application : **`https://app.bordpro.fr`** (début novembre 2026). 
 | Sauvegardes de la base + test de restauration | **Fait** : quotidiennes (7 jours) et hebdomadaires (4 semaines) automatiques chez Scalingo, restauration d'une sauvegarde manuelle testée en local (PostgreSQL 17 en production, 16 en local). Reste, avant l'ouverture au public : une copie hors de Scalingo | — |
 | Sentry (UE) | **Fait** : projet `bordpro`, hébergement UE, « Error monitoring » seul (les autres produits décochés), événement de test reçu sans donnée personnelle | — |
 | Surveillance de disponibilité (UptimeRobot sur `https://app.bordpro.fr/`), tâche planifiée de purge | **Fait** : contrôle toutes les 5 minutes avec alerte par e-mail ; tâche `purge_deleted_tenants` à 3 h, lue par Scalingo dans `cron.json` (section « Tâches planifiées », en lecture seule dans l'interface) | — |
-| `check --deploy`, recette §11 sur la production | À faire | Claude, en fin de parcours |
+| `check --deploy` | **Fait** : aucun avertissement ; en-têtes (HSTS, X-Frame-Options, nosniff…), redirection HTTPS et cookie `Secure` vérifiés sur `app.bordpro.fr`. Pas de `Content-Security-Policy` (à étudier plus tard, réglage délicat avec HTMX et Alpine) | — |
+| Recette §11 sur la production | **À faire** : grille dans `docs/technique/recette-production.md` | Utilisateur et associé |
 
 **Il ne reste côté services que le contrôle final** (ci-dessous). Le lien d'espace équipe peut maintenant être donné (le bucket existe). La déclaration de dépense par photo est utilisable.
 
