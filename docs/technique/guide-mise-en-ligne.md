@@ -7,7 +7,7 @@
 - **Tous les mots de passe, clés et jetons vont dans Proton Pass, tout de suite**, quand ils s'affichent. Une clé qui ne s'affiche qu'une fois (Brevo, Scaleway) est perdue si tu fermes la page.
 - **Ne colle jamais un secret** dans un message, dans le dépôt, ni dans un fichier suivi par Git.
 - **Changer une variable Scalingo ne relance pas le build** : après chaque changement, fais un **déploiement manuel**, puis ouvre le **déploiement le plus récent** pour lire son journal.
-- Contexte : application Scalingo `bordpro` (région France), adresse temporaire `https://bordpro.osc-fr1.scalingo.io`, domaine `bordpro.fr` acheté par ton associé.
+- Contexte : application Scalingo `bordpro` (région France), adresse `https://app.bordpro.fr` (l'ancienne `https://bordpro.osc-fr1.scalingo.io` répond encore), domaine `bordpro.fr` acheté par ton associé chez OVH. **Faits en novembre 2026 : étapes 1 (Brevo), 2 (domaine, en `app.bordpro.fr` plutôt qu'en `bordpro.fr`), 3 (bucket) et 4 (compte administrateur)** ; retour d'expérience dans `services-production.md`. Restent les étapes 5 à 8.
 
 Ordre : **1.** Brevo → **2.** domaine → **3.** bucket de fichiers → **4.** compte administrateur et premier invité → **5.** Sentry → **6.** sauvegardes → **7.** surveillance et tâche planifiée → **8.** contrôle final.
 
@@ -120,6 +120,8 @@ L'inscription est **sur invitation** : seules les adresses de la liste d'invité
 
 ## 6. Sauvegardes de la base et test de restauration
 
+**Fait en novembre 2026.** Sauvegardes automatiques de l'addon PostgreSQL de Scalingo : une par jour à minuit UTC (7 jours glissants), une par dimanche (4 semaines), manuelles conservées (10 dernières). Test de restauration réussi : la production est en **PostgreSQL 17** (en-tête de format `1.16`) alors que le conteneur local du projet est en 16, donc `pg_restore` a été lancé dans un conteneur `postgres:17` jetable (`docker run -d --name pg17-restore -e POSTGRES_PASSWORD=restore postgres:17`), puis supprimé ; la base restaurée contenait tous les comptes. Le fichier téléchargé contient des données réelles : le supprimer de la machine après le test. Rappel : une sauvegarde manuelle avant chaque livraison. À prévoir avant l'ouverture au public : une copie hors de Scalingo.
+
 1. Scalingo → `bordpro` → **Resources/Addons** → l'addon **PostgreSQL** → onglet **Backups**. Repère : les sauvegardes sont-elles **automatiques**, et pendant **combien de jours** sont-elles conservées ? C'est lié à ton offre (voir le tarif de l'addon). Note la réponse dans Proton Pass (note) ou dans ce fichier.
 2. Lance une sauvegarde manuelle (**Create a backup**) et attends qu'elle soit terminée.
 3. **Test de restauration (indispensable, une sauvegarde jamais testée n'existe pas) :**
@@ -133,9 +135,11 @@ L'inscription est **sur invitation** : seules les adresses de la liste d'invité
 
 ## 7. Surveillance de disponibilité et tâche planifiée
 
+**Fait en novembre 2026.** Surveillance : UptimeRobot, contrôle HTTP sur `https://app.bordpro.fr/` toutes les 5 minutes, alerte par e-mail. Tâche planifiée : Scalingo n'utilise plus l'addon Scheduler mais la section *Ressources → Tâches planifiées*, qui lit `cron.json` à chaque déploiement et reste en lecture seule dans l'interface (toute modification passe par `cron.json`). La commande affiche `N tenant(s) purged.` ; ne pas la lancer à la main quand de vraies structures sont en attente de suppression.
+
 ### 7.1 Surveillance
 1. Crée un compte gratuit sur un service de surveillance (UptimeRobot, Better Stack…).
-2. Ajoute un contrôle HTTP sur `https://bordpro.fr/` toutes les 5 minutes, alerte par e-mail à `contact@bordpro.fr`. (La page d'accueil publique répond toujours `200` : pas besoin d'une adresse spéciale.)
+2. Ajoute un contrôle HTTP sur `https://app.bordpro.fr/` toutes les 5 minutes, alerte par e-mail à `contact@bordpro.fr`. (La page d'accueil publique répond toujours `200` : pas besoin d'une adresse spéciale.)
 3. **Test :** le contrôle passe au vert.
 
 ### 7.2 Tâche planifiée (purge des structures supprimées, 3 h du matin)
