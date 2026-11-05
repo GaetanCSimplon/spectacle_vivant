@@ -397,7 +397,7 @@ Constat : presque toutes les pages tiennent dans une colonne d'environ 768 px, a
 - [ ] **Recette** : dérouler la liste de la section 11 du cahier des charges sur staging.
 - [ ] Sauvegarde de la base + **test de restauration**.
 - [x] Fichiers de déploiement Scalingo (2026-10-12) : `Procfile`, `.python-version`, `requirements.txt`, `.buildpacks` + `Aptfile` (WeasyPrint), `bin/post_compile` (Tailwind + `collectstatic`), `bin/post_deploy.sh` (migrations + `set_site_domain`), `cron.json` (purge à 3 h UTC), e-mails SMTP en production. Construction simulée en local avec `config.settings.prod` ; procédure et vérifications dans `docs/technique/services-production.md`.
-- [ ] Déploiement en **production** (déclenchement manuel). **Premier déploiement réussi sur Scalingo le 2026-10-22** (adresse temporaire, services provisoires) ; depuis, e-mails (Brevo), bucket S3 (Scaleway) et domaine `app.bordpro.fr` sont branchés (novembre 2026) ; restent Sentry, les sauvegardes et la structure juridique.
+- [ ] Déploiement en **production** (déclenchement manuel). **Premier déploiement réussi sur Scalingo le 2026-10-22** (adresse temporaire, services provisoires) ; depuis, e-mails (Brevo), bucket S3 (Scaleway) et domaine `app.bordpro.fr` sont branchés (novembre 2026) ; Sentry, sauvegardes (testées), surveillance de disponibilité et tâche planifiée sont aussi en place ; restent `check --deploy`, la recette sur la production et la structure juridique.
 
 **Livrable** : MVP en production.
 **Critère de sortie** : la recette du cahier des charges (§11) passe intégralement.

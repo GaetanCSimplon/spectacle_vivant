@@ -135,6 +135,8 @@ L'inscription est **sur invitation** : seules les adresses de la liste d'invité
 
 ## 7. Surveillance de disponibilité et tâche planifiée
 
+**Fait en novembre 2026.** Surveillance : UptimeRobot, contrôle HTTP sur `https://app.bordpro.fr/` toutes les 5 minutes, alerte par e-mail. Tâche planifiée : Scalingo n'utilise plus l'addon Scheduler mais la section *Ressources → Tâches planifiées*, qui lit `cron.json` à chaque déploiement et reste en lecture seule dans l'interface (toute modification passe par `cron.json`). La commande affiche `N tenant(s) purged.` ; ne pas la lancer à la main quand de vraies structures sont en attente de suppression.
+
 ### 7.1 Surveillance
 1. Crée un compte gratuit sur un service de surveillance (UptimeRobot, Better Stack…).
 2. Ajoute un contrôle HTTP sur `https://app.bordpro.fr/` toutes les 5 minutes, alerte par e-mail à `contact@bordpro.fr`. (La page d'accueil publique répond toujours `200` : pas besoin d'une adresse spéciale.)
