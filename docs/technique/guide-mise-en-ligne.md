@@ -7,7 +7,7 @@
 - **Tous les mots de passe, clés et jetons vont dans Proton Pass, tout de suite**, quand ils s'affichent. Une clé qui ne s'affiche qu'une fois (Brevo, Scaleway) est perdue si tu fermes la page.
 - **Ne colle jamais un secret** dans un message, dans le dépôt, ni dans un fichier suivi par Git.
 - **Changer une variable Scalingo ne relance pas le build** : après chaque changement, fais un **déploiement manuel**, puis ouvre le **déploiement le plus récent** pour lire son journal.
-- Contexte : application Scalingo `bordpro` (région France), adresse temporaire `https://bordpro.osc-fr1.scalingo.io`, domaine `bordpro.fr` acheté par ton associé.
+- Contexte : application Scalingo `bordpro` (région France), adresse `https://app.bordpro.fr` (l'ancienne `https://bordpro.osc-fr1.scalingo.io` répond encore), domaine `bordpro.fr` acheté par ton associé chez OVH. **Faits en novembre 2026 : étapes 1 (Brevo), 2 (domaine, en `app.bordpro.fr` plutôt qu'en `bordpro.fr`), 3 (bucket) et 4 (compte administrateur)** ; retour d'expérience dans `services-production.md`. Restent les étapes 5 à 8.
 
 Ordre : **1.** Brevo → **2.** domaine → **3.** bucket de fichiers → **4.** compte administrateur et premier invité → **5.** Sentry → **6.** sauvegardes → **7.** surveillance et tâche planifiée → **8.** contrôle final.
 

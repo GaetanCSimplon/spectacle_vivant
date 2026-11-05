@@ -152,6 +152,16 @@ Premier déploiement réussi sur Scalingo (région France, adresse `bordpro.osc-
 - **Le domaine d'envoi** (SPF, DKIM, DMARC) se règle dans la zone DNS du registrar ; Brevo propose de déléguer la configuration à la personne qui administre le DNS par un lien sécurisé. Un domaine ne doit avoir qu'**un seul** enregistrement SPF : ajouter Brevo à l'existant.
 - **Compte personnel ou professionnel** : tant que la structure n'existe pas juridiquement, compte personnel ; à faire évoluer avant l'ouverture au public, avec les pages légales.
 
+## Ce que la mise en place des services a appris (novembre 2026)
+
+- **Brevo, méthode « manuelle » chez OVH** : quatre lignes dans la zone DNS, à recopier depuis Brevo : un **TXT** sur la racine (code `brevo-code:…`), deux **CNAME** `brevo1._domainkey` et `brevo2._domainkey` (cibles `b1.…` et `b2.…`, les valeurs diffèrent), un **TXT** `_dmarc`. Chez OVH, la cible d'un CNAME se termine par un **point** ; sans lui, OVH ajoute `.bordpro.fr`. Aucun SPF à ajouter dans cette méthode. Le statut passe à « Authentifié » en quelques minutes.
+- **Clé SMTP Brevo sans expiration** : une clé qui expire coupe tous les e-mails sans prévenir. Nom `bordpro-production`. Si elle fuit : la supprimer dans Brevo, en créer une autre, changer `EMAIL_HOST_PASSWORD`.
+- **Bucket Scaleway** : projet `bordpro` dédié (Scaleway ne limite pas une clé à un bucket, mais à un projet), région `fr-par`, endpoint `https://s3.fr-par.scw.cloud`. Les droits passent par une **application IAM** `bordpro-app` et une règle propre (`ObjectStorageFullAccess`, portée = le projet). Ne jamais utiliser les règles toutes faites `Administrator` ou `Editors`. Vérification : un PDF généré apparaît dans le bucket, survit à un redémarrage, et son adresse directe, ouverte sans connexion, répond `AccessDenied`.
+- **Domaine** : l'application est sur le sous-domaine **`app.bordpro.fr`** (un simple CNAME vers `bordpro.osc-fr1.scalingo.io.` ; sous-domaine gratuit), ce qui laisse `bordpro.fr` au futur site vitrine et évite l'absence de CNAME sur la racine chez OVH. Page Scalingo : *Paramètres → Routage public → Domaines personnalisés* ; « Forcer HTTPS » reste activé.
+- **`DJANGO_SITE_DOMAIN` n'est pris en compte qu'à un déploiement** (`set_site_domain` dans `bin/post_deploy.sh`), pas à un simple redémarrage. Sinon : `scalingo --app bordpro run python manage.py set_site_domain`.
+- **Vérifier la branche de déploiement** : le premier déploiement a été lancé depuis `main` par erreur. Scalingo doit suivre `production`, sans déploiement automatique depuis `main`.
+- **Ligne de commande Scalingo** (installée sous WSL depuis le dossier personnel, jamais depuis `/mnt/c/...`) : `scalingo login`, puis `scalingo --app bordpro run python manage.py createsuperuser`, `scalingo --app bordpro logs --lines 100`, `scalingo --app bordpro restart`.
+
 ## Procédure de premier déploiement (Scalingo)
 
 1. **Créer l'application** (région France) et ajouter l'addon PostgreSQL. Lier le dépôt GitHub (branche **`production`**, voir `livraison.md`) ou pousser le code.

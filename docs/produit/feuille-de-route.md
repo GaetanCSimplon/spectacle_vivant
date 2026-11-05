@@ -397,7 +397,7 @@ Constat : presque toutes les pages tiennent dans une colonne d'environ 768 px, a
 - [ ] **Recette** : dérouler la liste de la section 11 du cahier des charges sur staging.
 - [ ] Sauvegarde de la base + **test de restauration**.
 - [x] Fichiers de déploiement Scalingo (2026-10-12) : `Procfile`, `.python-version`, `requirements.txt`, `.buildpacks` + `Aptfile` (WeasyPrint), `bin/post_compile` (Tailwind + `collectstatic`), `bin/post_deploy.sh` (migrations + `set_site_domain`), `cron.json` (purge à 3 h UTC), e-mails SMTP en production. Construction simulée en local avec `config.settings.prod` ; procédure et vérifications dans `docs/technique/services-production.md`.
-- [ ] Déploiement en **production** (déclenchement manuel). **Premier déploiement réussi sur Scalingo le 2026-10-22** (adresse temporaire, services provisoires) ; restent le bucket S3, les e-mails (Brevo, domaine en attente du DNS), le domaine `bordpro.fr`, Sentry, les sauvegardes et la structure juridique.
+- [ ] Déploiement en **production** (déclenchement manuel). **Premier déploiement réussi sur Scalingo le 2026-10-22** (adresse temporaire, services provisoires) ; depuis, e-mails (Brevo), bucket S3 (Scaleway) et domaine `app.bordpro.fr` sont branchés (novembre 2026) ; restent Sentry, les sauvegardes et la structure juridique.
 
 **Livrable** : MVP en production.
 **Critère de sortie** : la recette du cahier des charges (§11) passe intégralement.
@@ -494,11 +494,11 @@ Décision du 2026-10-12 (budget serré) : la signature reste **à la charge de l
 | Professionnel relecteur (juriste / comptable / CAE) | Phase 0 | ☐ |
 | Statut juridique de **ton** activité (facturation de l'app) | Avant la v1 payante | ☐ |
 | Rôles : seul le `owner` peut modifier la structure. Faut-il un rôle intermédiaire (ex. « gestionnaire ») pour des utilisateurs non propriétaires qui peuvent la modifier ? | Phase 3.1 (invitation de membres : Phase 5.5) | ☐ |
-| Prestataire d'e-mails transactionnels | Phase 3.1 | ☐ |
+| Prestataire d'e-mails transactionnels | Phase 3.1 | ☑ *(Brevo, branché en novembre 2026)* |
 | Navigation principale limitée à 5 entrées : où loger le carnet d'adresses et les spectacles ? | Sprint 3.2 | ☑ *(2026-09-30 : Accueil · Mes dates · Contacts · Ma structure, puis + Spectacles ; « Nouvelle date » devient un bouton dans « Mes dates »)* — menu à 5 entrées depuis le CRUD `Show` |
 | Modèle économique : freemium (3 dates gratuites) ou formules Essentiel/Collectif (Q9) | Avant Phase 5.1 | ☐ |
 | Adoption ou non de la hiérarchie Projet/Spectacle/Version proposée le 29/09 (Q10) — détail dans `docs/metier/modele-spectacle.md` | Avant toute refonte du modèle `Show` | ☐ |
-| Bucket S3 européen (Scaleway, OVH…) | Phase 3.4 | ☐ |
+| Bucket S3 européen (Scaleway, OVH…) | Phase 3.4 | ☑ *(Scaleway, Paris, branché en novembre 2026)* |
 | Politique de conservation des données | Phase 3.8 | ◐ *(suppression complète après 30 jours, factures émises comprises ; conservation légale de 10 ans à valider avec un comptable)* |
 | Grille tarifaire | Phase 4 | ☐ |
 | Prestataire de signature électronique | Phase 5 | ☑ *(2026-10-12 : à la charge de l'utilisateur, niveau 1 fait ; niveaux 2 et 3 à la demande ou si revenus)* |
