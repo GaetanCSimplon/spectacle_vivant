@@ -205,7 +205,7 @@ def stored_contract_response(request, gig, contract):
 
 
 class ContractCompleteView(TenantScopedMixin, View):
-    """One page to fill in every value the contract needs (the "Compléter la date" form)."""
+    """One page to fill in every value the contract needs (the "Compléter le contrat" form)."""
 
     template_name = "documents/contract_complete.html"
 

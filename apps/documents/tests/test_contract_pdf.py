@@ -360,7 +360,7 @@ def test_cancelled_gig_hides_the_contract_actions_when_there_is_no_contract(clie
     response = client.get(reverse("gigs:detail", args=[gig.pk]))
 
     assert "Aperçu du contrat" not in response.content.decode()
-    assert "Compléter la date" not in response.content.decode()
+    assert "Compléter le contrat" not in response.content.decode()
 
 
 def test_contract_shows_the_vat_number_only_for_a_taxable_tenant():

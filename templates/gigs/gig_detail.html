@@ -129,7 +129,7 @@
   <div class="mb-6 flex flex-col gap-3">
     {% if gig.status != 'cancelled' %}
       <a href="{% url 'documents:contract-complete' gig.pk %}" class="btn btn-secondary">
-        {% translate "Compléter la date" %}
+        {% translate "Compléter le contrat" %}
       </a>
     {% endif %}
     <a href="{% url 'documents:billing' gig.pk %}" class="btn btn-secondary">
