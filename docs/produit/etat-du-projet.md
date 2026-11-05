@@ -38,7 +38,7 @@ Adresse de l'application : **`https://app.bordpro.fr`** (début novembre 2026). 
 | Bucket S3 privé (fichiers, PDF figés) | **Fait** : Scaleway, Paris (`fr-par`), projet dédié, application IAM `bordpro-app` ; PDF généré, contrat signé listé dans « Documents », bucket refusant l'accès direct | — |
 | Compte administrateur | Fait, via la ligne de commande Scalingo | — |
 | Sauvegardes de la base + test de restauration | **Fait** : quotidiennes (7 jours) et hebdomadaires (4 semaines) automatiques chez Scalingo, restauration d'une sauvegarde manuelle testée en local (PostgreSQL 17 en production, 16 en local). Reste, avant l'ouverture au public : une copie hors de Scalingo | — |
-| Sentry (UE) | À faire | Utilisateur (compte, `SENTRY_DSN`) |
+| Sentry (UE) | **Fait** : projet `bordpro`, hébergement UE, « Error monitoring » seul (les autres produits décochés), événement de test reçu sans donnée personnelle | — |
 | Surveillance de disponibilité, tâche planifiée de purge | À faire | Utilisateur |
 | `check --deploy`, recette §11 sur la production | À faire | Claude, en fin de parcours |
 
