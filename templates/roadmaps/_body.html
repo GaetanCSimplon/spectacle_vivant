@@ -32,6 +32,16 @@
     {% endif %}
   </div>
 
+  <h2 class="mb-2 text-sm font-semibold uppercase text-gray-500">{% translate "Notes" %}</h2>
+  <form method="post" action="{% url 'roadmaps:notes' gig.pk %}"
+        hx-post="{% url 'roadmaps:notes' gig.pk %}"
+        hx-target="#roadmap-body" hx-swap="outerHTML" class="card mb-6 space-y-3">
+    {% csrf_token %}
+    <p class="text-sm text-gray-600">{% translate "Ces notes sont visibles par toute personne qui a le lien." %}</p>
+    {{ notes_form.as_p }}
+    <button type="submit" class="btn btn-secondary btn-block">{% translate "Enregistrer les notes" %}</button>
+  </form>
+
   {% if no_map %}
     <p class="card card-context mb-6 text-sm">
       {% translate "Pas de carte pour :" %}
@@ -149,14 +159,4 @@
     <option value="Technicien"></option>
     <option value="Artiste"></option>
   </datalist>
-
-  <h2 class="mb-2 text-sm font-semibold uppercase text-gray-500">{% translate "Notes" %}</h2>
-  <form method="post" action="{% url 'roadmaps:notes' gig.pk %}"
-        hx-post="{% url 'roadmaps:notes' gig.pk %}"
-        hx-target="#roadmap-body" hx-swap="outerHTML" class="card mb-6 space-y-3">
-    {% csrf_token %}
-    <p class="text-sm text-gray-600">{% translate "Ces notes sont visibles par toute personne qui a le lien." %}</p>
-    {{ notes_form.as_p }}
-    <button type="submit" class="btn btn-secondary btn-block">{% translate "Enregistrer les notes" %}</button>
-  </form>
 </div>

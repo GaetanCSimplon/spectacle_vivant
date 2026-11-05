@@ -19,11 +19,29 @@
     {% if group_name %}<p class="muted">{{ group_name }}</p>{% endif %}
     <p>Feuille de route — {{ date|date:"l j F Y" }}</p>
 
+    {% if notes %}
+      <h2>Notes</h2>
+      <p>{{ notes|linebreaksbr }}</p>
+    {% endif %}
+
     <h2>Lieu</h2>
     <p><strong>{{ venue.name }}</strong></p>
     {% if venue.address %}<p>{{ venue.address|linebreaksbr }}</p>{% endif %}
     {% if venue.access_info %}<p class="muted">{{ venue.access_info|linebreaksbr }}</p>{% endif %}
     {% if venue.phone %}<p>Tél. {{ venue.phone }}</p>{% endif %}
+
+    {% if venue_contacts %}
+      <h2>Contacts du lieu</h2>
+      {% for person in venue_contacts %}
+        <p><strong>{{ person.name }}</strong>{% if person.role %} — {{ person.role }}{% endif %}{% if person.phone %} — {{ person.phone }}{% endif %}</p>
+      {% endfor %}
+    {% endif %}
+    {% if promoter_contacts %}
+      <h2>Contacts de l'organisateur</h2>
+      {% for person in promoter_contacts %}
+        <p><strong>{{ person.name }}</strong>{% if person.role %} — {{ person.role }}{% endif %}{% if person.phone %} — {{ person.phone }}{% endif %}</p>
+      {% endfor %}
+    {% endif %}
 
     {% if slots %}
       <h2>Programme de la journée</h2>
@@ -57,11 +75,6 @@
       {% endfor %}
     {% endif %}
 
-    {% if notes %}
-      <h2>Notes</h2>
-      <p>{{ notes|linebreaksbr }}</p>
-    {% endif %}
-
     {% if members %}
       <h2>Équipe</h2>
       {% for person in members %}
@@ -69,11 +82,5 @@
       {% endfor %}
     {% endif %}
 
-    {% if venue_contacts %}
-      <h2>Contacts du lieu</h2>
-      {% for person in venue_contacts %}
-        <p><strong>{{ person.name }}</strong>{% if person.role %} — {{ person.role }}{% endif %}{% if person.phone %} — {{ person.phone }}{% endif %}</p>
-      {% endfor %}
-    {% endif %}
   </body>
 </html>

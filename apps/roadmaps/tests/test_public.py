@@ -9,7 +9,7 @@ from django.urls import reverse
 from apps.addressbook.factories import ContactFactory
 from apps.documents.models import Contract
 from apps.gigs.factories import GigFactory, GigMemberFactory
-from apps.tenants.factories import MembershipFactory
+from apps.tenants.factories import MembershipFactory, TenantFactory
 
 from ..factories import LodgingFactory, MealFactory, RoadmapFactory, RoadmapSlotFactory
 from ..services import public_context, publish, revoke
@@ -202,6 +202,7 @@ def test_public_context_is_a_whitelist(roadmap):
     assert set(public_context(roadmap)) == {
         "show_title", "group_name", "date", "venue", "crew_headcount", "slots", "lodgings",
         "meals", "notes", "version", "updated_at", "members", "venue_contacts",
+        "promoter_contacts",
     }  # fmt: skip
     assert set(public_context(roadmap)["venue"]) == {
         "name", "address", "address_one_line", "access_info", "phone", "tel", "map_url",
@@ -305,3 +306,78 @@ def test_the_copy_button_label_cannot_break_its_alpine_expression(client, roadma
     expression = page.split('x-text="')[1].split('"')[0]
 
     assert "Copier l\\u0027adresse" in expression and "l'adresse" not in expression
+
+
+# --- notes first, and the contacts of the organiser -------------------------------
+
+
+def _headings(html):
+    return re.findall(r"<h2[^>]*>(.*?)</h2>", html, flags=re.DOTALL)
+
+
+def test_the_notes_come_right_after_the_header_and_before_the_venue(client, roadmap):
+    headings = [_text(h) for h in _headings(client.get(_url(roadmap)).content.decode())]
+
+    assert headings[:2] == ["Notes", "Lieu"]
+
+
+def test_the_pdf_also_puts_the_notes_first(roadmap):
+    headings = [
+        _text(h)
+        for h in _headings(render_to_string("roadmaps/roadmap_pdf.html", public_context(roadmap)))
+    ]
+
+    assert headings[:2] == ["Notes", "Lieu"]
+
+
+def test_the_organiser_contacts_show_with_name_role_and_phone_only(client, roadmap):
+    ContactFactory(
+        promoter=roadmap.gig.promoter,
+        venue=None,
+        tenant=roadmap.gig.tenant,
+        name="Programmatrice Paula",
+        role="Programmation",
+        phone="07 55 44 33 22",
+        email="secret.perso@example.com",
+    )
+
+    html = client.get(_url(roadmap)).content.decode()
+    text = _text(html)
+
+    assert "Contacts de l'organisateur" in text
+    assert "Programmatrice Paula" in text
+    assert "07 55 44 33 22" in text
+    for secret in SECRETS:
+        assert secret not in html, secret
+    assert "Contacts de l'organisateur" in render_to_string(
+        "roadmaps/roadmap_pdf.html", public_context(roadmap)
+    )
+
+
+def test_no_organiser_block_without_contact(client, roadmap):
+    assert "Contacts de l'organisateur" not in _text(client.get(_url(roadmap)).content.decode())
+
+
+def test_someone_working_for_both_the_venue_and_the_organiser_is_listed_once(client, roadmap):
+    contact = ContactFactory(
+        promoter=roadmap.gig.promoter,
+        venue=roadmap.gig.venue,
+        tenant=roadmap.gig.tenant,
+        name="Double Casquette",
+    )
+
+    context = public_context(roadmap)
+
+    assert [p["name"] for p in context["venue_contacts"]].count(contact.name) == 1
+    assert contact.name not in [p["name"] for p in context["promoter_contacts"]]
+
+
+def test_a_contact_of_another_tenant_never_shows(client, roadmap):
+    # Not reachable through the forms, which only offer a tenant's own organisers: the filter on
+    # the tenant is a second line of defence.
+    other = ContactFactory(
+        promoter=roadmap.gig.promoter, venue=None, name="Intrus Autre", tenant=TenantFactory()
+    )
+    assert other.tenant != roadmap.gig.tenant
+
+    assert "Intrus Autre" not in _text(client.get(_url(roadmap)).content.decode())
