@@ -17,7 +17,7 @@ Mise en place le 2026-10-28. Deux branches :
 ## Avant de livrer : liste de contrôle
 1. `main` à jour et CI verte sur son dernier commit (`gh run list --branch main --limit 1`).
 2. **Migrations incluses** : `git diff production..main --stat -- '*/migrations/*'`. Chaque nouvelle migration doit **ajouter** (table, colonne) sans supprimer ni transformer de données ; sinon, en parler avant.
-3. **Sauvegarde de la base** de production faite le jour même (tant que les sauvegardes automatiques ne sont pas vérifiées, voir `guide-mise-en-ligne.md` §6).
+3. **Sauvegarde manuelle de la base** de production faite le jour même (les sauvegardes automatiques existent et la restauration est testée, voir `guide-mise-en-ligne.md` §6, mais une sauvegarde manuelle juste avant garde le point exact de la livraison).
 4. Nouvelles **variables d'environnement** nécessaires ? (`git diff production..main -- .env.example docs/technique/services-production.md`) : les ajouter sur Scalingo **avant** de livrer.
 5. Notes de livraison : la liste des PR depuis la dernière livraison (`git log --oneline --merges production..main`).
 
