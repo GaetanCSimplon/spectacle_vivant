@@ -483,6 +483,19 @@ Décision du 2026-10-12 (budget serré) : la signature reste **à la charge de l
 
 ---
 
+## Demandes de la réunion du 2026-11-05 (à planifier)
+Détail : `docs/archives/2026-11-05-reunion-associe.md` ; exigences F-86 à F-93 dans `cahier-des-charges.md`. Une PR par ligne ; plan à valider avant de coder pour les lignes marquées (plan).
+- [ ] F-87 Libellé « Compléter le contrat » (très petite).
+- [ ] F-92 Bloc « Notes » en haut de la feuille de route, contacts de l'organisateur et du lieu (petite).
+- [ ] F-86 Bouton « Retour » en haut de chaque page (petite).
+- [ ] F-93 Gestion sociale par artiste : affichage et export pour la paie (plan).
+- [ ] F-89 Bouton d'envoi du formulaire de complétion à l'organisateur (vérifier l'existant).
+- [ ] F-88 Bloc « Gestion d'équipe » sur la date (plan si modèle).
+- [ ] F-90 « Régie de tournée » : formulaire public envoyé à l'organisateur (plan, migration, extension de `CLAUDE.md` §6.3).
+- [ ] F-91 Documents pour l'artiste sur la feuille de route (plan, point sensible).
+- [ ] Site vitrine : intégrer la maquette de l'associé avec des textes limités à l'existant (sans la page Tarifs) ; après validation des textes.
+- Après le MVP : espace artiste / technicien ; reste de la spécification `specification-feuille-de-route-type.md` ; page Tarifs (trois formules).
+
 ## Décisions à prendre (à consigner ici)
 
 | Décision | Quand | Statut |

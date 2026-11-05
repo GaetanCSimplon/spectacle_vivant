@@ -23,6 +23,8 @@ Les neuf critères de la recette du MVP (`cahier-des-charges.md` §11) sont couv
 | Raccourci « Feuille de route » et état du partage dans « Mes dates » | Fait, fusionné (#276) et livré le 2026-11-02 (`v2026-11-02`) : lien et interrupteur d'état (lecture seule) ; aucune migration | — |
 | Retrait de la vue jetable `pdf-test/` | Fait (2026-11-01) : vue, route, gabarit et test supprimés ; les vrais PDF restent testés dans `documents` ; aucune migration | — |
 | Charte graphique v1.0 (blanc & contrastes francs) | PR 1 à 4 faites ; audit axe relancé le 2026-10-29 (0 violation, `docs/technique/audit-accessibilite.md`) ; reste la revue des pages publiques à 375 px et les vérifications manuelles (clavier, lecteur d'écran, zoom 200 %) | Utilisateur |
+| Demandes de la réunion du 2026-11-05 (retour, libellé, gestion d'équipe, formulaires organisateur et régie de tournée, documents pour l'artiste, gestion sociale par artiste, site vitrine) | Documentées (F-86 à F-93), à planifier une PR à la fois : liste dans `feuille-de-route.md` | Claude, après accord sur chaque plan |
+
 
 ## 2. Déploiement (Scalingo, app `bordpro`)
 Branches : `main` (travail) et `production` (livré). **Dernière livraison : `v2026-11-02`** (2026-11-02, commit `7e2a285`), après `v2026-11-01` et `v2026-10-29` ; historique : `docs/technique/livraison.md`. Scalingo se déploie à la main depuis la branche **`production`** (jamais `main`). Aucune migration en attente.
@@ -60,7 +62,7 @@ Rappels de l'Accueil regroupés à partir de trois du même genre (2026-10-29).
 - Relecture professionnelle (comptable, juriste) des 4 modèles de contrat et des factures : **le point le plus sensible**.
 - Structure juridique, CGU, registre RGPD.
 - Recette réelle sur la production, puis 3 testeurs sans aide.
-- Textes définitifs du site vitrine (associé), puis `SITE_INDEXABLE=True`.
+- Textes définitifs du site vitrine (associé), puis `SITE_INDEXABLE=True`. Maquette reçue le 2026-11-05 (`docs/marque/sources-associe/maquette-site-vitrine.html`) : design retenu, textes limités à ce qui existe ; page Tarifs plus tard (trois formules).
 - Questions à l'associé : « n° de compte » de la fiche Équipe ; Q9 (modèle économique, bloque l'abonnement mais pas la bêta).
 - Logo officiel (`LOGO_2.pdf`, vectoriel) et favicon simplifié 16 px : en attente du graphiste.
 
