@@ -1,0 +1,676 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>BÒRD PRO · Prenez votre tournée en main</title>
+<meta name="description" content="Le copilote de gestion des artistes autoproduits et petites structures du spectacle : dates, budget, contrats, paie et feuilles de route au même endroit.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@800&family=IBM+Plex+Mono:wght@400;500&family=Instrument+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+/* ===== Tokens (extraits de BRD_PRO_design-tokens.css v1.0) ===== */
+:root{
+--color-night:#10243F;--color-coral:#FF695B;--color-ocean:#007299;--color-white:#FFFFFF;--color-cream:#F5F2EA;--color-light-blue:#E2F1F6;
+--color-success:#1F6B4A;--color-warning:#E3A21A;--color-danger:#8E1F3F;
+--color-text-primary:var(--color-night);--color-text-secondary:#465A6C;--color-border:#C4CFDA;
+--font-display:"Archivo",sans-serif;--font-body:"Instrument Sans",sans-serif;--font-data:"IBM Plex Mono",monospace;
+--space-1:4px;--space-2:8px;--space-3:12px;--space-4:16px;--space-5:20px;--space-6:24px;--space-8:32px;--space-10:40px;--space-12:48px;
+--radius-control:12px;--radius-card:16px;--radius-card-large:24px;--radius-section:28px;--target-touch:48px;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--color-white);color:var(--color-text-primary);font-family:var(--font-body);font-size:16px;line-height:24px;-webkit-font-smoothing:antialiased}
+h1,h2,h3{margin:0;font-family:var(--font-display);font-weight:800;letter-spacing:.04em;text-align:left}
+h1{font-size:clamp(34px,6vw,64px);line-height:1.05}
+h2{font-size:clamp(26px,3.6vw,40px);line-height:1.12}
+h3{font-size:18px;line-height:24px}
+p{margin:0}
+a{color:inherit}
+.data{font-family:var(--font-data);font-weight:500;font-variant-numeric:tabular-nums}
+:focus-visible{outline:3px solid var(--color-ocean);outline-offset:2px}
+.wrap{max-width:1120px;margin:0 auto;padding:0 var(--space-6)}
+.section{padding:var(--space-12) 0}
+.section--cream{background:var(--color-cream)}
+.section--night{background:var(--color-night);color:var(--color-white)}
+.section--night h2,.section--night h3{color:var(--color-white)}
+.lead{font-size:18px;line-height:28px;max-width:62ch;color:var(--color-text-secondary)}
+.section--night .lead{color:#DCE6EF}
+.section-head{display:grid;gap:var(--space-3);margin-bottom:var(--space-8)}
+
+/* Boutons */
+.btn-primary,.btn-secondary{display:inline-flex;align-items:center;justify-content:center;min-height:var(--target-touch);padding:var(--space-3) var(--space-5);border-radius:var(--radius-control);font-family:var(--font-body);font-weight:600;font-size:16px;text-decoration:none;cursor:pointer}
+.btn-primary{background:var(--color-coral);color:var(--color-night);border:none}
+.btn-secondary{background:var(--color-white);color:var(--color-night);border:2px solid var(--color-night)}
+.section--night .btn-secondary{border-color:var(--color-white)}
+.btn-primary:hover{background:#ff8074}
+.btn-secondary:hover{background:var(--color-light-blue)}
+.btn-row{display:flex;flex-wrap:wrap;gap:var(--space-3);margin-top:var(--space-6)}
+
+/* Header */
+.site-header{background:var(--color-night);color:var(--color-white);position:sticky;top:0;z-index:20}
+.site-header .wrap{display:flex;align-items:center;justify-content:space-between;gap:var(--space-4);min-height:72px;flex-wrap:wrap}
+.brand{display:flex;align-items:center;gap:var(--space-3);text-decoration:none;font-family:var(--font-display);font-weight:800;letter-spacing:.02em;font-size:20px}
+/* Remplacer par assets/ICON_FD-TRANSPARENT.svg (logo officiel) */
+.brand__mark{width:40px;height:40px;border-radius:12px;background:var(--color-white);display:grid;place-items:center}
+.brand__mark span{display:block;width:16px;height:24px;border-radius:5px 5px 8px 5px;background:linear-gradient(90deg,var(--color-night) 50%,var(--color-coral) 50%)}
+.nav{display:flex;gap:var(--space-1);align-items:center;flex-wrap:wrap}
+.nav a{display:inline-flex;align-items:center;min-height:var(--target-touch);padding:0 var(--space-4);text-decoration:none;font-weight:500;border-radius:var(--radius-control)}
+.nav a:hover{background:#1c3858}
+.nav a[aria-current="page"]{color:var(--color-coral);font-weight:700;text-decoration:underline;text-underline-offset:6px;text-decoration-thickness:2px}
+.nav .btn-primary{margin-left:var(--space-2);padding:0 var(--space-5)}
+
+/* Pages (routage par ancre) */
+.page{display:none}
+.page:target,.page.is-active{display:block}
+
+/* Hero */
+.hero{background:var(--color-night);color:var(--color-white);padding:var(--space-12) 0 64px;overflow:hidden}
+.hero .wrap{display:grid;grid-template-columns:1.15fr .85fr;gap:var(--space-10);align-items:center}
+.hero h1{color:var(--color-white);letter-spacing:.01em}
+.hero .lead{margin-top:var(--space-5);color:#DCE6EF}
+.hero__rule{width:72px;height:4px;background:var(--color-coral);margin-top:var(--space-6)}
+.shape{position:relative;min-height:340px}
+.shape i{position:absolute;display:block}
+.shape .s1{right:30%;top:0;width:44%;height:78%;background:var(--color-ocean);border-radius:0 0 var(--radius-section) var(--radius-section)}
+.shape .s2{right:0;bottom:0;width:62%;height:68%;background:var(--color-coral);border-radius:var(--radius-section) 0 0 0}
+.shape .s3{right:12%;top:20%;width:48%;height:56%;background:var(--color-cream);border-radius:var(--radius-card-large);display:grid;place-items:center;padding:var(--space-4)}
+
+/* Cartes */
+.grid{display:grid;gap:var(--space-5)}
+.g2{grid-template-columns:repeat(2,1fr)}.g3{grid-template-columns:repeat(3,1fr)}.g4{grid-template-columns:repeat(4,1fr)}
+.card{background:var(--color-white);border:1px solid var(--color-border);border-radius:var(--radius-card);padding:var(--space-5);display:grid;gap:var(--space-2);align-content:start}
+.card p{color:var(--color-text-secondary)}
+.card-highlight{background:var(--color-coral);color:var(--color-night);border-radius:var(--radius-card);padding:var(--space-5);display:grid;gap:var(--space-2);align-content:start}
+.card-highlight p{color:var(--color-night)}
+.info-block{background:var(--color-ocean);color:var(--color-white);border-radius:var(--radius-card);padding:var(--space-5);display:grid;gap:var(--space-2);align-content:start}
+.info-block h3{color:var(--color-white)}
+.secondary-block{background:var(--color-cream);border-radius:var(--radius-card);padding:var(--space-5);display:grid;gap:var(--space-2);align-content:start}
+.discreet-context{background:var(--color-light-blue);border-radius:var(--radius-control);padding:var(--space-4)}
+.num{font-family:var(--font-data);font-weight:500;color:var(--color-ocean);font-size:14px}
+
+/* Maquette budget */
+.mock{background:var(--color-white);border:1px solid var(--color-border);border-radius:var(--radius-card-large);padding:var(--space-5);display:grid;gap:var(--space-3);color:var(--color-night);width:100%}
+.mock__label{font-size:14px;line-height:20px;color:var(--color-text-secondary)}
+.mock__row{display:grid;grid-template-columns:repeat(3,1fr);gap:var(--space-3)}
+.mock__kpi{border-radius:var(--radius-control);padding:var(--space-3);border:1px solid var(--color-border);display:grid;gap:var(--space-1)}
+.mock__kpi .data{font-size:20px;line-height:28px}
+.mock__kpi--night{background:var(--color-night);color:var(--color-white);border-color:var(--color-night)}
+.mock__kpi--night .mock__label{color:#DCE6EF}
+.mock__kpi--coral{background:var(--color-coral);border-color:var(--color-coral)}
+.mock__kpi--coral .mock__label{color:var(--color-night)}
+.mock__alert{background:#FFF0C9;border:1px solid var(--color-warning);border-radius:var(--radius-control);padding:var(--space-3);font-size:14px;line-height:20px}
+.mock__alert strong{display:block}
+.mock__note{font-size:14px;color:var(--color-text-secondary)}
+
+/* Statuts : icône + texte, jamais la couleur seule */
+.status{display:inline-flex;align-items:center;gap:var(--space-2);padding:var(--space-1) var(--space-3);border-radius:var(--radius-control);font-size:14px;font-weight:600;border:1px solid currentColor;background:var(--color-white)}
+.status--confirmed{color:var(--color-success)}
+.status--warning{color:#8A5F00}
+.status--danger{color:var(--color-danger)}
+
+/* Rôles / étapes */
+.roles{list-style:none;margin:0;padding:0}
+.steps{list-style:none;margin:0;padding:0;counter-reset:s}
+.steps li{counter-increment:s;display:grid;grid-template-columns:48px 1fr;gap:var(--space-4);padding:var(--space-4) 0;border-top:2px solid var(--color-night)}
+.steps li::before{content:counter(s,decimal-leading-zero);font-family:var(--font-data);font-weight:500;font-size:20px;color:var(--color-ocean)}
+.section--night .steps li{border-top-color:var(--color-white)}
+.section--night .steps li::before{color:var(--color-coral)}
+.steps h3{margin-bottom:var(--space-1)}
+.split{display:grid;grid-template-columns:1fr 1fr;gap:var(--space-10);align-items:start}
+.checks{list-style:none;margin:0;padding:0;display:grid;gap:var(--space-2)}
+.checks li{display:grid;grid-template-columns:24px 1fr;gap:var(--space-2)}
+.checks li::before{content:"✓";font-weight:700;color:var(--color-success)}
+.checks--no li::before{content:"✕";color:var(--color-danger)}
+.section--night .checks li::before{color:var(--color-white)}
+.badge{display:inline-block;font-family:var(--font-data);font-size:14px;border:1px solid currentColor;border-radius:var(--radius-control);padding:2px var(--space-3);width:fit-content}
+
+/* Offres */
+.offer{border:1px solid var(--color-border);border-radius:var(--radius-card-large);padding:var(--space-6);display:grid;gap:var(--space-3);align-content:start;background:var(--color-white);border-top-width:6px}
+.offer--d{border-top-color:var(--color-night)}.offer--p{border-top-color:var(--color-ocean)}.offer--t{border-top-color:var(--color-coral)}
+.offer .price{font-family:var(--font-data);font-weight:500;font-size:32px;line-height:40px}
+.offer .price small{font-size:16px}
+.offer .sub{color:var(--color-text-secondary);font-size:14px;line-height:20px;min-height:20px}
+.offer .btn-primary,.offer .btn-secondary{margin-top:var(--space-2)}
+.offer hr{border:0;border-top:1px solid var(--color-border);width:100%;margin:var(--space-2) 0}
+
+/* Tableau */
+.table-wrap{overflow-x:auto;border:1px solid var(--color-border);border-radius:var(--radius-card)}
+table{width:100%;border-collapse:collapse;min-width:620px;background:var(--color-white)}
+th,td{padding:var(--space-3) var(--space-4);text-align:left;border-bottom:1px solid var(--color-border)}
+th{background:var(--color-night);color:var(--color-white);font-family:var(--font-body);font-weight:600;font-size:14px}
+tbody tr:last-child td{border-bottom:0}
+td:not(:first-child),th:not(:first-child){text-align:center}
+td.yes{font-weight:600;color:var(--color-success)}
+td.no{color:var(--color-text-secondary)}
+.price-ex{font-family:var(--font-data);font-size:32px;line-height:40px;font-weight:500}
+
+/* Footer */
+.cta-band{background:var(--color-coral);color:var(--color-night);padding:var(--space-12) 0}
+.cta-band h2{color:var(--color-night)}
+.cta-band p{margin-top:var(--space-3);max-width:62ch}
+.cta-band .btn-primary{background:var(--color-night);color:var(--color-white)}
+.cta-band .btn-secondary{border-color:var(--color-night)}
+.site-footer{background:var(--color-night);color:#DCE6EF;padding:var(--space-8) 0;font-size:14px;line-height:20px}
+.site-footer .wrap{display:flex;flex-wrap:wrap;justify-content:space-between;gap:var(--space-4)}
+.site-footer a{color:var(--color-white)}
+
+/* ===== Dynamique & moderne ===== */
+.hero h1{font-size:clamp(40px,7.4vw,92px);line-height:1;letter-spacing:.01em}
+.hl{text-decoration:underline;text-decoration-color:var(--color-coral);text-decoration-thickness:.1em;text-underline-offset:.12em}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-16px)}}
+.shape .s1{animation:float 7s ease-in-out infinite}
+.shape .s2{animation:float 9s ease-in-out infinite reverse}
+.shape .s3{animation:float 8s ease-in-out infinite;animation-delay:-2s}
+.marquee{background:var(--color-coral);color:var(--color-night);overflow:hidden;white-space:nowrap;border-block:2px solid var(--color-night)}
+.marquee__track{display:inline-flex;gap:var(--space-8);padding:var(--space-4) var(--space-4);animation:scroll 30s linear infinite;font-family:var(--font-display);font-weight:800;font-size:22px;letter-spacing:.04em;text-transform:uppercase}
+.marquee__track span{display:inline-flex;gap:var(--space-8)}
+@keyframes scroll{to{transform:translateX(-50%)}}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:var(--space-5)}
+.stat{border-top:4px solid var(--color-night);padding-top:var(--space-4)}
+.stat .big{display:block;font-family:var(--font-data);font-weight:500;font-size:clamp(44px,5.5vw,72px);line-height:1}
+.stat p{color:var(--color-text-secondary);margin-top:var(--space-2)}
+.bento{grid-template-columns:repeat(4,1fr)}
+.b-big{grid-column:span 2;grid-row:span 2;padding:var(--space-8)}
+.b-big h3{font-size:clamp(32px,4vw,48px);line-height:1.05}
+.b-big p{font-size:18px;line-height:28px}
+.b-wide{grid-column:span 2}
+.js .reveal{opacity:0;translate:0 28px}
+.js .reveal.in{opacity:1;translate:0 0}
+.reveal{transition:opacity .6s ease,translate .6s ease,transform .2s ease,border-color .2s ease}
+.card:hover,.offer:hover,.info-block:hover,.secondary-block:hover,.card-highlight:hover{transform:translateY(-4px)}
+.card:hover,.offer:hover{border-color:var(--color-night)}
+.btn-primary,.btn-secondary{transition:transform .15s ease,background .15s ease}
+.btn-primary:hover,.btn-secondary:hover{transform:translateY(-2px)}
+.toggle{display:inline-flex;gap:4px;margin-top:var(--space-6);padding:4px;border:2px solid var(--color-white);border-radius:var(--radius-control);background:var(--color-white)}
+.toggle button{min-height:44px;padding:0 var(--space-5);border:0;border-radius:8px;background:transparent;color:var(--color-night);font:600 16px var(--font-body);cursor:pointer}
+.toggle button[aria-pressed="true"]{background:var(--color-night);color:var(--color-white)}
+.section--night .checks--no li::before{color:var(--color-danger)}
+.steps--plain li::before{content:none}
+@media (prefers-reduced-motion:reduce){.shape i,.marquee__track{animation:none}.js .reveal{opacity:1;translate:none;transition:none}}
+/* ===== Gimmicks (assets/GIMIC_*.svg) ===== */
+.shape .s3{background:none;padding:0;right:-4%;top:-4%;width:100%;height:108%}
+.shape .s3 img{display:block;width:100%;height:100%;object-fit:contain}
+.hero{position:relative}
+.hero .wrap{position:relative;z-index:1}
+.hero__gimic{position:absolute;right:6%;top:50%;width:min(34vw,460px);height:auto;translate:0 -50%;pointer-events:none;animation:float 8s ease-in-out infinite}
+.hero__gimic ~ .wrap > div{max-width:720px}
+.cta-band{position:relative;overflow:hidden}
+.cta-band .wrap{position:relative;z-index:1}
+.cta-band__gimic{position:absolute;right:6%;top:50%;width:min(30vw,400px);height:auto;translate:0 -50%;pointer-events:none;animation:float 9s ease-in-out infinite reverse}
+@media (max-width:900px){.hero__gimic,.cta-band__gimic{display:none}}
+@media (prefers-reduced-motion:reduce){.hero__gimic,.cta-band__gimic{animation:none}}
+@media (max-width:900px){.stats,.bento{grid-template-columns:repeat(2,1fr)}.b-big,.b-wide{grid-column:span 2;grid-row:auto}}
+@media (max-width:520px){.stats,.bento{grid-template-columns:1fr}.b-big,.b-wide{grid-column:auto}}
+@media (max-width:900px){
+.hero .wrap,.split,.g2,.g3{grid-template-columns:1fr}
+.g4{grid-template-columns:repeat(2,1fr)}
+.shape{min-height:280px}
+.mock__row{grid-template-columns:1fr}
+}
+@media (max-width:520px){.g4{grid-template-columns:1fr}.nav a{padding:0 var(--space-3)}}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+</style>
+</head>
+<body>
+
+<header class="site-header">
+<div class="wrap">
+<a class="brand" href="#accueil" aria-label="BÒRD PRO, accueil"><span class="brand__mark" aria-hidden="true"><span></span></span>BÒRD PRO</a>
+<nav class="nav" aria-label="Navigation principale">
+<a href="#accueil" data-nav="accueil">Accueil</a>
+<a href="#fonctionnalites" data-nav="fonctionnalites">Fonctionnalités</a>
+<a href="#tarifs" data-nav="tarifs">Tarifs</a>
+<a class="btn-primary" href="/inscription" data-cta="signup">Commencer gratuitement</a>
+</nav>
+</div>
+</header>
+
+<main>
+
+<!-- ================= PAGE 1 : ACCUEIL ================= -->
+<div id="accueil" class="page is-active">
+
+<section class="hero">
+<div class="wrap">
+<div>
+<h1>Prenez votre <span class="hl">tournée</span> en main&nbsp;!</h1>
+<div class="hero__rule" aria-hidden="true"></div>
+<p class="lead">Le copilote de gestion des artistes autoproduits et petites structures du spectacle. Dates, budget, contrats, paie et feuilles de route : tout au même endroit.</p>
+<div class="btn-row">
+<a class="btn-primary" href="/inscription" data-cta="signup">Commencer gratuitement</a>
+<a class="btn-secondary" href="#fonctionnalites">Voir les fonctionnalités</a>
+</div>
+</div>
+<div class="shape" aria-hidden="true">
+<i class="s1"></i><i class="s2"></i>
+<i class="s3"><img src="assets/GIMIC_BLANC.svg" alt=""></i>
+</div>
+</div>
+</section>
+
+<div class="marquee" aria-hidden="true"><div class="marquee__track"><span><b>Dates</b><b aria-hidden="true">✦</b><b>Budget</b><b aria-hidden="true">✦</b><b>Contrats</b><b aria-hidden="true">✦</b><b>Paie</b><b aria-hidden="true">✦</b><b>Radar</b><b aria-hidden="true">✦</b><b>Feuilles de route</b><b aria-hidden="true">✦</b><b>Tournée</b><b aria-hidden="true">✦</b></span><span><b>Dates</b><b aria-hidden="true">✦</b><b>Budget</b><b aria-hidden="true">✦</b><b>Contrats</b><b aria-hidden="true">✦</b><b>Paie</b><b aria-hidden="true">✦</b><b>Radar</b><b aria-hidden="true">✦</b><b>Feuilles de route</b><b aria-hidden="true">✦</b><b>Tournée</b><b aria-hidden="true">✦</b></span></div></div>
+
+<section class="section">
+<div class="wrap">
+<div class="section-head">
+<h2>Vous tenez tous les rôles.</h2>
+<p class="lead">Quand on est artiste autoproduit ou petite structure, on est tour à tour diffuseur, producteur, administrateur et chef de tournée. La charge est partout, les informations aussi.</p>
+</div>
+<ul class="grid g4 roles">
+<li class="card"><span class="num">Diffusion</span><h3>Prospecter, relancer, confirmer</h3><p>Suivre chaque contact et chaque date.</p></li>
+<li class="card"><span class="num">Production</span><h3>Organiser les déplacements</h3><p>Prévoir et préparer la route.</p></li>
+<li class="card"><span class="num">Administration</span><h3>Devis, contrats, factures</h3><p>Suivre et réunir les documents.</p></li>
+<li class="card"><span class="num">Tournée</span><h3>Plannings et feuilles de route</h3><p>Informer toute l’équipe.</p></li>
+</ul>
+</div>
+</section>
+
+<section class="section section--night">
+<div class="wrap split">
+<div class="section-head" style="margin:0">
+<h2>Moins de dispersion. Plus de temps pour l’artistique.</h2>
+<p class="lead">BÒRD PRO regroupe spectacles, contacts, dates, budgets et documents dans un seul espace de travail. Vous savez où en est chaque date, ce qu’elle rapporte, ce qu’elle coûte et ce qu’il reste à faire.</p>
+<div class="btn-row"><a class="btn-primary" href="/inscription" data-cta="signup">Commencer gratuitement</a></div>
+</div>
+<ol class="steps">
+<li><div><h3>Un espace pour gérer</h3><p>Spectacles, projets et tournées au même endroit.</p></div></li>
+<li><div><h3>Radar pour décider</h3><p>Il repère ce qui mérite votre attention, avant qu’il ne soit trop tard.</p></div></li>
+<li><div><h3>Un accès pour les artistes</h3><p>Ils consultent depuis leur mobile ce que vous choisissez de partager.</p></div></li>
+</ol>
+</div>
+</section>
+
+<section class="section">
+<div class="wrap">
+<div class="stats">
+<div class="stat"><span class="big"><span data-count="1">1</span></span><p>espace pour tous vos spectacles, projets et tournées.</p></div>
+<div class="stat"><span class="big">0&nbsp;€</span><p>pour démarrer avec l’offre Découverte.</p></div>
+<div class="stat"><span class="big"><span data-count="3">3</span></span><p>offres, de la gestion seule au travail avec les artistes.</p></div>
+<div class="stat"><span class="big"><span data-count="5">5</span></span><p>accès inclus dans Tournée Connectée.</p></div>
+</div>
+</div>
+</section>
+
+<section class="section">
+<div class="wrap">
+<div class="section-head">
+<h2>Ce que ça change pour votre activité.</h2>
+<p class="lead">Des effets concrets, au quotidien, sur la façon de piloter vos dates.</p>
+</div>
+<div class="grid g2">
+<article class="card"><h3>Une activité lisible</h3><p>Chaque date a un statut clair : confirmée, en option, à suivre. Plus besoin de fouiller dans vos mails et vos tableurs pour savoir où vous en êtes.</p><p><span class="status status--confirmed">✓ Confirmé</span> <span class="status status--warning">◷ En option</span></p></article>
+<article class="card"><h3>Des décisions mieux éclairées</h3><p>Comparez prévu et réel, mesurez l’écart, corrigez pour la date suivante. Vous voyez ce qu’il reste vraiment après les frais.</p></article>
+<article class="card"><h3>Moins d’oublis, moins de surprises</h3><p>Radar signale une date non confirmée, un budget incomplet ou des frais qui arrivent avant le prochain paiement. Une information, une explication, une action.</p></article>
+<article class="card"><h3>Une équipe informée, sans courir</h3><p>Feuilles de route, horaires, accès, contacts utiles : l’équipe consulte tout dans sa poche. Vous gardez la main sur ce qui est partagé.</p></article>
+</div>
+
+<div class="grid g2" style="margin-top:var(--space-8);align-items:center">
+<div class="section-head" style="margin:0">
+<h3 style="font-size:26px;line-height:32px">Un exemple concret de Radar.</h3>
+<p class="lead">Vous avez 180&nbsp;€ de disponibles et 495&nbsp;€ de frais à payer : Radar vous prévient qu’il manque 315&nbsp;€ avant que le problème n’arrive.</p>
+</div>
+<div class="mock" role="img" aria-label="Exemple fictif : 1 350 € à rapporter, 755 € de frais, 595 € restants, alerte Radar sur des frais à venir">
+<div class="mock__row">
+<div class="mock__kpi mock__kpi--night"><span class="mock__label">Ce que les concerts doivent rapporter</span><span class="data">1 350 €</span></div>
+<div class="mock__kpi mock__kpi--coral"><span class="mock__label">Frais déjà ajoutés</span><span class="data">755 €</span></div>
+<div class="mock__kpi"><span class="mock__label">Ce qu’il reste après ces frais</span><span class="data">595 €</span></div>
+</div>
+<div class="mock__alert"><strong>◷ RADAR · des frais arrivent avant le prochain paiement.</strong>180&nbsp;€ disponibles pour 495&nbsp;€ à payer. Il manque 315&nbsp;€.</div>
+<p class="mock__note">Aperçu de conception · données fictives</p>
+</div>
+</div>
+</div>
+</section>
+
+<section class="section section--cream">
+<div class="wrap">
+<div class="section-head">
+<h2>Pour ceux qui font tout eux-mêmes.</h2>
+</div>
+<div class="grid g3">
+<div class="card"><h3>Artiste solo ou groupe</h3><p>Organiser les dates, suivre le budget, préparer les déplacements.</p></div>
+<div class="card"><h3>Petite compagnie</h3><p>Centraliser spectacles, documents et informations de production.</p></div>
+<div class="card"><h3>Bookeur·se indépendant·e</h3><p>Suivre contacts, propositions et confirmations.</p></div>
+<div class="card"><h3>Petite structure de production</h3><p>Piloter plusieurs projets et préparer l’administratif.</p></div>
+<div class="card"><h3>Équipe en tournée</h3><p>Partager plannings, feuilles de route, documents et contacts.</p></div>
+<div class="info-block"><h3>Et vous ?</h3><p>Commencez avec l’offre Découverte, gratuite, puis évoluez quand votre activité grandit.</p></div>
+</div>
+</div>
+</section>
+
+<section class="cta-band">
+<img class="cta-band__gimic" src="assets/GIMIC_BLEU.svg" alt="">
+<div class="wrap">
+<h2>Commencez gratuitement.</h2>
+<p>Découverte vous laisse organiser vos premières dates. Quand l’activité grandit, Pilotage et Tournée Connectée prennent le relais.</p>
+<div class="btn-row"><a class="btn-primary" href="/inscription" data-cta="signup">Créer mon espace</a><a class="btn-secondary" href="#tarifs">Voir les tarifs</a></div>
+</div>
+</section>
+</div>
+
+<!-- ================= PAGE 2 : FONCTIONNALITÉS ================= -->
+<div id="fonctionnalites" class="page">
+
+<section class="hero" style="padding-bottom:var(--space-12)">
+<img class="hero__gimic" src="assets/GIMIC_ROSE.svg" alt="">
+<div class="wrap" style="grid-template-columns:1fr">
+<div>
+<h1>Tout votre quotidien de tournée, au même endroit.</h1>
+<div class="hero__rule" aria-hidden="true"></div>
+<p class="lead">Sept espaces connectés pour gérer vos dates, votre budget, vos documents et votre équipe. Fonctions variables selon l’offre.</p>
+</div>
+</div>
+</section>
+
+<section class="section">
+<div class="wrap">
+<div class="grid bento">
+<article class="card-highlight b-big"><span class="badge">Le copilote</span><h3>Radar</h3><p>Points de vigilance, rappels, actions prioritaires. Il repère ce qui mérite votre attention : une information, une explication, une action.</p></article>
+<article class="card"><h3>Organisation</h3><p>Spectacles, plannings, feuilles de route, documents.</p></article>
+<article class="card"><h3>Diffusion</h3><p>Contacts, propositions, statut de chaque date.</p></article>
+<article class="card"><h3>Budget</h3><p>Recettes, dépenses, prévisionnel et réel.</p></article>
+<article class="card"><h3>Contrats</h3><p>Documents regroupés, avancement suivi.</p></article>
+<article class="card"><h3>Paie</h3><p>Informations préparées et exportables.</p></article>
+<article class="card"><h3>En tournée</h3><p>Les artistes consultent les infos de leurs dates.</p></article>
+<article class="secondary-block b-wide"><h3>1 espace</h3><p>Pour tous vos spectacles, projets et tournées.</p></article>
+</div>
+</div>
+</section>
+
+<section class="section section--cream">
+<div class="wrap split">
+<div class="section-head" style="margin:0">
+<h2>Budget : prévisionnel, réel, écart.</h2>
+<p class="lead">Comparez les recettes et dépenses prévues aux montants réels, mesurez les écarts et ajustez vos décisions.</p>
+</div>
+<ul class="steps steps--plain" style="list-style:none">
+<li style="grid-template-columns:90px 1fr"><span class="data" style="color:var(--color-ocean);font-size:18px;grid-column:1;grid-row:1">PRÉVU</span><p style="grid-column:2">Ce que la date doit rapporter et coûter.</p></li>
+<li style="grid-template-columns:90px 1fr"><span class="data" style="color:var(--color-ocean);font-size:18px;grid-column:1;grid-row:1">RÉEL</span><p style="grid-column:2">Les montants constatés, saisis au fil de l’eau.</p></li>
+<li style="grid-template-columns:90px 1fr"><span class="data" style="color:var(--color-ocean);font-size:18px;grid-column:1;grid-row:1">ÉCART</span><p style="grid-column:2">Ce qu’il faut corriger pour la prochaine date.</p></li>
+</ul>
+</div>
+</section>
+
+<section class="section section--night">
+<div class="wrap split">
+<div class="section-head" style="margin:0">
+<h2>Radar : le copilote de prise de décision.</h2>
+<p class="lead">Il repère ce qui mérite votre attention, à l’échelle d’un projet ou d’une tournée. Une information, une explication, une action.</p>
+</div>
+<ul class="checks">
+<li>Paiements à vérifier : des frais arrivent avant le prochain paiement.</li>
+<li>Date à confirmer : un montant est prévu, la confirmation manque.</li>
+<li>Budget à compléter : la rémunération de l’équipe n’est pas encore ajoutée.</li>
+<li>Rappels intégrés et actions prioritaires.</li>
+</ul>
+</div>
+</section>
+
+<section class="section">
+<div class="wrap">
+<div class="section-head"><h2>Une paie mieux préparée.</h2></div>
+<ol class="grid g3 roles" style="padding:0;list-style:none">
+<li class="card"><span class="num">Étape 1</span><h3>Centralisez</h3><p>Les informations des intervenants et de leurs interventions.</p></li>
+<li class="card"><span class="num">Étape 2</span><h3>Exportez</h3><p>Les données utiles, grâce à la gestion sociale simplifiée.</p></li>
+<li class="card"><span class="num">Étape 3</span><h3>Transmettez</h3><p>À la personne ou au service chargé de la paie.</p></li>
+</ol>
+<div class="discreet-context" style="margin-top:var(--space-5)">BÒRD PRO prépare les informations : il ne calcule pas les bulletins et ne réalise pas les déclarations sociales.</div>
+</div>
+</section>
+
+<section class="section section--cream">
+<div class="wrap split">
+<div class="section-head" style="margin:0">
+<h2>L’essentiel sur la route.</h2>
+<p class="lead">Avec Tournée Connectée, chaque artiste consulte depuis son mobile ce que vous partagez avec lui.</p>
+<p class="badge">Offre Tournée Connectée</p>
+</div>
+<div class="grid">
+<ul class="checks">
+<li>Dates confirmées et planning</li>
+<li>Feuilles de route : horaires, accès, hébergement</li>
+<li>Contacts utiles et documents partagés</li>
+</ul>
+<div class="discreet-context">L’accès artiste est distinct de l’accès de gestion : l’artiste consulte, vous gardez la main.</div>
+</div>
+</div>
+</section>
+
+<section class="section">
+<div class="wrap">
+<div class="section-head">
+<span class="badge" style="color:var(--color-ocean)">Nouveau</span>
+<h2>Du formulaire à la feuille de route.</h2>
+<p class="lead">Inclus dans toutes les offres, de Découverte à Tournée Connectée.</p>
+</div>
+<ol class="grid g4 roles" style="padding:0;list-style:none">
+<li class="card"><span class="num">Étape 1</span><h3>Formulaire en ligne</h3><p>L’organisateur renseigne ses informations administratives et les éléments de feuille de route.</p></li>
+<li class="card"><span class="num">Étape 2</span><h3>Informations récupérées</h3><p>Elles arrivent directement dans BÒRD PRO, sans ressaisie.</p></li>
+<li class="card"><span class="num">Étape 3</span><h3>Feuille de route générée</h3><p>Génération automatique dès que les éléments sont renseignés.</p></li>
+<li class="card"><span class="num">Étape 4</span><h3>Envoi dématérialisé</h3><p>Envoyez la feuille de route par voie dématérialisée.</p></li>
+</ol>
+</div>
+</section>
+
+<section class="section section--cream">
+<div class="wrap">
+<div class="section-head">
+<span class="badge" style="color:var(--color-ocean)">Nouveau</span>
+<h2>Devis, contrats, factures : générés pour vous.</h2>
+<p class="lead">Génération automatique, incluse dans toutes les offres, de Découverte à Tournée Connectée.</p>
+</div>
+<div class="grid g3">
+<div class="card"><h3>Devis</h3><p>Génération automatique.</p></div>
+<div class="card"><h3>Contrats</h3><p>Génération automatique.</p></div>
+<div class="card"><h3>Factures</h3><p>Génération automatique.</p></div>
+</div>
+<p style="margin-top:var(--space-5)"><span class="status status--warning">◷ À venir</span> La gestion de la facturation électronique.</p>
+</div>
+</section>
+
+<section class="section section--night">
+<div class="wrap">
+<div class="section-head"><h2>Un périmètre clair.</h2></div>
+<div class="grid g2">
+<div class="info-block"><h3>Ce que BÒRD PRO fait</h3>
+<ul class="checks"><li>Prépare et exporte les informations utiles à la paie.</li><li>Intègre les rappels dans Radar.</li><li>Sépare l’accès artiste de l’accès de gestion.</li><li>Regroupe vos spectacles, projets et tournées dans un seul espace de travail.</li></ul></div>
+<div class="secondary-block" style="color:var(--color-night)"><h3 style="color:var(--color-night)">Ce qu’il ne fait pas</h3>
+<ul class="checks checks--no"><li>Ne calcule pas les bulletins ni les déclarations sociales.</li><li>N’envoie pas de relance automatique et ne se connecte pas à une boîte mail.</li><li>Ne propose ni modèles de fiches techniques ou riders, ni attribution de tâches.</li><li>Pas d’automatisations API publique, Zapier ou Make, ni de deuxième espace de travail.</li></ul></div>
+</div>
+</div>
+</section>
+
+<section class="cta-band">
+<img class="cta-band__gimic" src="assets/GIMIC_BLEU.svg" alt="">
+<div class="wrap">
+<h2>Prêt à tout regrouper&nbsp;?</h2>
+<p>Commencez avec Découverte, gratuit, ou comparez les trois offres.</p>
+<div class="btn-row"><a class="btn-primary" href="/inscription" data-cta="signup">Commencer gratuitement</a><a class="btn-secondary" href="#tarifs">Voir les tarifs</a></div>
+</div>
+</section>
+</div>
+
+<!-- ================= PAGE 3 : TARIFS ================= -->
+<div id="tarifs" class="page">
+
+<section class="hero" style="padding-bottom:var(--space-12)">
+<img class="hero__gimic" src="assets/GIMIC_BLANC.svg" alt="">
+<div class="wrap" style="grid-template-columns:1fr">
+<div>
+<h1>Trois offres, un prix clair.</h1>
+<div class="hero__rule" aria-hidden="true"></div>
+<p class="lead">Prix TTC · 1 espace de travail par abonnement.</p>
+<div class="toggle" role="group" aria-label="Période de facturation"><button type="button" data-bill="m" aria-pressed="true">Mensuel</button><button type="button" data-bill="a" aria-pressed="false">Annuel · −10&nbsp;%</button></div>
+</div>
+</div>
+</section>
+
+<section class="section">
+<div class="wrap">
+<div class="grid g3">
+
+<article class="offer offer--d">
+<h3>Découverte</h3>
+<p class="price">Gratuit</p>
+<p class="sub">Pour suivre vos premières dates.</p>
+<a class="btn-secondary" href="/inscription?offre=decouverte" data-cta="signup-decouverte">Commencer gratuitement</a>
+<hr>
+<ul class="checks">
+<li>1 accès utilisateur</li>
+<li>Jusqu’à 10 dates actives</li>
+<li>Jusqu’à 30 contacts professionnels</li>
+<li>1 fiche spectacle</li>
+<li>Agenda et suivi des statuts des dates</li>
+<li>Suivi manuel des relances</li>
+<li>Contrats et suivi documentaire de base</li>
+<li>Budget prévisionnel et suivi simplifié</li>
+</ul>
+<p class="sub" style="margin-top:var(--space-2)">Non inclus : Radar et rappels, feuilles de route, documents de tournée, gestion sociale, exports, application mobile de gestion, espace artiste, signature électronique.</p>
+</article>
+
+<article class="offer offer--p">
+<h3>Pilotage</h3>
+<p class="price"><span data-m="20" data-a="18">20</span>&nbsp;€ <small>/mois</small></p>
+<p class="sub" data-m="Ou 216&nbsp;€/an, soit 18&nbsp;€/mois. Pour piloter seul, avec Radar." data-a="Facturé 216&nbsp;€/an. Pour piloter seul, avec Radar.">Ou 216&nbsp;€/an, soit 18&nbsp;€/mois. Pour piloter seul, avec Radar.</p>
+<a class="btn-secondary" href="/inscription?offre=pilotage" data-cta="signup-pilotage">Choisir Pilotage</a>
+<hr>
+<ul class="checks">
+<li>1 accès utilisateur</li>
+<li>Contacts, dates et fiches spectacle illimités</li>
+<li>Feuilles de route, documents de tournée, planning</li>
+<li>Création, suivi et archivage des contrats</li>
+<li>Budgets prévisionnels et réels, écarts comparés</li>
+<li>Exports comptables</li>
+<li>Gestion sociale simplifiée, export pour la paie</li>
+<li>Radar : vigilance, rappels, actions prioritaires</li>
+<li>Application mobile de gestion</li>
+<li>Agenda extérieur : iCal / Google Agenda</li>
+</ul>
+<p class="sub" style="margin-top:var(--space-2)">Non inclus : signature électronique, espace artiste, accès utilisateurs supplémentaires.</p>
+</article>
+
+<article class="offer offer--t">
+<h3>Tournée Connectée</h3>
+<p class="price"><span data-m="30" data-a="27">30</span>&nbsp;€ <small>/mois</small></p>
+<p class="sub" data-m="Ou 324&nbsp;€/an, soit 27&nbsp;€/mois. Pour partager avec les artistes." data-a="Facturé 324&nbsp;€/an. Pour partager avec les artistes.">Ou 324&nbsp;€/an, soit 27&nbsp;€/mois. Pour partager avec les artistes.</p>
+<a class="btn-primary" href="/inscription?offre=tournee-connectee" data-cta="signup-tournee">Choisir Tournée Connectée</a>
+<hr>
+<p><strong>Tout Pilotage, avec en plus :</strong></p>
+<ul class="checks">
+<li>5 accès utilisateurs inclus, gestionnaires et artistes confondus</li>
+<li>Signature électronique</li>
+<li>Espace artistes mobile : dates confirmées, planning, feuilles de route, contacts utiles, documents</li>
+<li>Vue de tournée multi-dates, suivi des équipes et des dépenses</li>
+<li>Bilan de fin de tournée et historique exportable</li>
+<li>Accès artistes supplémentaires : 5&nbsp;€ TTC/mois</li>
+</ul>
+<p class="sub" style="margin-top:var(--space-2)">Les cinq accès se répartissent librement : par exemple 1 gestionnaire et 4 artistes, ou 2 gestionnaires et 3 artistes.</p>
+</article>
+</div>
+</div>
+</section>
+
+<section class="section section--cream">
+<div class="wrap">
+<div class="section-head">
+<h2>Une seule option : +5&nbsp;€ pour un accès artiste.</h2>
+<p class="lead">Dans Tournée Connectée, 5 accès sont inclus. Au-delà, chaque accès artiste supplémentaire coûte 5&nbsp;€ TTC par mois.</p>
+</div>
+<div class="grid g3">
+<div class="card"><p class="price-ex">30&nbsp;€</p><p>2 gestionnaires + 3 artistes : les 5 accès sont inclus.</p></div>
+<div class="card"><p class="price-ex">35&nbsp;€</p><p>2 gestionnaires + 4 artistes : 1 accès artiste en plus.</p></div>
+<div class="card"><p class="price-ex">40&nbsp;€</p><p>1 gestionnaire + 6 artistes : 2 accès artistes en plus.</p></div>
+</div>
+<p class="mock__note" style="margin-top:var(--space-4)">TTC par mois, en abonnement mensuel. Un accès artiste permet de consulter les informations partagées : il ne donne pas les droits d’un gestionnaire.</p>
+</div>
+</section>
+
+<section class="section">
+<div class="wrap">
+<div class="section-head"><h2>Comparatif des offres.</h2></div>
+<div class="table-wrap" tabindex="0" role="region" aria-label="Tableau comparatif des offres">
+<table>
+<thead><tr><th scope="col">Fonction</th><th scope="col">Découverte</th><th scope="col">Pilotage</th><th scope="col">Tournée Connectée</th></tr></thead>
+<tbody>
+<tr><td>Espace de travail</td><td class="data">1</td><td class="data">1</td><td class="data">1</td></tr>
+<tr><td>Utilisateurs inclus</td><td class="data">1</td><td class="data">1</td><td class="data">5</td></tr>
+<tr><td>Dates actives</td><td class="data">10</td><td>Illimitées</td><td>Illimitées</td></tr>
+<tr><td>Contacts professionnels</td><td class="data">30</td><td>Illimités</td><td>Illimités</td></tr>
+<tr><td>Fiches spectacle</td><td class="data">1</td><td>Illimitées</td><td>Illimitées</td></tr>
+<tr><td>Agenda, statuts, relances manuelles</td><td class="yes">Oui</td><td class="yes">Oui</td><td class="yes">Oui</td></tr>
+<tr><td>Contrats et suivi documentaire</td><td>Basique</td><td>Complet</td><td>Complet</td></tr>
+<tr><td>Budget et dépenses</td><td>Simplifié</td><td>Complet</td><td>Complet</td></tr>
+<tr><td>Comparaison prévisionnel / réel</td><td class="no">Non</td><td class="yes">Oui</td><td class="yes">Oui</td></tr>
+<tr><td>Feuilles de route, documents de tournée</td><td class="no">Non</td><td class="yes">Oui</td><td class="yes">Oui</td></tr>
+<tr><td>Exports comptables</td><td class="no">Non</td><td class="yes">Oui</td><td class="yes">Oui</td></tr>
+<tr><td>Gestion sociale, export pour la paie</td><td class="no">Non</td><td class="yes">Oui</td><td class="yes">Oui</td></tr>
+<tr><td>Radar et rappels</td><td class="no">Non</td><td class="yes">Oui</td><td class="yes">Oui</td></tr>
+<tr><td>Agenda extérieur : iCal / Google</td><td class="no">Non</td><td class="yes">Oui</td><td class="yes">Oui</td></tr>
+<tr><td>Application mobile de gestion</td><td class="no">Non</td><td class="yes">Oui</td><td class="yes">Oui</td></tr>
+<tr><td>Espace artiste mobile</td><td class="no">Non</td><td class="no">Non</td><td class="yes">Oui</td></tr>
+<tr><td>Signature électronique</td><td class="no">Non</td><td class="no">Non</td><td class="yes">Oui</td></tr>
+<tr><td>Accès artiste supplémentaire</td><td class="no">Non</td><td class="no">Non</td><td class="data">5&nbsp;€ TTC/mois</td></tr>
+</tbody>
+</table>
+</div>
+<p class="mock__note" style="margin-top:var(--space-3)">Prix TTC · −10&nbsp;% en abonnement annuel.</p>
+</div>
+</section>
+
+<section class="cta-band">
+<img class="cta-band__gimic" src="assets/GIMIC_BLEU.svg" alt="">
+<div class="wrap">
+<h2>Commencez gratuitement.</h2>
+<p>Découverte vous laisse organiser vos premières dates. Quand l’activité grandit, Pilotage et Tournée Connectée prennent le relais.</p>
+<div class="btn-row"><a class="btn-primary" href="/inscription" data-cta="signup">Créer mon espace</a><a class="btn-secondary" href="mailto:contact@bordpro.fr">Nous contacter</a></div>
+</div>
+</section>
+</div>
+
+</main>
+
+<footer class="site-footer">
+<div class="wrap">
+<div>BÒRD PRO · Artistes autoproduits<br>Prix TTC. Aperçus de conception : données fictives.</div>
+<div><a href="https://www.bordpro.fr">www.bordpro.fr</a><br><a href="mailto:contact@bordpro.fr">contact@bordpro.fr</a></div>
+</div>
+</footer>
+
+<script>
+/* Routage par ancre : #accueil, #fonctionnalites, #tarifs */
+(function(){
+var pages=["accueil","fonctionnalites","tarifs"];
+function route(){
+var h=(location.hash||"#accueil").slice(1);
+if(pages.indexOf(h)===-1)h="accueil";
+pages.forEach(function(p){
+document.getElementById(p).classList.toggle("is-active",p===h);
+});
+document.querySelectorAll("[data-nav]").forEach(function(a){
+if(a.dataset.nav===h)a.setAttribute("aria-current","page");else a.removeAttribute("aria-current");
+});
+var titles={accueil:"BÒRD PRO · Prenez votre tournée en main",fonctionnalites:"Fonctionnalités · BÒRD PRO",tarifs:"Tarifs · BÒRD PRO"};
+document.title=titles[h];
+window.scrollTo(0,0);
+}
+window.addEventListener("hashchange",route);
+route();
+/* Animations d'apparition, compteurs, bascule mensuel/annuel */
+document.documentElement.classList.add("js");
+var els=document.querySelectorAll(".card,.offer,.info-block,.secondary-block,.card-highlight,.section-head,.stat,.mock,.steps li,.table-wrap");
+els.forEach(function(e){e.classList.add("reveal")});
+function count(e){var t=+e.dataset.count,st=null;function f(ts){st=st||ts;var k=Math.min((ts-st)/900,1);e.textContent=Math.round(t*k);if(k<1)requestAnimationFrame(f)}requestAnimationFrame(f)}
+if("IntersectionObserver" in window){
+var io=new IntersectionObserver(function(en){en.forEach(function(x){if(x.isIntersecting){x.target.classList.add("in");x.target.querySelectorAll("[data-count]").forEach(count);io.unobserve(x.target)}})},{threshold:.12});
+els.forEach(function(e){io.observe(e)});
+}else{els.forEach(function(e){e.classList.add("in")})}
+document.querySelectorAll("[data-bill]").forEach(function(b){b.addEventListener("click",function(){
+var m=b.dataset.bill;
+document.querySelectorAll("[data-bill]").forEach(function(x){x.setAttribute("aria-pressed",x===b)});
+document.querySelectorAll("[data-m][data-a]").forEach(function(e){e.innerHTML=e.dataset[m]});
+})});
+})();
+</script>
+</body>
+</html>
