@@ -2,10 +2,13 @@
 
 import re
 
-# /feuille-de-route/<token>/ (and /pdf/), /formulaire-organisateur/<token>/ and
-# /regie-de-tournee/<token>/, also inside a full URL: the token is the whole access right.
+# /feuille-de-route/<token>/ (and /pdf/), /formulaire-organisateur/<token>/,
+# /regie-de-tournee/<token>/ and the personal space of a team member /equipe/<token>/ (and
+# everything under it), also inside a full URL: the token is the whole access right.
+# `/bord/equipe/<id>/` is the owner's own team list: an id there is not a secret.
 ROADMAP_TOKEN = re.compile(
-    r"(/(?:feuille-de-route|formulaire-organisateur|regie-de-tournee)/)[^/?#\s\"']+"
+    r"((?:/(?:feuille-de-route|formulaire-organisateur|regie-de-tournee)|(?<!/bord)/equipe)/)"
+    r"[^/?#\s\"']+"
 )
 MASK = "[masque]"
 
