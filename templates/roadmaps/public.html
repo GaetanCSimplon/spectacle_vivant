@@ -27,6 +27,11 @@
         </div>
       </header>
 
+      {% if notes %}
+        <h2 class="mb-2 text-sm font-semibold uppercase text-gray-500">{% translate "Notes" %}</h2>
+        <div class="card mb-6 text-sm">{{ notes|linebreaksbr }}</div>
+      {% endif %}
+
       <h2 class="mb-2 text-sm font-semibold uppercase text-gray-500">{% translate "Lieu" %}</h2>
       <div class="card mb-6 space-y-3 text-sm">
         <p class="font-medium">{{ venue.name }}</p>
@@ -41,6 +46,20 @@
         </div>
         {% if venue.address %}{% include "roadmaps/_copy_address.html" with address=venue.address_one_line %}{% endif %}
       </div>
+
+      {% if venue_contacts %}
+        <h2 class="mb-2 text-sm font-semibold uppercase text-gray-500">{% translate "Contacts du lieu" %}</h2>
+        <ul class="mb-6 space-y-2">
+          {% for person in venue_contacts %}{% include "roadmaps/_public_person.html" %}{% endfor %}
+        </ul>
+      {% endif %}
+
+      {% if promoter_contacts %}
+        <h2 class="mb-2 text-sm font-semibold uppercase text-gray-500">{% translate "Contacts de l'organisateur" %}</h2>
+        <ul class="mb-6 space-y-2">
+          {% for person in promoter_contacts %}{% include "roadmaps/_public_person.html" %}{% endfor %}
+        </ul>
+      {% endif %}
 
       {% if slots %}
         <h2 class="mb-2 text-sm font-semibold uppercase text-gray-500">{% translate "Programme de la journée" %}</h2>
@@ -94,22 +113,10 @@
         </ul>
       {% endif %}
 
-      {% if notes %}
-        <h2 class="mb-2 text-sm font-semibold uppercase text-gray-500">{% translate "Notes" %}</h2>
-        <div class="card mb-6 text-sm">{{ notes|linebreaksbr }}</div>
-      {% endif %}
-
       {% if members %}
         <h2 class="mb-2 text-sm font-semibold uppercase text-gray-500">{% translate "Équipe" %}</h2>
         <ul class="mb-6 space-y-2">
           {% for person in members %}{% include "roadmaps/_public_person.html" %}{% endfor %}
-        </ul>
-      {% endif %}
-
-      {% if venue_contacts %}
-        <h2 class="mb-2 text-sm font-semibold uppercase text-gray-500">{% translate "Contacts du lieu" %}</h2>
-        <ul class="mb-6 space-y-2">
-          {% for person in venue_contacts %}{% include "roadmaps/_public_person.html" %}{% endfor %}
         </ul>
       {% endif %}
 

@@ -313,7 +313,7 @@ def pdf_response(roadmap):
 
 def _shared_roadmap(token):
     """A roadmap reached by its secret link; unknown token or sharing off = 404 (same answer)."""
-    queryset = Roadmap.objects.select_related("gig__show", "gig__venue")
+    queryset = Roadmap.objects.select_related("gig__show", "gig__venue", "gig__promoter")
     return get_object_or_404(queryset, token=token, is_published=True)
 
 
