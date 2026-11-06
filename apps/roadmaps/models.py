@@ -1,4 +1,6 @@
+from django.conf import settings
 from django.db import models
+from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 
 from apps.core.models import GeoPointMixin, TenantOwnedModel
@@ -116,3 +118,50 @@ class Meal(TenantOwnedModel):
 
     def __str__(self):
         return self.place
+
+
+class RoadmapRequest(TenantOwnedModel):
+    """The "Régie de tournée" form sent to an organiser for one date (F-90).
+
+    A temporary secret link, like the form of the organiser's card (F-16): valid for a week, used
+    once, giving access to nothing but a form. The answers wait in `response` until the owner
+    reviews them and applies the ones they choose to the date and its roadmap; `response` is
+    emptied afterwards, so the data is not kept twice.
+    """
+
+    class Status(models.TextChoices):
+        ACTIVE = "active", _("Lien actif")
+        ANSWERED = "answered", _("Réponse à vérifier")
+        REVIEWED = "reviewed", _("Réponse traitée")
+        EXPIRED = "expired", _("Lien expiré")
+        REVOKED = "revoked", _("Lien annulé")
+
+    gig = models.ForeignKey("gigs.Gig", on_delete=models.CASCADE, related_name="roadmap_requests")
+    token = models.CharField(max_length=64, unique=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    created_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, related_name="+"
+    )
+    expires_at = models.DateTimeField()
+    revoked_at = models.DateTimeField(null=True, blank=True)
+    completed_at = models.DateTimeField(null=True, blank=True)
+    reviewed_at = models.DateTimeField(null=True, blank=True)
+    response = models.JSONField(default=dict, blank=True)
+
+    class Meta:
+        ordering = ["-created_at"]
+
+    def __str__(self):
+        return f"Régie de tournée — {self.gig}"
+
+    @property
+    def status(self):
+        if self.reviewed_at:
+            return self.Status.REVIEWED
+        if self.completed_at:
+            return self.Status.ANSWERED
+        if self.revoked_at:
+            return self.Status.REVOKED
+        if self.expires_at <= timezone.now():
+            return self.Status.EXPIRED
+        return self.Status.ACTIVE
