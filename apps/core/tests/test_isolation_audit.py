@@ -26,7 +26,7 @@ from apps.documents.models import Invoice
 from apps.finance import services as finance_services
 from apps.finance.factories import ExpenseClaimFactory, ExpenseFactory
 from apps.finance.models import Payment
-from apps.gigs.factories import GigFactory
+from apps.gigs.factories import GigFactory, GigMemberFactory
 from apps.gigs.models import Gig
 from apps.roadmaps import services as roadmap_services
 from apps.roadmaps.factories import (
@@ -105,6 +105,8 @@ ROUTES = [
     ("catalog:show-file", {"pk": "show", "kind": "=fiche-technique"}),
     ("gigs:detail", {"pk": "gig"}),
     ("gigs:ical", {"pk": "gig"}),
+    ("gigs:team-add", {"pk": "gig"}),
+    ("gigs:member-cachet", {"pk": "gig", "member_pk": "member"}),
     ("gigs:price", {"pk": "gig"}),
     ("gigs:checklist", {"pk": "gig"}),
     ("gigs:checklist-item", {"pk": "gig"}),
@@ -235,6 +237,9 @@ def _build_tenant_a():
     place_contact = PlaceContactFactory(lodging=lodging, name=f"Réception {MARKER}")
     roadmap_services.publish(roadmap)
     person = PersonFactory(tenant=tenant, last_name=f"Equipier {MARKER}", average_fee="123.00")
+    member = GigMemberFactory(
+        gig=gig, person=person, name=person.full_name, cachet_count=2, cachet_amount="456.78"
+    )
     return {
         "tenant": tenant,
         "show": gig.show,
@@ -254,6 +259,7 @@ def _build_tenant_a():
         "meal": meal,
         "place_contact": place_contact,
         "person": person,
+        "member": member,
     }
 
 
