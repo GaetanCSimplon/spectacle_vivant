@@ -16,6 +16,7 @@ from apps.catalog.models import Show
 from apps.documents import invoicing
 from apps.documents.models import Invoice
 from apps.gigs.models import OPTION_WARNING_DAYS, Gig
+from apps.roadmaps.tour_requests import pending_requests
 
 from .models import Expense, Payment
 from .services import INVOICED, ZERO
@@ -286,6 +287,16 @@ def alerts(tenant, today, awaiting=None):
                 "text": _("%(name)s a répondu au formulaire : informations à vérifier")
                 % {"name": invitation.promoter.name},
                 "url": reverse("addressbook:promoter-answer", args=[invitation.promoter_id]),
+            }
+        )
+
+    for tour_request in pending_requests(tenant):
+        found.append(
+            {
+                "level": "amber",
+                "text": _("Date du %(date)s : l'organisateur a répondu à la régie de tournée")
+                % {"date": f"{tour_request.gig.date:%d/%m}"},
+                "url": reverse("roadmaps:tour-request-review", args=[tour_request.gig_id]),
             }
         )
 

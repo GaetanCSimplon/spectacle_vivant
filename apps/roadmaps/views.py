@@ -15,7 +15,7 @@ from apps.core.views import TenantScopedMixin, protect_secret_page, wants_fragme
 from apps.gigs.models import Gig, GigMember
 from apps.tenants.models import Person
 
-from . import services
+from . import services, tour_requests
 from .forms import LodgingForm, MealForm, MemberForm, NotesForm, PlaceContactForm, SlotForm
 from .models import Lodging, Meal, PlaceContact, Roadmap, RoadmapSlot
 
@@ -128,8 +128,19 @@ class RoadmapMixin(TenantScopedMixin):
             "notes_form": forms.get("notes") or NotesForm(instance=self.roadmap),
             "team_choices": services.available_team(self.gig),
             "no_map": services.places_without_map(self.gig, self.roadmap),
+            **self.tour_request_context(),
             "share_url": self.request.build_absolute_uri(public_path) if public_path else "",
         }
+
+    def tour_request_context(self):
+        """The "Régie de tournée" block: the last link of this date, and its address if active."""
+        tour_request = tour_requests.latest_request(self.gig)
+        context = {"tour_request": tour_request, "tour_request_url": ""}
+        if tour_request and tour_request.status == tour_request.Status.ACTIVE:
+            context["tour_request_url"] = self.request.build_absolute_uri(
+                reverse("tour-form-public", args=[tour_request.token])
+            )
+        return context
 
     def render_page(self, **kwargs):
         return render(self.request, "roadmaps/editor.html", self.context(**kwargs))
@@ -330,3 +341,77 @@ class PublicRoadmapView(View):
 class PublicRoadmapPdfView(View):
     def get(self, request, token):
         return protect_secret_page(pdf_response(_shared_roadmap(token)))
+
+
+class TourRequestCreateView(RoadmapMixin, View):
+    """POST only: make the "Régie de tournée" link to send to the organiser (F-90)."""
+
+    http_method_names = ["post"]
+
+    def post(self, request, gig_id):
+        self.load(gig_id)
+        tour_requests.create_request(self.gig, request.user)
+        messages.success(request, _("Le lien est prêt : copiez-le et envoyez-le à l'organisateur."))
+        return redirect("roadmaps:editor", gig_id=self.gig.pk)
+
+
+class TourRequestRevokeView(RoadmapMixin, View):
+    http_method_names = ["post"]
+
+    def post(self, request, gig_id):
+        self.load(gig_id)
+        if tour_requests.revoke_request(self.gig):
+            messages.success(request, _("Le lien est annulé : il ne fonctionne plus."))
+        return redirect("roadmaps:editor", gig_id=self.gig.pk)
+
+
+class TourRequestReviewView(RoadmapMixin, View):
+    """Review what the organiser answered, then apply the chosen groups (or none) to the date."""
+
+    template_name = "roadmaps/tour_review.html"
+
+    def answered(self):
+        tour_request = tour_requests.latest_request(self.gig)
+        if tour_request is None or tour_request.status != tour_request.Status.ANSWERED:
+            return None
+        return tour_request
+
+    def nothing_to_review(self):
+        messages.info(self.request, _("Il n'y a pas de réponse à vérifier."))
+        return redirect("roadmaps:editor", gig_id=self.gig.pk)
+
+    def get(self, request, gig_id):
+        self.load(gig_id)
+        tour_request = self.answered()
+        if tour_request is None:
+            return self.nothing_to_review()
+        context = {
+            "gig": self.gig,
+            "groups": tour_requests.review_groups(tour_request),
+            "answered_on": tour_request.completed_at,
+        }
+        return render(request, self.template_name, context)
+
+    def post(self, request, gig_id):
+        self.load(gig_id)
+        tour_request = self.answered()
+        if tour_request is None:
+            return self.nothing_to_review()
+        try:
+            if "ignore" in request.POST:
+                tour_requests.ignore_response(tour_request)
+                messages.success(request, _("La réponse est écartée : rien n'a été modifié."))
+            else:
+                chosen = request.POST.getlist("groups")
+                if not chosen:
+                    messages.error(request, _("Cochez au moins un élément, ou écartez la réponse."))
+                    return redirect("roadmaps:tour-request-review", gig_id=self.gig.pk)
+                applied = tour_requests.apply_response(tour_request, chosen)
+                messages.success(
+                    request,
+                    _("La feuille de route est à jour (%(n)s élément(s) appliqué(s)).")
+                    % {"n": len(applied)},
+                )
+        except tour_requests.RequestClosed:
+            return self.nothing_to_review()
+        return redirect("roadmaps:editor", gig_id=self.gig.pk)

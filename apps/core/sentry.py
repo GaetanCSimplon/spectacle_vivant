@@ -2,9 +2,11 @@
 
 import re
 
-# /feuille-de-route/<token>/ (and /pdf/) and /formulaire-organisateur/<token>/, also inside a
-# full URL: the token is the whole access right to the page.
-ROADMAP_TOKEN = re.compile(r"(/(?:feuille-de-route|formulaire-organisateur)/)[^/?#\s\"']+")
+# /feuille-de-route/<token>/ (and /pdf/), /formulaire-organisateur/<token>/ and
+# /regie-de-tournee/<token>/, also inside a full URL: the token is the whole access right.
+ROADMAP_TOKEN = re.compile(
+    r"(/(?:feuille-de-route|formulaire-organisateur|regie-de-tournee)/)[^/?#\s\"']+"
+)
 MASK = "[masque]"
 
 

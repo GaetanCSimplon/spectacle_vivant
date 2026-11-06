@@ -1,0 +1,41 @@
+{% extends "public/base_public.html" %}
+{% load i18n %}
+
+{% block title %}Régie de tournée — Bòrd Pro{% endblock %}
+
+{% block content %}
+  <h1>{% translate "Régie de tournée" %}</h1>
+  <p class="mb-2">
+    {% blocktranslate with tenant=tenant.name %}<strong>{{ tenant }}</strong> vous demande les informations pratiques de la journée, pour préparer la feuille de route de l'équipe.{% endblocktranslate %}
+  </p>
+  <p class="mb-5 rounded-xl card-context px-4 py-3 text-sm">
+    {% blocktranslate with show=gig.show.title date=gig.date|date:"l j F Y" venue=gig.venue.name %}Date concernée : <strong>{{ show }}</strong>, le {{ date }}, {{ venue }}. Remplissez ce que vous savez, tous les champs sont facultatifs. Ce lien ne peut servir qu'une fois.{% endblocktranslate %}
+  </p>
+
+  <form method="post" class="card space-y-1">
+    {% csrf_token %}
+    {{ form.non_field_errors }}
+    {% for field in form %}
+      {% if field.name == "get_in_time" %}<h2 class="!mt-2">{% translate "Horaires" %}</h2>
+      {% elif field.name == "access_notes" %}<h2 class="!mt-6 pt-2">{% translate "Accueil" %}</h2>
+      {% elif field.name == "meal_place" %}<h2 class="!mt-6 pt-2">{% translate "Repas" %}</h2>
+      {% elif field.name == "lodging_name" %}<h2 class="!mt-6 pt-2">{% translate "Hébergement" %}</h2>
+      {% elif field.name == "contact_name" %}
+        <h2 class="!mt-6 pt-2">{% translate "Contact sur place" %}</h2>
+        <p class="mb-3 text-sm">{% translate "La personne à joindre le jour J (régisseur, accueil…)." %}</p>
+      {% elif field.name == "remarks" %}<h2 class="!mt-6 pt-2">{% translate "Pour finir" %}</h2>
+      {% endif %}
+      <p>
+        {{ field.label_tag }}
+        {{ field }}
+        {% if field.help_text %}<span class="helptext">{{ field.help_text }}</span>{% endif %}
+        {{ field.errors }}
+      </p>
+    {% endfor %}
+    <button type="submit" class="btn btn-primary btn-block">{% translate "Envoyer ces informations" %}</button>
+  </form>
+
+  <p class="mt-4 text-xs text-stone-500">
+    {% blocktranslate with tenant=tenant.name %}Les informations saisies sont transmises à {{ tenant }}, qui les vérifie avant de les ajouter à la feuille de route de cette date. Pour les consulter, les corriger ou les faire supprimer, contactez directement {{ tenant }}. Bòrd Pro héberge ce formulaire en France et n'utilise pas ces données pour autre chose.{% endblocktranslate %}
+  </p>
+{% endblock %}

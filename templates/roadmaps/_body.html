@@ -42,6 +42,39 @@
     <button type="submit" class="btn btn-secondary btn-block">{% translate "Enregistrer les notes" %}</button>
   </form>
 
+  <h2 id="regie" class="mb-2 text-sm font-semibold uppercase text-gray-500">{% translate "Régie de tournée" %}</h2>
+  <div class="card mb-6 space-y-3 text-sm">
+    {% if tour_request and tour_request.status == 'answered' %}
+      <p class="font-medium text-blue-900">{% blocktranslate with date=tour_request.completed_at|date:"d/m/Y" %}L'organisateur a répondu le {{ date }}.{% endblocktranslate %}</p>
+      <a href="{% url 'roadmaps:tour-request-review' gig.pk %}" class="btn btn-primary btn-block">{% translate "Vérifier les informations reçues" %}</a>
+    {% elif tour_request and tour_request.status == 'active' %}
+      <p>{% blocktranslate with date=tour_request.expires_at|date:"d/m/Y" %}Un lien est actif jusqu'au {{ date }}. Envoyez-le à l'organisateur : il pourra donner les horaires, l'accueil, les repas et l'hébergement sans compte, une seule fois, et vous vérifierez avant de les ajouter ici.{% endblocktranslate %}</p>
+      <div x-data="{ copied: false }" class="space-y-2">
+        <input type="text" readonly aria-label="{% translate 'Adresse du formulaire' %}" value="{{ tour_request_url }}" class="w-full" onfocus="this.select()">
+        <button type="button" class="btn btn-secondary btn-block"
+                @click="navigator.clipboard.writeText('{{ tour_request_url|escapejs }}').then(() => copied = true)">
+          <span x-show="!copied">{% translate "Copier le lien" %}</span>
+          <span x-show="copied" x-cloak>{% translate "Lien copié" %}</span>
+        </button>
+      </div>
+      <form method="post" action="{% url 'roadmaps:tour-request-revoke' gig.pk %}">
+        {% csrf_token %}
+        <button type="submit" class="text-red-700 underline">{% translate "Annuler ce lien" %}</button>
+      </form>
+    {% else %}
+      <p>
+        {% if tour_request and tour_request.status == 'expired' %}{% translate "Le dernier lien a expiré." %}
+        {% elif tour_request and tour_request.status == 'revoked' %}{% translate "Le dernier lien a été annulé." %}
+        {% elif tour_request and tour_request.status == 'reviewed' %}{% translate "La dernière réponse a été traitée." %}{% endif %}
+        {% translate "Plutôt que de tout saisir vous-même, envoyez un lien à l'organisateur : il indique les horaires, l'accueil, le repas, l'hébergement et un contact sur place, et vous vérifiez avant de l'ajouter à la feuille de route." %}
+      </p>
+      <form method="post" action="{% url 'roadmaps:tour-request-create' gig.pk %}">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-secondary btn-block">{% translate "Envoyer une demande de régie à l'organisateur" %}</button>
+      </form>
+    {% endif %}
+  </div>
+
   {% if no_map %}
     <p class="card card-context mb-6 text-sm">
       {% translate "Pas de carte pour :" %}

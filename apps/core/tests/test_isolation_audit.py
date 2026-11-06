@@ -69,6 +69,8 @@ PUBLIC = {
     "team-expense-receipt",
     "promoter-form-public",  # the secret link is the access right
     "promoter-form-thanks",
+    "tour-form-public",  # the secret link is the access right (roadmaps/test_tour_form.py)
+    "tour-form-thanks",
 }
 
 # Routes that take an identifier: name -> {url parameter: key of A's dataset, or "=literal"}.
@@ -119,6 +121,9 @@ ROUTES = [
     ("roadmaps:editor", {"gig_id": "gig"}),
     ("roadmaps:pdf", {"gig_id": "gig"}),
     ("roadmaps:team-add", {"gig_id": "gig"}),
+    ("roadmaps:tour-request-create", {"gig_id": "gig"}),
+    ("roadmaps:tour-request-revoke", {"gig_id": "gig"}),
+    ("roadmaps:tour-request-review", {"gig_id": "gig"}),
     ("roadmaps:notes", {"gig_id": "gig"}),
     ("roadmaps:share", {"gig_id": "gig", "action": "=activer"}),
     ("roadmaps:share", {"gig_id": "gig", "action": "=arreter"}),

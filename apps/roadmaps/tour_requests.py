@@ -167,6 +167,28 @@ def answered_groups(request):
     return groups
 
 
+def review_groups(request):
+    """The review screen: each group the organiser filled in, with what the date has now.
+
+    A list of dicts `key`, `label`, `rows` (each `label`, `value`, and for a time `current`).
+    """
+    gig = request.gig
+    current = {key: getattr(gig, key) for key in SLOT_KINDS}
+    groups = []
+    for key, (label, fields) in GROUPS.items():
+        rows = []
+        for field, name in fields.items():
+            if field not in request.response:
+                continue
+            row = {"label": name, "value": request.response[field]}
+            if field in current:
+                row["current"] = current[field].strftime("%H:%M") if current[field] else ""
+            rows.append(row)
+        if rows:
+            groups.append({"key": key, "label": label, "rows": rows})
+    return groups
+
+
 def _time(value):
     return datetime.datetime.strptime(value, "%H:%M").time()
 
