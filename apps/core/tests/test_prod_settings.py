@@ -169,3 +169,25 @@ def test_the_tour_form_token_is_hidden_from_sentry_too():
 
     assert token not in str(cleaned)
     assert cleaned["request"]["url"] == f"https://exemple.fr/regie-de-tournee/{MASK}/?x=1"
+
+
+def test_the_team_space_token_is_hidden_from_sentry_too():
+    token = "TeAm123-secret_space_token"
+    event = {
+        "request": {"url": f"https://exemple.fr/equipe/{token}/depenses/?x=1"},
+        "transaction": f"/equipe/{token}/dates/3/",
+        "message": f"GET /equipe/{token}/ failed",
+        "breadcrumbs": [{"data": {"url": f"/equipe/{token}/dates/3/pdf/"}}],
+    }
+
+    cleaned = scrub_event(event)
+
+    assert token not in str(cleaned)
+    assert cleaned["request"]["url"] == f"https://exemple.fr/equipe/{MASK}/depenses/?x=1"
+    assert cleaned["transaction"] == f"/equipe/{MASK}/dates/3/"
+
+
+def test_the_owner_team_pages_keep_their_readable_address_in_sentry():
+    event = {"transaction": "/bord/equipe/12/modifier/", "message": "GET /bord/equipe/nouveau/"}
+
+    assert scrub_event(event) == event
