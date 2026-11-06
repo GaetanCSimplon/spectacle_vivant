@@ -84,6 +84,11 @@ urlpatterns = [
         name="team-space-pdf",
     ),
     path(
+        "equipe/<str:token>/dates/<int:gig_id>/contrat/",
+        tenants_public_views.TeamSpaceContractView.as_view(),
+        name="team-space-contract",
+    ),
+    path(
         "equipe/<str:token>/dates/<int:gig_id>/documents/<int:pk>/",
         tenants_public_views.TeamSpaceDocumentView.as_view(),
         name="team-space-document",

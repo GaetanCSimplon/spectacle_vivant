@@ -106,6 +106,34 @@
     </form>
   </div>
 
+  <h2 id="contrat-signe" class="mb-2 text-sm font-semibold uppercase text-gray-500">{% translate "Contrat signé" %}</h2>
+  <div class="card mb-6 space-y-3 text-sm">
+    {% if signed_contract %}
+      {% if roadmap.share_signed_contract %}
+        <p class="font-medium text-blue-900">{% translate "Le contrat signé est visible des personnes de la date qui ont un espace personnel." %}</p>
+      {% else %}
+        <p>{% translate "Le contrat est signé. Vous pouvez le montrer à l'équipe, par exemple pour le présenter à l'accueil du lieu." %}</p>
+      {% endif %}
+      <p class="text-gray-600">{% translate "Attention : ce contrat contient le prix de la cession. Il n'apparaît jamais avec le lien de partage de la feuille de route." %}</p>
+      {% if is_owner %}
+        <form method="post" action="{% url 'roadmaps:contract-share' gig.pk %}">
+          {% csrf_token %}
+          {% if roadmap.share_signed_contract %}
+            <input type="hidden" name="share" value="0">
+            <button type="submit" class="btn btn-secondary btn-block">{% translate "Ne plus montrer le contrat à l'équipe" %}</button>
+          {% else %}
+            <input type="hidden" name="share" value="1">
+            <button type="submit" class="btn btn-secondary btn-block">{% translate "Montrer le contrat signé à l'équipe" %}</button>
+          {% endif %}
+        </form>
+      {% else %}
+        <p class="text-gray-600">{% translate "Seul le propriétaire de la structure peut décider de le montrer." %}</p>
+      {% endif %}
+    {% else %}
+      <p class="text-gray-600">{% translate "Pas encore de contrat signé pour cette date. Une fois signé, vous pourrez le montrer à l'équipe d'ici." %}</p>
+    {% endif %}
+  </div>
+
   {% if no_map %}
     <p class="card card-context mb-6 text-sm">
       {% translate "Pas de carte pour :" %}

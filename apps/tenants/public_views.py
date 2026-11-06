@@ -8,13 +8,14 @@ from django.http import Http404
 from django.shortcuts import get_object_or_404, render
 from django.urls import reverse
 from django.utils import timezone
+from django.utils.translation import gettext as _
 from django.views import View
 
 from apps.core.views import protect_secret_page
 from apps.roadmaps import documents as roadmap_documents
 from apps.roadmaps import services as roadmap_services
 from apps.roadmaps.models import Roadmap
-from apps.roadmaps.views import document_response, pdf_response
+from apps.roadmaps.views import document_response, file_response, pdf_response
 
 from . import services
 
@@ -62,7 +63,16 @@ class TeamSpaceGigView(TeamSpaceMixin, View):
         context["back_url"] = back_url
         context["pdf_url"] = reverse("team-space-pdf", args=[token, gig.pk])
         # Documents are only ever added here, never to the shared public context.
-        context["documents"] = [
+        shared = []
+        if roadmap_documents.shared_contract_file(roadmap):
+            shared.append(
+                {
+                    "title": _("Contrat de cession signé"),
+                    "kind": "PDF",
+                    "url": reverse("team-space-contract", args=[token, gig.pk]),
+                }
+            )
+        context["documents"] = shared + [
             {
                 "title": document.title,
                 "kind": document.get_content_type_display(),
@@ -90,3 +100,18 @@ class TeamSpaceDocumentView(TeamSpaceMixin, View):
         roadmap = get_object_or_404(Roadmap, gig=gig, tenant=person.tenant)
         document = get_object_or_404(roadmap_documents.visible_to(roadmap, person), pk=pk)
         return protect_secret_page(document_response(document))
+
+
+class TeamSpaceContractView(TeamSpaceMixin, View):
+    """The signed contract of one of my dates, only if the owner chose to show it (F-91)."""
+
+    def get(self, request, token, gig_id):
+        person = self.person(token)
+        gig = self.gig(person, gig_id)
+        roadmap = get_object_or_404(Roadmap, gig=gig, tenant=person.tenant)
+        file = roadmap_documents.shared_contract_file(roadmap)
+        if not file:
+            raise Http404
+        return protect_secret_page(
+            file_response(file, "application/pdf", _("Contrat de cession signé"), "pdf")
+        )

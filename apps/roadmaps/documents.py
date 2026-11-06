@@ -6,6 +6,8 @@ the personal space of those people only (never from the shared roadmap link).
 
 from django.db.models import Q
 
+from apps.documents.models import Contract
+
 from .models import RoadmapDocument
 
 MAX_SIZE = 10 * 1024 * 1024
@@ -51,3 +53,27 @@ def add_document(roadmap, *, title, file, kind, person, user):
         person=person,
         created_by=user,
     )
+
+
+def signed_contract(gig):
+    """The signed contract of a date, or None (a draft is never shown to anybody)."""
+    return Contract.objects.filter(
+        gig=gig, tenant=gig.tenant, status=Contract.Status.SIGNED
+    ).first()
+
+
+def shared_contract_file(roadmap):
+    """The file of the signed contract if the owner chose to show it to the team, else None.
+
+    The signed copy the owner uploaded wins; otherwise the version frozen at the signature.
+    """
+    if not roadmap.share_signed_contract:
+        return None
+    contract = signed_contract(roadmap.gig)
+    if contract is None:
+        return None
+    if contract.signed_pdf:
+        return contract.signed_pdf
+    if contract.signed_version_id:
+        return contract.signed_version.pdf_file
+    return None

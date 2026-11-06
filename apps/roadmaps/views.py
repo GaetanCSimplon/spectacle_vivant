@@ -3,6 +3,7 @@
 from dataclasses import dataclass
 
 from django.contrib import messages
+from django.core.exceptions import PermissionDenied
 from django.http import FileResponse, Http404, HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
@@ -11,6 +12,7 @@ from django.utils.translation import gettext_lazy as _
 from django.views import View
 from django.views.decorators.clickjacking import xframe_options_sameorigin
 
+from apps.accounts.services import is_tenant_owner
 from apps.core.views import TenantScopedMixin, protect_secret_page, wants_fragment
 from apps.gigs.models import Gig, GigMember
 from apps.tenants.models import Person
@@ -138,6 +140,8 @@ class RoadmapMixin(TenantScopedMixin):
             "no_map": services.places_without_map(self.gig, self.roadmap),
             **self.tour_request_context(),
             "documents": self.roadmap.documents.select_related("person"),
+            "signed_contract": documents.signed_contract(self.gig),
+            "is_owner": is_tenant_owner(self.request.user, self.request.tenant),
             "document_form": forms.get("document") or RoadmapDocumentForm(gig=self.gig),
             "share_url": self.request.build_absolute_uri(public_path) if public_path else "",
         }
@@ -481,19 +485,50 @@ class DocumentDeleteView(RoadmapMixin, View):
         return redirect(f"{reverse('roadmaps:editor', args=[self.gig.pk])}#documents")
 
 
-def document_response(document):
-    """The file shown in the browser (handy on a phone), typed by what we checked at upload.
+def file_response(file, content_type, title, extension):
+    """A stored file shown in the browser (handy on a phone), typed by what we checked at upload.
 
     `nosniff` stops the browser from guessing another type; the name offered is built from the
     title, never from what was uploaded.
     """
-    safe_title = "".join(c if c.isalnum() or c in " -_" else "_" for c in document.title).strip()
+    safe_title = "".join(c if c.isalnum() or c in " -_" else "_" for c in title).strip()
     response = FileResponse(
-        document.file.open("rb"),
-        content_type=document.content_type,
+        file.open("rb"),
+        content_type=content_type,
         as_attachment=False,
-        filename=f"{safe_title or 'document'}.{document.extension}",
+        filename=f"{safe_title or 'document'}.{extension}",
     )
     response["X-Content-Type-Options"] = "nosniff"
     response["Cache-Control"] = "no-store"
     return response
+
+
+def document_response(document):
+    return file_response(document.file, document.content_type, document.title, document.extension)
+
+
+class ContractShareView(RoadmapMixin, View):
+    """POST only, owner only: show the signed contract to the team, or stop showing it (F-91).
+
+    The contract holds the price of the cession: a plain member cannot decide to show it.
+    """
+
+    http_method_names = ["post"]
+
+    def post(self, request, gig_id):
+        self.load(gig_id)
+        if not is_tenant_owner(request.user, request.tenant):
+            raise PermissionDenied
+        share = request.POST.get("share") == "1"
+        if share and documents.signed_contract(self.gig) is None:
+            messages.error(request, _("Le contrat n'est pas encore signé : rien à montrer."))
+        else:
+            self.roadmap.share_signed_contract = share
+            self.roadmap.save(update_fields=["share_signed_contract"])
+            messages.success(
+                request,
+                _("Le contrat signé est visible de l'équipe.")
+                if share
+                else _("Le contrat signé n'est plus visible de l'équipe."),
+            )
+        return redirect(f"{reverse('roadmaps:editor', args=[self.gig.pk])}#documents")
