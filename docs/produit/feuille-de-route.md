@@ -487,7 +487,7 @@ Décision du 2026-10-12 (budget serré) : la signature reste **à la charge de l
 Détail : `docs/archives/2026-11-05-reunion-associe.md` ; exigences F-86 à F-93 dans `cahier-des-charges.md`. Une PR par ligne ; plan à valider avant de coder pour les lignes marquées (plan).
 - [x] F-87 Libellé « Compléter le contrat » (très petite). — Fait (2026-11-05, sans migration) : bouton de la date et de l'historique du contrat, titre et en-tête de la page ; l'ancien libellé n'existe plus dans l'interface.
 - [ ] F-92 Bloc « Notes » en haut de la feuille de route, contacts de l'organisateur et du lieu (petite).
-- [ ] F-86 Bouton « Retour » en haut de chaque page (petite).
+- [x] F-86 Bouton « Retour » en haut de chaque page (petite). — Fait (2026-11-06, sans migration) : petit bouton « ‹ Retour » en haut du contenu de chaque page connectée (composant `_back_button.html`, bloc `back_button` de `base.html`), absent de l'Accueil et des pages publiques. Il revient en arrière dans l'historique quand la page précédente est dans l'application ; sinon (page ouverte directement, depuis un e-mail) le lien mène à « Mes dates », y compris sans JavaScript. Il ne renvoie jamais vers un autre site.
 - [ ] F-93 Gestion sociale par artiste : affichage et export pour la paie (plan).
 - [ ] F-89 Bouton d'envoi du formulaire de complétion à l'organisateur (vérifier l'existant).
 - [ ] F-88 Bloc « Gestion d'équipe » sur la date (plan si modèle).

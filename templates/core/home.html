@@ -3,6 +3,8 @@
 
 {% block title %}Accueil — Bòrd Pro{% endblock %}
 {% block main_width %}max-w-[90rem]{% endblock %}
+{# The home is the starting point: nothing to go back to. #}
+{% block back_button %}{% endblock %}
 
 {% block page_content %}
   {% if tenant %}
