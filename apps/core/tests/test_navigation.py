@@ -141,3 +141,36 @@ def test_bord_comes_right_after_the_home_page_and_is_in_bold(client):
     bord_link = re.search(r"<a[^>]*>Bòrd</a>", nav.replace("\n", " ")).group(0)
     assert "font-bold" in bord_link
     assert "font-bold" not in re.search(r"<a[^>]*>Mes dates</a>", nav.replace("\n", " ")).group(0)
+
+
+# --- "Retour" button (F-86) ----------------------------------------------------------------------
+
+
+def test_every_signed_in_page_has_a_back_button_that_leads_to_my_dates_without_javascript(client):
+    _login(client)
+
+    for name in ("gigs:list", "addressbook:promoter-list", "document-library"):
+        content = client.get(reverse(name)).content.decode()
+
+        assert content.count("data-back-button") == 1, name
+        assert f'href="{reverse("gigs:list")}" data-back-button' in content, name
+
+
+def test_the_home_has_no_back_button(client):
+    _login(client)
+
+    assert "data-back-button" not in client.get(reverse("home")).content.decode()
+
+
+def test_signed_out_pages_have_no_back_button(client):
+    assert "data-back-button" not in client.get(reverse("account_login")).content.decode()
+    assert "data-back-button" not in client.get(reverse("legal-notice")).content.decode()
+
+
+def test_the_back_button_only_uses_the_history_of_the_application(client):
+    _login(client)
+
+    content = client.get(reverse("gigs:list")).content.decode()
+
+    assert "document.referrer.startsWith(location.origin)" in content
+    assert "history.back()" in content

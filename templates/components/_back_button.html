@@ -1,0 +1,14 @@
+{% load i18n %}
+{% comment %}
+  "Retour" at the top of every signed-in page. It goes back in the browser history when the page we
+  come from is in the application; otherwise (page opened directly, from an e-mail, in a new tab)
+  the link itself leads to "Mes dates". It never sends the user to another site.
+{% endcomment %}
+<p class="mb-2">
+  <a href="{% url 'gigs:list' %}" data-back-button x-data
+     @click="if (document.referrer.startsWith(location.origin) && history.length > 1) { $event.preventDefault(); history.back() }"
+     class="inline-flex min-h-11 items-center gap-1 rounded-lg px-2 text-sm text-blue-700 hover:bg-gray-100">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 6l-6 6 6 6"/></svg>
+    {% translate "Retour" %}
+  </a>
+</p>
