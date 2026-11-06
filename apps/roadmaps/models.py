@@ -1,5 +1,9 @@
+import uuid
+
 from django.conf import settings
-from django.db import models
+from django.db import models, transaction
+from django.db.models.signals import post_delete
+from django.dispatch import receiver
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 
@@ -165,3 +169,63 @@ class RoadmapRequest(TenantOwnedModel):
         if self.expires_at <= timezone.now():
             return self.Status.EXPIRED
         return self.Status.ACTIVE
+
+
+def document_upload_to(instance, filename):
+    # An unguessable folder per file, like contracts, invoices and receipts.
+    return f"roadmap-documents/{uuid.uuid4().hex}/{filename}"
+
+
+class RoadmapDocument(TenantOwnedModel):
+    """A file the owner puts on a date for the team (a train ticket, a plan, a pass...) (F-91).
+
+    Seen only from the personal space of the people it is meant for: the whole team of the date
+    (`person` empty) or one person. Never on the shared roadmap link, which anybody who has it
+    can open. The kind of file comes from its content, checked at upload, never from its name.
+    """
+
+    class Kind(models.TextChoices):
+        PDF = "application/pdf", "PDF"
+        JPEG = "image/jpeg", "JPEG"
+        PNG = "image/png", "PNG"
+
+    MAX_PER_ROADMAP = 30
+
+    roadmap = models.ForeignKey(Roadmap, on_delete=models.CASCADE, related_name="documents")
+    title = models.CharField(_("titre"), max_length=150)
+    file = models.FileField(_("fichier"), upload_to=document_upload_to)
+    content_type = models.CharField(max_length=20, choices=Kind.choices)
+    # Empty: every person of the date who has a personal space. Set: this person only. If the
+    # person is deleted the document goes with them (it was theirs), it never becomes public.
+    person = models.ForeignKey(
+        "tenants.Person",
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        related_name="roadmap_documents",
+        verbose_name=_("destinataire"),
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    created_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, related_name="+"
+    )
+
+    class Meta:
+        ordering = ["created_at", "id"]
+
+    def __str__(self):
+        return self.title
+
+    @property
+    def extension(self):
+        return {"application/pdf": "pdf", "image/jpeg": "jpg", "image/png": "png"}[
+            self.content_type
+        ]
+
+
+@receiver(post_delete, sender=RoadmapDocument)
+def delete_document_file(sender, instance, **kwargs):
+    """A removed document (also when a person, a date or the structure goes) leaves no file."""
+    name, storage = instance.file.name, instance.file.storage
+    if name:
+        transaction.on_commit(lambda: storage.delete(name))

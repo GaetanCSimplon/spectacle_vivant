@@ -3,7 +3,9 @@ from django.utils.translation import gettext_lazy as _
 
 from apps.core.forms import AddressModelForm
 from apps.gigs.models import GigMember
+from apps.tenants.models import Person
 
+from . import documents
 from .models import Lodging, Meal, PlaceContact, Roadmap, RoadmapSlot
 from .tour_requests import ALL_KEYS
 
@@ -119,3 +121,41 @@ class TourRequestForm(forms.Form):
         ):
             self.add_error("contact_name", _("Indiquez le nom de ce contact."))
         return cleaned
+
+
+class RoadmapDocumentForm(forms.Form):
+    """A file for the team of a date: a PDF, a JPEG or a PNG of 10 MB at most, judged by content."""
+
+    title = forms.CharField(label=_("Titre"), max_length=150)
+    file = forms.FileField(label=_("Fichier (PDF, JPEG ou PNG, 10 Mo au maximum)"))
+    person = forms.ModelChoiceField(
+        label=_("Pour qui ?"),
+        queryset=None,
+        required=False,
+        empty_label=_("Toute l'équipe de la date"),
+    )
+
+    def __init__(self, *args, gig=None, **kwargs):
+        super().__init__(*args, **kwargs)
+        ids = [person.pk for person in documents.audience_choices(gig)] if gig else []
+        # Only people who are on this date: the form cannot reach anybody else.
+        self.fields["person"].queryset = (
+            Person.objects.filter(tenant=gig.tenant, pk__in=ids) if gig else Person.objects.none()
+        )
+        self.kind = None
+
+    def clean_title(self):
+        title = self.cleaned_data["title"].strip()
+        if not title:
+            raise forms.ValidationError(_("Donnez un titre au document."))
+        return title
+
+    def clean_file(self):
+        file = self.cleaned_data["file"]
+        if file.size > documents.MAX_SIZE:
+            raise forms.ValidationError(_("Le fichier est trop lourd (10 Mo au maximum)."))
+        self.kind = documents.kind_of(file.read(8))
+        file.seek(0)
+        if self.kind is None:
+            raise forms.ValidationError(_("Le document doit être un PDF, un JPEG ou un PNG."))
+        return file

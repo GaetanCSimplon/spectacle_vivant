@@ -33,6 +33,7 @@ from apps.roadmaps.factories import (
     LodgingFactory,
     MealFactory,
     PlaceContactFactory,
+    RoadmapDocumentFactory,
     RoadmapFactory,
     RoadmapSlotFactory,
 )
@@ -71,6 +72,7 @@ PUBLIC = {
     "promoter-form-thanks",
     "tour-form-public",  # the secret link is the access right (roadmaps/test_tour_form.py)
     "tour-form-thanks",
+    "team-space-document",  # the personal link is the access right (roadmaps/test_documents.py)
 }
 
 # Routes that take an identifier: name -> {url parameter: key of A's dataset, or "=literal"}.
@@ -121,6 +123,9 @@ ROUTES = [
     ("roadmaps:editor", {"gig_id": "gig"}),
     ("roadmaps:pdf", {"gig_id": "gig"}),
     ("roadmaps:team-add", {"gig_id": "gig"}),
+    ("roadmaps:document-add", {"gig_id": "gig"}),
+    ("roadmaps:document-file", {"gig_id": "gig", "pk": "document"}),
+    ("roadmaps:document-delete", {"gig_id": "gig", "pk": "document"}),
     ("roadmaps:tour-request-create", {"gig_id": "gig"}),
     ("roadmaps:tour-request-revoke", {"gig_id": "gig"}),
     ("roadmaps:tour-request-review", {"gig_id": "gig"}),
@@ -240,6 +245,7 @@ def _build_tenant_a():
     lodging = LodgingFactory(roadmap=roadmap, name=f"Hôtel {MARKER}")
     meal = MealFactory(roadmap=roadmap, place=f"Resto {MARKER}")
     place_contact = PlaceContactFactory(lodging=lodging, name=f"Réception {MARKER}")
+    document = RoadmapDocumentFactory(roadmap=roadmap, title=f"Document {MARKER}")
     roadmap_services.publish(roadmap)
     person = PersonFactory(tenant=tenant, last_name=f"Equipier {MARKER}", average_fee="123.00")
     member = GigMemberFactory(
@@ -263,6 +269,7 @@ def _build_tenant_a():
         "lodging": lodging,
         "meal": meal,
         "place_contact": place_contact,
+        "document": document,
         "person": person,
         "member": member,
     }

@@ -75,6 +75,37 @@
     {% endif %}
   </div>
 
+  <h2 id="documents" class="mb-2 text-sm font-semibold uppercase text-gray-500">{% translate "Documents pour l'équipe" %}</h2>
+  <div class="card mb-6 space-y-3 text-sm">
+    <p class="text-gray-600">{% translate "Billet de train, plan, accréditation… Ces documents ne sont visibles que dans l'espace personnel des personnes concernées, jamais avec le lien de partage de la feuille de route." %}</p>
+    {% if documents %}
+      <ul class="space-y-2">
+        {% for document in documents %}
+          <li class="flex flex-wrap items-center justify-between gap-2 border-b border-page-line pb-2 last:border-0 last:pb-0">
+            <div class="min-w-0">
+              <a href="{% url 'roadmaps:document-file' gig.pk document.pk %}" target="_blank" class="break-words font-medium text-blue-700 underline">{{ document.title }}</a>
+              <span class="data text-gray-600">· {{ document.get_content_type_display }}</span>
+              <p class="text-gray-600">
+                {% if document.person %}{% blocktranslate with name=document.person.full_name %}Pour {{ name }} seulement{% endblocktranslate %}{% if not document.person.access_token %} <span class="pill pill-warn">{% translate "sans espace personnel : cette personne ne peut pas le voir" %}</span>{% endif %}
+                {% else %}{% translate "Pour toute l'équipe de la date" %}{% endif %}
+              </p>
+            </div>
+            <form method="post" action="{% url 'roadmaps:document-delete' gig.pk document.pk %}">
+              {% csrf_token %}
+              <button type="submit" class="text-red-700 underline">{% translate "Supprimer" %}</button>
+            </form>
+          </li>
+        {% endfor %}
+      </ul>
+    {% endif %}
+    <form method="post" action="{% url 'roadmaps:document-add' gig.pk %}" enctype="multipart/form-data" class="space-y-3 border-t border-page-line pt-3">
+      {% csrf_token %}
+      <h3 class="text-sm font-semibold">{% translate "Ajouter un document" %}</h3>
+      {{ document_form.as_p }}
+      <button type="submit" class="btn btn-secondary btn-block">{% translate "Ajouter le document" %}</button>
+    </form>
+  </div>
+
   {% if no_map %}
     <p class="card card-context mb-6 text-sm">
       {% translate "Pas de carte pour :" %}

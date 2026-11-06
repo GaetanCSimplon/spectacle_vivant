@@ -9,11 +9,20 @@ from ..factories import (
     LodgingFactory,
     MealFactory,
     PlaceContactFactory,
+    RoadmapDocumentFactory,
     RoadmapFactory,
     RoadmapRequestFactory,
     RoadmapSlotFactory,
 )
-from ..models import Lodging, Meal, PlaceContact, Roadmap, RoadmapRequest, RoadmapSlot
+from ..models import (
+    Lodging,
+    Meal,
+    PlaceContact,
+    Roadmap,
+    RoadmapDocument,
+    RoadmapRequest,
+    RoadmapSlot,
+)
 
 pytestmark = pytest.mark.django_db
 
@@ -25,6 +34,7 @@ CASES = [
     (PlaceContact, PlaceContactFactory),
     (GigMember, GigMemberFactory),
     (RoadmapRequest, RoadmapRequestFactory),
+    (RoadmapDocument, RoadmapDocumentFactory),
 ]
 
 for _model, _factory in CASES:

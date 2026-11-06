@@ -11,9 +11,10 @@ from django.utils import timezone
 from django.views import View
 
 from apps.core.views import protect_secret_page
+from apps.roadmaps import documents as roadmap_documents
 from apps.roadmaps import services as roadmap_services
 from apps.roadmaps.models import Roadmap
-from apps.roadmaps.views import pdf_response
+from apps.roadmaps.views import document_response, pdf_response
 
 from . import services
 
@@ -60,6 +61,15 @@ class TeamSpaceGigView(TeamSpaceMixin, View):
         context = roadmap_services.public_context(roadmap)
         context["back_url"] = back_url
         context["pdf_url"] = reverse("team-space-pdf", args=[token, gig.pk])
+        # Documents are only ever added here, never to the shared public context.
+        context["documents"] = [
+            {
+                "title": document.title,
+                "kind": document.get_content_type_display(),
+                "url": reverse("team-space-document", args=[token, gig.pk, document.pk]),
+            }
+            for document in roadmap_documents.visible_to(roadmap, person)
+        ]
         return protect_secret_page(render(request, "roadmaps/public.html", context))
 
 
@@ -69,3 +79,14 @@ class TeamSpacePdfView(TeamSpaceMixin, View):
         gig = self.gig(person, gig_id)
         roadmap = get_object_or_404(Roadmap, gig=gig, tenant=person.tenant)
         return protect_secret_page(pdf_response(roadmap))
+
+
+class TeamSpaceDocumentView(TeamSpaceMixin, View):
+    """A document of one of my dates, meant for me or for the whole team (F-91)."""
+
+    def get(self, request, token, gig_id, pk):
+        person = self.person(token)
+        gig = self.gig(person, gig_id)
+        roadmap = get_object_or_404(Roadmap, gig=gig, tenant=person.tenant)
+        document = get_object_or_404(roadmap_documents.visible_to(roadmap, person), pk=pk)
+        return protect_secret_page(document_response(document))
