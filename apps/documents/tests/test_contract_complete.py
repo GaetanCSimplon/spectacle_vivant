@@ -321,3 +321,73 @@ def test_the_completion_page_and_its_link_are_named_after_the_contract(client):
     assert "Compléter le contrat" in detail
     assert "Compléter le contrat — Bòrd Pro" in page
     assert "Compléter la date" not in detail + page
+
+
+# --- sending the organiser form from here (F-89) --------------------------------------------------
+
+
+def _invite_url(gig):
+    return reverse("addressbook:promoter-invite", args=[gig.promoter.pk])
+
+
+def test_the_page_offers_to_send_the_form_to_the_organiser(client):
+    tenant = _login(client)
+    gig = GigFactory(tenant=tenant, status="option")
+
+    page = client.get(_url(gig)).content.decode()
+
+    assert "Envoyer un formulaire à l'organisateur" in page
+    assert f'action="{_invite_url(gig)}"' in page
+    assert f'name="gig" value="{gig.pk}"' in page
+
+
+def test_sending_the_form_from_here_comes_back_here_and_shows_the_link(client):
+    tenant = _login(client)
+    gig = GigFactory(tenant=tenant, status="option")
+
+    response = client.post(_invite_url(gig), {"gig": gig.pk})
+
+    assert response.status_code == 302
+    assert response.url == _url(gig)
+    page = client.get(response.url).content.decode()
+    assert "Un lien est actif jusqu'au" in page
+    assert "Envoyer un formulaire à l'organisateur" not in page
+
+
+def test_an_answered_form_is_offered_for_review_from_here(client):
+    from django.utils import timezone
+
+    from apps.addressbook.services import create_invitation
+
+    tenant = _login(client)
+    gig = GigFactory(tenant=tenant, status="option")
+    invitation = create_invitation(gig.promoter, None)
+    invitation.completed_at = timezone.now()
+    invitation.save(update_fields=["completed_at"])
+
+    page = client.get(_url(gig)).content.decode()
+
+    assert "L'organisateur a répondu le" in page
+    assert reverse("addressbook:promoter-answer", args=[gig.promoter.pk]) in page
+
+
+def test_the_gig_of_another_organiser_or_structure_is_ignored(client):
+    tenant = _login(client)
+    gig = GigFactory(tenant=tenant, status="option")
+    same_tenant_other_promoter = GigFactory(tenant=tenant, status="option")
+    other_tenant_gig = GigFactory(status="option")
+
+    for foreign in (same_tenant_other_promoter, other_tenant_gig):
+        response = client.post(_invite_url(gig), {"gig": foreign.pk})
+        assert response.url == reverse("addressbook:promoter-detail", args=[gig.promoter.pk])
+
+    for junk in ("abc", "", "-1", "1;2"):
+        response = client.post(_invite_url(gig), {"gig": junk})
+        assert response.url == reverse("addressbook:promoter-detail", args=[gig.promoter.pk])
+
+
+def test_another_tenant_cannot_send_a_form_for_my_organiser(client):
+    _login(client)
+    foreign = GigFactory()
+
+    assert client.post(_invite_url(foreign), {"gig": foreign.pk}).status_code == 404

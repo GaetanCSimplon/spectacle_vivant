@@ -8,6 +8,7 @@ from django.views import View
 from django.views.generic import CreateView, DeleteView, DetailView, ListView, UpdateView
 
 from apps.core.views import SearchListMixin, TenantScopedMixin, wants_fragment
+from apps.gigs.models import Gig
 
 from . import exports, imports, services
 from .forms import (
@@ -84,6 +85,16 @@ class PromoterInviteView(TenantScopedMixin, View):
         promoter = get_object_or_404(Promoter, pk=pk, tenant=request.tenant)
         services.create_invitation(promoter, request.user)
         messages.success(request, _("Le lien est prêt : copiez-le et envoyez-le à l'organisateur."))
+        # Asked from the "Compléter le contrat" page of a date of this organiser: go back there.
+        # Any other value (or a date of another structure or organiser) is ignored.
+        gig_id = request.POST.get("gig", "")
+        gig = (
+            Gig.objects.filter(pk=gig_id, tenant=request.tenant, promoter=promoter).first()
+            if gig_id.isdigit()
+            else None
+        )
+        if gig is not None:
+            return redirect("documents:contract-complete", gig_id=gig.pk)
         return redirect("addressbook:promoter-detail", pk=promoter.pk)
 
 

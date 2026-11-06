@@ -5,6 +5,7 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.utils.translation import gettext_lazy as _
 from django.views import View
 
+from apps.addressbook import services as addressbook_services
 from apps.core.views import TenantScopedMixin, wants_fragment
 from apps.gigs.models import Gig
 
@@ -232,6 +233,12 @@ class ContractCompleteView(TenantScopedMixin, View):
 
     def render_page(self, forms):
         context = {"gig": self.gig, "forms": forms}
+        invitation = addressbook_services.latest_invitation(self.gig.promoter)
+        context["invitation"] = invitation
+        if invitation and invitation.status == invitation.Status.ACTIVE:
+            context["invitation_url"] = self.request.build_absolute_uri(
+                addressbook_services.invitation_path(invitation.token)
+            )
         return render(self.request, self.template_name, context)
 
     def frozen_response(self):
