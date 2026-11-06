@@ -1,5 +1,5 @@
 {% load i18n %}
-{% comment %}Switch between the parts of "Bòrd". `active` = bord | team | settings.{% endcomment %}
+{% comment %}Switch between the parts of "Bòrd". `active` = bord | team | social | settings; the social tab is for the owner only (`is_owner`).{% endcomment %}
 <div class="mb-4 flex gap-4 border-b border-gray-200 text-sm">
   <a
     href="{% url 'tenants:profile' %}"
@@ -11,6 +11,13 @@
     class="-mb-px border-b-2 pb-2 {% if active == 'team' %}border-blue-700 font-semibold text-blue-700{% else %}border-transparent text-gray-600 hover:text-gray-900{% endif %}"
     {% if active == 'team' %}aria-current="true"{% endif %}
   >{% translate "Équipe" %}</a>
+  {% if is_owner %}
+    <a
+      href="{% url 'tenants:social' %}"
+      class="-mb-px border-b-2 pb-2 {% if active == 'social' %}border-blue-700 font-semibold text-blue-700{% else %}border-transparent text-gray-600 hover:text-gray-900{% endif %}"
+      {% if active == 'social' %}aria-current="true"{% endif %}
+    >{% translate "Social" %}</a>
+  {% endif %}
   <a
     href="{% url 'tenants:settings' %}"
     class="-mb-px ml-auto inline-flex items-center gap-1 border-b-2 pb-2 {% if active == 'settings' %}border-blue-700 font-semibold text-blue-700{% else %}border-transparent text-gray-600 hover:text-gray-900{% endif %}"

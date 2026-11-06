@@ -26,5 +26,7 @@ urlpatterns = [
         views.PersonAccessView.as_view(action="revoke"),
         name="person-access-revoke",
     ),
+    path("equipe/social/", views.SocialView.as_view(), name="social"),
+    path("equipe/social/export/", views.SocialExportView.as_view(), name="social-export"),
     path("export-donnees/", views.DataExportView.as_view(), name="data-export"),
 ]

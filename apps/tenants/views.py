@@ -8,8 +8,10 @@ from django.http import FileResponse, Http404
 from django.shortcuts import get_object_or_404, redirect
 from django.urls import reverse, reverse_lazy
 from django.utils import timezone
+from django.utils.decorators import method_decorator
 from django.utils.translation import gettext_lazy as _
 from django.views import View
+from django.views.decorators.cache import never_cache
 from django.views.generic import (
     CreateView,
     DeleteView,
@@ -28,6 +30,7 @@ from apps.finance.models import Expense
 from apps.gigs import services as gig_services
 from apps.gigs.models import Gig
 
+from . import social
 from .data_export import build_export_zip
 from .forms import (
     BordFilterForm,
@@ -275,6 +278,7 @@ class PersonListView(TenantScopedMixin, SearchListMixin, ListView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context["year"] = timezone.localdate().year
+        context["is_owner"] = is_tenant_owner(self.request.user, self.request.tenant)
         return context
 
 
@@ -299,6 +303,10 @@ class PersonDetailView(TenantScopedMixin, DetailView):
         context["owed"] = expenses.filter(reimbursed_on__isnull=True).aggregate(
             total=Sum("amount")
         )["total"]
+        if context["is_owner"]:
+            context["social_rows"] = social.social_rows(
+                self.request.tenant, person=self.object, newest_first=True
+            )
         return context
 
 
@@ -369,3 +377,36 @@ class PersonDeleteView(TenantScopedMixin, DeleteView):
             return redirect("tenants:person-detail", pk=self.object.pk)
         messages.success(self.request, _("La fiche est supprimée."))
         return response
+
+
+@method_decorator(never_cache, name="dispatch")
+class SocialView(OwnerRequiredMixin, TemplateView):
+    """The "Social" tab (owner only): the people of the team on the dates of a month, with their
+    cachets, ready to be handed to whoever does the payroll (F-93)."""
+
+    template_name = "tenants/social.html"
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        first = social.parse_month(self.request.GET.get("mois"), timezone.localdate())
+        start, end = social.month_bounds(first)
+        tenant = self.request.tenant
+        context.update(
+            is_owner=True,
+            month=first,
+            previous_month=social.shift_month(first, -1),
+            next_month=social.shift_month(first, 1),
+            rows=social.social_rows(tenant, start, end),
+            employer_missing=social.employer_missing(tenant),
+        )
+        return context
+
+
+@method_decorator(never_cache, name="dispatch")
+class SocialExportView(OwnerRequiredMixin, View):
+    """The same month as a CSV file (owner only)."""
+
+    def get(self, request):
+        first = social.parse_month(request.GET.get("mois"), timezone.localdate())
+        start, end = social.month_bounds(first)
+        return social.csv_response(request.tenant, start, end)
