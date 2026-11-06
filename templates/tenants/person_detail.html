@@ -78,6 +78,22 @@
     </div>
   {% endif %}
 
+  {% if is_owner %}
+    <h2 class="mb-2 text-sm font-semibold uppercase text-gray-500">{% translate "Gestion sociale" %}</h2>
+    {% if social_rows %}
+      <ul class="card mb-6 divide-y divide-page-line text-sm">
+        {% for row in social_rows %}
+          <li class="flex flex-wrap items-center justify-between gap-2 py-2 first:pt-0 last:pb-0">
+            <p><span class="data">{{ row.gig.date|date:"d/m/Y" }}</span> · <a href="{% url 'gigs:detail' row.gig.pk %}" class="text-blue-700 underline">{{ row.gig.show.title }}</a></p>
+            <p class="data">{% if row.member.cachet_count is not None %}{{ row.member.cachet_count }} {% translate "cachet(s)" %}{% else %}—{% endif %}{% if row.member.cachet_amount is not None %} · {{ row.member.cachet_amount }} €{% endif %}</p>
+          </li>
+        {% endfor %}
+      </ul>
+    {% else %}
+      <p class="card mb-6 text-sm text-gray-600">{% translate "Aucun cachet pour l'instant : ils se saisissent sur la fiche de chaque date, dans « Équipe de la date »." %}</p>
+    {% endif %}
+  {% endif %}
+
   <h2 class="mb-2 text-sm font-semibold uppercase text-gray-500">{% blocktranslate count n=gigs|length %}{{ n }} date{% plural %}{{ n }} dates{% endblocktranslate %}</h2>
   {% if gigs %}
     <ul class="mb-6 flex flex-col gap-2">
