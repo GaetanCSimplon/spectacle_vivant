@@ -1,6 +1,7 @@
 import datetime
 
 from django.contrib import messages
+from django.core.exceptions import PermissionDenied
 from django.http import HttpResponseBadRequest
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
@@ -10,10 +11,12 @@ from django.utils.translation import gettext_lazy as _
 from django.views import View
 from django.views.generic import DetailView, ListView, TemplateView
 
+from apps.accounts.services import is_tenant_owner
 from apps.addressbook.models import Promoter
 from apps.core.views import TenantScopedMixin, wants_fragment
 from apps.documents.models import Invoice
 from apps.finance import services as finance_services
+from apps.roadmaps import services as roadmap_services
 from apps.tenants.models import Person
 
 from . import checklist, ical, services
@@ -23,13 +26,14 @@ from .forms import (
     GigPromoterStepForm,
     GigShowStepForm,
     GigVenueStepForm,
+    MemberCachetForm,
     PriceForm,
     PromoterQuickCreateForm,
     ShowQuickCreateForm,
     TermsForm,
     VenueQuickCreateForm,
 )
-from .models import Gig
+from .models import Gig, GigMember
 
 WIZARD_SESSION_KEY = "gig_wizard"
 
@@ -418,6 +422,15 @@ class GigDetailView(TenantScopedMixin, DetailView):
         context["crew"] = list(self.object.members.all())
         context["team_total"] = Person.objects.filter(tenant=self.request.tenant).count()
         context["team_on_gig"] = sum(1 for member in context["crew"] if member.person_id)
+        # "Équipe de la date" (F-88): the cachets are private (owner only).
+        context["is_owner"] = is_tenant_owner(self.request.user, self.request.tenant)
+        if context["is_owner"]:
+            context["crew_rows"] = [
+                (member, MemberCachetForm(instance=member, prefix=f"m{member.pk}"))
+                for member in context["crew"]
+            ]
+        context["cast_missing"] = roadmap_services.cast_not_on_gig(self.object)
+        context["team_choices"] = roadmap_services.available_team(self.object)
         return context
 
 
@@ -661,3 +674,60 @@ class GigChecklistResetView(GigChecklistMixin, View):
         if not wants_fragment(request):
             return redirect("gigs:checklist", pk=gig.pk)
         return render(request, "gigs/_checklist_body.html", self._context(gig))
+
+
+class GigTeamAddView(TenantScopedMixin, View):
+    """POST only: put people of the structure's team on this date (F-88).
+
+    `person` adds one person; `cast=1` adds the people of the show's cast who are not there yet.
+    The details copied to the date are the same as from the roadmap editor.
+    """
+
+    http_method_names = ["post"]
+
+    def post(self, request, pk):
+        gig = get_object_or_404(Gig.objects.select_related("show"), pk=pk, tenant=request.tenant)
+        if request.POST.get("cast"):
+            people = list(roadmap_services.cast_not_on_gig(gig))
+        else:
+            person_id = request.POST.get("person", "")
+            people = (
+                list(Person.objects.filter(pk=person_id, tenant=request.tenant))
+                if person_id.isdigit()
+                else []
+            )
+            if not people:
+                messages.error(request, _("Choisissez une personne de votre équipe."))
+        for person in people:
+            try:
+                roadmap_services.add_team_member(gig, person)
+            except roadmap_services.AlreadyOnTheGig as error:
+                messages.error(request, error.args[0])
+        if people:
+            roadmap_services.bump_version(roadmap_services.get_or_create_roadmap(gig))
+            messages.success(request, _("L'équipe de la date est à jour."))
+        return redirect(f"{reverse('gigs:detail', args=[gig.pk])}#equipe")
+
+
+class GigMemberCachetView(TenantScopedMixin, View):
+    """POST only, owner only: the cachet (count and gross amount) of one person for this date."""
+
+    http_method_names = ["post"]
+
+    def post(self, request, pk, member_pk):
+        if not is_tenant_owner(request.user, request.tenant):
+            raise PermissionDenied
+        member = get_object_or_404(
+            GigMember, pk=member_pk, gig_id=pk, gig__tenant=request.tenant, tenant=request.tenant
+        )
+        form = MemberCachetForm(request.POST, instance=member, prefix=f"m{member.pk}")
+        if form.is_valid():
+            form.save()
+            messages.success(
+                request, _("Le cachet de %(name)s est enregistré.") % {"name": member.name}
+            )
+        else:
+            messages.error(
+                request, _("Le cachet n'a pas pu être enregistré : vérifiez les valeurs.")
+            )
+        return redirect(f"{reverse('gigs:detail', args=[pk])}#equipe")

@@ -22,6 +22,12 @@ def available_team(gig):
     return Person.objects.filter(tenant=gig.tenant).exclude(pk__in=taken)
 
 
+def cast_not_on_gig(gig):
+    """The people of the show's cast (its distribution) who are not on this gig yet."""
+    taken = gig.members.exclude(person=None).values_list("person_id", flat=True)
+    return gig.show.cast.filter(tenant=gig.tenant).exclude(pk__in=taken)
+
+
 def add_team_member(gig, person):
     """Put a person of the team on the gig, copying what the roadmap shows.
 

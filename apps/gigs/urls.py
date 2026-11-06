@@ -26,6 +26,12 @@ urlpatterns = [
         views.GigChecklistResetView.as_view(),
         name="checklist-reset",
     ),
+    path("<int:pk>/equipe/ajouter/", views.GigTeamAddView.as_view(), name="team-add"),
+    path(
+        "<int:pk>/equipe/<int:member_pk>/cachet/",
+        views.GigMemberCachetView.as_view(),
+        name="member-cachet",
+    ),
     path("<int:pk>/prix/", views.GigPriceView.as_view(), name="price"),
     path("<int:pk>/echeances/", views.GigTermsView.as_view(), name="terms"),
     path("<int:pk>/confirmer/", views.GigConfirmView.as_view(), name="confirm"),

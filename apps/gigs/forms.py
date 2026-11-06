@@ -6,7 +6,7 @@ from apps.addressbook.models import Promoter, Venue
 from apps.catalog.models import Show
 from apps.core.forms import AddressModelForm
 
-from .models import Gig
+from .models import Gig, GigMember
 
 
 class GigShowStepForm(forms.Form):
@@ -160,4 +160,16 @@ class TermsForm(forms.ModelForm):
         widgets = {
             "deposit_due_on": forms.DateInput(attrs={"type": "date"}, format="%Y-%m-%d"),
             "balance_due_on": forms.DateInput(attrs={"type": "date"}, format="%Y-%m-%d"),
+        }
+
+
+class MemberCachetForm(forms.ModelForm):
+    """The cachet of one person for this date (owner only): how many, and the gross amount."""
+
+    class Meta:
+        model = GigMember
+        fields = ["cachet_count", "cachet_amount"]
+        widgets = {
+            "cachet_count": forms.NumberInput(attrs={"min": 0, "max": 99}),
+            "cachet_amount": forms.NumberInput(attrs={"min": 0, "step": "0.01"}),
         }
