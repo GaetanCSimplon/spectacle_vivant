@@ -17,6 +17,9 @@ class Roadmap(TenantOwnedModel):
     # Empty when sharing is off. Never an ID: see services.publish().
     token = models.CharField(max_length=64, blank=True)
     is_published = models.BooleanField(_("partage activé"), default=False)
+    # F-91: show the signed contract in the personal space of the people of the date. It holds the
+    # price of the cession, so it is off by default, owner only, and never on the shared link.
+    share_signed_contract = models.BooleanField(_("contrat signé montré à l'équipe"), default=False)
     notes = models.TextField(_("notes"), blank=True)
     # Shown to the team: +1 at each saved change made while sharing is on (services.bump_version).
     version = models.PositiveIntegerField(_("version"), default=1)

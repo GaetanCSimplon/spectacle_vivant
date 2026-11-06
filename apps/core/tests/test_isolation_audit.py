@@ -73,6 +73,7 @@ PUBLIC = {
     "tour-form-public",  # the secret link is the access right (roadmaps/test_tour_form.py)
     "tour-form-thanks",
     "team-space-document",  # the personal link is the access right (roadmaps/test_documents.py)
+    "team-space-contract",  # same (roadmaps/test_shared_contract.py)
 }
 
 # Routes that take an identifier: name -> {url parameter: key of A's dataset, or "=literal"}.
@@ -123,6 +124,7 @@ ROUTES = [
     ("roadmaps:editor", {"gig_id": "gig"}),
     ("roadmaps:pdf", {"gig_id": "gig"}),
     ("roadmaps:team-add", {"gig_id": "gig"}),
+    ("roadmaps:contract-share", {"gig_id": "gig"}),
     ("roadmaps:document-add", {"gig_id": "gig"}),
     ("roadmaps:document-file", {"gig_id": "gig", "pk": "document"}),
     ("roadmaps:document-delete", {"gig_id": "gig", "pk": "document"}),
