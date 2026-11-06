@@ -113,11 +113,19 @@ def public_context(roadmap):
     """Everything a roadmap may show to someone who only has the link.
 
     This is a whitelist, on purpose: prices, conditions, contract, invoices, the billed
-    promoter, the gig status and e-mail addresses never go through here. Both the public
-    page and the PDF are built from it only.
+    promoter (only the names, roles and phones of its contacts), the gig status and e-mail
+    addresses never go through here. Both the public page and the PDF are built from it only.
     """
     gig = roadmap.gig
     venue = gig.venue
+    venue_contacts = list(venue.contacts.filter(tenant=gig.tenant))
+    # The people to call on the organiser's side (names, roles, phones: no e-mail, and never the
+    # name or the billing address of the organiser). Someone who also works for the venue is
+    # listed once, with the venue.
+    on_venue = {c.pk for c in venue_contacts}
+    promoter_contacts = [
+        c for c in gig.promoter.contacts.filter(tenant=gig.tenant) if c.pk not in on_venue
+    ]
     return {
         "show_title": gig.show.title,
         "group_name": gig.show.group_name,
@@ -139,7 +147,8 @@ def public_context(roadmap):
         "version": roadmap.version,
         "updated_at": roadmap.updated_at,
         "members": _people(gig.members.all()),
-        "venue_contacts": _people(venue.contacts.all()),
+        "venue_contacts": _people(venue_contacts),
+        "promoter_contacts": _people(promoter_contacts),
     }
 
 
