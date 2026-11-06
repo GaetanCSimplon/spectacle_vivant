@@ -3,7 +3,7 @@
 from dataclasses import dataclass
 
 from django.contrib import messages
-from django.http import Http404, HttpResponse
+from django.http import FileResponse, Http404, HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 from django.utils.decorators import method_decorator
@@ -15,9 +15,17 @@ from apps.core.views import TenantScopedMixin, protect_secret_page, wants_fragme
 from apps.gigs.models import Gig, GigMember
 from apps.tenants.models import Person
 
-from . import services, tour_requests
-from .forms import LodgingForm, MealForm, MemberForm, NotesForm, PlaceContactForm, SlotForm
-from .models import Lodging, Meal, PlaceContact, Roadmap, RoadmapSlot
+from . import documents, services, tour_requests
+from .forms import (
+    LodgingForm,
+    MealForm,
+    MemberForm,
+    NotesForm,
+    PlaceContactForm,
+    RoadmapDocumentForm,
+    SlotForm,
+)
+from .models import Lodging, Meal, PlaceContact, Roadmap, RoadmapDocument, RoadmapSlot
 
 
 @dataclass(frozen=True)
@@ -129,6 +137,8 @@ class RoadmapMixin(TenantScopedMixin):
             "team_choices": services.available_team(self.gig),
             "no_map": services.places_without_map(self.gig, self.roadmap),
             **self.tour_request_context(),
+            "documents": self.roadmap.documents.select_related("person"),
+            "document_form": forms.get("document") or RoadmapDocumentForm(gig=self.gig),
             "share_url": self.request.build_absolute_uri(public_path) if public_path else "",
         }
 
@@ -415,3 +425,75 @@ class TourRequestReviewView(RoadmapMixin, View):
         except tour_requests.RequestClosed:
             return self.nothing_to_review()
         return redirect("roadmaps:editor", gig_id=self.gig.pk)
+
+
+class DocumentAddView(RoadmapMixin, View):
+    """POST only: put a file on this date for the team (F-91)."""
+
+    http_method_names = ["post"]
+
+    def post(self, request, gig_id):
+        self.load(gig_id)
+        form = RoadmapDocumentForm(request.POST, request.FILES, gig=self.gig)
+        if not form.is_valid():
+            return self.render_page(forms={"document": form})
+        try:
+            documents.add_document(
+                self.roadmap,
+                title=form.cleaned_data["title"],
+                file=form.cleaned_data["file"],
+                kind=form.kind,
+                person=form.cleaned_data["person"],
+                user=request.user,
+            )
+        except documents.TooManyDocuments:
+            messages.error(
+                request,
+                _("Cette date porte déjà %(n)s documents : supprimez-en un avant d'en ajouter.")
+                % {"n": RoadmapDocument.MAX_PER_ROADMAP},
+            )
+            return redirect("roadmaps:editor", gig_id=self.gig.pk)
+        messages.success(request, _("Le document est ajouté."))
+        return redirect(f"{reverse('roadmaps:editor', args=[self.gig.pk])}#documents")
+
+
+class DocumentFileView(RoadmapMixin, View):
+    """The owner's own copy of a document, to check what the team will see."""
+
+    def get(self, request, gig_id, pk):
+        self.load(gig_id)
+        document = get_object_or_404(
+            RoadmapDocument, pk=pk, roadmap=self.roadmap, tenant=request.tenant
+        )
+        return document_response(document)
+
+
+class DocumentDeleteView(RoadmapMixin, View):
+    http_method_names = ["post"]
+
+    def post(self, request, gig_id, pk):
+        self.load(gig_id)
+        document = get_object_or_404(
+            RoadmapDocument, pk=pk, roadmap=self.roadmap, tenant=request.tenant
+        )
+        document.delete()
+        messages.success(request, _("Le document est supprimé."))
+        return redirect(f"{reverse('roadmaps:editor', args=[self.gig.pk])}#documents")
+
+
+def document_response(document):
+    """The file shown in the browser (handy on a phone), typed by what we checked at upload.
+
+    `nosniff` stops the browser from guessing another type; the name offered is built from the
+    title, never from what was uploaded.
+    """
+    safe_title = "".join(c if c.isalnum() or c in " -_" else "_" for c in document.title).strip()
+    response = FileResponse(
+        document.file.open("rb"),
+        content_type=document.content_type,
+        as_attachment=False,
+        filename=f"{safe_title or 'document'}.{document.extension}",
+    )
+    response["X-Content-Type-Options"] = "nosniff"
+    response["Cache-Control"] = "no-store"
+    return response

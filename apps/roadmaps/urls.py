@@ -64,6 +64,13 @@ urlpatterns = [
         views.TourRequestReviewView.as_view(),
         name="tour-request-review",
     ),
+    path("documents/ajouter/", views.DocumentAddView.as_view(), name="document-add"),
+    path("documents/<int:pk>/", views.DocumentFileView.as_view(), name="document-file"),
+    path(
+        "documents/<int:pk>/supprimer/",
+        views.DocumentDeleteView.as_view(),
+        name="document-delete",
+    ),
     path("equipe/depuis-mon-equipe/", views.TeamMemberAddView.as_view(), name="team-add"),
     path(
         "<place:section>/<int:pk>/contacts/ajouter/",

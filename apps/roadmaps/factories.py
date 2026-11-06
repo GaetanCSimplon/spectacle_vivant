@@ -5,7 +5,15 @@ from django.utils import timezone
 
 from apps.gigs.factories import GigFactory
 
-from .models import Lodging, Meal, PlaceContact, Roadmap, RoadmapRequest, RoadmapSlot
+from .models import (
+    Lodging,
+    Meal,
+    PlaceContact,
+    Roadmap,
+    RoadmapDocument,
+    RoadmapRequest,
+    RoadmapSlot,
+)
 
 
 class RoadmapFactory(factory.django.DjangoModelFactory):
@@ -67,3 +75,14 @@ class RoadmapRequestFactory(factory.django.DjangoModelFactory):
     tenant = factory.SelfAttribute("gig.tenant")
     token = factory.Sequence(lambda n: f"token-{n}")
     expires_at = factory.LazyFunction(lambda: timezone.now() + datetime.timedelta(days=7))
+
+
+class RoadmapDocumentFactory(_ChildFactory):
+    """A PDF for the whole team of the date (pass `person=...` for one person)."""
+
+    class Meta:
+        model = RoadmapDocument
+
+    title = "Billet de train"
+    file = factory.django.FileField(data=b"%PDF-1.4 test", filename="billet.pdf")
+    content_type = RoadmapDocument.Kind.PDF

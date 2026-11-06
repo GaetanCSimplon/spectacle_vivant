@@ -27,6 +27,18 @@
         </div>
       </header>
 
+      {% if documents %}
+        <h2 class="mb-2 text-sm font-semibold uppercase text-gray-500">{% translate "Mes documents" %}</h2>
+        <ul class="mb-6 space-y-2">
+          {% for document in documents %}
+            <li><a href="{{ document.url }}" class="card card-link flex items-center justify-between gap-3 text-sm">
+              <span class="min-w-0 break-words font-medium">{{ document.title }}</span>
+              <span class="data shrink-0 text-gray-600">{{ document.kind }}</span>
+            </a></li>
+          {% endfor %}
+        </ul>
+      {% endif %}
+
       {% if notes %}
         <h2 class="mb-2 text-sm font-semibold uppercase text-gray-500">{% translate "Notes" %}</h2>
         <div class="card mb-6 text-sm">{{ notes|linebreaksbr }}</div>
@@ -119,6 +131,7 @@
           {% for person in members %}{% include "roadmaps/_public_person.html" %}{% endfor %}
         </ul>
       {% endif %}
+
 
       <a href="{{ pdf_url }}" class="btn btn-secondary btn-block btn-download">{% translate "Télécharger en PDF" %}</a>
     </main>
