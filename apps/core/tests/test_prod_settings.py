@@ -154,3 +154,18 @@ def test_the_organiser_form_token_is_hidden_from_sentry_too():
 
     assert token not in str(cleaned)
     assert cleaned["request"]["url"] == f"https://exemple.fr/formulaire-organisateur/{MASK}/?x=1"
+
+
+def test_the_tour_form_token_is_hidden_from_sentry_too():
+    token = "ZyX987-secret_tour_token"
+    event = {
+        "request": {"url": f"https://exemple.fr/regie-de-tournee/{token}/?x=1"},
+        "transaction": f"/regie-de-tournee/{token}/",
+        "message": f"POST /regie-de-tournee/{token}/ failed",
+        "breadcrumbs": [{"data": {"url": f"/regie-de-tournee/{token}/"}}],
+    }
+
+    cleaned = scrub_event(event)
+
+    assert token not in str(cleaned)
+    assert cleaned["request"]["url"] == f"https://exemple.fr/regie-de-tournee/{MASK}/?x=1"

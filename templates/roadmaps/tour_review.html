@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}Régie de tournée reçue — Bòrd Pro{% endblock %}
+
+{% block page_content %}
+  <h1 class="mb-1">{% translate "Informations reçues de l'organisateur" %}</h1>
+  <p class="mb-4 text-sm text-gray-600">
+    {% blocktranslate with show=gig.show.title date=gig.date|date:"d/m/Y" answered=answered_on|date:"d/m/Y" %}{{ show }}, le {{ date }}. Réponse reçue le {{ answered }}. Rien n'est ajouté à la feuille de route tant que vous n'avez pas validé : cochez ce que vous gardez.{% endblocktranslate %}
+  </p>
+
+  <form method="post" class="space-y-4">
+    {% csrf_token %}
+    {% for group in groups %}
+      <fieldset class="card space-y-2 text-sm">
+        <legend class="sr-only">{{ group.label }}</legend>
+        <label class="flex items-center gap-2 text-base font-semibold">
+          <input type="checkbox" name="groups" value="{{ group.key }}" checked>
+          {{ group.label }}
+        </label>
+        <dl class="space-y-1 pl-6">
+          {% for row in group.rows %}
+            <div class="flex flex-wrap gap-x-3">
+              <dt class="text-gray-600">{{ row.label }} :</dt>
+              <dd class="min-w-0 break-words"><strong>{{ row.value|linebreaksbr }}</strong>
+                {% if row.current is not None %}
+                  <span class="text-gray-500">({% if row.current %}{% blocktranslate with current=row.current %}actuellement {{ current }}{% endblocktranslate %}{% else %}{% translate "pas d'horaire pour l'instant" %}{% endif %})</span>
+                {% endif %}
+              </dd>
+            </div>
+          {% endfor %}
+        </dl>
+        <p class="pl-6 text-xs text-gray-500">
+          {% if group.key == 'times' %}{% translate "Met à jour les horaires de la date et du programme de la feuille de route." %}
+          {% elif group.key == 'access' or group.key == 'remarks' %}{% translate "S'ajoute aux notes de la feuille de route, sans effacer les vôtres." %}
+          {% elif group.key == 'meal' %}{% translate "Ajoute un repas à la feuille de route." %}
+          {% elif group.key == 'lodging' %}{% translate "Ajoute un hébergement à la feuille de route." %}
+          {% elif group.key == 'contact' %}{% translate "Ajoute ce contact au lieu, dans votre annuaire." %}{% endif %}
+        </p>
+      </fieldset>
+    {% endfor %}
+
+    <div class="flex flex-col gap-3">
+      <button type="submit" class="btn btn-primary btn-block">{% translate "Ajouter à la feuille de route" %}</button>
+      <button type="submit" name="ignore" value="1" class="btn btn-secondary btn-block">{% translate "Écarter cette réponse" %}</button>
+      <a href="{% url 'roadmaps:editor' gig.pk %}" class="text-center text-sm text-gray-500 hover:text-gray-700">{% translate "Décider plus tard" %}</a>
+    </div>
+  </form>
+{% endblock %}

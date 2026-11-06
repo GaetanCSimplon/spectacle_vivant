@@ -49,6 +49,21 @@ urlpatterns = [
     path("apercu/", views.PreviewView.as_view(), name="preview"),
     path("notes/", views.NotesView.as_view(), name="notes"),
     path("partage/<shareaction:action>/", views.ShareView.as_view(), name="share"),
+    path(
+        "regie-de-tournee/creer/",
+        views.TourRequestCreateView.as_view(),
+        name="tour-request-create",
+    ),
+    path(
+        "regie-de-tournee/annuler/",
+        views.TourRequestRevokeView.as_view(),
+        name="tour-request-revoke",
+    ),
+    path(
+        "regie-de-tournee/verifier/",
+        views.TourRequestReviewView.as_view(),
+        name="tour-request-review",
+    ),
     path("equipe/depuis-mon-equipe/", views.TeamMemberAddView.as_view(), name="team-add"),
     path(
         "<place:section>/<int:pk>/contacts/ajouter/",

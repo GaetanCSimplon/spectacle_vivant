@@ -33,6 +33,7 @@ from apps.core.views import (
 from apps.documents.views import DocumentLibraryView
 from apps.finance import team_views as finance_team_views
 from apps.finance import views as finance_views
+from apps.roadmaps import public_views as roadmap_public_views
 from apps.roadmaps import views as roadmap_views
 from apps.tenants import public_views as tenants_public_views
 from apps.tenants.views import OnboardingView
@@ -111,6 +112,16 @@ urlpatterns = [
         "formulaire-organisateur/<str:token>/",
         addressbook_public_views.PublicPromoterFormView.as_view(),
         name="promoter-form-public",
+    ),
+    path(
+        "regie-de-tournee/merci/",
+        roadmap_public_views.PublicTourFormThanksView.as_view(),
+        name="tour-form-thanks",
+    ),
+    path(
+        "regie-de-tournee/<str:token>/",
+        roadmap_public_views.PublicTourFormView.as_view(),
+        name="tour-form-public",
     ),
     path("exports/", finance_views.ExportView.as_view(), name="export"),
     path("exports/<str:kind>.csv", finance_views.ExportCsvView.as_view(), name="export-csv"),
