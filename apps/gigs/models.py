@@ -1,4 +1,5 @@
 from collections import namedtuple
+from decimal import Decimal
 from functools import cached_property
 
 from django.conf import settings
@@ -180,6 +181,18 @@ class GigMember(TenantOwnedModel):
     role = models.CharField(_("fonction"), max_length=255, blank=True)
     phone = models.CharField(_("téléphone"), max_length=50, blank=True)
     email = models.EmailField(_("e-mail"), blank=True)
+    # Social management (F-93): what this person is paid for this date, as information for
+    # whoever does the payroll. Private (owner only), never copied to a roadmap, never computed
+    # from or against the expenses: nothing here is a payment.
+    cachet_count = models.PositiveSmallIntegerField(_("nombre de cachets"), null=True, blank=True)
+    cachet_amount = models.DecimalField(
+        _("montant du cachet (brut)"),
+        max_digits=10,
+        decimal_places=2,
+        null=True,
+        blank=True,
+        validators=[MinValueValidator(Decimal("0"))],
+    )
 
     class Meta:
         ordering = ["id"]

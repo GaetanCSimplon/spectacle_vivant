@@ -1,0 +1,63 @@
+{% load i18n %}
+{% comment %}
+  "Équipe de la date" (F-88) on the date page. Needs: gig, crew, cast_missing, team_choices, is_owner,
+  and for the owner crew_rows ((member, cachet form) pairs). The cachets (social management, F-93)
+  are private: they are shown and edited by the owner only, and never reach a roadmap.
+{% endcomment %}
+<h2 id="equipe" class="mb-2 text-sm font-semibold uppercase text-gray-500">{% translate "Équipe de la date" %}</h2>
+<div class="card mb-6 space-y-3 text-sm">
+  {% if crew %}
+    <ul class="space-y-3">
+      {% if is_owner %}
+        {% for member, form in crew_rows %}
+          <li class="space-y-2 border-b border-page-line pb-3 last:border-0 last:pb-0">
+            <p class="font-medium">{{ member.name }}{% if member.role %} <span class="font-normal text-gray-600">· {{ member.role }}</span>{% endif %}</p>
+            {% if member.person_id %}
+              <form method="post" action="{% url 'gigs:member-cachet' gig.pk member.pk %}" class="flex flex-wrap items-end gap-3">
+                {% csrf_token %}
+                <p><label for="{{ form.cachet_count.id_for_label }}">{% translate "Cachets" %} :</label>
+                  {{ form.cachet_count }}</p>
+                <p><label for="{{ form.cachet_amount.id_for_label }}">{% translate "Montant brut (€)" %} :</label>
+                  {{ form.cachet_amount }}</p>
+                <button type="submit" class="btn btn-secondary">{% translate "Enregistrer" %}</button>
+              </form>
+            {% else %}
+              <p class="text-gray-600">{% translate "Ajoutée à la main : sans fiche d'équipe, elle n'apparaît pas dans la gestion sociale." %}</p>
+            {% endif %}
+          </li>
+        {% endfor %}
+      {% else %}
+        {% for member in crew %}
+          <li><span class="font-medium">{{ member.name }}</span>{% if member.role %} <span class="text-gray-600">· {{ member.role }}</span>{% endif %}</li>
+        {% endfor %}
+      {% endif %}
+    </ul>
+  {% else %}
+    <p class="text-gray-600">{% translate "Personne pour l'instant." %}</p>
+  {% endif %}
+
+  {% if cast_missing %}
+    <form method="post" action="{% url 'gigs:team-add' gig.pk %}">
+      {% csrf_token %}
+      <input type="hidden" name="cast" value="1">
+      <button type="submit" class="btn btn-secondary btn-block">
+        {% blocktranslate count n=cast_missing|length %}Ajouter la personne de la distribution du spectacle{% plural %}Ajouter les {{ n }} personnes de la distribution du spectacle{% endblocktranslate %}
+      </button>
+    </form>
+  {% endif %}
+  {% if team_choices %}
+    <form method="post" action="{% url 'gigs:team-add' gig.pk %}" class="space-y-2">
+      {% csrf_token %}
+      <select name="person" aria-label="{% translate 'Personne de mon équipe' %}" class="w-full" required>
+        <option value="">{% translate "Ajouter depuis mon équipe…" %}</option>
+        {% for person in team_choices %}<option value="{{ person.pk }}">{{ person.full_name }}{% if person.role %} · {{ person.role }}{% endif %}</option>{% endfor %}
+      </select>
+      <button type="submit" class="btn btn-secondary btn-block">{% translate "Ajouter à la date" %}</button>
+    </form>
+  {% elif not crew %}
+    <p class="text-gray-600"><a href="{% url 'tenants:person-create' %}" class="text-blue-700 underline">{% translate "Créez d'abord une personne dans l'équipe" %}</a>.</p>
+  {% endif %}
+  {% if is_owner %}
+    <p class="text-gray-500">{% translate "Les cachets sont des informations pour la paie, visibles de vous seul : ils ne figurent jamais sur la feuille de route." %}</p>
+  {% endif %}
+</div>
