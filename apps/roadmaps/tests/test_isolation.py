@@ -10,9 +10,10 @@ from ..factories import (
     MealFactory,
     PlaceContactFactory,
     RoadmapFactory,
+    RoadmapRequestFactory,
     RoadmapSlotFactory,
 )
-from ..models import Lodging, Meal, PlaceContact, Roadmap, RoadmapSlot
+from ..models import Lodging, Meal, PlaceContact, Roadmap, RoadmapRequest, RoadmapSlot
 
 pytestmark = pytest.mark.django_db
 
@@ -23,6 +24,7 @@ CASES = [
     (Meal, MealFactory),
     (PlaceContact, PlaceContactFactory),
     (GigMember, GigMemberFactory),
+    (RoadmapRequest, RoadmapRequestFactory),
 ]
 
 for _model, _factory in CASES:
@@ -44,6 +46,6 @@ def _parent_kwargs(model, tenant):
     gig = GigFactory(tenant=tenant)
     if model is PlaceContact:
         return {"lodging": LodgingFactory(roadmap=RoadmapFactory(gig=gig))}
-    if model in (Roadmap, GigMember):
+    if model in (Roadmap, GigMember, RoadmapRequest):
         return {"gig": gig}
     return {"roadmap": RoadmapFactory(gig=gig)}
