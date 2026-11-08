@@ -1,46 +1,153 @@
 {% extends "site/base_site.html" %}
 {% load i18n %}
 
+{% block main_class %}{% endblock %}
+
 {% block content %}
-  <section class="max-w-3xl">
-    <h1 class="!mb-3">{% translate "Prenez le contrôle de votre tournée." %}</h1>
-    <p class="text-lg">{% translate "Contacts, dates, contrats, budgets et équipe : tout au même endroit." %}</p>
-    <p class="mt-3 text-sm !text-gray-600">{% translate "Pour les artistes auto-produits, les petites compagnies et les associations du spectacle vivant." %}</p>
-    <div class="mt-6 flex flex-wrap gap-3">
-      <a href="{% url 'site-contact' %}" class="btn btn-primary">{% translate "Nous contacter" %}</a>
-      <a href="{% url 'site-features' %}" class="btn btn-secondary">{% translate "Découvrir les fonctionnalités" %}</a>
+  {# 1. The slogan, on a navy block, with the one main action of the page. #}
+  <section class="on-dark overflow-hidden bg-blue-700 pb-16 pt-10 md:pb-20 md:pt-14">
+    <div class="mx-auto grid max-w-6xl items-center gap-10 px-4 md:grid-cols-[1.15fr_.85fr]">
+      <div>
+        <h1 class="!mb-0 text-[2.5rem] leading-[1.02] sm:text-6xl md:text-7xl">{% translate "Prenez le contrôle de votre tournée." %}</h1>
+        <div class="site-rule mt-6 h-1 w-[72px]" aria-hidden="true"></div>
+        <p class="mt-6 max-w-xl text-lg">{% translate "Contacts, dates, contrats, budgets et équipe : tout au même endroit." %}</p>
+        <p class="mt-2 max-w-xl text-sm">{% translate "Pour les artistes autoproduits, les petites compagnies et les associations du spectacle vivant." %}</p>
+        <div class="mt-8 flex flex-wrap gap-3">
+          <a href="{% url 'site-contact' %}" class="btn btn-primary">{% translate "Demander une invitation" %}</a>
+          <a href="{% url 'site-features' %}" class="btn btn-secondary">{% translate "Voir les fonctionnalités" %}</a>
+        </div>
+      </div>
+      {# Two flat shapes while the graphic designer's final illustrations are awaited. #}
+      <div class="relative hidden min-h-72 md:block" aria-hidden="true">
+        <i class="site-float absolute right-[30%] top-0 block h-[78%] w-[44%] rounded-b-[28px] bg-ocean"></i>
+        <i class="site-float-slow site-shape-warm absolute bottom-0 right-0 block h-[68%] w-[62%] rounded-tl-[28px]"></i>
+      </div>
     </div>
   </section>
 
-  <section class="mt-14" aria-labelledby="themes-title">
-    <h2 id="themes-title" class="sr-only">{% translate "Ce que Bòrd Pro vous apporte" %}</h2>
-    <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
-      <article class="card">
-        <h3>{% translate "Diffusion" %}</h3>
-        <p class="mt-1">{% translate "Du premier contact au dernier cachet, gardez le fil." %}</p>
-        <p class="mt-2 text-sm !text-gray-600">{% translate "Organisateurs, lieux et contacts, avec leur suivi (prospect, négociation, client)." %}</p>
-      </article>
-      <article class="card">
-        <h3>{% translate "Production" %}</h3>
-        <p class="mt-1">{% translate "Vos dates avancent, vos dossiers suivent." %}</p>
-        <p class="mt-2 text-sm !text-gray-600">{% translate "Statuts, calendrier, feuille de route à partager par lien, checklist de contractualisation." %}</p>
-      </article>
-      <article class="card">
-        <h3>{% translate "Administratif" %}</h3>
-        <p class="mt-1">{% translate "Moins de paperasse, plus de scène." %}</p>
-        <p class="mt-2 text-sm !text-gray-600">{% translate "Contrat de cession, devis, factures et avoirs en PDF." %}</p>
-      </article>
-      <article class="card">
-        <h3>{% translate "Budget" %}</h3>
-        <p class="mt-1">{% translate "Chaque date, chaque dépense, chaque euro : au clair." %}</p>
-        <p class="mt-2 text-sm !text-gray-600">{% translate "Prévu, facturé et encaissé séparés, dépenses, solde et exports CSV." %}</p>
-      </article>
-    </div>
-    <p class="mt-6"><a href="{% url 'site-features' %}" class="font-bold text-blue-700 underline">{% translate "Voir toutes les fonctionnalités" %} →</a></p>
+  {# A still band (a scrolling one would move for ever without a way to stop it). #}
+  <div class="site-band" aria-hidden="true">
+    <p class="mx-auto flex max-w-6xl flex-wrap justify-center gap-x-6 gap-y-1 px-4 py-4 font-heading text-lg font-extrabold uppercase tracking-wide !text-blue-700 sm:text-xl">
+      <span>{% translate "Dates" %}</span><span>✦</span><span>{% translate "Budget" %}</span><span>✦</span><span>{% translate "Contrats" %}</span><span>✦</span><span>{% translate "Paie" %}</span><span>✦</span><span>{% translate "Feuilles de route" %}</span><span>✦</span><span>{% translate "Tournée" %}</span>
+    </p>
+  </div>
+
+  {# 2. The roles. #}
+  <section class="mx-auto max-w-6xl px-4 py-14" aria-labelledby="roles-title">
+    <h2 id="roles-title" class="text-3xl sm:text-4xl">{% translate "Vous tenez tous les rôles." %}</h2>
+    <p class="mt-3 max-w-2xl text-lg !text-gray-600">{% translate "Quand on est artiste autoproduit ou petite structure, on est tour à tour diffuseur, producteur, administrateur et chef de tournée. La charge est partout, les informations aussi." %}</p>
+    <ul class="mt-8 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <li class="card">
+        <span class="data text-sm !text-ocean">{% translate "Diffusion" %}</span>
+        <h3>{% translate "Prospecter, relancer, confirmer" %}</h3>
+        <p class="!text-gray-600">{% translate "Suivre chaque contact et chaque date." %}</p>
+      </li>
+      <li class="card">
+        <span class="data text-sm !text-ocean">{% translate "Production" %}</span>
+        <h3>{% translate "Préparer chaque date" %}</h3>
+        <p class="!text-gray-600">{% translate "Statuts, calendrier, checklist, feuille de route." %}</p>
+      </li>
+      <li class="card">
+        <span class="data text-sm !text-ocean">{% translate "Administration" %}</span>
+        <h3>{% translate "Devis, contrats, factures" %}</h3>
+        <p class="!text-gray-600">{% translate "Générer, suivre et réunir les documents." %}</p>
+      </li>
+      <li class="card">
+        <span class="data text-sm !text-ocean">{% translate "Tournée" %}</span>
+        <h3>{% translate "Plannings et feuilles de route" %}</h3>
+        <p class="!text-gray-600">{% translate "Informer toute l'équipe." %}</p>
+      </li>
+    </ul>
   </section>
 
-  <section class="mt-14 max-w-3xl" aria-labelledby="manifesto-title">
-    <h2 id="manifesto-title">{% translate "Fait pour celles et ceux qui font tout" %}</h2>
-    <p class="mt-2">{% translate "Créer, prospecter, négocier, produire, jouer, facturer, déclarer, payer. Un seul endroit pour vos contacts, vos dates, vos contrats, vos budgets et vos documents." %}</p>
+  {# 3. One place. #}
+  <section class="on-dark bg-blue-700 py-14" aria-labelledby="one-place-title">
+    <div class="mx-auto grid max-w-6xl items-start gap-10 px-4 md:grid-cols-2">
+      <div>
+        <h2 id="one-place-title" class="text-3xl sm:text-4xl">{% translate "Moins de dispersion. Plus de temps pour l'artistique." %}</h2>
+        <p class="mt-4 max-w-xl text-lg">{% translate "Bòrd Pro regroupe spectacles, contacts, dates, budgets et documents dans un seul espace de travail. Vous savez où en est chaque date, ce qu'elle rapporte, ce qu'elle coûte et ce qu'il reste à faire." %}</p>
+        <div class="mt-6"><a href="{% url 'site-contact' %}" class="btn btn-secondary">{% translate "Demander une invitation" %}</a></div>
+      </div>
+      <ol class="space-y-0">
+        <li class="grid grid-cols-[3rem_1fr] gap-4 border-t-2 border-white py-4">
+          <span class="data site-step-no text-xl">01</span>
+          <div><h3>{% translate "Un espace pour gérer" %}</h3><p>{% translate "Spectacles, contacts, dates et documents au même endroit." %}</p></div>
+        </li>
+        <li class="grid grid-cols-[3rem_1fr] gap-4 border-t-2 border-white py-4">
+          <span class="data site-step-no text-xl">02</span>
+          <div><h3>{% translate "Un lien pour chaque membre de l'équipe" %}</h3><p>{% translate "Chacun consulte depuis son téléphone ses dates, ses feuilles de route et ses documents, sans créer de compte." %}</p></div>
+        </li>
+        <li class="grid grid-cols-[3rem_1fr] gap-4 border-t-2 border-white py-4">
+          <span class="data site-step-no text-xl">03</span>
+          <div>
+            <h3>{% translate "Radar pour décider" %}</h3>
+            <p>{% translate "Il repèrera ce qui mérite votre attention, avant qu'il ne soit trop tard." %}</p>
+            <p class="mt-2"><span class="pill pill-warn">{% translate "En cours de développement" %}</span></p>
+          </div>
+        </li>
+      </ol>
+    </div>
+  </section>
+
+  {# 4. What changes. #}
+  <section class="mx-auto max-w-6xl px-4 py-14" aria-labelledby="changes-title">
+    <h2 id="changes-title" class="text-3xl sm:text-4xl">{% translate "Ce que ça change pour votre activité." %}</h2>
+    <p class="mt-3 max-w-2xl text-lg !text-gray-600">{% translate "Des effets concrets, au quotidien, sur la façon de piloter vos dates." %}</p>
+    <div class="mt-8 grid grid-cols-1 gap-4 md:grid-cols-2">
+      <article class="card">
+        <h3>{% translate "Une activité lisible" %}</h3>
+        <p class="!text-gray-600">{% translate "Chaque date a un statut clair : option, confirmée, signée. Plus besoin de fouiller dans vos mails et vos tableurs pour savoir où vous en êtes." %}</p>
+        <p class="flex flex-wrap gap-2"><span class="pill pill-good">{% translate "Confirmée" %}</span> <span class="pill pill-warn">{% translate "Option" %}</span></p>
+      </article>
+      <article class="card">
+        <h3>{% translate "Des chiffres au clair" %}</h3>
+        <p class="!text-gray-600">{% translate "Prévu, facturé et encaissé : trois montants distincts, jamais mélangés. Vous voyez ce qu'il reste après les frais." %}</p>
+      </article>
+      <article class="card">
+        <h3>{% translate "Moins d'oublis, moins de surprises" %}</h3>
+        <p class="!text-gray-600">{% translate "L'accueil vous signale ce qui demande votre attention : réponses d'organisateurs à vérifier, dépenses sans justificatif." %}</p>
+      </article>
+      <article class="card">
+        <h3>{% translate "Une équipe informée, sans courir" %}</h3>
+        <p class="!text-gray-600">{% translate "Feuille de route, horaires, accès, contacts, documents : l'équipe consulte tout dans sa poche. Vous gardez la main sur ce qui est partagé." %}</p>
+      </article>
+    </div>
+  </section>
+
+  {# 5. Who it is for. #}
+  <section class="bg-cream py-14" aria-labelledby="who-title">
+    <div class="mx-auto max-w-6xl px-4">
+      <h2 id="who-title" class="text-3xl sm:text-4xl">{% translate "Pour celles et ceux qui font tout eux-mêmes." %}</h2>
+      <div class="mt-8 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <div class="card"><h3>{% translate "Artiste solo ou groupe" %}</h3><p class="!text-gray-600">{% translate "Organiser les dates, suivre le budget, préparer la tournée." %}</p></div>
+        <div class="card"><h3>{% translate "Petite compagnie" %}</h3><p class="!text-gray-600">{% translate "Centraliser spectacles, documents et informations de production." %}</p></div>
+        <div class="card"><h3>{% translate "Bookeur·se indépendant·e" %}</h3><p class="!text-gray-600">{% translate "Suivre contacts, propositions et confirmations." %}</p></div>
+        <div class="card"><h3>{% translate "Petite structure de production" %}</h3><p class="!text-gray-600">{% translate "Piloter plusieurs spectacles et préparer l'administratif." %}</p></div>
+        <div class="card"><h3>{% translate "Équipe en tournée" %}</h3><p class="!text-gray-600">{% translate "Partager plannings, feuilles de route, documents et contacts." %}</p></div>
+        {# Cream, not ocean: the information block is not an ocean one in the charter v1.3. #}
+        <div class="card bg-cream"><h3>{% translate "Et vous ?" %}</h3><p>{% translate "Demandez une invitation et essayez avec vos prochaines dates." %}</p></div>
+      </div>
+    </div>
+  </section>
+
+  {# 6. What is coming. #}
+  <section class="mx-auto max-w-6xl px-4 py-14" aria-labelledby="soon-title">
+    <h2 id="soon-title" class="text-3xl sm:text-4xl">{% translate "Ce qui arrive." %}</h2>
+    <p class="mt-3 max-w-2xl text-lg !text-gray-600">{% translate "Ces fonctions sont en cours de développement : elles ne sont pas encore disponibles." %}</p>
+    <ul class="mt-6 grid grid-cols-1 gap-3 sm:grid-cols-2">
+      {% include "site/_soon_items.html" %}
+    </ul>
+  </section>
+
+  {# 7. The last call. #}
+  <section class="site-cta py-14" aria-labelledby="cta-title">
+    <div class="mx-auto max-w-6xl px-4">
+      <h2 id="cta-title" class="text-3xl sm:text-4xl">{% translate "Essayez avec vos prochaines dates." %}</h2>
+      <p class="mt-3 max-w-2xl text-lg">{% translate "Bòrd Pro est ouvert sur invitation pendant la phase de test. Demandez la vôtre : nous revenons vers vous." %}</p>
+      <div class="mt-6 flex flex-wrap gap-3">
+        <a href="{% url 'site-contact' %}" class="btn btn-night">{% translate "Demander une invitation" %}</a>
+        <a href="{% url 'site-features' %}" class="btn btn-secondary">{% translate "Voir les fonctionnalités" %}</a>
+      </div>
+    </div>
   </section>
 {% endblock %}
