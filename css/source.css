@@ -352,6 +352,16 @@
     @apply bg-coral-500;
   }
 
+  /* The one highlighted card of the features page (a flat block, no shadow). */
+  .site-highlight {
+    @apply rounded-2xl bg-coral-500 p-6;
+  }
+
+  .site-highlight h3,
+  .site-highlight p {
+    @apply text-blue-700;
+  }
+
   .site-rule {
     @apply bg-coral-500;
   }
