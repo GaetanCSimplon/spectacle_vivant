@@ -24,13 +24,14 @@ def test_the_home_page_carries_the_slogan_and_the_charter_messages(client):
 
     assert SLOGAN in content
     assert "Contacts, dates, contrats, budgets et équipe : tout au même endroit." in content
-    assert "Du premier contact au dernier cachet, gardez le fil." in content
+    assert "Pour les artistes autoproduits" in content
 
 
 def test_the_main_action_is_to_get_in_touch_not_to_sign_up(client):
     content = client.get(reverse("home")).content.decode()
 
     assert reverse("site-contact") in content
+    assert "Demander une invitation" in content
     assert reverse("account_signup") not in content
 
 
@@ -129,3 +130,94 @@ def test_the_sitemap_lists_only_the_presentation_pages(client):
     assert body.count("<loc>") == 3
     assert "/fonctionnalites/" in body and "/contact/" in body
     assert "/dates/" not in body and "/accounts/" not in body
+
+
+# --- the home page: structure and honesty ----------------------------------------------------
+
+import re  # noqa: E402
+
+# Announced but not built: each of these may only appear next to the "en cours de développement"
+# badge, on every page that mentions it.
+NOT_BUILT = [
+    "Radar",
+    "Accès pour les artistes",
+    "Signature électronique",
+    "Facturation électronique",
+    "Application installable",
+]
+BADGE = "En cours de développement"
+# Things the site must not claim (not built, or not decided): the offers and prices are for later.
+NEVER_CLAIMED = [
+    "Commencer gratuitement",
+    "Tarifs",
+    "Découverte",
+    "Pilotage",
+    "Tournée Connectée",
+    "Google Agenda",
+    "Application mobile de gestion",
+    "/inscription",
+]
+
+
+def _blocks(content):
+    """Every card or step of a page: the unit that must carry its own badge."""
+    return re.findall(r"<li class=\"(?:card|grid)[^>]*>.*?</li>", content, flags=re.DOTALL)
+
+
+@pytest.mark.parametrize("name", PAGES)
+def test_a_feature_not_built_yet_always_comes_with_its_badge(client, name):
+    content = client.get(reverse(name)).content.decode()
+
+    for feature in NOT_BUILT:
+        for block in _blocks(content):
+            if f">{feature}<" in block:
+                assert BADGE in block, (name, feature)
+
+
+def test_the_home_announces_what_is_coming_in_a_clearly_labelled_section(client):
+    content = client.get(reverse("home")).content.decode()
+
+    assert "Ce qui arrive." in content
+    for feature in NOT_BUILT:
+        assert feature in content
+    assert content.count(BADGE) >= len(NOT_BUILT)
+
+
+@pytest.mark.parametrize("name", PAGES)
+def test_the_site_never_claims_what_is_not_built_or_not_decided(client, name):
+    content = client.get(reverse(name)).content.decode()
+
+    for claim in NEVER_CLAIMED:
+        assert claim not in content, (name, claim)
+
+
+@pytest.mark.parametrize("name", PAGES)
+def test_the_name_is_spelled_as_the_charter_says_and_the_official_logo_is_used(client, name):
+    content = client.get(reverse(name)).content.decode()
+
+    assert "BÒRD PRO" not in content and "Bord Pro" not in content
+    assert "brand/logo-capsule.svg" in content  # navy header: the capsule logo (charter 5)
+
+
+def test_the_home_has_one_h1_that_is_the_slogan_and_labelled_sections(client):
+    content = client.get(reverse("home")).content.decode()
+
+    assert len(re.findall(r"<h1[ >]", content)) == 1
+    assert re.search(r"<h1[^>]*>\s*" + re.escape(SLOGAN), content)
+    for title_id in ("roles-title", "one-place-title", "changes-title", "who-title", "soon-title"):
+        assert f'aria-labelledby="{title_id}"' in content and f'id="{title_id}"' in content
+
+
+def test_nothing_on_the_home_moves_for_ever(client):
+    content = client.get(reverse("home")).content.decode()
+
+    assert "marquee" not in content.lower()
+    assert "animate-" not in content  # only the two decorative shapes drift (and not when the
+    # visitor asks for less motion: see css/source.css)
+
+
+def test_the_home_has_a_skip_link_and_the_viewport_for_a_phone(client):
+    content = client.get(reverse("home")).content.decode()
+
+    assert 'href="#contenu"' in content and 'id="contenu"' in content
+    assert 'name="viewport"' in content

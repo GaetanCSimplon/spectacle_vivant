@@ -194,6 +194,11 @@
   --color-coral-900: #8e2d23;
 
   /* Page background (white, charter v1.0) and the lines between blocks. */
+  /* Brand blocks of the public site (charter v1.0): ocean, cream and light blue. */
+  --color-ocean: #007299;
+  --color-cream: #f5f2ea;
+  --color-sky: #e2f1f6;
+
   --color-page: #ffffff;
   --color-page-line: #c4cfda;
 
@@ -334,6 +339,72 @@
      class inside another custom class, so these only add color/border, not layout. */
   .btn-primary {
     @apply bg-coral-500 text-blue-700 hover:bg-coral-600;
+  }
+
+  /* Public site blocks. Coral stays in the CSS (charter: no template names it): the still band under
+     the slogan, the closing call block, the short rule and the drifting shape of the hero, and the
+     numbers of the steps on a navy block. */
+  .site-band {
+    @apply border-y-2 border-blue-700 bg-coral-500;
+  }
+
+  .site-cta {
+    @apply bg-coral-500;
+  }
+
+  .site-rule {
+    @apply bg-coral-500;
+  }
+
+  .site-shape-warm {
+    @apply bg-coral-500;
+  }
+
+  .site-step-no {
+    color: var(--bord-brand-coral);
+  }
+
+  /* A button on a coral block: navy, never a second coral button (one main action per screen). */
+  .btn-night {
+    @apply bg-blue-700 text-white hover:bg-blue-800;
+  }
+
+  /* Public site: the text of a navy block is white (titles and paragraphs otherwise default to
+     navy), links keep a visible underline, and the focus ring is white (charter 3.6). */
+  .on-dark h1,
+  .on-dark h2,
+  .on-dark h3,
+  .on-dark p,
+  .on-dark li {
+    @apply text-white;
+  }
+
+  .on-dark a:not(.btn):not(.nav-link) {
+    @apply text-white underline underline-offset-4;
+  }
+
+  .on-dark a:focus-visible,
+  .on-dark button:focus-visible {
+    outline-color: var(--bord-surface);
+  }
+
+  .on-dark .nav-link {
+    color: var(--bord-surface);
+    text-decoration: none;
+  }
+
+  .on-dark .nav-link:hover {
+    background: rgb(255 255 255 / 12%);
+    color: var(--bord-surface);
+  }
+
+  .on-dark .nav-link[aria-current="page"] {
+    background: transparent;
+    color: var(--bord-brand-coral);
+    font-weight: 700;
+    text-decoration: underline;
+    text-underline-offset: 6px;
+    text-decoration-thickness: 2px;
   }
 
   /* Destructive actions (delete, cancel, leave): red, never coral (the charter keeps coral for the main action). */
@@ -727,4 +798,31 @@
 
 :is(.card-navy, .card-accent, .card-info, .card-cream, .card-context) a {
   text-decoration: underline;
+}
+
+/* Decorative shapes of the public home: a slow drift, none for people who ask for less motion. */
+@keyframes site-float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+
+  50% {
+    transform: translateY(-14px);
+  }
+}
+
+.site-float {
+  animation: site-float 7s ease-in-out infinite;
+}
+
+.site-float-slow {
+  animation: site-float 9s ease-in-out infinite reverse;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .site-float,
+  .site-float-slow {
+    animation: none;
+  }
 }
