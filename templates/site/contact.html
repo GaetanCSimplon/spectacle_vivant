@@ -1,44 +1,60 @@
 {% extends "site/base_site.html" %}
 {% load i18n %}
 
-{% block title %}Contact — Bòrd Pro{% endblock %}
-{% block description %}Une question sur Bòrd Pro, ou envie de l'essayer ? Écrivez-nous.{% endblock %}
+{% block title %}Demander une invitation — Bòrd Pro{% endblock %}
+{% block description %}Demandez une invitation à Bòrd Pro, ou posez-nous une question : écrivez-nous, nous vous répondons.{% endblock %}
+
+{% block main_class %}{% endblock %}
 
 {% block content %}
-  <div class="max-w-2xl">
-    <h1>{% translate "Nous contacter" %}</h1>
-    <p class="mb-5">{% translate "Une question sur Bòrd Pro, ou envie de l'essayer ? Écrivez-nous, nous vous répondons." %}</p>
+  <section class="on-dark bg-blue-700 pb-12 pt-10 md:pb-14 md:pt-14">
+    <div class="mx-auto max-w-6xl px-4">
+      <h1 class="!mb-0 max-w-4xl text-4xl leading-[1.05] sm:text-5xl md:text-6xl">{% translate "Demandez votre invitation." %}</h1>
+      <div class="site-rule mt-6 h-1 w-[72px]" aria-hidden="true"></div>
+      <p class="mt-6 max-w-2xl text-lg">{% translate "Bòrd Pro s'ouvre sur invitation. Dites-nous qui vous êtes et ce que vous organisez : nous vous répondons par e-mail." %}</p>
+    </div>
+  </section>
 
-    <form method="post" class="card space-y-1">
-      {% csrf_token %}
-      {% if form.non_field_errors %}
-        <div role="alert" class="message message-error">{{ form.non_field_errors }}</div>
-      {% endif %}
-      {% for field in form.visible_fields %}
-        {% if field.name == "website" %}
-          {# Trap for robots, hidden from people and from screen readers. #}
-          <div class="absolute -left-[9999px]" aria-hidden="true">
-            <label for="{{ field.id_for_label }}">{% translate "Ne pas remplir ce champ" %}</label>
-            {{ field }}
-          </div>
-        {% else %}
-          <p>
-            {{ field.label_tag }}
-            {{ field }}
-            {{ field.errors }}
-          </p>
+  <section class="mx-auto grid max-w-6xl items-start gap-10 px-4 py-12 md:grid-cols-3" aria-labelledby="form-title">
+    <div class="md:col-span-2">
+      <h2 id="form-title" class="text-2xl sm:text-3xl">{% translate "Écrivez-nous" %}</h2>
+      <p class="mb-5 mt-2">{% translate "Une demande d'invitation, une question, une remarque : un seul formulaire." %}</p>
+
+      <form method="post" class="card space-y-1">
+        {% csrf_token %}
+        {% if form.non_field_errors %}
+          <div role="alert" class="message message-error">{{ form.non_field_errors }}</div>
         {% endif %}
-      {% endfor %}
-      <button type="submit" class="btn btn-primary btn-block sm:w-auto">{% translate "Envoyer le message" %}</button>
-    </form>
+        {% for field in form.visible_fields %}
+          {% if field.name == "website" %}
+            {# Trap for robots, hidden from people and from screen readers. #}
+            <div class="absolute -left-[9999px]" aria-hidden="true">
+              <label for="{{ field.id_for_label }}">{% translate "Ne pas remplir ce champ" %}</label>
+              {{ field }}
+            </div>
+          {% else %}
+            <p>
+              {{ field.label_tag }}
+              {{ field }}
+              {{ field.errors }}
+            </p>
+          {% endif %}
+        {% endfor %}
+        <button type="submit" class="btn btn-primary btn-block sm:w-auto">{% translate "Envoyer ma demande" %}</button>
+      </form>
+    </div>
 
-    <p class="mt-4 text-sm !text-gray-600">
-      {% blocktranslate %}Vous préférez écrire depuis votre messagerie ? Notre adresse :{% endblocktranslate %}
-      <a href="mailto:{{ contact_email }}" class="font-bold text-blue-700 underline">{{ contact_email }}</a>
-    </p>
-    <p class="mt-2 text-xs !text-gray-500">
-      {% blocktranslate %}Votre message est envoyé par e-mail à l'équipe et n'est pas enregistré sur ce site. Il ne sert qu'à vous répondre.{% endblocktranslate %}
-      <a href="{% url 'legal-privacy' %}" class="underline">{% translate "Confidentialité" %}</a>
-    </p>
-  </div>
+    <aside class="space-y-4" aria-label="{% translate 'Autres moyens et confidentialité' %}">
+      <div class="card">
+        <h3>{% translate "Par e-mail" %}</h3>
+        <p class="!text-gray-600">{% translate "Vous préférez écrire depuis votre messagerie ?" %}
+          <a href="mailto:{{ contact_email }}" class="font-bold underline">{{ contact_email }}</a></p>
+      </div>
+      <div class="card">
+        <h3>{% translate "Vos données" %}</h3>
+        <p class="text-sm !text-gray-600">{% blocktranslate %}Votre message est envoyé par e-mail à l'équipe et n'est pas enregistré sur ce site. Il ne sert qu'à vous répondre.{% endblocktranslate %}
+          <a href="{% url 'legal-privacy' %}" class="underline">{% translate "Confidentialité" %}</a></p>
+      </div>
+    </aside>
+  </section>
 {% endblock %}

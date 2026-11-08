@@ -134,6 +134,7 @@ def test_the_sitemap_lists_only_the_presentation_pages(client):
 
 # --- the home page: structure and honesty ----------------------------------------------------
 
+import html  # noqa: E402
 import re  # noqa: E402
 
 # Announced but not built: each of these may only appear next to the "en cours de développement"
@@ -275,3 +276,14 @@ def test_the_features_page_keeps_one_main_action_and_the_invitation_wording(clie
     assert content.count("btn-primary") == 1
     assert content.count("Demander une invitation") >= 2
     assert reverse("account_signup") not in content
+
+
+def test_the_contact_page_is_the_invitation_request(client):
+    content = client.get(reverse("site-contact")).content.decode()
+
+    assert len(re.findall(r"<h1[ >]", content)) == 1
+    assert "Demandez votre invitation" in content and "sur invitation" in content
+    assert content.count("btn-primary") == 1 and "Envoyer ma demande" in content
+    assert 'aria-labelledby="form-title"' in content and 'id="form-title"' in content
+    assert "n'est pas enregistré" in html.unescape(content)
+    assert "on-dark" in content  # same header block as the other pages
