@@ -1,0 +1,13 @@
+﻿Fichier;Contenu;Formats;Tailles;Fond;Usage;Vérifié dans Affinity (à cocher)
+LOGO_horizontal;Logo horizontal (fond clair);svg + png;2000 / 1200 / 600 px de large;Transparent;En-têtes, documents, site (fond blanc, crème, bleu clair);
+LOGO_blanc;Logo blanc (fond foncé);svg + png;2000 / 1200 / 600 px de large;Transparent;Barre latérale web, couverture, fonds nuit/océan/corail;
+LOGO_icon_corail;Symbole / icône Budget;svg + png;512 / 192 / 180 / 64 / 32 px;Transparent;Avatar, favicon, icône d’app (180 = apple-touch, 192 = Android, 32 = favicon);
+LOGO_icon_nuit;Icône Contrats;svg + png;512 / 192 / 64 px;Transparent;Icône de volet Contrats;
+LOGO_icon_ocean_w;Icône Social (b blanc, PROPOSÉ);svg + png;512 / 192 / 64 px;Transparent;Icône de volet Social. À valider;
+LOGO_icon_pale_n;Icône Régie (b nuit, PROPOSÉ);svg + png;512 / 192 / 64 px;Transparent;Icône de volet Régie. À valider;
+LOGO_icon_ocean;Icône Social ancienne (b nuit);archive;—;Transparent;NE PAS EXPORTER : remplacée, contraste 2,9:1;
+LOGO_icon_pale;Icône Régie ancienne (b corail);archive;—;Transparent;NE PAS EXPORTER : remplacée, contraste 2,4:1;
+GIMIC_CREME;Gimic crème #F5F2EA;svg + png;256 / 64 px de haut;Transparent;Sur nuit et océan;
+GIMIC_NUIT;Gimic nuit #10243F;svg + png;256 / 64 px de haut;Transparent;Sur blanc, crème, bleu clair, corail;
+GIMIC_CORAIL;Gimic corail #FF695B;svg + png;256 / 64 px de haut;Transparent;Sur blanc, crème, nuit;
+ICON_RADAR;Icône RADAR;svg + png;512 / 128 / 72 px;Transparent;Pastille de suivi, panneau RADAR (minimum 36 px dans l’interface);

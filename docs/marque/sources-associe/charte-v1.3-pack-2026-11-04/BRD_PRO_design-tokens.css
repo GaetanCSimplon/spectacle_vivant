@@ -1,0 +1,69 @@
+/* BÒRD PRO — design tokens v1.3 (04.11.2026)
+   Ajouts par rapport à la v1.0 : volets, gimics à plat, interlettrage, logo 3 et logo blanc. v1.3 : AUCUN dégradé.
+   Les sections 1 à 17 de la v1.0 restent inchangées : importer d'abord ce bloc APRÈS la v1.0. */
+
+:root {
+  /* 18. Volets : une couleur = un volet */
+  --vol-contrats: var(--color-night);      /* #10243F — texte blanc, 15,60:1 */
+  --vol-budget:   var(--color-coral);      /* #FF695B — texte nuit, 5,51:1 */
+  --vol-social:   var(--color-ocean);      /* #007299 — texte blanc, 5,43:1 */
+  --vol-regie:    var(--color-light-blue); /* #E2F1F6 — texte nuit, 13,48:1, contour nuit 1,5 px obligatoire */
+
+  --vol-contrats-on: var(--color-white);
+  --vol-budget-on:   var(--color-night);
+  --vol-social-on:   var(--color-white);
+  --vol-regie-on:    var(--color-night);
+  --vol-regie-border: 1.5px solid var(--color-night);
+
+  /* Lettres des pastilles d'avancement */
+  --vol-letter-contrats: "C";
+  --vol-letter-budget:   "B";
+  --vol-letter-social:   "S";
+  --vol-letter-regie:    "R";
+
+  --vol-gutter-weak: 8px;  /* espace minimal entre voisinages faibles (nuit/océan, corail/bleu clair) */
+
+  /* 19. Gimics (SVG livrés, ne pas modifier) */
+  --gimic-creme:  "assets/GIMIC_CREME.svg";  /* aplat #F5F2EA : sur nuit, océan */
+  --gimic-nuit:   "assets/GIMIC_NUIT.svg";   /* aplat #10243F : sur blanc, crème, bleu clair, corail */
+  --gimic-corail: "assets/GIMIC_CORAIL.svg"; /* aplat #FF695B : sur blanc, crème, nuit */
+  --gimic-min-height: 48px;                /* à tester */
+  --gimic-canvas: 1024px;                  /* canevas carré : recadrer à la forme */
+
+  /* 20. Dégradés : supprimés en v1.3 (anciens --gimic-bleu-1..5 et --gimic-rose-1..5 retirés). */
+
+  /* 22. Logo 3 (PNG de travail : demander un SVG vectoriel avant intégration définitive) */
+  --logo-horizontal: "assets/LOGO_horizontal.png"; /* fond blanc, crème, bleu clair */
+  --logo-blanc:      "assets/LOGO_blanc.png";      /* fond foncé : nuit, océan, corail */
+  --logo-symbole:    "assets/LOGO_icon_corail.png";/* tuile corail : tout fond */
+  --logo-tuile-contrats: "assets/LOGO_icon_nuit.png";    /* tuile nuit, b clair */
+  --logo-tuile-budget:   "assets/LOGO_icon_corail.png";  /* tuile corail, b nuit */
+  --logo-tuile-social:   "assets/LOGO_icon_ocean_w.png"; /* tuile océan, b blanc (5,4:1) — à valider */
+  --logo-tuile-regie:    "assets/LOGO_icon_pale_n.png";  /* tuile bleu clair, b nuit (13,5:1) — à valider */
+  --logo-shadow-hard: 6px 6px 0 var(--color-night); /* ombre dure de la tuile, sans flou : partie du logo, jamais ailleurs */
+  /* Anciens tokens --logo-app, --logo-cream-background, --logo-symbol : retirés */
+
+  /* 21. Typographie : interlettrage des titres (à valider) */
+  --tracking-display: -0.04em;
+}
+
+/* Composants de volet */
+.vol-contrats { background: var(--vol-contrats); color: var(--vol-contrats-on); }
+.vol-budget   { background: var(--vol-budget);   color: var(--vol-budget-on); }
+.vol-social   { background: var(--vol-social);   color: var(--vol-social-on); }
+.vol-regie    { background: var(--vol-regie);    color: var(--vol-regie-on); border: var(--vol-regie-border); }
+
+/* Filet de volets : quatre segments égaux, ordre fixe */
+.filet-volets { display: flex; height: 7px; }
+.filet-volets > i { flex: 1; }
+.filet-volets > i:nth-child(1) { background: var(--vol-contrats); }
+.filet-volets > i:nth-child(2) { background: var(--vol-budget); }
+.filet-volets > i:nth-child(3) { background: var(--vol-social); }
+.filet-volets > i:nth-child(4) { background: var(--vol-regie); box-shadow: inset 0 -1px 0 var(--color-night); }
+
+/* Interdits ajoutés en v1.1 :
+   - un volet identifié par la couleur seule (toujours nom ou lettre C/B/S/R) ;
+   - un gimic sur un fond où son contraste est inférieur à 2:1 (gimic nuit sur nuit, gimic corail sur corail) ;
+   - le logo horizontal nuit sur fond sombre (utiliser le logo blanc) ; tout logo étiré ;
+   - un b nuit sur océan en petit (2,87:1) : préférer le b clair ;
+   - bandeau d'information en océan (réservé au volet Social : utiliser la crème). */

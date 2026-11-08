@@ -89,3 +89,16 @@ La **carte et l'itinéraire** et **RADAR** (voir `docs/produit/specification-rad
 - [ ] Revue des pages publiques à 375 px (non faite ; les écrans connectés sont conçus pour l'ordinateur).
 
 Reste hors de ce chantier : fichiers vectoriels officiels du logo si le graphiste en fournit de nouveaux.
+
+## 9. Pack de la charte v1.3 du 2026-11-04 (provisoire, pas encore appliqué)
+Reçu de l'associé le 2026-11-08, rangé dans `sources-associe/charte-v1.3-pack-2026-11-04/` (planche de contrôle, charte PDF de 14 pages, SVG sources, exports web provisoires, PNG d'origine, jetons v1.3, liste des exports à produire).
+
+**Ce qu'il apporte**
+- **Logo 3** : une tuile corail inclinée portant un « b », avec une ombre dure (`--logo-shadow-hard`, la seule ombre admise, et seulement dans le logo), le nom « BÒRD PRO » et la pastille « PRO » ; un **logo blanc** pour les fonds foncés ; des tuiles d'icône (corail, nuit, océan à « b » blanc, bleu clair à « b » nuit).
+- **Quatre volets, une couleur chacun** : Contrats (nuit), Budget (corail), Social (océan), Régie (bleu clair avec contour nuit de 1,5 px), toujours identifiés par un mot ou une lettre C / B / S / R, jamais par la couleur seule. Ils correspondent à des parties de l'application : contrats, budget, onglet « Social », « Régie de tournée ».
+- **Gimics à plat** (crème, nuit, corail), **sans aucun dégradé** (les dégradés de la v1.0 sont retirés) ; interlettrage des titres −0,04 em (déjà retenu au §2).
+- **Interdits ajoutés** : un gimic dont le contraste est inférieur à 2:1 sur son fond ; le logo nuit sur fond sombre ; un « b » nuit sur océan en petit ; **un bandeau d'information en océan** (réservé au volet Social : utiliser la crème).
+
+**État : provisoire.** Les SVG et PNG ont été tracés automatiquement à partir des PNG du « logo 3 » ; le `LISEZ-MOI` de l'associé liste les défauts à corriger dans Affinity (filets visibles entre R et D, B et Ò soudés, accent anguleux, liseré sur la tuile nuit, courbes à lisser), et les jetons disent « demander un SVG vectoriel avant intégration définitive ». Les icônes Social et Régie sont des propositions « à valider ».
+
+**Décision (2026-11-08) : rien n'est remplacé dans l'application ni sur le site tant que les exports définitifs ne sont pas livrés.** L'application garde les logos du §5 (`logo.svg`, `logo-capsule.svg`). Quand ils arrivent : remplacer ces fichiers, vérifier le contraste (`test_brand_contrast.py`) et appliquer les volets et les interdits ci-dessus, en un chantier à part. **Impact déjà connu sur l'application** : les blocs d'information en océan (`--bord-info-bg`) devront passer en crème.
