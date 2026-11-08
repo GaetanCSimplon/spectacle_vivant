@@ -221,3 +221,57 @@ def test_the_home_has_a_skip_link_and_the_viewport_for_a_phone(client):
 
     assert 'href="#contenu"' in content and 'id="contenu"' in content
     assert 'name="viewport"' in content
+
+
+# --- the features page --------------------------------------------------------------------------
+
+
+def test_the_features_page_has_one_h1_and_labelled_sections(client):
+    content = client.get(reverse("site-features")).content.decode()
+
+    assert len(re.findall(r"<h1[ >]", content)) == 1
+    assert "Tout votre quotidien de tournée" in content
+    for title_id in (
+        "spaces-title",
+        "budget-title",
+        "roadmap-title",
+        "road-title",
+        "payroll-title",
+        "soon-title",
+        "scope-title",
+        "cta-title",
+    ):
+        assert f'aria-labelledby="{title_id}"' in content and f'id="{title_id}"' in content
+
+
+def test_the_features_page_says_what_the_payroll_help_does_not_do(client):
+    content = client.get(reverse("site-features")).content.decode()
+
+    assert "il ne calcule pas les bulletins" in content
+    assert "Ne remplace pas un conseil juridique, social ou comptable" in content
+
+
+def test_the_features_page_numbers_match_the_application(client):
+    from apps.documents.models import ContractTemplate
+
+    content = client.get(reverse("site-features")).content.decode()
+
+    assert len(ContractTemplate.choices) == 4  # the page says "quatre modèles"
+    assert "quatre modèles" in content
+
+
+def test_the_features_page_lists_the_same_coming_features_as_the_home(client):
+    home = client.get(reverse("home")).content.decode()
+    features = client.get(reverse("site-features")).content.decode()
+
+    for feature in NOT_BUILT:
+        assert (feature in home) == (feature in features)
+    assert "Ce qui arrive." in features
+
+
+def test_the_features_page_keeps_one_main_action_and_the_invitation_wording(client):
+    content = client.get(reverse("site-features")).content.decode()
+
+    assert content.count("btn-primary") == 1
+    assert content.count("Demander une invitation") >= 2
+    assert reverse("account_signup") not in content
