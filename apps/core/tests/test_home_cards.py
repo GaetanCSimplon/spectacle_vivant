@@ -413,3 +413,69 @@ def test_the_home_page_shows_the_grouped_line_instead_of_a_long_list(client, ten
     page = client.get(reverse("home")).content.decode()
 
     assert "6 dates confirmées sans contrat" in page and page.count("contrat à générer") == 0
+
+
+# --- redesign: alerts on top, coloured blocks, volets on the dates -----------------------------
+
+
+def test_the_alerts_come_first_then_the_dates_then_the_two_small_blocks(client, tenant):
+    _gig(tenant, 5, status=Gig.Status.CONFIRMED)
+
+    content = client.get(reverse("home")).content.decode()
+
+    assert (
+        content.index('id="alerts-title"')
+        < content.index('id="upcoming-title"')
+        < content.index('id="shows-title"')
+        < content.index('id="balance-title"')
+    )
+
+
+def test_the_small_blocks_are_navy_and_coral(client, tenant):
+    _gig(tenant, 5, status=Gig.Status.CONFIRMED)
+
+    content = client.get(reverse("home")).content.decode()
+    shows = content.split('aria-labelledby="shows-title"')[0].rsplit("<section", 1)[1]
+    balance = content.split('aria-labelledby="balance-title"')[0].rsplit("<section", 1)[1]
+
+    assert "card-navy" in shows and "card-accent" in balance
+
+
+def test_the_alerts_header_says_how_pressing_it_is(client, tenant):
+    # Nothing to report: green header, written.
+    _gig(tenant, 30, status=Gig.Status.SIGNED)
+    content = client.get(reverse("home")).content.decode()
+    assert "Rien à signaler" in content and "bg-red-700" not in content
+
+    # An option expiring tomorrow is urgent: red header, counted in words.
+    _gig(tenant, 30, status=Gig.Status.OPTION, option_expires_on=datetime.date.today())
+    content = client.get(reverse("home")).content.decode()
+    assert "bg-red-700" in content and "1 action urgente" in content
+    assert ">Urgent<" in content
+
+
+def test_the_alerts_count_the_urgent_ones(tenant):
+    _gig(tenant, 30, status=Gig.Status.OPTION, option_expires_on=datetime.date.today())
+
+    assert _alerts(tenant)["urgent"] == 1
+
+
+def test_the_coming_dates_show_the_four_volets_and_their_rule(client, tenant):
+    _gig(tenant, 5, status=Gig.Status.CONFIRMED)
+
+    content = client.get(reverse("home")).content.decode()
+    upcoming = content.split('id="upcoming-card"')[1].split("</section>")[0]
+
+    for name in ("Contrats", "Budget", "Social", "Régie"):
+        assert f"{name} : 0 étape(s) sur" in upcoming
+    assert upcoming.count("volet-todo") == 4
+    assert "bg-[var(--bord-brand-navy)]" in upcoming
+
+
+def test_the_period_switch_still_swaps_only_the_dates_card(client, tenant):
+    _gig(tenant, 5, status=Gig.Status.CONFIRMED)
+
+    content = client.get(reverse("home") + "?periode=annee", **HTMX).content.decode()
+
+    assert 'id="upcoming-card"' in content and 'id="alerts-title"' not in content
+    assert "Contrats : 0 étape(s) sur" in content

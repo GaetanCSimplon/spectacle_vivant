@@ -301,7 +301,11 @@ def alerts(tenant, today, awaiting=None):
         )
 
     found.sort(key=lambda alert: alert["level"] != "red")  # stable: red first
-    return {"items": found[:ALERT_LIMIT], "hidden": max(len(found) - ALERT_LIMIT, 0)}
+    return {
+        "items": found[:ALERT_LIMIT],
+        "hidden": max(len(found) - ALERT_LIMIT, 0),
+        "urgent": sum(1 for alert in found if alert["level"] == "red"),
+    }
 
 
 def _payment_line(label, planned, invoices):
