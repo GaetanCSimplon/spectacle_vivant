@@ -12,6 +12,7 @@ from django.utils.translation import gettext_lazy as _
 from django.views.generic import FormView, TemplateView
 
 from apps.finance.dashboard import build_dashboard
+from apps.gigs import services as gig_services
 
 from .forms import ContactForm
 from .services import contact_quota_left, send_contact_message
@@ -122,6 +123,7 @@ class HomeView(LoginRequiredMixin, TemplateView):
         if self.request.tenant is not None:
             period = self.request.GET.get("periode", "")
             context.update(build_dashboard(self.request.tenant, timezone.localdate(), period))
+            gig_services.attach_progress(context["next_gigs"])
         return context
 
     def get_template_names(self):

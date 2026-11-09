@@ -3,9 +3,9 @@
   The "Prochaines dates" card. HTMX swaps it when the period changes (#upcoming-card).
   Needs: period, periods, period_end, next_gigs, upcoming_count, upcoming_hidden.
 {% endcomment %}
-<section id="upcoming-card" class="card md:col-span-2 xl:col-start-1 xl:row-span-3 xl:row-start-1 xl:self-start" aria-labelledby="upcoming-title">
-  <div class="mb-3 flex flex-wrap items-center justify-between gap-3">
-    <h2 id="upcoming-title" class="stat-label !text-xs !font-semibold">{% translate "Prochaines dates" %}</h2>
+<section id="upcoming-card" class="overflow-hidden rounded-xl border border-page-line md:col-span-2 xl:col-span-2 xl:col-start-1 xl:row-span-2 xl:row-start-2 xl:self-start" aria-labelledby="upcoming-title">
+  <div class="flex flex-wrap items-center justify-between gap-3 bg-[var(--bord-brand-navy)] px-4 py-3 text-white">
+    <h2 id="upcoming-title" class="!m-0 !text-base font-bold !text-inherit">{% translate "Prochaines dates" %}</h2>
     <nav class="segmented" aria-label="{% translate 'Période' %}">
       {% for key, label in periods.items %}
         <a href="{% url 'home' %}?periode={{ key }}"
@@ -15,6 +15,7 @@
     </nav>
   </div>
 
+  <div class="bg-[var(--bord-brand-cream)] p-4">
   {% if next_gigs %}
     <ul class="flex flex-col gap-2">
       {% for gig in next_gigs %}{% include "gigs/_gig_row.html" %}{% endfor %}
@@ -34,4 +35,5 @@
      class="mt-3 inline-flex min-h-11 items-center text-sm font-bold text-blue-700 hover:text-blue-900">
     {% translate "Voir mes dates" %} →
   </a>
+  </div>
 </section>
