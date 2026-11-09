@@ -6,6 +6,7 @@
 
 {% block page_content %}
   <h1 class="mb-1">{% translate "Feuille de route" %}</h1>
+  <p class="mb-3">{% include "components/_volet_chip.html" with volet="regie" %}</p>
   <p class="mb-4 text-sm text-gray-600">{{ gig.show.title }} — {{ gig.date|date:"d/m/Y" }}</p>
 
   {# From xl: the editor on the left, what the reader will see on the right (it reloads after each change). #}

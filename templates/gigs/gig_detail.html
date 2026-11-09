@@ -10,7 +10,10 @@
       <h1>{{ gig.show.title }}</h1>
       <p class="text-sm text-gray-600">{{ gig.date|date:"l j F Y" }}</p>
     </div>
-    {% include "gigs/_status_badge.html" %}
+    <div class="flex flex-col items-end gap-2">
+      {% include "gigs/_status_badge.html" %}
+      {% include "gigs/_volet_progress.html" %}
+    </div>
   </div>
 
   {% include "gigs/_checklist_button.html" %}

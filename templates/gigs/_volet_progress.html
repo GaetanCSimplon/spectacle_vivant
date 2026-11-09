@@ -1,0 +1,9 @@
+{% load i18n %}{% comment %}Progress of a date over the four volets: full = done, dashed = to do (v1.3).
+8 px between neighbours, as the charter asks for the weak pairs.{% endcomment %}
+<ul class="flex items-center gap-2" aria-label="{% translate 'Avancement de la date' %}">
+  {% for step in progress %}
+    <li>
+      <span class="volet-letter !size-7 !text-xs {% if step.done %}volet-{{ step.key }}{% else %}volet-todo{% endif %}" title="{{ step.label }} : {% if step.done %}{% translate 'fait' %}{% else %}{% translate 'à faire' %}{% endif %}"><span aria-hidden="true">{{ step.letter }}</span><span class="sr-only">{{ step.label }} : {% if step.done %}{% translate "fait" %}{% else %}{% translate "à faire" %}{% endif %}</span></span>
+    </li>
+  {% endfor %}
+</ul>

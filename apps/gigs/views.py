@@ -418,6 +418,7 @@ class GigDetailView(TenantScopedMixin, DetailView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context["balance"] = finance_services.gig_balance(self.object)
+        context["progress"] = services.date_progress(self.object)
         context["price_changes"] = list(self.object.price_changes.all())
         context["crew"] = list(self.object.members.all())
         context["team_total"] = Person.objects.filter(tenant=self.request.tenant).count()

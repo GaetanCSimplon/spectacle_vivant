@@ -696,6 +696,45 @@
   }
 
   /* Status pills: dark text on a light tint of the state colour (never the colour alone). */
+  /* Volets (charter v1.3): one colour = one volet, always with its name or its letter C/B/S/R.
+     Contrats navy, Budget coral, Social ocean, Régie light blue with a navy outline. */
+  .volet-chip {
+    @apply inline-flex items-center gap-1.5 rounded-full border border-transparent px-2.5 py-0.5
+      text-xs font-semibold;
+  }
+
+  .volet-letter {
+    @apply inline-flex size-5 shrink-0 items-center justify-center rounded-full font-mono text-[11px] font-medium;
+  }
+
+  .volet-contrats {
+    background: var(--bord-brand-navy);
+    color: var(--bord-surface);
+  }
+
+  .volet-budget {
+    background: var(--bord-brand-coral);
+    color: var(--bord-text);
+  }
+
+  .volet-social {
+    background: var(--bord-brand-ocean);
+    color: var(--bord-surface);
+  }
+
+  .volet-regie {
+    background: var(--bord-context-bg);
+    color: var(--bord-text);
+    border: 1.5px solid var(--bord-text);
+  }
+
+  /* A volet still to do: dashed white circle, the same letter. */
+  .volet-todo {
+    background: var(--bord-surface);
+    color: var(--bord-text);
+    border: 2px dashed var(--bord-text);
+  }
+
   .pill {
     @apply inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-semibold;
   }

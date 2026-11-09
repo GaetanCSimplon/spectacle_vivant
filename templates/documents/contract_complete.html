@@ -7,6 +7,7 @@
 
 {% block page_content %}
   <h1 class="mb-1">{% translate "Compléter le contrat" %}</h1>
+  <p class="mb-3">{% include "components/_volet_chip.html" with volet="contrats" %}</p>
   <p class="mb-6 text-sm text-gray-600">
     {% blocktranslate with show=gig.show.title date=gig.date|date:"d/m/Y" %}
       Renseignez ce qui manque pour « {{ show }} » le {{ date }}. Tout est facultatif :
