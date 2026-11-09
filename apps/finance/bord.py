@@ -533,6 +533,20 @@ def incomplete_dates(tenant, filters):
     )
 
 
+def volet_figures(tenant, filters):
+    """The two figures that only the Contrats and Régie blocks show (charter v1.3).
+
+    Contrats: signed dates out of the confirmed ones of the period. Régie: confirmed dates of
+    the period whose roadmap is shared. Same period and show filters as the rest of the page.
+    """
+    confirmed = _gigs(tenant, filters).filter(status__in=CONFIRMED)
+    return {
+        "contracts_total": confirmed.count(),
+        "contracts_signed": confirmed.filter(status=Gig.Status.SIGNED).count(),
+        "roadmaps_shared": confirmed.filter(roadmap__is_published=True).count(),
+    }
+
+
 def summary(tenant, filters, today):
     """Everything the page shows, in one dict."""
     revenue_totals = revenue(tenant, filters)
@@ -550,6 +564,7 @@ def summary(tenant, filters, today):
         "receivables": receivables(tenant, today, filters.show),
         "people": people_mobilised(tenant, filters),
         "incomplete_dates": incomplete_dates(tenant, filters),
+        "volets": volet_figures(tenant, filters),
         "attention": attention_items,
         "attention_total": attention_total,
         "operations": operations(tenant, filters),

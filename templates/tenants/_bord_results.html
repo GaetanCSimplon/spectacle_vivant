@@ -13,60 +13,53 @@
   </div>
 {% endif %}
 
-{# The five figures fill their rows: 3 + 2 wide cards from 1024 px, one row of five from 1536 px. #}
-<div class="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-6 2xl:grid-cols-5">
-  <section class="lg:col-span-2 2xl:col-span-1 card card-navy" aria-labelledby="bord-dates">
-    <h2 id="bord-dates" class="stat-label !text-xs !font-semibold">{% translate "Dates" %}</h2>
-    <p class="stat-value whitespace-nowrap 2xl:!text-3xl min-[1800px]:!text-4xl">{{ dates.confirmed }}</p>
-    <p class="mt-1 text-sm text-stone-600">{% translate "confirmées (date de la représentation)" %}</p>
-    <ul class="mt-2 space-y-0.5 text-sm text-stone-600">
+{# The four volets (charter v1.3): Contrats navy, Budget accent, Social ocean, Régie light blue. 8 px at least between neighbours. #}
+<div class="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+  <section class="card card-navy" aria-labelledby="bord-contrats">
+    <h2 id="bord-contrats" class="stat-label !text-xs !font-semibold">C · {% translate "Contrats" %}</h2>
+    <p class="stat-value whitespace-nowrap">{{ volets.contracts_signed }}/{{ volets.contracts_total }}</p>
+    <p class="mt-1 text-sm">{% translate "dates signées sur les dates confirmées" %}</p>
+    <ul class="mt-2 space-y-0.5 text-sm">
       <li>{% blocktranslate count n=dates.options %}{{ n }} option, comptée à part{% plural %}{{ n }} options, comptées à part{% endblocktranslate %}</li>
       <li>{% blocktranslate count n=dates.cancelled %}{{ n }} annulée{% plural %}{{ n }} annulées{% endblocktranslate %}</li>
-      <li>{% blocktranslate count n=people %}{{ n }} personne mobilisée{% plural %}{{ n }} personnes mobilisées{% endblocktranslate %}</li>
     </ul>
     {% if incomplete_dates %}
       <p class="mt-2"><span class="pill pill-warn">{% blocktranslate count n=incomplete_dates %}{{ n }} date confirmée à compléter{% plural %}{{ n }} dates confirmées à compléter{% endblocktranslate %}</span></p>
     {% endif %}
-    <a href="{% url 'gigs:list' %}" class="mt-3 inline-flex min-h-11 items-center text-sm font-bold text-blue-700 hover:text-blue-900">{% translate "Voir mes dates" %} →</a>
+    <a href="{% url 'gigs:list' %}" class="mt-3 inline-flex min-h-11 items-center text-sm font-bold">{% translate "Voir mes dates" %} →</a>
   </section>
 
-  <section class="lg:col-span-2 2xl:col-span-1 card card-info" aria-labelledby="bord-revenue">
-    <h2 id="bord-revenue" class="stat-label !text-xs !font-semibold">{% translate "Ce que les concerts doivent rapporter" %}</h2>
-    <p class="stat-value whitespace-nowrap 2xl:!text-3xl min-[1800px]:!text-4xl">{% if filters.figure == 'planned' %}{{ revenue.planned|floatformat:"0g" }}{% elif filters.figure == 'invoiced' %}{{ revenue.invoiced|floatformat:"0g" }}{% else %}{{ revenue.received|floatformat:"0g" }}{% endif %} €</p>
-    <p class="mt-1 text-sm text-stone-600">{{ figure_label }}</p>
-    <ul class="mt-2 space-y-0.5 text-sm text-stone-600">
+  <section class="card card-accent" aria-labelledby="bord-budget">
+    <h2 id="bord-budget" class="stat-label !text-xs !font-semibold">B · {% translate "Budget" %}</h2>
+    <p class="stat-value whitespace-nowrap">{% if filters.figure == 'planned' %}{{ revenue.planned|floatformat:"0g" }}{% elif filters.figure == 'invoiced' %}{{ revenue.invoiced|floatformat:"0g" }}{% else %}{{ revenue.received|floatformat:"0g" }}{% endif %} €</p>
+    <p class="mt-1 text-sm">{% translate "Ce que les concerts doivent rapporter" %} · {{ figure_label }}</p>
+    <ul class="mt-2 space-y-0.5 text-sm">
       <li>{% translate "Prévue" %} (HT) : {{ revenue.planned|floatformat:"0g" }} €</li>
       <li>{% translate "Facturée" %} (HT) : {{ revenue.invoiced|floatformat:"0g" }} €</li>
       <li>{% translate "Encaissée" %} (TTC) : {{ revenue.received|floatformat:"0g" }} €</li>
       {% if revenue.options_planned %}<li>{% blocktranslate with amount=revenue.options_planned|floatformat:"0g" %}+ {{ amount }} € HT si les options sont confirmées{% endblocktranslate %}</li>{% endif %}
     </ul>
-    <a href="#operations" class="mt-3 inline-flex min-h-11 items-center text-sm font-bold text-blue-700 hover:text-blue-900">{% translate "Voir le détail" %} →</a>
-  </section>
-
-  <section class="lg:col-span-2 2xl:col-span-1 card card-cream" aria-labelledby="bord-expenses">
-    <h2 id="bord-expenses" class="stat-label !text-xs !font-semibold">{% translate "Les frais déjà ajoutés" %}</h2>
-    <p class="stat-value whitespace-nowrap 2xl:!text-3xl min-[1800px]:!text-4xl">{{ expenses.total|floatformat:"0g" }} €</p>
-    <p class="mt-1 text-sm text-stone-600">{% translate "enregistrées (date de la dépense)" %}</p>
-    <a href="#depenses" class="mt-3 inline-flex min-h-11 items-center text-sm font-bold text-blue-700 hover:text-blue-900">{% translate "Voir le détail" %} →</a>
-  </section>
-
-  <section class="lg:col-span-3 2xl:col-span-1 card" aria-labelledby="bord-balance">
-    <h2 id="bord-balance" class="stat-label !text-xs !font-semibold">{% translate "Ce qu'il reste après ces frais" %}</h2>
-    <p class="stat-value whitespace-nowrap 2xl:!text-3xl min-[1800px]:!text-4xl">{% if balance > 0 %}+ {% endif %}{{ balance|floatformat:"0g" }} €</p>
-    <p class="mt-1">
-      {% if balance > 0 %}<span class="pill pill-good">{% translate "Excédent" %}</span>
-      {% elif balance < 0 %}<span class="pill pill-bad">{% translate "Déficit" %}</span>
-      {% else %}<span class="pill pill-neutral">{% translate "Équilibre" %}</span>{% endif %}
-    </p>
-    <p class="mt-1 text-sm text-stone-600">{% blocktranslate with figure=figure_label %}{{ figure }} − dépenses enregistrées{% endblocktranslate %}</p>
-  </section>
-
-  <section class="lg:col-span-3 2xl:col-span-1 card card-accent" aria-labelledby="bord-receivables">
-    <h2 id="bord-receivables" class="stat-label !text-xs !font-semibold">{% translate "Reste à encaisser" %}</h2>
-    <p class="stat-value whitespace-nowrap 2xl:!text-3xl min-[1800px]:!text-4xl">{{ receivables.remaining|floatformat:"0g" }} €</p>
-    <p class="mt-1 text-sm text-stone-600">{% translate "TTC, à ce jour (hors période)" %}</p>
+    <ul class="mt-2 space-y-0.5 border-t border-current pt-2 text-sm">
+      <li class="flex justify-between gap-2"><span>{% translate "Les frais déjà ajoutés" %}</span><strong class="data whitespace-nowrap">{{ expenses.total|floatformat:"0g" }} €</strong></li>
+      <li class="flex justify-between gap-2"><span>{% translate "Ce qu'il reste après ces frais" %} ({% if balance > 0 %}{% translate "excédent" %}{% elif balance < 0 %}{% translate "déficit" %}{% else %}{% translate "équilibre" %}{% endif %})</span><strong class="data whitespace-nowrap">{% if balance > 0 %}+ {% endif %}{{ balance|floatformat:"0g" }} €</strong></li>
+      <li class="flex justify-between gap-2"><span>{% translate "Reste à encaisser" %}</span><strong class="data whitespace-nowrap">{{ receivables.remaining|floatformat:"0g" }} €</strong></li>
+    </ul>
     {% if receivables.late %}<p class="mt-2"><span class="pill pill-bad">{% blocktranslate with amount=receivables.late|floatformat:"0g" %}dont {{ amount }} € en retard{% endblocktranslate %}</span></p>{% endif %}
-    <a href="#a-encaisser" class="mt-3 inline-flex min-h-11 items-center text-sm font-bold text-blue-700 hover:text-blue-900">{% translate "Voir le détail" %} →</a>
+    <a href="#operations" class="mt-3 inline-flex min-h-11 items-center text-sm font-bold">{% translate "Voir le détail" %} →</a>
+  </section>
+
+  <section class="card card-ocean" aria-labelledby="bord-social">
+    <h2 id="bord-social" class="stat-label !text-xs !font-semibold">S · {% translate "Social" %}</h2>
+    <p class="stat-value whitespace-nowrap">{{ people }}</p>
+    <p class="mt-1 text-sm">{% blocktranslate count n=people %}personne mobilisée sur les dates confirmées{% plural %}personnes mobilisées sur les dates confirmées{% endblocktranslate %}</p>
+    {% if is_owner %}<a href="{% url 'tenants:social' %}" class="mt-3 inline-flex min-h-11 items-center text-sm font-bold">{% translate "Voir le suivi social" %} →</a>{% endif %}
+  </section>
+
+  <section class="card card-regie" aria-labelledby="bord-regie">
+    <h2 id="bord-regie" class="stat-label !text-xs !font-semibold">R · {% translate "Régie" %}</h2>
+    <p class="stat-value whitespace-nowrap">{{ volets.roadmaps_shared }}/{{ volets.contracts_total }}</p>
+    <p class="mt-1 text-sm">{% translate "feuilles de route partagées sur les dates confirmées" %}</p>
+    <a href="{% url 'gigs:list' %}" class="mt-3 inline-flex min-h-11 items-center text-sm font-bold">{% translate "Voir mes dates" %} →</a>
   </section>
 </div>
 

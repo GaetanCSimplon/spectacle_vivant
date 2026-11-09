@@ -496,6 +496,19 @@
     color: var(--bord-text);
   }
 
+  /* Volet blocks of the dashboard: Social (ocean, white text) and Régie (light blue, navy outline). */
+  .card-ocean {
+    background: var(--bord-brand-ocean);
+    border-color: var(--bord-brand-ocean);
+    color: var(--bord-surface);
+  }
+
+  .card-regie {
+    background: var(--bord-context-bg);
+    border: 1.5px solid var(--bord-text);
+    color: var(--bord-text);
+  }
+
   .card-cream {
     background: var(--bord-brand-cream);
     border-color: var(--bord-brand-cream);
@@ -676,11 +689,13 @@
   }
 
   .sidebar :focus-visible,
+  .card-ocean :focus-visible,
   .card-navy :focus-visible {
     outline-color: var(--bord-surface);
   }
 
   .card-accent :focus-visible,
+  .card-regie :focus-visible,
   .card-cream :focus-visible {
     outline-color: var(--bord-text);
   }
@@ -841,12 +856,12 @@
  * Outside any layer on purpose: Tailwind's utilities (`text-stone-600`...) come after the
  * `components` layer and would win, leaving grey text on the colour blocks.
  */
-:is(.card-navy, .card-accent, .card-info, .card-cream, .card-context)
+:is(.card-navy, .card-accent, .card-info, .card-cream, .card-context, .card-ocean, .card-regie)
   :is(h1, h2, p, li, a, .stat-label, .stat-value, .text-stone-500, .text-stone-600, .text-blue-700) {
   color: inherit;
 }
 
-:is(.card-navy, .card-accent, .card-info, .card-cream, .card-context) a {
+:is(.card-navy, .card-accent, .card-info, .card-cream, .card-context, .card-ocean, .card-regie) a {
   text-decoration: underline;
 }
 

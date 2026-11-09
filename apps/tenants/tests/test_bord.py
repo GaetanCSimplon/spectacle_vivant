@@ -95,7 +95,10 @@ def test_the_page_shows_the_blocks_to_every_member(client):
     content = client.get(URL).content.decode()
 
     for block in (
-        "Dates",
+        "Contrats",
+        "Budget",
+        "Social",
+        "Régie",
         "Ce que les concerts doivent rapporter",
         "Les frais déjà ajoutés",
         "reste après ces frais",
@@ -381,3 +384,56 @@ def test_the_chart_svg_numbers_use_a_dot_not_the_french_comma(client):
     assert not re.search(r'\b(x|y|x1|x2|y1|y2|width|height)="[^"]*,[^"]*"', svg)
     heights = [float(h) for h in re.findall(r'<rect[^>]*height="([0-9.]+)"', svg)]
     assert max(heights) > 0  # at least one bar is really drawn
+
+
+def test_the_top_of_the_page_is_four_volet_blocks_each_named_and_lettered(client):
+    """Charter v1.3: four coloured blocks, each with its letter and name (never colour alone)."""
+    _membership(client, role="owner")
+
+    content = client.get(URL).content.decode()
+
+    for letter, name, css in (
+        ("C", "Contrats", "card-navy"),
+        ("B", "Budget", "card-accent"),
+        ("S", "Social", "card-ocean"),
+        ("R", "Régie", "card-regie"),
+    ):
+        assert f"{letter} · {name}" in content
+        assert css in content
+
+
+def test_the_contrats_and_regie_blocks_count_signed_dates_and_shared_roadmaps(client):
+    from apps.roadmaps.models import Roadmap
+
+    membership = _membership(client, role="owner")
+    _gig(membership.tenant, status=Gig.Status.SIGNED)
+    shared = _gig(membership.tenant, status=Gig.Status.CONFIRMED)
+    _gig(membership.tenant, status=Gig.Status.CONFIRMED)
+    Roadmap.objects.create(tenant=membership.tenant, gig=shared, is_published=True)
+
+    response = client.get(URL)
+
+    assert response.context["volets"] == {
+        "contracts_total": 3,
+        "contracts_signed": 1,
+        "roadmaps_shared": 1,
+    }
+    assert "1/3" in response.content.decode()
+
+
+def test_the_volet_figures_never_count_another_tenants_dates(client):
+    from apps.roadmaps.models import Roadmap
+
+    _membership(client, role="owner")
+    other = _gig(TenantFactory(), status=Gig.Status.SIGNED)
+    Roadmap.objects.create(tenant=other.tenant, gig=other, is_published=True)
+
+    volets = client.get(URL).context["volets"]
+
+    assert volets == {"contracts_total": 0, "contracts_signed": 0, "roadmaps_shared": 0}
+
+
+def test_only_the_owner_gets_the_link_to_the_social_follow_up(client):
+    _membership(client, role="member")
+
+    assert reverse("tenants:social") not in client.get(URL).content.decode()
