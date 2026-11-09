@@ -1,10 +1,12 @@
-{% load i18n static %}{% comment %}Progress of a date over the four volets (v1.3): the volet icon = done, a dashed circle with its letter = to do.
-32 px is the charter's minimum for an icon; 8 px between neighbours. Social and Régie icons are proposals still to be validated.{% endcomment %}
-<ul class="flex items-center gap-2" aria-label="{% translate 'Avancement de la date' %}">
-  {% for step in progress %}
-    <li class="flex size-8 items-center justify-center" title="{{ step.label }} : {% if step.done %}{% translate 'fait' %}{% else %}{% translate 'à faire' %}{% endif %}">
-      {% if step.done %}<img src="{% static 'brand/volet-'|add:step.key|add:'.svg' %}" alt="" width="32" height="32" class="size-8">{% else %}<span class="volet-letter volet-todo !size-7 !text-xs" aria-hidden="true">{{ step.letter }}</span>{% endif %}
-      <span class="sr-only">{{ step.label }} : {% if step.done %}{% translate "fait" %}{% else %}{% translate "à faire" %}{% endif %}</span>
+{% load i18n static %}{% comment %}Progress of a date on its card (v1.3): the volet icon = all its steps done, a dashed circle with
+its letter = still to do. The written "2/3 étapes" (title and screen readers) says the rest, so
+colour and shape are never alone. 32 px is the charter's minimum for an icon; 8 px between them.
+Needs: gig.progress (see services.attach_progress).{% endcomment %}
+<ul class="relative z-10 flex items-center gap-2" aria-label="{% translate 'Avancement de la date' %}">
+  {% for volet in gig.progress %}
+    <li class="flex size-8 items-center justify-center" title="{{ volet.label }} : {{ volet.done_count }}/{{ volet.total }}">
+      {% if volet.done %}<img src="{% static 'brand/volet-'|add:volet.key|add:'.svg' %}" alt="" width="32" height="32" class="size-8">{% else %}<span class="volet-letter volet-todo !size-7 !text-xs" aria-hidden="true">{{ volet.letter }}</span>{% endif %}
+      <span class="sr-only">{{ volet.label }} : {{ volet.done_count }} {% translate "étape(s) sur" %} {{ volet.total }}</span>
     </li>
   {% endfor %}
 </ul>

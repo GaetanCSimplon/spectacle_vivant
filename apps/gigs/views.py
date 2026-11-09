@@ -334,8 +334,12 @@ class GigListView(TenantScopedMixin, ListView):
             gigs.exclude(status=Gig.Status.CANCELLED),
             gigs.filter(status=Gig.Status.CANCELLED),
         )
-        context["upcoming_gigs"] = live.filter(date__gte=today).order_by("date")
-        context["past_gigs"] = live.filter(date__lt=today).order_by("-date")
+        context["upcoming_gigs"] = services.attach_progress(
+            live.filter(date__gte=today).order_by("date")
+        )
+        context["past_gigs"] = services.attach_progress(
+            live.filter(date__lt=today).order_by("-date")
+        )
         context["cancelled_gigs"] = cancelled.order_by("-date")
         context["filter_form"] = self.get_filter_form()
         context["editable_price"] = True
