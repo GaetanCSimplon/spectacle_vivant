@@ -39,7 +39,7 @@ TEXT_PAIRS = [
     ("text-muted", "bg", 4.5),
     ("text-muted", "surface", 4.5),
     ("surface", "brand-navy", 4.5),
-    ("surface", "info-bg", 4.5),
+    ("text", "info-bg", 4.5),
     ("brand-coral", "brand-navy", 4.5),
     ("text", "brand-cream", 4.5),
     ("text-muted", "brand-cream", 4.5),

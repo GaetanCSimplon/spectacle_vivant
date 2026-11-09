@@ -243,13 +243,14 @@ def test_the_desktop_navigation_is_navy_with_the_white_logo_and_a_coral_current_
     assert "brand/logo.svg" in content.split("</aside>")[1]  # the top bar stays white
 
 
-def test_the_ocean_block_has_white_text_and_the_light_blue_is_a_discreet_context():
+def test_the_information_block_is_cream_not_ocean_and_the_light_blue_is_a_discreet_context():
     css = (ROOT / "css/source.css").read_text()
 
     ocean = css.split("  .card-info {")[1].split("}")[0]
     context = css.split("  .card-context {")[1].split("}")[0]
 
-    assert "var(--bord-info-bg)" in ocean and "var(--bord-surface)" in ocean
+    assert "var(--bord-info-bg)" in ocean and "var(--bord-text)" in ocean
+    assert "--bord-info-bg: var(--bord-brand-cream)" in css  # ocean = Social volet only (v1.3)
     assert "var(--bord-context-bg)" in context and "var(--bord-text)" in context
 
 
