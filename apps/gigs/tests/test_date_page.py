@@ -162,3 +162,58 @@ def test_another_tenants_date_is_a_404(client):
     gig = GigFactory(status=Gig.Status.CONFIRMED)
 
     assert client.get(reverse("gigs:detail", args=[gig.pk])).status_code == 404
+
+
+# --- "Mes dates": the four icons on each card -------------------------------------------------
+
+
+def test_the_cards_of_my_dates_show_the_four_volets_with_their_steps(client):
+    tenant = _login(client)
+    gig = GigFactory(tenant=tenant, status=Gig.Status.CONFIRMED)
+    generate_contract_pdf(gig)
+    mark_contract_signed(gig)
+
+    content = client.get(reverse("gigs:list")).content.decode()
+
+    assert "brand/volet-contrats.svg" in content  # signed: the full icon
+    assert "Contrats : 3 étape(s) sur 3" in content
+    assert "Budget : 0 étape(s) sur 2" in content
+    assert content.count("volet-todo") == 3  # Budget, Social, Régie: dashed letters
+
+
+def test_a_cancelled_date_has_no_volet_icons_on_its_card(client):
+    GigFactory(tenant=_login(client), status=Gig.Status.CANCELLED)
+
+    assert "Avancement de la date" not in client.get(reverse("gigs:list")).content.decode()
+
+
+def test_the_list_computes_the_progress_in_a_constant_number_of_queries(
+    client, django_assert_max_num_queries
+):
+    tenant = _login(client)
+    for _ in range(12):
+        GigFactory(tenant=tenant, status=Gig.Status.CONFIRMED)
+    client.get(reverse("gigs:list"))  # warm up
+
+    with django_assert_max_num_queries(40):
+        client.get(reverse("gigs:list"))
+
+
+def test_the_bulk_progress_matches_the_single_gig_progress():
+    gig = GigFactory(status=Gig.Status.CONFIRMED)
+    generate_contract_pdf(gig)
+    mark_contract_sent(gig)
+
+    [bulk] = services.attach_progress([gig])
+
+    assert bulk.progress == services.date_progress(gig)
+
+
+def test_the_progress_of_a_list_never_reads_another_tenants_data():
+    gig = GigFactory(status=Gig.Status.CONFIRMED)
+    other = GigFactory(status=Gig.Status.CONFIRMED)
+    generate_contract_pdf(other)
+
+    [bulk] = services.attach_progress([gig])
+
+    assert bulk.progress[0]["done_count"] == 0

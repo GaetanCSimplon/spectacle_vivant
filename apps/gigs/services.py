@@ -16,7 +16,7 @@ from apps.documents.models import Contract, ContractVersion, Invoice, Quote
 from apps.finance.models import Expense
 from apps.roadmaps.models import Roadmap
 
-from .models import Gig, PriceChange
+from .models import Gig, GigMember, PriceChange
 
 
 def get_wizard_related_objects(tenant, data):
@@ -311,20 +311,54 @@ def _volet(key, letter, label, steps):
     }
 
 
-def date_progress(gig):
-    """The four volets of a date, each with its steps (charter v1.3: C, B, S, R).
+def _progress_facts(gigs):
+    """What the steps of the volets look at, for several gigs of one tenant, in few queries.
 
-    Contrats: generated, sent, signed. Budget: an invoice issued, then every invoice paid.
-    Social: someone from the team is on the date. Régie: the roadmap has slots, then is shared.
+    Returns {gig id: {fact: bool}}; `date_progress` (one gig) and `attach_progress` (a list)
+    both read it, so the two never disagree.
     """
-    contract = Contract.objects.filter(gig=gig, tenant=gig.tenant).first()
-    signed = bool(contract and contract.status == Contract.Status.SIGNED)
+    gigs = list(gigs)
+    ids = [gig.pk for gig in gigs]
+    tenant_ids = {gig.tenant_id for gig in gigs}
+    facts = {
+        gig_id: {
+            "generated": False,
+            "sent": False,
+            "signed": False,
+            "invoiced": False,
+            "unpaid": False,
+            "team": False,
+            "filled": False,
+            "shared": False,
+        }
+        for gig_id in ids
+    }
+    scope = {"gig_id__in": ids, "tenant_id__in": tenant_ids}
+    for contract in Contract.objects.filter(**scope).prefetch_related("versions"):
+        row = facts[contract.gig_id]
+        row["signed"] = contract.status == Contract.Status.SIGNED
+        row["generated"] = bool(contract.versions.all())
+        row["sent"] = bool(contract.sent_at) or row["signed"]
     invoices = (
-        Invoice.objects.filter(gig=gig, tenant=gig.tenant)
+        Invoice.objects.filter(**scope)
         .exclude(status__in=[Invoice.Status.DRAFT, Invoice.Status.CANCELLED])
         .exclude(kind=Invoice.Kind.CREDIT_NOTE)
+        .values_list("gig_id", "status")
     )
-    roadmap = Roadmap.objects.filter(gig=gig, tenant=gig.tenant).first()
+    for gig_id, status in invoices:
+        facts[gig_id]["invoiced"] = True
+        if status != Invoice.Status.PAID:
+            facts[gig_id]["unpaid"] = True
+    members = GigMember.objects.filter(**scope, person__isnull=False)
+    for gig_id in members.values_list("gig_id", flat=True).distinct():
+        facts[gig_id]["team"] = True
+    for roadmap in Roadmap.objects.filter(**scope).prefetch_related("slots"):
+        facts[roadmap.gig_id]["filled"] = bool(roadmap.slots.all())
+        facts[roadmap.gig_id]["shared"] = roadmap.is_published
+    return facts
+
+
+def _volets_from_facts(gig, row):
     contract_url = reverse("documents:contract-history", args=[gig.pk])
     billing_url = reverse("documents:billing", args=[gig.pk])
     roadmap_url = reverse("roadmaps:editor", args=[gig.pk])
@@ -334,19 +368,14 @@ def date_progress(gig):
             "C",
             _("Contrats"),
             [
-                (
-                    _("Contrat généré"),
-                    bool(contract and contract.latest_version),
-                    contract_url,
-                    _("Générer le contrat"),
-                ),
+                (_("Contrat généré"), row["generated"], contract_url, _("Générer le contrat")),
                 (
                     _("Contrat envoyé"),
-                    bool(contract and (contract.sent_at or signed)),
+                    row["sent"],
                     contract_url,
                     _("Marquer le contrat comme envoyé"),
                 ),
-                (_("Contrat signé"), signed, contract_url, _("Faire signer le contrat")),
+                (_("Contrat signé"), row["signed"], contract_url, _("Faire signer le contrat")),
             ],
         ),
         _volet(
@@ -354,10 +383,10 @@ def date_progress(gig):
             "B",
             _("Budget"),
             [
-                (_("Facture émise"), invoices.exists(), billing_url, _("Émettre la facture")),
+                (_("Facture émise"), row["invoiced"], billing_url, _("Émettre la facture")),
                 (
                     _("Factures payées"),
-                    invoices.exists() and not invoices.exclude(status=Invoice.Status.PAID).exists(),
+                    row["invoiced"] and not row["unpaid"],
                     reverse("finance:page", args=[gig.pk]),
                     _("Enregistrer les paiements"),
                 ),
@@ -370,7 +399,7 @@ def date_progress(gig):
             [
                 (
                     _("Équipe ajoutée"),
-                    gig.members.filter(person__isnull=False).exists(),
+                    row["team"],
                     reverse("gigs:detail", args=[gig.pk]) + "#equipe",
                     _("Ajouter l'équipe"),
                 )
@@ -383,19 +412,37 @@ def date_progress(gig):
             [
                 (
                     _("Feuille de route remplie"),
-                    bool(roadmap and roadmap.slots.exists()),
+                    row["filled"],
                     roadmap_url,
                     _("Remplir la feuille de route"),
                 ),
                 (
                     _("Feuille de route partagée"),
-                    bool(roadmap and roadmap.is_published),
+                    row["shared"],
                     roadmap_url,
                     _("Partager la feuille de route"),
                 ),
             ],
         ),
     ]
+
+
+def date_progress(gig):
+    """The four volets of a date, each with its steps (charter v1.3: C, B, S, R).
+
+    Contrats: generated, sent, signed. Budget: an invoice issued, then every invoice paid.
+    Social: someone from the team is on the date. Régie: the roadmap has slots, then is shared.
+    """
+    return _volets_from_facts(gig, _progress_facts([gig])[gig.pk])
+
+
+def attach_progress(gigs):
+    """Set `gig.progress` on every gig of a list (the cards of "Mes dates"), in few queries."""
+    gigs = list(gigs)
+    facts = _progress_facts(gigs)
+    for gig in gigs:
+        gig.progress = _volets_from_facts(gig, facts[gig.pk])
+    return gigs
 
 
 def overall_progress(progress):
