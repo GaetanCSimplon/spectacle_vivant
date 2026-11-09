@@ -228,15 +228,15 @@ def test_links_in_a_text_are_underlined_and_a_cancelled_list_is_not_faded():
     assert "opacity-" not in gig_results
 
 
-def test_the_desktop_navigation_is_navy_with_the_capsule_logo_and_a_coral_current_page(client):
-    """Charter v1.0: navy navigation, coral selection; the transparent logo vanishes on navy."""
+def test_the_desktop_navigation_is_navy_with_the_white_logo_and_a_coral_current_page(client):
+    """Charter v1.0: navy navigation, coral selection; the white logo (the dark one vanishes)."""
     client.force_login(MembershipFactory().user)
     css = (ROOT / "css/source.css").read_text()
 
     content = client.get(reverse("home")).content.decode()
     sidebar = content.split("<aside")[1].split("</aside>")[0]
 
-    assert "brand/logo-capsule.svg" in sidebar and "brand/logo.svg" not in sidebar
+    assert "brand/logo-white.svg" in sidebar and "brand/logo.svg" not in sidebar
     assert "bg-white" not in sidebar.split("<nav")[0]
     block = css.split('.sidebar .nav-link[aria-current="page"] {')[1].split("}")[0]
     assert "var(--bord-brand-coral)" in block

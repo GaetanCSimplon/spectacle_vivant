@@ -27,9 +27,8 @@ def _login(client):
 def test_the_brand_files_are_shipped():
     for name in (
         "logo.svg",
-        "logo-capsule.svg",
+        "logo-white.svg",
         "icon.svg",
-        "icon-capsule.svg",
         "radar.svg",
         "favicon.ico",
         "favicon-16.png",
@@ -55,8 +54,8 @@ def test_the_icon_sizes_follow_the_charter():
     ):
         assert Image.open(ROOT / "static/brand" / name).size == (size, size), name
 
-    # The horizontal logo is delivered as an SVG (viewBox 2000 x 800) and is never edited.
-    assert 'viewBox="0 0 2000 800"' in (ROOT / "static/brand/logo.svg").read_text()
+    # The horizontal logo is delivered as an SVG (viewBox 2000 x 700) and is never edited.
+    assert 'viewBox="0 0 2000 700"' in (ROOT / "static/brand/logo.svg").read_text()
 
 
 def test_the_pages_declare_the_favicons_and_the_logo_has_a_text_alternative(client):
@@ -160,7 +159,7 @@ def test_the_icon_is_the_monogram_without_the_name():
     favicon = Image.open(ROOT / "static/brand/favicon-48.png")
 
     assert favicon.width == favicon.height
-    assert 'viewBox="0 0 2000 800"' in (ROOT / "static/brand/logo.svg").read_text()
+    assert 'viewBox="0 0 2000 700"' in (ROOT / "static/brand/logo.svg").read_text()
     assert 'viewBox="0 0 1024 1024"' in (ROOT / "static/brand/icon.svg").read_text()
 
 

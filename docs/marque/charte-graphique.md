@@ -51,7 +51,7 @@ Les cartes de synthèse sont des **aplats** (nuit, corail, océan, crème) ; une
 - **Archivo** (800, largeur 112 %, interlettrage −0,04 em) pour les titres ; **Instrument Sans** (400 à 700) pour le texte et les libellés ; **IBM Plex Mono** (400, 500, chiffres tabulaires) pour dates, heures et montants. Trois familles **hébergées chez nous** (`static/fonts/`, licence OFL). Le nom du logo est une image, jamais recomposé en police.
 - Échelle : titre de page 30–34 px, titre de carte 20–24 px, corps 16 px (interligne 24), libellés 14 px, chiffres importants 24–40 px en mono. Texte aligné à gauche.
 - Rayons : **12 px** contrôles, **16 px** cartes, **24 px** grandes cartes, **28 px** sections ; pilule pour les pastilles d'état. Espacement de base 4 px. **Aucune ombre floue, aucun dégradé décoratif** (les dégradés propres aux SVG livrés restent tels quels).
-- **Navigation** : colonne nuit à gauche à partir de 1024 px (logo capsule, page active en corail gras avec une barre) ; en dessous, barre blanche du haut avec menu burger. La barre de navigation du bas évoquée par la charte n'est pas faite.
+- **Navigation** : colonne nuit à gauche à partir de 1024 px (logo blanc, page active en corail gras avec une barre) ; en dessous, barre blanche du haut avec menu burger. La barre de navigation du bas évoquée par la charte n'est pas faite.
 - Icônes : trait de 2 px, angles arrondis, `currentColor`. Pas de micro, note de musique, rideau ni guitare.
 - **Cartes de date** (2026-11-02) : la carte reste blanche. Le pavé de date et la pastille d'icône du lieu sont crème, celle de l'organisateur bleu clair avec une icône océan (le code couleur de l'annuaire), celle de la feuille de route océan plein avec une icône blanche ; les paiements sont posés sur une bande crème. Les couleurs d'état (vert, ambre) restent réservées aux statuts, jamais à la décoration. Les pastilles (`.icon-chip-*`) sont décoratives : le libellé est toujours écrit à côté.
 - Les PDF de contrat, de devis et de facture sont les documents de l'utilisateur : ils **ne reprennent pas** l'habillage de la marque.
@@ -61,13 +61,12 @@ Fournis par le graphiste, **jamais modifiés** (ni recolorés, déformés, filtr
 
 | Fichier | Rôle | Où |
 |---|---|---|
-| `logo.svg` | logo horizontal, fond transparent | fond **blanc** : en-tête, pages publiques, site |
-| `logo-capsule.svg` | logo horizontal, fond crème embarqué | fond nuit, corail, océan, image : barre latérale |
-| `icon.svg` | symbole « b », fond transparent | fond blanc (réserve) |
-| `icon-capsule.svg` | icône d'application | source des favicons et icônes d'app |
+| `logo.svg` | logo horizontal (v1.3, viewBox 2000 × 700) | fond **blanc**, crème ou bleu clair : en-tête, pages publiques |
+| `logo-white.svg` | logo blanc (v1.3) | fond **nuit**, océan ou corail : barre latérale, bandeau du site. Remplace la plaque crème |
+| `icon.svg` | symbole : tuile corail à « b » nuit (v1.3) | source des favicons et icônes d'app, tout fond |
 | `radar.svg` | icône RADAR | rangée, **non utilisée** (RADAR pas développé) |
 
-Les PNG (`favicon-16/32/48.png`, `favicon.ico`, `icon-192/512.png`, `apple-touch-icon.png`) sont générés depuis `icon-capsule.svg` (marge transparente retirée ; l'`apple-touch-icon` est posé sur fond crème). Zone de protection : environ 50 % de la largeur du symbole ; symbole 32 px minimum ; pas de seuil défini pour le logo horizontal. La version transparente sur un fond coloré fait disparaître le nom : toujours la capsule.
+Les PNG (`favicon-16/32/48.png`, `favicon.ico`, `icon-192/512.png`, `apple-touch-icon.png`) sont générés depuis `icon.svg` (marge transparente retirée ; l'`apple-touch-icon` est posé sur fond blanc). Zone de protection : environ 50 % de la largeur du symbole ; symbole 32 px minimum ; pas de seuil défini pour le logo horizontal. Le logo horizontal sur un fond foncé fait disparaître le nom : toujours le logo blanc.
 
 ## 6. Hors périmètre
 La **carte et l'itinéraire** et **RADAR** (voir `docs/produit/specification-radar.md`) viendront après le MVP. Les sections « Priorisation fonctionnelle » des briefs de l'associé sont des sujets produit (Q19 du cahier des charges), pas d'habillage. Pas de mode sombre.
@@ -84,7 +83,7 @@ La **carte et l'itinéraire** et **RADAR** (voir `docs/produit/specification-rad
 - [x] Les couleurs d'état ne servent jamais à décorer ; aucun gabarit ne cite le corail (classes `.fab`, `.card-accent`).
 - [x] Statut = pictogramme + mot.
 - [x] Aucune ombre floue dans les gabarits (test).
-- [x] Logo adapté au fond : transparent sur blanc, capsule sur nuit.
+- [x] Logo adapté au fond : logo horizontal sur blanc, logo blanc sur nuit.
 - [x] Mention juridique dans les CGU et sur les écrans du contrat et de la facturation.
 - [ ] Revue des pages publiques à 375 px (non faite ; les écrans connectés sont conçus pour l'ordinateur).
 
@@ -101,4 +100,4 @@ Reçu de l'associé le 2026-11-08, rangé dans `sources-associe/charte-v1.3-pack
 
 **État : provisoire.** Les SVG et PNG ont été tracés automatiquement à partir des PNG du « logo 3 » ; le `LISEZ-MOI` de l'associé liste les défauts à corriger dans Affinity (filets visibles entre R et D, B et Ò soudés, accent anguleux, liseré sur la tuile nuit, courbes à lisser), et les jetons disent « demander un SVG vectoriel avant intégration définitive ». Les icônes Social et Régie sont des propositions « à valider ».
 
-**Décision (2026-11-08) : rien n'est remplacé dans l'application ni sur le site tant que les exports définitifs ne sont pas livrés.** L'application garde les logos du §5 (`logo.svg`, `logo-capsule.svg`). Quand ils arrivent : remplacer ces fichiers, vérifier le contraste (`test_brand_contrast.py`) et appliquer les volets et les interdits ci-dessus, en un chantier à part. **Impact déjà connu sur l'application** : les blocs d'information en océan (`--bord-info-bg`) devront passer en crème.
+**Décision (2026-11-09) : les logos v1.3 sont adoptés dans l'application et sur le site, malgré leur état provisoire** (demande de l'utilisateur). `logo.svg`, `logo-white.svg` et `icon.svg` remplacent les anciens fichiers ; `logo-capsule.svg` et `icon-capsule.svg` sont supprimés ; les favicons et icônes d'app sont régénérés depuis la tuile corail. Défauts connus du tracé automatique (filets entre R et D, B et Ò soudés, accent anguleux) : à remplacer par les exports Affinity de l'associé en recopiant simplement les fichiers. Le reste de la v1.3 (volets C/B/S/R, gimics, interlettrage, blocs océan → crème, suppression des dégradés de `radar.svg`) n'est pas fait : voir le plan dans `docs/produit/feuille-de-route.md`.
