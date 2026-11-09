@@ -64,6 +64,7 @@ Fournis par le graphiste, **jamais modifiés** (ni recolorés, déformés, filtr
 | `logo.svg` | logo horizontal (v1.3, viewBox 2000 × 700) | fond **blanc**, crème ou bleu clair : en-tête, pages publiques |
 | `logo-white.svg` | logo blanc (v1.3) | fond **nuit**, océan ou corail : barre latérale, bandeau du site. Remplace la plaque crème |
 | `icon.svg` | symbole : tuile corail à « b » nuit (v1.3) | source des favicons et icônes d'app, tout fond |
+| `volet-contrats/budget/social/regie.svg` | icônes de volet (tuiles nuit, corail, océan, bleu clair), Social et Régie proposées, à valider | avancement d'une date (32 px minimum) ; pas sur un bloc de leur propre couleur |
 | `radar.svg` | icône RADAR | rangée, **non utilisée** (RADAR pas développé) |
 
 Les PNG (`favicon-16/32/48.png`, `favicon.ico`, `icon-192/512.png`, `apple-touch-icon.png`) sont générés depuis `icon.svg` (marge transparente retirée ; l'`apple-touch-icon` est posé sur fond blanc). Zone de protection : environ 50 % de la largeur du symbole ; symbole 32 px minimum ; pas de seuil défini pour le logo horizontal. Le logo horizontal sur un fond foncé fait disparaître le nom : toujours le logo blanc.

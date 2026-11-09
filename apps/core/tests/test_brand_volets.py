@@ -15,7 +15,8 @@ from apps.tenants.factories import MembershipFactory, PersonFactory
 
 pytestmark = pytest.mark.django_db
 
-CSS = (Path(__file__).resolve().parents[3] / "css/source.css").read_text()
+ROOT = Path(__file__).resolve().parents[3]
+CSS = (ROOT / "css/source.css").read_text()
 
 
 @pytest.fixture(autouse=True)
@@ -89,3 +90,24 @@ def test_a_volet_page_carries_its_chip_with_the_name(client, route, volet, name)
     content = client.get(reverse(route, args=[gig.pk])).content.decode()
 
     assert re.search(rf'class="volet-chip volet-{volet}"[^>]*>.*?{name}', content, flags=re.S)
+
+
+def test_a_done_volet_shows_its_icon_and_a_volet_to_do_its_dashed_letter(client):
+    membership = MembershipFactory()
+    client.force_login(membership.user)
+    gig = GigFactory(tenant=membership.tenant, status=Gig.Status.CONFIRMED)
+    generate_contract_pdf(gig)
+    mark_contract_signed(gig)
+
+    content = client.get(reverse("gigs:detail", args=[gig.pk])).content.decode()
+
+    assert "brand/volet-contrats.svg" in content
+    assert "brand/volet-budget.svg" not in content
+    assert "Contrats : fait" in content and "Budget : à faire" in content
+    assert content.count("volet-todo") == 3
+
+
+def test_the_four_volet_icons_are_flat_svgs():
+    for name in ("contrats", "budget", "social", "regie"):
+        svg = (ROOT / f"static/brand/volet-{name}.svg").read_text()
+        assert "viewBox=" in svg and "Gradient" not in svg
