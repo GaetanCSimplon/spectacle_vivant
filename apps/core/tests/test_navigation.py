@@ -135,13 +135,13 @@ def test_bord_comes_right_after_the_home_page_and_is_in_bold(client):
     content = client.get(reverse("home")).content.decode()
     sidebar = content.split("<aside")[1].split("</aside>")[0]
     nav = sidebar.split("<nav")[1].split("</nav>")[0]
-    labels = re.findall(r">(?:<img[^>]*>)?(Accueil|Bòrd|Mes dates|Spectacles|Contacts)</a>", nav)
+    labels = re.findall(r">(?:<img[^>]*>\s*)?(Accueil|Bòrd|Mes dates|Spectacles|Contacts)</a>", nav)
 
     assert labels == ["Accueil", "Bòrd", "Mes dates", "Spectacles", "Contacts"]
-    bord_link = re.search(r"<a[^>]*>(?:<img[^>]*>)?Bòrd</a>", nav.replace("\n", " ")).group(0)
+    bord_link = re.search(r"<a[^>]*>(?:<img[^>]*>\s*)?Bòrd</a>", nav.replace("\n", " ")).group(0)
     assert "font-bold" in bord_link
     assert "font-bold" not in re.search(
-        r"<a[^>]*>(?:<img[^>]*>)?Mes dates</a>", nav.replace("\n", " ")
+        r"<a[^>]*>(?:<img[^>]*>\s*)?Mes dates</a>", nav.replace("\n", " ")
     ).group(0)
 
 
