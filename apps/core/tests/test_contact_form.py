@@ -144,5 +144,5 @@ def test_the_failure_log_holds_no_personal_data(client, monkeypatch, caplog):
 def test_the_page_has_one_main_action_and_the_privacy_notice(client):
     content = client.get(reverse("site-contact")).content.decode()
 
-    assert content.count("btn-primary") == 1
+    assert content.count("v-btn--main") == 1
     assert "n'est pas enregistré" in content or "n&#x27;est pas enregistré" in content

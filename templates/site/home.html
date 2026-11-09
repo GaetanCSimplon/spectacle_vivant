@@ -1,152 +1,150 @@
 {% extends "site/base_site.html" %}
-{% load i18n %}
-
-{% block main_class %}{% endblock %}
+{% load i18n static %}
 
 {% block content %}
-  {# 1. The slogan, on a navy block, with the one main action of the page. #}
-  <section class="on-dark overflow-hidden bg-blue-700 pb-16 pt-10 md:pb-20 md:pt-14">
-    <div class="mx-auto grid max-w-6xl items-center gap-10 px-4 md:grid-cols-[1.15fr_.85fr]">
+  {# 1. The slogan, with the one main action of the page. #}
+  <section class="v-hero v-hero--home">
+    <div class="v-wrap">
       <div>
-        <h1 class="!mb-0 text-[2.5rem] leading-[1.02] sm:text-6xl md:text-7xl">{% translate "Prenez le contrôle de votre tournée." %}</h1>
-        <div class="site-rule mt-6 h-1 w-[72px]" aria-hidden="true"></div>
-        <p class="mt-6 max-w-xl text-lg">{% translate "Contacts, dates, contrats, budgets et équipe : tout au même endroit." %}</p>
-        <p class="mt-2 max-w-xl text-sm">{% translate "Pour les artistes autoproduits, les petites compagnies et les associations du spectacle vivant." %}</p>
-        <div class="mt-8 flex flex-wrap gap-3">
-          <a href="{% url 'site-contact' %}" class="btn btn-primary">{% translate "Demander une invitation" %}</a>
-          <a href="{% url 'site-features' %}" class="btn btn-secondary">{% translate "Voir les fonctionnalités" %}</a>
+        <h1>{% translate "Prenez le contrôle de votre tournée." %}</h1>
+        <div class="v-rule" aria-hidden="true"></div>
+        <p class="v-lead">{% translate "Contacts, dates, contrats, budgets et équipe : tout au même endroit. Pour les artistes autoproduits, les petites compagnies et les associations du spectacle vivant." %}</p>
+        <div class="v-btns">
+          <a href="{% url 'site-contact' %}" class="v-btn v-btn--main">{% translate "Demander une invitation" %}</a>
+          <a href="{% url 'site-features' %}" class="v-btn v-btn--line">{% translate "Voir les fonctionnalités" %}</a>
         </div>
       </div>
-      {# Two flat shapes while the graphic designer's final illustrations are awaited. #}
-      <div class="relative hidden min-h-72 md:block" aria-hidden="true">
-        <i class="site-float absolute right-[30%] top-0 block h-[78%] w-[44%] rounded-b-[28px] bg-ocean"></i>
-        <i class="site-float-slow site-shape-warm absolute bottom-0 right-0 block h-[68%] w-[62%] rounded-tl-[28px]"></i>
+      <div class="v-shape" aria-hidden="true">
+        <i class="s1"></i><i class="s2"></i>
+        <i class="s3"><img src="{% static 'brand/gimic-creme.svg' %}" alt=""></i>
       </div>
     </div>
   </section>
 
-  {# A still band (a scrolling one would move for ever without a way to stop it). #}
-  <div class="site-band" aria-hidden="true">
-    <p class="mx-auto flex max-w-6xl flex-wrap justify-center gap-x-6 gap-y-1 px-4 py-4 font-heading text-lg font-extrabold uppercase tracking-wide !text-blue-700 sm:text-xl">
-      <span>{% translate "Dates" %}</span><span>✦</span><span>{% translate "Budget" %}</span><span>✦</span><span>{% translate "Contrats" %}</span><span>✦</span><span>{% translate "Paie" %}</span><span>✦</span><span>{% translate "Feuilles de route" %}</span><span>✦</span><span>{% translate "Tournée" %}</span>
-    </p>
+  <div class="v-band" aria-hidden="true">
+    <p><span>{% translate "Dates" %}</span><span>✦</span><span>{% translate "Budget" %}</span><span>✦</span><span>{% translate "Contrats" %}</span><span>✦</span><span>{% translate "Paie" %}</span><span>✦</span><span>{% translate "Feuilles de route" %}</span><span>✦</span><span>{% translate "Tournée" %}</span></p>
   </div>
 
   {# 2. The roles. #}
-  <section class="mx-auto max-w-6xl px-4 py-14" aria-labelledby="roles-title">
-    <h2 id="roles-title" class="text-3xl sm:text-4xl">{% translate "Vous tenez tous les rôles." %}</h2>
-    <p class="mt-3 max-w-2xl text-lg !text-gray-600">{% translate "Quand on est artiste autoproduit ou petite structure, on est tour à tour diffuseur, producteur, administrateur et chef de tournée. La charge est partout, les informations aussi." %}</p>
-    <ul class="mt-8 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-      <li class="card">
-        <span class="data text-sm !text-ocean">{% translate "Diffusion" %}</span>
-        <h3>{% translate "Prospecter, relancer, confirmer" %}</h3>
-        <p class="!text-gray-600">{% translate "Suivre chaque contact et chaque date." %}</p>
-      </li>
-      <li class="card">
-        <span class="data text-sm !text-ocean">{% translate "Production" %}</span>
-        <h3>{% translate "Préparer chaque date" %}</h3>
-        <p class="!text-gray-600">{% translate "Statuts, calendrier, checklist, feuille de route." %}</p>
-      </li>
-      <li class="card">
-        <span class="data text-sm !text-ocean">{% translate "Administration" %}</span>
-        <h3>{% translate "Devis, contrats, factures" %}</h3>
-        <p class="!text-gray-600">{% translate "Générer, suivre et réunir les documents." %}</p>
-      </li>
-      <li class="card">
-        <span class="data text-sm !text-ocean">{% translate "Tournée" %}</span>
-        <h3>{% translate "Plannings et feuilles de route" %}</h3>
-        <p class="!text-gray-600">{% translate "Informer toute l'équipe." %}</p>
-      </li>
-    </ul>
+  <section class="v-section" aria-labelledby="roles-title">
+    <div class="v-wrap">
+      <div class="v-head">
+        <h2 id="roles-title">{% translate "Vous tenez tous les rôles." %}</h2>
+        <p class="v-lead">{% translate "Quand on est artiste autoproduit ou petite structure, on est tour à tour diffuseur, producteur, administrateur et chef de tournée. La charge est partout, les informations aussi." %}</p>
+      </div>
+      <ul class="v-grid v-g4 v-list">
+        <li class="v-card"><span class="v-num">{% translate "Diffusion" %}</span><h3>{% translate "Prospecter, relancer, confirmer" %}</h3><p>{% translate "Suivre chaque contact et chaque date." %}</p></li>
+        <li class="v-card"><span class="v-num">{% translate "Production" %}</span><h3>{% translate "Préparer chaque date" %}</h3><p>{% translate "Statuts, calendrier, checklist, feuille de route." %}</p></li>
+        <li class="v-card"><span class="v-num">{% translate "Administration" %}</span><h3>{% translate "Devis, contrats, factures" %}</h3><p>{% translate "Générer, suivre et réunir les documents." %}</p></li>
+        <li class="v-card"><span class="v-num">{% translate "Tournée" %}</span><h3>{% translate "Plannings et feuilles de route" %}</h3><p>{% translate "Informer toute l'équipe." %}</p></li>
+      </ul>
+    </div>
   </section>
 
   {# 3. One place. #}
-  <section class="on-dark bg-blue-700 py-14" aria-labelledby="one-place-title">
-    <div class="mx-auto grid max-w-6xl items-start gap-10 px-4 md:grid-cols-2">
-      <div>
-        <h2 id="one-place-title" class="text-3xl sm:text-4xl">{% translate "Moins de dispersion. Plus de temps pour l'artistique." %}</h2>
-        <p class="mt-4 max-w-xl text-lg">{% translate "Bòrd Pro regroupe spectacles, contacts, dates, budgets et documents dans un seul espace de travail. Vous savez où en est chaque date, ce qu'elle rapporte, ce qu'elle coûte et ce qu'il reste à faire." %}</p>
-        <div class="mt-6"><a href="{% url 'site-contact' %}" class="btn btn-secondary">{% translate "Demander une invitation" %}</a></div>
+  <section class="v-section v-night" aria-labelledby="one-place-title">
+    <div class="v-wrap v-split">
+      <div class="v-head" style="margin:0">
+        <h2 id="one-place-title">{% translate "Moins de dispersion. Plus de temps pour l'artistique." %}</h2>
+        <p class="v-lead">{% translate "Bòrd Pro regroupe spectacles, contacts, dates, budgets et documents dans un seul espace de travail. Vous savez où en est chaque date, ce qu'elle rapporte, ce qu'elle coûte et ce qu'il reste à faire." %}</p>
+        <div class="v-btns"><a href="{% url 'site-contact' %}" class="v-btn v-btn--line">{% translate "Demander une invitation" %}</a></div>
       </div>
-      <ol class="space-y-0">
-        <li class="grid grid-cols-[3rem_1fr] gap-4 border-t-2 border-white py-4">
-          <span class="data site-step-no text-xl">01</span>
-          <div><h3>{% translate "Un espace pour gérer" %}</h3><p>{% translate "Spectacles, contacts, dates et documents au même endroit." %}</p></div>
-        </li>
-        <li class="grid grid-cols-[3rem_1fr] gap-4 border-t-2 border-white py-4">
-          <span class="data site-step-no text-xl">02</span>
-          <div><h3>{% translate "Un lien pour chaque membre de l'équipe" %}</h3><p>{% translate "Chacun consulte depuis son téléphone ses dates, ses feuilles de route et ses documents, sans créer de compte." %}</p></div>
-        </li>
-        <li class="grid grid-cols-[3rem_1fr] gap-4 border-t-2 border-white py-4">
-          <span class="data site-step-no text-xl">03</span>
+      <ol class="v-steps">
+        <li><div><h3>{% translate "Un espace pour gérer" %}</h3><p>{% translate "Spectacles, contacts, dates et documents au même endroit." %}</p></div></li>
+        <li><div><h3>{% translate "Un lien pour chaque membre de l'équipe" %}</h3><p>{% translate "Chacun consulte depuis son téléphone ses dates, ses feuilles de route et ses documents, sans créer de compte." %}</p></div></li>
+        <li>
           <div>
             <h3>{% translate "Radar pour décider" %}</h3>
             <p>{% translate "Il repèrera ce qui mérite votre attention, avant qu'il ne soit trop tard." %}</p>
-            <p class="mt-2"><span class="pill pill-warn">{% translate "En cours de développement" %}</span></p>
+            <p style="margin-top:8px"><span class="v-status v-status--warn">◷ {% translate "En cours de développement" %}</span></p>
           </div>
         </li>
       </ol>
     </div>
   </section>
 
-  {# 4. What changes. #}
-  <section class="mx-auto max-w-6xl px-4 py-14" aria-labelledby="changes-title">
-    <h2 id="changes-title" class="text-3xl sm:text-4xl">{% translate "Ce que ça change pour votre activité." %}</h2>
-    <p class="mt-3 max-w-2xl text-lg !text-gray-600">{% translate "Des effets concrets, au quotidien, sur la façon de piloter vos dates." %}</p>
-    <div class="mt-8 grid grid-cols-1 gap-4 md:grid-cols-2">
-      <article class="card">
-        <h3>{% translate "Une activité lisible" %}</h3>
-        <p class="!text-gray-600">{% translate "Chaque date a un statut clair : option, confirmée, signée. Plus besoin de fouiller dans vos mails et vos tableurs pour savoir où vous en êtes." %}</p>
-        <p class="flex flex-wrap gap-2"><span class="pill pill-good">{% translate "Confirmée" %}</span> <span class="pill pill-warn">{% translate "Option" %}</span></p>
-      </article>
-      <article class="card">
-        <h3>{% translate "Des chiffres au clair" %}</h3>
-        <p class="!text-gray-600">{% translate "Prévu, facturé et encaissé : trois montants distincts, jamais mélangés. Vous voyez ce qu'il reste après les frais." %}</p>
-      </article>
-      <article class="card">
-        <h3>{% translate "Moins d'oublis, moins de surprises" %}</h3>
-        <p class="!text-gray-600">{% translate "L'accueil vous signale ce qui demande votre attention : réponses d'organisateurs à vérifier, dépenses sans justificatif." %}</p>
-      </article>
-      <article class="card">
-        <h3>{% translate "Une équipe informée, sans courir" %}</h3>
-        <p class="!text-gray-600">{% translate "Feuille de route, horaires, accès, contacts, documents : l'équipe consulte tout dans sa poche. Vous gardez la main sur ce qui est partagé." %}</p>
-      </article>
-    </div>
-  </section>
-
-  {# 5. Who it is for. #}
-  <section class="bg-cream py-14" aria-labelledby="who-title">
-    <div class="mx-auto max-w-6xl px-4">
-      <h2 id="who-title" class="text-3xl sm:text-4xl">{% translate "Pour celles et ceux qui font tout eux-mêmes." %}</h2>
-      <div class="mt-8 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        <div class="card"><h3>{% translate "Artiste solo ou groupe" %}</h3><p class="!text-gray-600">{% translate "Organiser les dates, suivre le budget, préparer la tournée." %}</p></div>
-        <div class="card"><h3>{% translate "Petite compagnie" %}</h3><p class="!text-gray-600">{% translate "Centraliser spectacles, documents et informations de production." %}</p></div>
-        <div class="card"><h3>{% translate "Bookeur·se indépendant·e" %}</h3><p class="!text-gray-600">{% translate "Suivre contacts, propositions et confirmations." %}</p></div>
-        <div class="card"><h3>{% translate "Petite structure de production" %}</h3><p class="!text-gray-600">{% translate "Piloter plusieurs spectacles et préparer l'administratif." %}</p></div>
-        <div class="card"><h3>{% translate "Équipe en tournée" %}</h3><p class="!text-gray-600">{% translate "Partager plannings, feuilles de route, documents et contacts." %}</p></div>
-        {# Cream, not ocean: the information block is not an ocean one in the charter v1.3. #}
-        <div class="card bg-cream"><h3>{% translate "Et vous ?" %}</h3><p>{% translate "Demandez une invitation et essayez avec vos prochaines dates." %}</p></div>
+  {# 4. The numbers that are true today. #}
+  <section class="v-section" aria-label="{% translate 'Bòrd Pro en chiffres' %}">
+    <div class="v-wrap">
+      <div class="v-stats">
+        <div class="v-stat"><span class="v-bigno">1</span><p>{% translate "espace pour tous vos spectacles, contacts, dates et documents." %}</p></div>
+        <div class="v-stat"><span class="v-bigno">4</span><p>{% translate "modèles de contrat de cession au choix." %}</p></div>
+        <div class="v-stat"><span class="v-bigno">3</span><p>{% translate "montants gardés à part : prévu, facturé, encaissé." %}</p></div>
+        <div class="v-stat"><span class="v-bigno">2</span><p>{% translate "formulaires pour que l'organisateur remplisse lui-même ses informations." %}</p></div>
       </div>
     </div>
   </section>
 
-  {# 6. What is coming. #}
-  <section class="mx-auto max-w-6xl px-4 py-14" aria-labelledby="soon-title">
-    <h2 id="soon-title" class="text-3xl sm:text-4xl">{% translate "Ce qui arrive." %}</h2>
-    <p class="mt-3 max-w-2xl text-lg !text-gray-600">{% translate "Ces fonctions sont en cours de développement : elles ne sont pas encore disponibles." %}</p>
-    <ul class="mt-6 grid grid-cols-1 gap-3 sm:grid-cols-2">
-      {% include "site/_soon_items.html" %}
-    </ul>
+  {# 5. What changes. #}
+  <section class="v-section v-cream" aria-labelledby="changes-title">
+    <div class="v-wrap">
+      <div class="v-head">
+        <h2 id="changes-title">{% translate "Ce que ça change pour votre activité." %}</h2>
+        <p class="v-lead">{% translate "Des effets concrets, au quotidien, sur la façon de piloter vos dates." %}</p>
+      </div>
+      <div class="v-grid v-g2">
+        <article class="v-card"><h3>{% translate "Une activité lisible" %}</h3><p>{% translate "Chaque date a un statut clair : option, confirmée, signée. Plus besoin de fouiller dans vos mails et vos tableurs pour savoir où vous en êtes." %}</p><p><span class="v-status v-status--ok">✓ {% translate "Confirmée" %}</span> <span class="v-status v-status--warn">◷ {% translate "Option" %}</span></p></article>
+        <article class="v-card"><h3>{% translate "Des chiffres au clair" %}</h3><p>{% translate "Prévu, facturé et encaissé : trois montants distincts, jamais mélangés. Vous voyez ce qu'il reste après les frais." %}</p></article>
+        <article class="v-card"><h3>{% translate "Moins d'oublis, moins de surprises" %}</h3><p>{% translate "L'accueil vous signale ce qui demande votre attention : réponses d'organisateurs à vérifier, dépenses sans justificatif." %}</p></article>
+        <article class="v-card"><h3>{% translate "Une équipe informée, sans courir" %}</h3><p>{% translate "Feuille de route, horaires, accès, contacts, documents : l'équipe consulte tout dans sa poche. Vous gardez la main sur ce qui est partagé." %}</p></article>
+      </div>
+
+      <div class="v-grid v-g2" style="margin-top:32px;align-items:center">
+        <div class="v-head" style="margin:0">
+          <h3 style="font-size:26px;line-height:32px">{% translate "Un exemple de ce que Radar fera." %}</h3>
+          <p class="v-lead">{% translate "Vous avez 180 € de disponibles et 495 € de frais à payer : Radar vous préviendra qu'il manque 315 € avant que le problème n'arrive." %}</p>
+          <p><span class="v-status v-status--warn">◷ {% translate "En cours de développement" %}</span></p>
+        </div>
+        <div class="v-mock" role="img" aria-label="{% translate 'Aperçu de conception, données fictives : 1 350 € à rapporter, 755 € de frais, 595 € restants, alerte sur des frais à venir' %}">
+          <div class="v-mock-row">
+            <div class="v-kpi v-kpi--night"><span>{% translate "Ce que les concerts doivent rapporter" %}</span><span class="v-data">1 350 €</span></div>
+            <div class="v-kpi v-kpi--accent"><span>{% translate "Frais déjà ajoutés" %}</span><span class="v-data">755 €</span></div>
+            <div class="v-kpi"><span>{% translate "Ce qu'il reste après ces frais" %}</span><span class="v-data">595 €</span></div>
+          </div>
+          <div class="v-alert"><strong>◷ {% translate "Des frais arrivent avant le prochain paiement." %}</strong>{% translate "180 € disponibles pour 495 € à payer. Il manque 315 €." %}</div>
+          <p class="v-small">{% translate "Aperçu de conception · données fictives" %}</p>
+        </div>
+      </div>
+    </div>
   </section>
 
-  {# 7. The last call. #}
-  <section class="site-cta py-14" aria-labelledby="cta-title">
-    <div class="mx-auto max-w-6xl px-4">
-      <h2 id="cta-title" class="text-3xl sm:text-4xl">{% translate "Essayez avec vos prochaines dates." %}</h2>
-      <p class="mt-3 max-w-2xl text-lg">{% translate "Bòrd Pro est ouvert sur invitation pendant la phase de test. Demandez la vôtre : nous revenons vers vous." %}</p>
-      <div class="mt-6 flex flex-wrap gap-3">
-        <a href="{% url 'site-contact' %}" class="btn btn-night">{% translate "Demander une invitation" %}</a>
-        <a href="{% url 'site-features' %}" class="btn btn-secondary">{% translate "Voir les fonctionnalités" %}</a>
+  {# 6. Who it is for. #}
+  <section class="v-section" aria-labelledby="who-title">
+    <div class="v-wrap">
+      <div class="v-head"><h2 id="who-title">{% translate "Pour celles et ceux qui font tout eux-mêmes." %}</h2></div>
+      <div class="v-grid v-g3">
+        <div class="v-card"><h3>{% translate "Artiste solo ou groupe" %}</h3><p>{% translate "Organiser les dates, suivre le budget, préparer la tournée." %}</p></div>
+        <div class="v-card"><h3>{% translate "Petite compagnie" %}</h3><p>{% translate "Centraliser spectacles, documents et informations de production." %}</p></div>
+        <div class="v-card"><h3>{% translate "Bookeur·se indépendant·e" %}</h3><p>{% translate "Suivre contacts, propositions et confirmations." %}</p></div>
+        <div class="v-card"><h3>{% translate "Petite structure de production" %}</h3><p>{% translate "Piloter plusieurs spectacles et préparer l'administratif." %}</p></div>
+        <div class="v-card"><h3>{% translate "Équipe en tournée" %}</h3><p>{% translate "Partager plannings, feuilles de route, documents et contacts." %}</p></div>
+        <div class="v-ocean"><h3>{% translate "Et vous ?" %}</h3><p>{% translate "Demandez une invitation et essayez avec vos prochaines dates." %}</p></div>
+      </div>
+    </div>
+  </section>
+
+  {# 7. What is coming. #}
+  <section class="v-section v-cream" aria-labelledby="soon-title">
+    <div class="v-wrap">
+      <div class="v-head">
+        <h2 id="soon-title">{% translate "Ce qui arrive." %}</h2>
+        <p class="v-lead">{% translate "Ces fonctions sont en cours de développement : elles ne sont pas encore disponibles." %}</p>
+      </div>
+      <ul class="v-grid v-g3 v-list">
+        {% include "site/_soon_items.html" %}
+      </ul>
+    </div>
+  </section>
+
+  {# 8. The last call. #}
+  <section class="v-cta" aria-labelledby="cta-title">
+    <img class="v-gimic" src="{% static 'brand/gimic-nuit.svg' %}" alt="">
+    <div class="v-wrap">
+      <h2 id="cta-title">{% translate "Essayez avec vos prochaines dates." %}</h2>
+      <p>{% translate "Bòrd Pro est ouvert sur invitation pendant la phase de test. Demandez la vôtre : nous revenons vers vous." %}</p>
+      <div class="v-btns">
+        <a href="{% url 'site-contact' %}" class="v-btn v-btn--dark">{% translate "Demander une invitation" %}</a>
+        <a href="{% url 'site-features' %}" class="v-btn v-btn--line">{% translate "Voir les fonctionnalités" %}</a>
       </div>
     </div>
   </section>

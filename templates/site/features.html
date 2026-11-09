@@ -1,146 +1,146 @@
 {% extends "site/base_site.html" %}
-{% load i18n %}
+{% load i18n static %}
 
 {% block title %}Fonctionnalités — Bòrd Pro{% endblock %}
 {% block description %}Dates, contrats de cession, devis et factures, feuille de route, équipe, paiements et dépenses : ce que fait Bòrd Pro, et ce qui arrive.{% endblock %}
 
-{% block main_class %}{% endblock %}
-
 {% block content %}
-  <section class="on-dark bg-blue-700 pb-14 pt-10 md:pb-16 md:pt-14">
-    <div class="mx-auto max-w-6xl px-4">
-      <h1 class="!mb-0 max-w-4xl text-4xl leading-[1.05] sm:text-5xl md:text-6xl">{% translate "Tout votre quotidien de tournée, au même endroit." %}</h1>
-      <div class="site-rule mt-6 h-1 w-[72px]" aria-hidden="true"></div>
-      <p class="mt-6 max-w-2xl text-lg">{% translate "Des espaces connectés pour gérer vos dates, votre budget, vos documents et votre équipe. Voici ce que Bòrd Pro fait aujourd'hui, et ce qui arrive." %}</p>
-      <div class="mt-8"><a href="{% url 'site-contact' %}" class="btn btn-primary">{% translate "Demander une invitation" %}</a></div>
+  <section class="v-hero v-hero--short">
+    <img class="v-gimic" src="{% static 'brand/gimic-accent.svg' %}" alt="">
+    <div class="v-wrap">
+      <div>
+        <h1>{% translate "Tout votre quotidien de tournée, au même endroit." %}</h1>
+        <div class="v-rule" aria-hidden="true"></div>
+        <p class="v-lead">{% translate "Des espaces connectés pour gérer vos dates, votre budget, vos documents et votre équipe. Voici ce que Bòrd Pro fait aujourd'hui, et ce qui arrive." %}</p>
+        <div class="v-btns"><a href="{% url 'site-contact' %}" class="v-btn v-btn--main">{% translate "Demander une invitation" %}</a></div>
+      </div>
     </div>
   </section>
 
   {# What exists today. #}
-  <section class="mx-auto max-w-6xl px-4 py-14" aria-labelledby="spaces-title">
-    <h2 id="spaces-title" class="text-3xl sm:text-4xl">{% translate "Ce que vous pouvez faire aujourd'hui." %}</h2>
-    <div class="mt-8 grid grid-cols-1 gap-4 md:grid-cols-3">
-      <article class="site-highlight md:col-span-2">
-        <h3 class="text-2xl sm:text-3xl">{% translate "Vos dates" %}</h3>
-        <p class="mt-2 text-lg">{% translate "Une fiche par date : spectacle, organisateur, lieu, prix, échéances. Statuts (option, confirmée, signée, annulée), liste et calendrier, historique des prix négociés, export de l'agenda (iCal) et checklist de contractualisation case par case." %}</p>
-      </article>
-      <article class="card">
-        <h3>{% translate "Diffusion" %}</h3>
-        <p class="!text-gray-600">{% translate "Organisateurs, lieux et contacts, avec recherche instantanée, suivi (prospect, négociation, client), import et export CSV." %}</p>
-      </article>
-      <article class="card">
-        <h3>{% translate "Contrats, devis, factures" %}</h3>
-        <p class="!text-gray-600">{% translate "Contrat de cession en PDF à quatre modèles, versions successives, marquage « signé », devis, factures et avoirs numérotés sans trou." %}</p>
-      </article>
-      <article class="card">
-        <h3>{% translate "Budget" %}</h3>
-        <p class="!text-gray-600">{% translate "Paiements reçus, dépenses de chaque date avec justificatif, solde, créances et exports CSV pour votre comptable." %}</p>
-      </article>
-      <article class="card">
-        <h3>{% translate "Équipe" %}</h3>
-        <p class="!text-gray-600">{% translate "Annuaire de l'équipe rattaché aux dates, personnes de la distribution du spectacle ajoutées en un clic." %}</p>
-      </article>
+  <section class="v-section" aria-labelledby="spaces-title">
+    <div class="v-wrap">
+      <div class="v-head"><h2 id="spaces-title">{% translate "Ce que vous pouvez faire aujourd'hui." %}</h2></div>
+      <div class="v-grid v-bento">
+        <article class="v-accent v-big"><span class="v-badge">{% translate "Le cœur" %}</span><h3>{% translate "Vos dates" %}</h3><p>{% translate "Une fiche par date : spectacle, organisateur, lieu, prix, échéances. Statuts (option, confirmée, signée, annulée), liste et calendrier, historique des prix négociés, export de l'agenda (iCal) et checklist de contractualisation case par case." %}</p></article>
+        <article class="v-card"><h3>{% translate "Diffusion" %}</h3><p>{% translate "Organisateurs, lieux et contacts, avec recherche instantanée, suivi (prospect, négociation, client), import et export CSV." %}</p></article>
+        <article class="v-card"><h3>{% translate "Contrats, devis, factures" %}</h3><p>{% translate "Contrat de cession en PDF à quatre modèles, versions successives, marquage « signé », devis, factures et avoirs numérotés sans trou." %}</p></article>
+        <article class="v-card"><h3>{% translate "Budget" %}</h3><p>{% translate "Paiements reçus, dépenses de chaque date avec justificatif, solde, créances et exports CSV pour votre comptable." %}</p></article>
+        <article class="v-card"><h3>{% translate "Équipe" %}</h3><p>{% translate "Annuaire de l'équipe rattaché aux dates, personnes de la distribution du spectacle ajoutées en un clic." %}</p></article>
+        <article class="v-soft v-wide"><h3>{% translate "1 espace" %}</h3><p>{% translate "Pour tous vos spectacles, contacts, dates et documents." %}</p></article>
+      </div>
     </div>
   </section>
 
   {# Planned / actual / cashed. #}
-  <section class="bg-cream py-14" aria-labelledby="budget-title">
-    <div class="mx-auto grid max-w-6xl items-start gap-10 px-4 md:grid-cols-2">
-      <div>
-        <h2 id="budget-title" class="text-3xl sm:text-4xl">{% translate "Budget : prévu, facturé, encaissé." %}</h2>
-        <p class="mt-3 max-w-xl text-lg">{% translate "Trois montants distincts, jamais mélangés, pour savoir où en est chaque date." %}</p>
+  <section class="v-section v-cream" aria-labelledby="budget-title">
+    <div class="v-wrap v-split">
+      <div class="v-head" style="margin:0">
+        <h2 id="budget-title">{% translate "Budget : prévu, facturé, encaissé." %}</h2>
+        <p class="v-lead">{% translate "Trois montants distincts, jamais mélangés, pour savoir où en est chaque date." %}</p>
       </div>
-      <ul class="space-y-3">
-        <li class="card"><span class="data text-sm !text-ocean">{% translate "Prévu" %}</span><p>{% translate "Ce que la date doit rapporter : le prix du contrat." %}</p></li>
-        <li class="card"><span class="data text-sm !text-ocean">{% translate "Facturé" %}</span><p>{% translate "Ce que vos devis et factures émis représentent." %}</p></li>
-        <li class="card"><span class="data text-sm !text-ocean">{% translate "Encaissé" %}</span><p>{% translate "Ce que vous avez réellement reçu." %}</p></li>
+      <ul class="v-steps v-steps--plain" style="list-style:none">
+        <li style="grid-template-columns:120px 1fr"><span class="v-data" style="color:var(--v-ocean);font-size:18px">{% translate "PRÉVU" %}</span><p>{% translate "Ce que la date doit rapporter : le prix du contrat." %}</p></li>
+        <li style="grid-template-columns:120px 1fr"><span class="v-data" style="color:var(--v-ocean);font-size:18px">{% translate "FACTURÉ" %}</span><p>{% translate "Ce que vos devis et factures émis représentent." %}</p></li>
+        <li style="grid-template-columns:120px 1fr"><span class="v-data" style="color:var(--v-ocean);font-size:18px">{% translate "ENCAISSÉ" %}</span><p>{% translate "Ce que vous avez réellement reçu." %}</p></li>
       </ul>
     </div>
   </section>
 
   {# Roadmap: from the form to the shared sheet. #}
-  <section class="mx-auto max-w-6xl px-4 py-14" aria-labelledby="roadmap-title">
-    <h2 id="roadmap-title" class="text-3xl sm:text-4xl">{% translate "Du formulaire à la feuille de route." %}</h2>
-    <p class="mt-3 max-w-2xl text-lg !text-gray-600">{% translate "L'organisateur renseigne les informations pratiques lui-même ; vous vérifiez, puis vous partagez." %}</p>
-    <ol class="mt-8 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-      <li class="card"><span class="data text-sm !text-ocean">{% translate "Étape 1" %}</span><h3>{% translate "Un formulaire en ligne" %}</h3><p class="!text-gray-600">{% translate "Vous envoyez un lien à l'organisateur : horaires, accueil, repas, hébergement, contact sur place. Sans compte." %}</p></li>
-      <li class="card"><span class="data text-sm !text-ocean">{% translate "Étape 2" %}</span><h3>{% translate "Vous vérifiez" %}</h3><p class="!text-gray-600">{% translate "Rien n'est ajouté sans votre accord : vous cochez ce que vous gardez." %}</p></li>
-      <li class="card"><span class="data text-sm !text-ocean">{% translate "Étape 3" %}</span><h3>{% translate "La feuille de route est à jour" %}</h3><p class="!text-gray-600">{% translate "Horaires, contacts, hébergement, repas, carte, notes, documents pour l'équipe." %}</p></li>
-      <li class="card"><span class="data text-sm !text-ocean">{% translate "Étape 4" %}</span><h3>{% translate "Un partage maîtrisé" %}</h3><p class="!text-gray-600">{% translate "Par lien secret, sans compte à créer, en PDF aussi. Le lien se révoque à tout moment." %}</p></li>
-    </ol>
+  <section class="v-section" aria-labelledby="roadmap-title">
+    <div class="v-wrap">
+      <div class="v-head">
+        <h2 id="roadmap-title">{% translate "Du formulaire à la feuille de route." %}</h2>
+        <p class="v-lead">{% translate "L'organisateur renseigne les informations pratiques lui-même ; vous vérifiez, puis vous partagez." %}</p>
+      </div>
+      <ol class="v-grid v-g4 v-list">
+        <li class="v-card"><span class="v-num">{% translate "Étape 1" %}</span><h3>{% translate "Un formulaire en ligne" %}</h3><p>{% translate "Vous envoyez un lien à l'organisateur : horaires, accueil, repas, hébergement, contact sur place. Sans compte." %}</p></li>
+        <li class="v-card"><span class="v-num">{% translate "Étape 2" %}</span><h3>{% translate "Vous vérifiez" %}</h3><p>{% translate "Rien n'est ajouté sans votre accord : vous cochez ce que vous gardez." %}</p></li>
+        <li class="v-card"><span class="v-num">{% translate "Étape 3" %}</span><h3>{% translate "La feuille de route est à jour" %}</h3><p>{% translate "Horaires, contacts, hébergement, repas, carte, notes, documents pour l'équipe." %}</p></li>
+        <li class="v-card"><span class="v-num">{% translate "Étape 4" %}</span><h3>{% translate "Un partage maîtrisé" %}</h3><p>{% translate "Par lien secret, sans compte à créer, en PDF aussi. Le lien se révoque à tout moment." %}</p></li>
+      </ol>
+    </div>
   </section>
 
   {# On the road: the personal space. #}
-  <section class="bg-cream py-14" aria-labelledby="road-title">
-    <div class="mx-auto grid max-w-6xl items-start gap-10 px-4 md:grid-cols-2">
-      <div>
-        <h2 id="road-title" class="text-3xl sm:text-4xl">{% translate "L'essentiel sur la route." %}</h2>
-        <p class="mt-3 max-w-xl text-lg">{% translate "Chaque membre de l'équipe a un lien personnel : il consulte depuis son téléphone ce que vous partagez avec lui, sans créer de compte." %}</p>
+  <section class="v-section v-cream" aria-labelledby="road-title">
+    <div class="v-wrap v-split">
+      <div class="v-head" style="margin:0">
+        <h2 id="road-title">{% translate "L'essentiel sur la route." %}</h2>
+        <p class="v-lead">{% translate "Chaque membre de l'équipe a un lien personnel : il consulte depuis son téléphone ce que vous partagez avec lui, sans créer de compte." %}</p>
       </div>
-      <div class="space-y-3">
-        <ul class="card list-disc space-y-1 pl-9 text-gray-600">
+      <div class="v-grid">
+        <ul class="v-checks">
           <li>{% translate "Ses dates et leurs feuilles de route." %}</li>
           <li>{% translate "Ses documents : un billet, un plan, et le contrat signé si vous choisissez de le montrer." %}</li>
           <li>{% translate "La déclaration de ses dépenses, avec photo du reçu, que vous validez." %}</li>
         </ul>
-        <p class="card text-sm">{% translate "Vous gardez la main : les documents ne s'affichent jamais avec le lien de partage de la feuille de route, seulement dans l'espace de la personne concernée." %}</p>
+        <p class="v-note">{% translate "Vous gardez la main : les documents ne s'affichent jamais avec le lien de partage de la feuille de route, seulement dans l'espace de la personne concernée." %}</p>
       </div>
     </div>
   </section>
 
   {# Payroll preparation. #}
-  <section class="mx-auto max-w-6xl px-4 py-14" aria-labelledby="payroll-title">
-    <h2 id="payroll-title" class="text-3xl sm:text-4xl">{% translate "Une paie mieux préparée." %}</h2>
-    <ol class="mt-8 grid grid-cols-1 gap-4 md:grid-cols-3">
-      <li class="card"><span class="data text-sm !text-ocean">{% translate "Étape 1" %}</span><h3>{% translate "Centralisez" %}</h3><p class="!text-gray-600">{% translate "Les informations de l'équipe et le cachet de chaque personne sur chaque date, visibles de vous seul." %}</p></li>
-      <li class="card"><span class="data text-sm !text-ocean">{% translate "Étape 2" %}</span><h3>{% translate "Exportez" %}</h3><p class="!text-gray-600">{% translate "Un fichier par mois, avec vos informations d'employeur et ce qu'il manque encore." %}</p></li>
-      <li class="card"><span class="data text-sm !text-ocean">{% translate "Étape 3" %}</span><h3>{% translate "Transmettez" %}</h3><p class="!text-gray-600">{% translate "À la personne ou au service chargé de la paie." %}</p></li>
-    </ol>
-    <p class="card card-context mt-5 text-sm">{% translate "Bòrd Pro prépare les informations : il ne calcule pas les bulletins et ne réalise pas les déclarations sociales." %}</p>
+  <section class="v-section" aria-labelledby="payroll-title">
+    <div class="v-wrap">
+      <div class="v-head"><h2 id="payroll-title">{% translate "Une paie mieux préparée." %}</h2></div>
+      <ol class="v-grid v-g3 v-list">
+        <li class="v-card"><span class="v-num">{% translate "Étape 1" %}</span><h3>{% translate "Centralisez" %}</h3><p>{% translate "Les informations de l'équipe et le cachet de chaque personne sur chaque date, visibles de vous seul." %}</p></li>
+        <li class="v-card"><span class="v-num">{% translate "Étape 2" %}</span><h3>{% translate "Exportez" %}</h3><p>{% translate "Un fichier par mois, avec vos informations d'employeur et ce qu'il manque encore." %}</p></li>
+        <li class="v-card"><span class="v-num">{% translate "Étape 3" %}</span><h3>{% translate "Transmettez" %}</h3><p>{% translate "À la personne ou au service chargé de la paie." %}</p></li>
+      </ol>
+      <p class="v-note" style="margin-top:20px">{% translate "Bòrd Pro prépare les informations : il ne calcule pas les bulletins et ne réalise pas les déclarations sociales." %}</p>
+    </div>
   </section>
 
   {# What is coming. #}
-  <section class="bg-cream py-14" aria-labelledby="soon-title">
-    <div class="mx-auto max-w-6xl px-4">
-      <h2 id="soon-title" class="text-3xl sm:text-4xl">{% translate "Ce qui arrive." %}</h2>
-      <p class="mt-3 max-w-2xl text-lg">{% translate "Ces fonctions sont en cours de développement : elles ne sont pas encore disponibles." %}</p>
-      <ul class="mt-6 grid grid-cols-1 gap-3 sm:grid-cols-2">
+  <section class="v-section v-cream" aria-labelledby="soon-title">
+    <div class="v-wrap">
+      <div class="v-head">
+        <h2 id="soon-title">{% translate "Ce qui arrive." %}</h2>
+        <p class="v-lead">{% translate "Ces fonctions sont en cours de développement : elles ne sont pas encore disponibles." %}</p>
+      </div>
+      <ul class="v-grid v-g3 v-list">
         {% include "site/_soon_items.html" %}
       </ul>
     </div>
   </section>
 
   {# A clear perimeter. #}
-  <section class="mx-auto max-w-6xl px-4 py-14" aria-labelledby="scope-title">
-    <h2 id="scope-title" class="text-3xl sm:text-4xl">{% translate "Un périmètre clair." %}</h2>
-    <div class="mt-8 grid grid-cols-1 gap-4 md:grid-cols-2">
-      <article class="card">
-        <h3>{% translate "Ce que Bòrd Pro fait" %}</h3>
-        <ul class="list-disc space-y-1 pl-6 text-gray-600">
-          <li>{% translate "Regroupe vos spectacles, contacts, dates et documents dans un seul espace." %}</li>
-          <li>{% translate "Prépare et exporte les informations utiles à la paie." %}</li>
-          <li>{% translate "Sépare ce que vous partagez de votre espace de gestion." %}</li>
-          <li>{% translate "Garde les données de chaque structure à part, hébergées en France." %}</li>
-          <li>{% translate "Exporte vos données et supprime votre compte sur demande." %}</li>
-        </ul>
-      </article>
-      <article class="card">
-        <h3>{% translate "Ce qu'il ne fait pas" %}</h3>
-        <ul class="list-disc space-y-1 pl-6 text-gray-600">
-          <li>{% translate "Ne calcule pas les bulletins ni les déclarations sociales." %}</li>
-          <li>{% translate "N'envoie pas de relance automatique et ne se connecte pas à votre boîte mail." %}</li>
-          <li>{% translate "Ne gère ni la billetterie ni les droits d'auteur." %}</li>
-          <li>{% translate "Ne remplace pas un conseil juridique, social ou comptable." %}</li>
-        </ul>
-      </article>
+  <section class="v-section v-night" aria-labelledby="scope-title">
+    <div class="v-wrap">
+      <div class="v-head"><h2 id="scope-title">{% translate "Un périmètre clair." %}</h2></div>
+      <div class="v-grid v-g2">
+        <article class="v-ocean">
+          <h3>{% translate "Ce que Bòrd Pro fait" %}</h3>
+          <ul class="v-checks">
+            <li>{% translate "Regroupe vos spectacles, contacts, dates et documents dans un seul espace." %}</li>
+            <li>{% translate "Prépare et exporte les informations utiles à la paie." %}</li>
+            <li>{% translate "Sépare ce que vous partagez de votre espace de gestion." %}</li>
+            <li>{% translate "Garde les données de chaque structure à part, hébergées en France." %}</li>
+            <li>{% translate "Exporte vos données et supprime votre compte sur demande." %}</li>
+          </ul>
+        </article>
+        <article class="v-soft">
+          <h3>{% translate "Ce qu'il ne fait pas" %}</h3>
+          <ul class="v-checks v-checks--no">
+            <li>{% translate "Ne calcule pas les bulletins ni les déclarations sociales." %}</li>
+            <li>{% translate "N'envoie pas de relance automatique et ne se connecte pas à votre boîte mail." %}</li>
+            <li>{% translate "Ne gère ni la billetterie ni les droits d'auteur." %}</li>
+            <li>{% translate "Ne remplace pas un conseil juridique, social ou comptable." %}</li>
+          </ul>
+        </article>
+      </div>
     </div>
   </section>
 
-  <section class="site-cta py-14" aria-labelledby="cta-title">
-    <div class="mx-auto max-w-6xl px-4">
-      <h2 id="cta-title" class="text-3xl sm:text-4xl">{% translate "Prêt à tout regrouper ?" %}</h2>
-      <p class="mt-3 max-w-2xl text-lg">{% translate "Bòrd Pro est ouvert sur invitation pendant la phase de test. Demandez la vôtre : nous revenons vers vous." %}</p>
-      <div class="mt-6"><a href="{% url 'site-contact' %}" class="btn btn-night">{% translate "Demander une invitation" %}</a></div>
+  <section class="v-cta" aria-labelledby="cta-title">
+    <img class="v-gimic" src="{% static 'brand/gimic-nuit.svg' %}" alt="">
+    <div class="v-wrap">
+      <h2 id="cta-title">{% translate "Prêt à tout regrouper ?" %}</h2>
+      <p>{% translate "Bòrd Pro est ouvert sur invitation pendant la phase de test. Demandez la vôtre : nous revenons vers vous." %}</p>
+      <div class="v-btns"><a href="{% url 'site-contact' %}" class="v-btn v-btn--dark">{% translate "Demander une invitation" %}</a></div>
     </div>
   </section>
 {% endblock %}

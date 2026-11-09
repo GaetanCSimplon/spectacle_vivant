@@ -4,9 +4,11 @@
 {% block title %}Message envoyé — Bòrd Pro{% endblock %}
 
 {% block content %}
-  <div class="max-w-2xl">
-    <h1>{% translate "Message envoyé" %}</h1>
-    <p class="message message-success" role="status">{% translate "Merci, nous vous répondons rapidement." %}</p>
-    <p class="mt-6"><a href="{% url 'home' %}" class="btn btn-secondary">{% translate "Retour à l'accueil" %}</a></p>
-  </div>
+  <section class="v-section">
+    <div class="v-wrap">
+      <h1>{% translate "Message envoyé" %}</h1>
+      <p class="v-note" role="status" style="margin-top:20px">{% translate "Merci, nous vous répondons rapidement." %}</p>
+      <div class="v-btns"><a href="{% url 'home' %}" class="v-btn v-btn--line">{% translate "Retour à l'accueil" %}</a></div>
+    </div>
+  </section>
 {% endblock %}
