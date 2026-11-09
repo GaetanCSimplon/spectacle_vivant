@@ -77,6 +77,7 @@ TEMPLATES = [
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
                 "apps.tenants.context_processors.pending_deletion",
+                "apps.gigs.context_processors.gig_navigation",
                 "apps.accounts.context_processors.signup_policy",
             ],
         },

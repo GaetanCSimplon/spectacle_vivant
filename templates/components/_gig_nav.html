@@ -1,0 +1,10 @@
+{% load i18n static %}{% comment %}Menu of the open date, under "Mes dates": its four volets (name + icon), each leading to its card
+on the date page. Needs: gig_nav (context processor), link_class. The active volet is aria-current="true".{% endcomment %}
+<div class="ml-3 border-l border-current/30 pl-2" role="group" aria-label="{% translate 'Menu de la date' %}">
+  <a href="{% url 'gigs:detail' gig_nav.gig.pk %}" class="block truncate px-3 py-1 text-xs font-semibold uppercase opacity-80 hover:underline" title="{{ gig_nav.gig.show.title }} — {{ gig_nav.gig.date|date:'d/m/Y' }}">{{ gig_nav.gig.show.title }} · {{ gig_nav.gig.date|date:"d/m" }}</a>
+  {% for volet in gig_nav.volets %}
+    <a href="{{ volet.url }}" class="{{ link_class }} gap-2" {% if volet.active %}aria-current="true"{% endif %}>
+      <img src="{% static 'brand/volet-'|add:volet.key|add:'.svg' %}" alt="" aria-hidden="true" width="32" height="32" class="size-8 shrink-0">{{ volet.label }}
+    </a>
+  {% endfor %}
+</div>
