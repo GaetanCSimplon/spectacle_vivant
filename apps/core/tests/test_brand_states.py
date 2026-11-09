@@ -202,9 +202,11 @@ def test_the_dashboard_summaries_are_colour_blocks_with_readable_text():
     css = (ROOT / "css/source.css").read_text()
     results = (TEMPLATES / "tenants/_bord_results.html").read_text()
 
-    for block in ("card-navy", "card-info", "card-cream", "card-accent"):
+    for block in ("card-navy", "card-ocean", "card-regie", "card-accent"):
         assert f".{block} {{" in css
         assert block in results
+    for block in ("card-info", "card-cream"):
+        assert f".{block} {{" in css
     unlayered = css.split("\n}\n\n/*\n * Outside any layer")[1]
     assert ".text-stone-600" in unlayered and "color: inherit" in unlayered
 
