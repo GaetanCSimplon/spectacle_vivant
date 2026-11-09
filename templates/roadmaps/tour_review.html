@@ -5,6 +5,7 @@
 
 {% block page_content %}
   <h1 class="mb-1">{% translate "Informations reçues de l'organisateur" %}</h1>
+  <p class="mb-3">{% include "components/_volet_chip.html" with volet="regie" %}</p>
   <p class="mb-4 text-sm text-gray-600">
     {% blocktranslate with show=gig.show.title date=gig.date|date:"d/m/Y" answered=answered_on|date:"d/m/Y" %}{{ show }}, le {{ date }}. Réponse reçue le {{ answered }}. Rien n'est ajouté à la feuille de route tant que vous n'avez pas validé : cochez ce que vous gardez.{% endblocktranslate %}
   </p>

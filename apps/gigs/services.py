@@ -288,3 +288,44 @@ def update_terms(gig, deposit_due_on, balance_due_on, payment_method):
     gig.balance_due_on = balance_due_on
     gig.payment_method = payment_method
     return gig
+
+
+def date_progress(gig):
+    """The four volets of a date and whether each is done (charter v1.3: C, B, S, R).
+
+    Contrats: the contract is signed. Budget: at least one invoice was issued and none is left
+    unpaid. Social: at least one person of the team is on the date. Régie: the roadmap is shared.
+    """
+    contract = Contract.objects.filter(gig=gig, tenant=gig.tenant).first()
+    invoices = (
+        Invoice.objects.filter(gig=gig, tenant=gig.tenant)
+        .exclude(status__in=[Invoice.Status.DRAFT, Invoice.Status.CANCELLED])
+        .exclude(kind=Invoice.Kind.CREDIT_NOTE)
+    )
+    roadmap = Roadmap.objects.filter(gig=gig, tenant=gig.tenant).first()
+    return [
+        {
+            "key": "contrats",
+            "letter": "C",
+            "label": _("Contrats"),
+            "done": bool(contract and contract.status == Contract.Status.SIGNED),
+        },
+        {
+            "key": "budget",
+            "letter": "B",
+            "label": _("Budget"),
+            "done": invoices.exists() and not invoices.exclude(status=Invoice.Status.PAID).exists(),
+        },
+        {
+            "key": "social",
+            "letter": "S",
+            "label": _("Social"),
+            "done": gig.members.filter(person__isnull=False).exists(),
+        },
+        {
+            "key": "regie",
+            "letter": "R",
+            "label": _("Régie"),
+            "done": bool(roadmap and roadmap.is_published),
+        },
+    ]

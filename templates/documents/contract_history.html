@@ -5,6 +5,7 @@
 
 {% block page_content %}
   <h1 class="mb-1">{% translate "Contrat de cession" %}</h1>
+  <p class="mb-3">{% include "components/_volet_chip.html" with volet="contrats" %}</p>
   <p class="mb-6 text-sm text-gray-600">
     {{ gig.show.title }} — {{ gig.date|date:"d/m/Y" }}
     {% if contract.reference %}· {{ contract.reference }}{% endif %}

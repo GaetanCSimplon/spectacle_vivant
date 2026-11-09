@@ -7,6 +7,7 @@
 {% block page_content %}
   <h1 class="mb-2">{% translate "Bòrd" %}</h1>
   {% include "tenants/_tabs.html" with active="social" %}
+  <p class="mb-3">{% include "components/_volet_chip.html" with volet="social" %}</p>
 
   <p class="mb-4 text-sm text-gray-600">{% translate "Les personnes de votre équipe présentes sur vos dates du mois, avec leurs cachets, à transmettre à la personne qui fait la paie. Bòrd Pro prépare ces informations : il ne calcule ni les bulletins ni les déclarations sociales." %}</p>
 
