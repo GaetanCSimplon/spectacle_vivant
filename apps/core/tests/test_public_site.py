@@ -197,7 +197,7 @@ def test_the_name_is_spelled_as_the_charter_says_and_the_official_logo_is_used(c
     content = client.get(reverse(name)).content.decode()
 
     assert "BÒRD PRO" not in content and "Bord Pro" not in content
-    assert "brand/logo-capsule.svg" in content  # navy header: the capsule logo (charter 5)
+    assert "brand/logo-white.svg" in content  # navy header: the white logo (charter 5)
 
 
 def test_the_home_has_one_h1_that_is_the_slogan_and_labelled_sections(client):
