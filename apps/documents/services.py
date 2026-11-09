@@ -165,6 +165,36 @@ def generate_contract_pdf(gig, user=None, template=None):
             tenant=gig.tenant, contract=contract, number=number, created_by=user, template=template
         )
         version.pdf_file.save(f"{contract.reference}-v{number}.pdf", ContentFile(pdf_bytes))
+        # The version that was sent is no longer the latest one.
+        if contract.sent_at:
+            contract.sent_at = None
+            contract.save(update_fields=["sent_at"])
+    return contract
+
+
+def mark_contract_sent(gig):
+    """Record that the latest version was sent to the promoter (the app sends nothing itself)."""
+    with transaction.atomic():
+        contract = Contract.objects.select_for_update().filter(gig=gig, tenant=gig.tenant).first()
+        if contract is None or contract.latest_version is None:
+            raise ContractSigningError(_("Générez d'abord le contrat avant de le marquer envoyé."))
+        if contract.status == Contract.Status.SIGNED:
+            raise ContractSigningError(_("Ce contrat est signé : il est déjà envoyé."))
+        contract.sent_at = timezone.now()
+        contract.save(update_fields=["sent_at"])
+    return contract
+
+
+def unmark_contract_sent(gig):
+    """Take the "sent" mark back (a mistaken click). A signed contract keeps it."""
+    with transaction.atomic():
+        contract = Contract.objects.select_for_update().filter(gig=gig, tenant=gig.tenant).first()
+        if contract is None:
+            raise ContractSigningError(_("Contrat introuvable."))
+        if contract.status == Contract.Status.SIGNED:
+            raise ContractSigningError(_("Ce contrat est signé : il ne peut plus être modifié."))
+        contract.sent_at = None
+        contract.save(update_fields=["sent_at"])
     return contract
 
 

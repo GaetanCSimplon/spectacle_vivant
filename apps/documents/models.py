@@ -46,6 +46,8 @@ class Contract(TenantOwnedModel):
     signatory_name = models.CharField(_("nom du signataire"), max_length=255, blank=True)
     signatory_role = models.CharField(_("qualité du signataire"), max_length=255, blank=True)
     reference = models.CharField(_("référence"), max_length=20, blank=True)
+    # Set by hand ("Marquer comme envoyé"); cleared when a new version is generated.
+    sent_at = models.DateTimeField(_("envoyé le"), null=True, blank=True)
     signed_at = models.DateTimeField(_("signé le"), null=True, blank=True)
     # The version frozen when the contract was signed (RG-08); it can never be deleted.
     signed_version = models.ForeignKey(

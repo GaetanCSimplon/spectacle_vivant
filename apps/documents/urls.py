@@ -17,7 +17,20 @@ class DocTypeConverter:
         return value
 
 
+class SentActionConverter:
+    """`envoye` (mark as sent) or `non-envoye` (take it back) in a URL."""
+
+    regex = "envoye|non-envoye"
+
+    def to_python(self, value):
+        return value
+
+    def to_url(self, value):
+        return value
+
+
 register_converter(DocTypeConverter, "doctype")
+register_converter(SentActionConverter, "sentaction")
 
 urlpatterns = [
     path("contrat/completer/", views.ContractCompleteView.as_view(), name="contract-complete"),
@@ -25,6 +38,11 @@ urlpatterns = [
     path("contrat/versions/", views.ContractHistoryView.as_view(), name="contract-history"),
     path("contrat/signer/", views.ContractSignView.as_view(), name="contract-sign"),
     path("contrat/pdf-signe/", views.ContractSignedPdfView.as_view(), name="contract-signed-pdf"),
+    path(
+        "contrat/<sentaction:action>/",
+        views.ContractSentView.as_view(),
+        name="contract-sent",
+    ),
     path("contrat/generer/", views.ContractGenerateView.as_view(), name="contract-generate"),
     path("contrat/telecharger/", views.ContractDownloadView.as_view(), name="contract-download"),
     path(
