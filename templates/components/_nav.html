@@ -19,6 +19,7 @@
     class="{{ link_class }} {% if ns == 'gigs' or ns == 'documents' %}{{ active_class }}{% endif %}"
     {% if ns == 'gigs' or ns == 'documents' %}aria-current="page"{% endif %}
   >{% if puce %}{% include "components/_gimic_puce.html" %}{% endif %}{% translate "Mes dates" %}</a>
+  {% if gig_nav %}{% include "components/_gig_nav.html" %}{% endif %}
   <a
     href="{% url 'document-library' %}"
     class="{{ link_class }} {% if view == 'document-library' %}{{ active_class }}{% endif %}"

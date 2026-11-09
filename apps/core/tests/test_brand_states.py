@@ -240,7 +240,7 @@ def test_the_desktop_navigation_is_navy_with_the_white_logo_and_a_coral_current_
 
     assert "brand/logo-white.svg" in sidebar and "brand/logo.svg" not in sidebar
     assert "bg-white" not in sidebar.split("<nav")[0]
-    block = css.split('.sidebar .nav-link[aria-current="page"] {')[1].split("}")[0]
+    block = css.split('.sidebar .nav-link[aria-current="true"] {')[1].split("}")[0]
     assert "var(--bord-brand-coral)" in block
     assert "brand/logo.svg" in content.split("</aside>")[1]  # the top bar stays white
 
