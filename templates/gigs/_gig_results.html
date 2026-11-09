@@ -1,12 +1,9 @@
 {% load i18n %}
 {% comment %}The lists under the filters. Swapped alone by HTMX when a filter changes.{% endcomment %}
 {% if not has_any_gig %}
-  <div class="card">
-    <p>{% translate "Vous n'avez pas encore de date. Créez la première !" %}</p>
-    <a href="{% url 'gigs:wizard-show' %}" class="btn btn-secondary mt-4">
-      {% translate "+ Nouvelle date" %}
-    </a>
-  </div>
+  {% translate "Aucune date." as empty_title %}{% translate "Vous n'avez pas encore de date. Créez la première !" as empty_text %}{% translate "+ Nouvelle date" as empty_action %}
+  {% url 'gigs:wizard-show' as wizard_url %}
+  {% include "components/_empty_state.html" with title=empty_title text=empty_text action_url=wizard_url action_label=empty_action %}
 {% elif not object_list %}
   <div class="card">
     <p>{% translate "Aucune date ne correspond à ces filtres." %}</p>

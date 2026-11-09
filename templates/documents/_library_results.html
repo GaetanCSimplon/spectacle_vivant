@@ -1,16 +1,17 @@
 {% load i18n %}
 {% comment %}The list under the filters. Swapped alone by HTMX when a filter changes.{% endcomment %}
 {% if not documents %}
-  <div class="card">
-    {% if filtered %}
+  {% if filtered %}
+    <div class="card">
       <p>{% translate "Aucun document ne correspond à ces filtres." %}</p>
       <a href="{% url 'document-library' %}" class="mt-2 inline-block text-sm text-blue-700 underline">
         {% translate "Réinitialiser les filtres" %}
       </a>
-    {% else %}
-      <p>{% translate "Aucun document émis pour le moment. Les devis, factures et avoirs émis et les contrats signés apparaîtront ici." %}</p>
-    {% endif %}
-  </div>
+    </div>
+  {% else %}
+    {% translate "Aucun document émis." as empty_title %}{% translate "Aucun document émis pour le moment. Les devis, factures et avoirs émis et les contrats signés apparaîtront ici." as empty_text %}
+    {% include "components/_empty_state.html" with title=empty_title text=empty_text %}
+  {% endif %}
 {% else %}
   <p class="mb-2 text-sm text-gray-600">
     {% blocktranslate count counter=documents|length %}{{ counter }} document{% plural %}{{ counter }} documents{% endblocktranslate %}

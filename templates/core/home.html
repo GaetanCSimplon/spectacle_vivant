@@ -109,10 +109,8 @@
         </section>
       </div>
     {% else %}
-      <div class="card">
-        <p class="font-heading text-xl font-medium text-blue-700">{% translate "Prenez le contrôle de votre tournée." %}</p>
-        <p class="mt-1 text-sm text-gray-600">{% translate "Vous n'avez pas encore de date. Créez la première pour commencer." %}</p>
-      </div>
+      {% translate "Prenez le contrôle de votre tournée." as empty_title %}{% translate "Vous n'avez pas encore de date. Créez la première pour commencer." as empty_text %}
+      {% include "components/_empty_state.html" with title=empty_title text=empty_text %}
     {% endif %}
   {% else %}
     <p>{% translate "Aucune structure associée à ce compte pour l'instant." %}</p>

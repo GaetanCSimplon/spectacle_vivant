@@ -1,0 +1,12 @@
+{% load static %}{% comment %}
+  Charter v1.3: an empty state is a calm navy gimic, a short title, one sentence and (optionally) one
+  action. Parameters: title, text, action_url, action_label. The gimic is decorative.
+{% endcomment %}
+<div class="card flex flex-col items-start gap-3 sm:flex-row sm:items-center sm:gap-6">
+  <img src="{% static 'brand/gimic-nuit.svg' %}" alt="" aria-hidden="true" width="64" height="64" class="h-16 w-16 shrink-0 object-contain">
+  <div>
+    <p class="font-heading text-xl font-extrabold text-blue-700">{{ title }}</p>
+    <p class="mt-1 text-sm text-gray-600">{{ text }}</p>
+    {% if action_url %}<a href="{{ action_url }}" class="btn btn-secondary mt-4">{{ action_label }}</a>{% endif %}
+  </div>
+</div>

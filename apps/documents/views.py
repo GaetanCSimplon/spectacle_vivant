@@ -116,7 +116,11 @@ class ContractSignView(TenantScopedMixin, View):
             services.mark_contract_signed(self.gig, form.cleaned_data["signed_pdf"])
         except services.ContractSigningError as error:
             return self.refuse(error.args[0])
-        messages.success(request, _("Le contrat est marqué signé : son PDF est figé."))
+        messages.success(
+            request,
+            _("Le contrat est marqué signé : son PDF est figé."),
+            extra_tags="moment-signed",
+        )
         return redirect("documents:contract-history", gig_id=self.gig.pk)
 
 
