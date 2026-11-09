@@ -1,0 +1,19 @@
+{% load i18n %}{% comment %}The latest actions on a date, rebuilt from stored dates. Needs: history.{% endcomment %}
+<section class="card mb-6" aria-labelledby="gig-history">
+  <h2 id="gig-history" class="stat-label !text-xs !font-semibold">{% translate "Dernières actions" %}</h2>
+  {% if history %}
+    <table class="mt-2 w-full text-left text-sm">
+      <thead class="sr-only"><tr><th scope="col">{% translate "Date" %}</th><th scope="col">{% translate "Action" %}</th></tr></thead>
+      <tbody class="divide-y divide-page-line">
+        {% for event in history %}
+          <tr>
+            <td class="data w-28 whitespace-nowrap py-1.5 pr-3 text-stone-600">{{ event.day|date:"d/m/Y" }}</td>
+            <td class="py-1.5"><a href="{{ event.url }}" class="text-blue-700 underline">{{ event.text }}</a></td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  {% else %}
+    <p class="mt-2 text-sm text-stone-600">{% translate "Aucune action enregistrée pour l'instant." %}</p>
+  {% endif %}
+</section>

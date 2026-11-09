@@ -6,6 +6,7 @@ from decimal import Decimal, InvalidOperation
 from django.db import transaction
 from django.db.models import BooleanField, Exists, ExpressionWrapper, OuterRef, Q
 from django.shortcuts import get_object_or_404
+from django.urls import reverse
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 
@@ -290,42 +291,185 @@ def update_terms(gig, deposit_due_on, balance_due_on, payment_method):
     return gig
 
 
-def date_progress(gig):
-    """The four volets of a date and whether each is done (charter v1.3: C, B, S, R).
+def _volet(key, letter, label, steps):
+    """A volet with its steps [(label, done, url, todo)]; it is done when every step is.
 
-    Contrats: the contract is signed. Budget: at least one invoice was issued and none is left
-    unpaid. Social: at least one person of the team is on the date. Régie: the roadmap is shared.
+    `todo` is the same step as an instruction, offered as the next action while it is not done.
+    """
+    done_count = sum(1 for _label, done, _url, _todo in steps if done)
+    return {
+        "key": key,
+        "letter": letter,
+        "label": label,
+        "steps": [
+            {"label": lab, "done": done, "url": url, "todo": todo} for lab, done, url, todo in steps
+        ],
+        "done_count": done_count,
+        "total": len(steps),
+        "percent": round(100 * done_count / len(steps)),
+        "done": done_count == len(steps),
+    }
+
+
+def date_progress(gig):
+    """The four volets of a date, each with its steps (charter v1.3: C, B, S, R).
+
+    Contrats: generated, sent, signed. Budget: an invoice issued, then every invoice paid.
+    Social: someone from the team is on the date. Régie: the roadmap has slots, then is shared.
     """
     contract = Contract.objects.filter(gig=gig, tenant=gig.tenant).first()
+    signed = bool(contract and contract.status == Contract.Status.SIGNED)
     invoices = (
         Invoice.objects.filter(gig=gig, tenant=gig.tenant)
         .exclude(status__in=[Invoice.Status.DRAFT, Invoice.Status.CANCELLED])
         .exclude(kind=Invoice.Kind.CREDIT_NOTE)
     )
     roadmap = Roadmap.objects.filter(gig=gig, tenant=gig.tenant).first()
+    contract_url = reverse("documents:contract-history", args=[gig.pk])
+    billing_url = reverse("documents:billing", args=[gig.pk])
+    roadmap_url = reverse("roadmaps:editor", args=[gig.pk])
     return [
-        {
-            "key": "contrats",
-            "letter": "C",
-            "label": _("Contrats"),
-            "done": bool(contract and contract.status == Contract.Status.SIGNED),
-        },
-        {
-            "key": "budget",
-            "letter": "B",
-            "label": _("Budget"),
-            "done": invoices.exists() and not invoices.exclude(status=Invoice.Status.PAID).exists(),
-        },
-        {
-            "key": "social",
-            "letter": "S",
-            "label": _("Social"),
-            "done": gig.members.filter(person__isnull=False).exists(),
-        },
-        {
-            "key": "regie",
-            "letter": "R",
-            "label": _("Régie"),
-            "done": bool(roadmap and roadmap.is_published),
-        },
+        _volet(
+            "contrats",
+            "C",
+            _("Contrats"),
+            [
+                (
+                    _("Contrat généré"),
+                    bool(contract and contract.latest_version),
+                    contract_url,
+                    _("Générer le contrat"),
+                ),
+                (
+                    _("Contrat envoyé"),
+                    bool(contract and (contract.sent_at or signed)),
+                    contract_url,
+                    _("Marquer le contrat comme envoyé"),
+                ),
+                (_("Contrat signé"), signed, contract_url, _("Faire signer le contrat")),
+            ],
+        ),
+        _volet(
+            "budget",
+            "B",
+            _("Budget"),
+            [
+                (_("Facture émise"), invoices.exists(), billing_url, _("Émettre la facture")),
+                (
+                    _("Factures payées"),
+                    invoices.exists() and not invoices.exclude(status=Invoice.Status.PAID).exists(),
+                    reverse("finance:page", args=[gig.pk]),
+                    _("Enregistrer les paiements"),
+                ),
+            ],
+        ),
+        _volet(
+            "social",
+            "S",
+            _("Social"),
+            [
+                (
+                    _("Équipe ajoutée"),
+                    gig.members.filter(person__isnull=False).exists(),
+                    reverse("gigs:detail", args=[gig.pk]) + "#equipe",
+                    _("Ajouter l'équipe"),
+                )
+            ],
+        ),
+        _volet(
+            "regie",
+            "R",
+            _("Régie"),
+            [
+                (
+                    _("Feuille de route remplie"),
+                    bool(roadmap and roadmap.slots.exists()),
+                    roadmap_url,
+                    _("Remplir la feuille de route"),
+                ),
+                (
+                    _("Feuille de route partagée"),
+                    bool(roadmap and roadmap.is_published),
+                    roadmap_url,
+                    _("Partager la feuille de route"),
+                ),
+            ],
+        ),
     ]
+
+
+def overall_progress(progress):
+    """Share of all the steps done, over the four volets (each volet weighs a quarter)."""
+    return round(sum(volet["percent"] for volet in progress) / len(progress))
+
+
+def next_step(gig, progress):
+    """The first step still to do, for a date that can move forward (confirmed or signed)."""
+    if gig.status not in (Gig.Status.CONFIRMED, Gig.Status.SIGNED):
+        return None
+    for volet in progress:
+        for step in volet["steps"]:
+            if not step["done"]:
+                return {"volet": volet, **step}
+    return None
+
+
+def gig_history(gig, limit=8):
+    """The latest things done on a date, rebuilt from the dates already stored (no journal).
+
+    Only what carries a date appears: price set or changed, contract generated, sent and signed,
+    quotes and invoices issued, payments, expenses, roadmap updated. Newest first.
+    """
+    from apps.finance.models import Payment  # noqa: PLC0415 (finance imports gigs)
+
+    events = []
+
+    def add(day, text, url, rank=0):
+        if isinstance(day, datetime.datetime):
+            day = timezone.localtime(day).date() if timezone.is_aware(day) else day.date()
+        events.append((day, rank, text, url))
+
+    detail_url = reverse("gigs:detail", args=[gig.pk])
+    contract_url = reverse("documents:contract-history", args=[gig.pk])
+    billing_url = reverse("documents:billing", args=[gig.pk])
+    finance_url = reverse("finance:page", args=[gig.pk])
+    tenant = gig.tenant
+
+    for change in PriceChange.objects.filter(gig=gig, tenant=tenant):
+        if change.old_price is None:
+            add(change.changed_at, _("Date créée"), detail_url)
+        else:
+            add(change.changed_at, _("Prix modifié"), detail_url)
+    contract = Contract.objects.filter(gig=gig, tenant=tenant).first()
+    if contract:
+        for version in contract.versions.all():
+            text = _("Contrat généré (version %(n)s)") % {"n": version.number}
+            add(version.created_at, text, contract_url)
+        if contract.sent_at:
+            add(contract.sent_at, _("Contrat envoyé à l'organisateur"), contract_url, rank=1)
+        if contract.signed_at:
+            add(contract.signed_at, _("Contrat signé"), contract_url, rank=2)
+    for quote in Quote.objects.filter(gig=gig, tenant=tenant, issue_date__isnull=False):
+        add(quote.issue_date, _("Devis %(n)s émis") % {"n": quote.number}, billing_url)
+    for invoice in Invoice.objects.filter(gig=gig, tenant=tenant, issue_date__isnull=False):
+        kind = _("Avoir") if invoice.kind == Invoice.Kind.CREDIT_NOTE else _("Facture")
+        add(
+            invoice.issue_date,
+            _("%(kind)s %(n)s émis(e)") % {"kind": kind, "n": invoice.number},
+            billing_url,
+        )
+    for payment in Payment.objects.filter(invoice__gig=gig, tenant=tenant):
+        amount = f"{payment.amount:.2f}".replace(".", ",")
+        add(payment.date, _("Paiement reçu : %(amount)s €") % {"amount": amount}, finance_url)
+    for expense in Expense.objects.filter(gig=gig, tenant=tenant):
+        add(expense.date, _("Dépense ajoutée : %(label)s") % {"label": expense.label}, finance_url)
+    roadmap = Roadmap.objects.filter(gig=gig, tenant=tenant).first()
+    if roadmap and roadmap.updated_at:
+        add(
+            roadmap.updated_at,
+            _("Feuille de route mise à jour"),
+            reverse("roadmaps:editor", args=[gig.pk]),
+        )
+
+    events.sort(key=lambda event: (event[0], event[1]), reverse=True)
+    return [{"day": day, "text": text, "url": url} for day, _rank, text, url in events[:limit]]

@@ -1,5 +1,6 @@
 """Charter v1.3: the four volets C/B/S/R, each with its colour AND its name or letter."""
 
+import datetime
 import re
 from pathlib import Path
 
@@ -10,7 +11,7 @@ from apps.documents.services import generate_contract_pdf, mark_contract_signed
 from apps.gigs import services as gig_services
 from apps.gigs.factories import GigFactory
 from apps.gigs.models import Gig, GigMember
-from apps.roadmaps.models import Roadmap
+from apps.roadmaps.models import Roadmap, RoadmapSlot
 from apps.tenants.factories import MembershipFactory, PersonFactory
 
 pytestmark = pytest.mark.django_db
@@ -55,7 +56,10 @@ def test_each_volet_is_done_by_its_own_event():
     generate_contract_pdf(gig)
     mark_contract_signed(gig)
     GigMember.objects.create(tenant=gig.tenant, gig=gig, person=PersonFactory(tenant=gig.tenant))
-    Roadmap.objects.create(tenant=gig.tenant, gig=gig, is_published=True, token="t" * 20)
+    roadmap = Roadmap.objects.create(tenant=gig.tenant, gig=gig, is_published=True, token="t" * 20)
+    RoadmapSlot.objects.create(
+        tenant=gig.tenant, roadmap=roadmap, time=datetime.time(18, 0), label="Concert"
+    )
 
     assert _steps(gig) == {"contrats": True, "budget": False, "social": True, "regie": True}
 
@@ -63,14 +67,13 @@ def test_each_volet_is_done_by_its_own_event():
 def test_the_date_page_shows_the_four_letters_with_a_text_for_each(client):
     membership = MembershipFactory()
     client.force_login(membership.user)
-    gig = GigFactory(tenant=membership.tenant)
+    gig = GigFactory(tenant=membership.tenant, status=Gig.Status.CONFIRMED)
 
     content = client.get(reverse("gigs:detail", args=[gig.pk])).content.decode()
 
-    for letter in "CBSR":
-        assert f'aria-hidden="true">{letter}</span>' in content
-    assert "Contrats : à faire" in content and "Régie : à faire" in content
-    assert "volet-todo" in content
+    for letter, name in (("C", "Contrats"), ("B", "Budget"), ("S", "Social"), ("R", "Régie")):
+        assert f"{letter} · {name}" in content
+        assert f"{name} : 0 étape(s) sur" in content
 
 
 @pytest.mark.parametrize(
@@ -92,19 +95,18 @@ def test_a_volet_page_carries_its_chip_with_the_name(client, route, volet, name)
     assert re.search(rf'class="volet-chip volet-{volet}"[^>]*>.*?{name}', content, flags=re.S)
 
 
-def test_a_done_volet_shows_its_icon_and_a_volet_to_do_its_dashed_letter(client):
+def test_every_volet_card_shows_its_icon_and_the_state_of_each_step(client):
     membership = MembershipFactory()
     client.force_login(membership.user)
     gig = GigFactory(tenant=membership.tenant, status=Gig.Status.CONFIRMED)
     generate_contract_pdf(gig)
-    mark_contract_signed(gig)
 
     content = client.get(reverse("gigs:detail", args=[gig.pk])).content.decode()
 
-    assert "brand/volet-contrats.svg" in content
-    assert "brand/volet-budget.svg" not in content
-    assert "Contrats : fait" in content and "Budget : à faire" in content
-    assert content.count("volet-todo") == 3
+    for name in ("contrats", "budget", "social", "regie"):
+        assert f"brand/volet-{name}.svg" in content
+    assert "Contrat généré" in content and "Contrat signé" in content
+    assert "fait" in content and "à faire" in content
 
 
 def test_the_four_volet_icons_are_flat_svgs():

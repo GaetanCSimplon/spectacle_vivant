@@ -10,151 +10,137 @@
       <h1>{{ gig.show.title }}</h1>
       <p class="text-sm text-gray-600">{{ gig.date|date:"l j F Y" }}</p>
     </div>
-    <div class="flex flex-col items-end gap-2">
-      {% include "gigs/_status_badge.html" %}
-      {% include "gigs/_volet_progress.html" %}
-    </div>
+    {% include "gigs/_status_badge.html" %}
   </div>
 
   {% include "gigs/_checklist_button.html" %}
   <div id="checklist-modal"></div>
 
-  {# From lg: the date itself and what to do next on the left, the money and the documents on the right. #}
-  <div class="lg:grid lg:grid-cols-2 lg:items-start lg:gap-x-8">
-  <div class="min-w-0">
-  <h2 class="mb-2 text-sm font-semibold uppercase text-gray-500">{% translate "La date" %}</h2>
-  <div class="card mb-6 space-y-1 text-sm">
-    <p>
-      {% translate "Organisateur" %} :
-      <a href="{% url 'addressbook:promoter-detail' gig.promoter.pk %}" class="text-blue-700 underline">{{ gig.promoter.name }}</a>
-    </p>
-    <p>
-      {% translate "Lieu" %} :
-      <a href="{% url 'addressbook:venue-detail' gig.venue.pk %}" class="text-blue-700 underline">{{ gig.venue.name }}</a>
-    </p>
-    {% if gig.status == 'cancelled' %}
-      <p class="text-gray-500"><s>{% translate "Prix de cession" %} : {{ gig.price }} € HT</s> · {% translate "date annulée" %}</p>
-    {% else %}
-      <p>
-        {% translate "Prix de cession" %} : {{ gig.price|floatformat:"-2g" }} € HT
-        · <a href="{% url 'gigs:price' gig.pk %}" class="text-blue-700 underline">{% translate "Modifier le prix" %}</a>
-      </p>
-    {% endif %}
-    {% if gig.status != 'cancelled' %}
-      <p>
-        {% translate "Acompte" %} : {{ gig.deposit_due_on|date:"d/m/Y"|default:"—" }}
-        · {% translate "Solde" %} : {{ gig.balance_due_on|date:"d/m/Y"|default:"—" }}
-        · {{ gig.get_payment_method_display|default:"—" }}
-        · <a href="{% url 'gigs:terms' gig.pk %}" class="text-blue-700 underline">{% translate "Modifier les échéances" %}</a>
-      </p>
-    {% endif %}
-    {% if price_changes|length > 1 %}
-      <details class="text-gray-600">
-        <summary class="cursor-pointer">{% translate "Historique du prix" %}</summary>
-        <div class="mt-1">{% include "gigs/_price_history.html" %}</div>
-      </details>
-    {% endif %}
-    {% if gig.status == 'option' and gig.option_expires_on %}
-      <p>
-        {% translate "Option valable jusqu'au" %} {{ gig.option_expires_on|date:"d/m/Y" }}
-        {% include "gigs/_option_expiry.html" %}
-      </p>
-    {% endif %}
-    {% if gig.conditions %}<p class="text-gray-600">{{ gig.conditions|linebreaksbr }}</p>{% endif %}
-    {% if gig.status != 'cancelled' %}
-      <a href="{% url 'gigs:ical' gig.pk %}" class="btn btn-secondary btn-sm btn-download">{% translate "Ajouter à mon agenda" %}</a>
-    {% endif %}
-  </div>
-
-  <h2 class="mb-2 text-sm font-semibold uppercase text-gray-500">{% translate "Prochaine action" %}</h2>
-  <div class="card mb-6 space-y-3 text-sm">
-    {% if gig.status == 'option' %}
-      {% if gig.option_expiry.state == 'expired' %}
-        <p>{% translate "L'option a expiré : confirmez la date si l'organisateur est toujours d'accord, sinon annulez-la." %}</p>
-      {% else %}
-        <p>{% translate "Dès que l'organisateur a confirmé, confirmez la date." %}</p>
-      {% endif %}
-      <form method="post" action="{% url 'gigs:confirm' gig.pk %}">
-        {% csrf_token %}
-        <button type="submit" class="btn btn-primary btn-block">{% translate "Confirmer la date" %}</button>
-      </form>
-    {% elif gig.status == 'confirmed' %}
-      <p>{% translate "Faites signer le contrat de cession à l'organisateur." %}</p>
-      <a href="{% url 'documents:contract-history' gig.pk %}" class="btn btn-primary btn-block">
-        {% translate "Contrat de cession" %}
-      </a>
-    {% elif gig.status == 'signed' %}
-      <p>{% translate "Aucune action en attente pour cette date." %}</p>
-    {% else %}
-      <p>{% translate "Cette date est annulée. Elle reste dans votre historique." %}</p>
-      <form method="post" action="{% url 'gigs:reactivate' gig.pk %}">
-        {% csrf_token %}
-        <button type="submit" class="btn btn-secondary btn-block">{% translate "Réactiver la date" %}</button>
-      </form>
-    {% endif %}
-    <a href="{% url 'gigs:delete' gig.pk %}" class="block text-center text-gray-500 hover:text-gray-700">{% translate "Supprimer cette date" %}</a>
-  </div>
-
-  <h2 class="mb-2 text-sm font-semibold uppercase text-gray-500">{% translate "Feuille de route" %}</h2>
-  <div class="card mb-6 space-y-3 text-sm">
-    <p>
-      {% if gig.roadmap.is_published %}{% translate "Partage activé : le lien est actif." %}
-      {% else %}{% translate "Horaires, hébergement, repas et équipe, à partager avec les musiciens." %}{% endif %}
-    </p>
-    {% if crew %}
-      <p>
-        <span class="font-medium">{% translate "Équipe" %} :</span>
-        {% for member in crew %}{{ member.name }}{% if not forloop.last %}, {% endif %}{% endfor %}
-        {% if team_total %}<span class="text-gray-500">({% blocktranslate with on=team_on_gig total=team_total %}{{ on }} sur {{ total }} de votre équipe{% endblocktranslate %})</span>{% endif %}
-      </p>
-    {% endif %}
-    <a href="{% url 'roadmaps:editor' gig.pk %}" class="btn btn-secondary btn-block">
-      {% translate "Feuille de route" %}
-    </a>
-  </div>
-
-  {% include "gigs/_team.html" %}
-
-  </div>
-
-  <div class="min-w-0">
-  <h2 class="mb-2 text-sm font-semibold uppercase text-gray-500">{% translate "Paiements et dépenses" %}</h2>
-  <div class="card mb-6 space-y-3 text-sm">
+  {# a. Summary of the date, with its progress rule #}
+  <section class="card mb-6 space-y-4 text-sm" aria-labelledby="gig-summary">
+    <h2 id="gig-summary" class="stat-label !text-xs !font-semibold">{% translate "La date" %}</h2>
     <div class="space-y-1">
-      <p class="flex justify-between"><span>{% translate "Encaissé" %}</span><span>{{ balance.received|floatformat:"0g" }} €</span></p>
-      <p class="flex justify-between"><span>{% translate "Dépensé" %}</span><span>{{ balance.spent|floatformat:"0g" }} €</span></p>
-      <p class="flex justify-between font-semibold"><span>{% translate "Résultat" %}</span><span>{{ balance.result|floatformat:"0g" }} €</span></p>
+      <p>
+        {% translate "Organisateur" %} :
+        <a href="{% url 'addressbook:promoter-detail' gig.promoter.pk %}" class="text-blue-700 underline">{{ gig.promoter.name }}</a>
+      </p>
+      <p>
+        {% translate "Lieu" %} :
+        <a href="{% url 'addressbook:venue-detail' gig.venue.pk %}" class="text-blue-700 underline">{{ gig.venue.name }}</a>
+      </p>
+      {% if gig.status == 'cancelled' %}
+        <p class="text-gray-500"><s>{% translate "Prix de cession" %} : {{ gig.price }} € HT</s> · {% translate "date annulée" %}</p>
+      {% else %}
+        <p>
+          {% translate "Prix de cession" %} : {{ gig.price|floatformat:"-2g" }} € HT
+          · <a href="{% url 'gigs:price' gig.pk %}" class="text-blue-700 underline">{% translate "Modifier le prix" %}</a>
+        </p>
+        <p>
+          {% translate "Acompte" %} : {{ gig.deposit_due_on|date:"d/m/Y"|default:"—" }}
+          · {% translate "Solde" %} : {{ gig.balance_due_on|date:"d/m/Y"|default:"—" }}
+          · {{ gig.get_payment_method_display|default:"—" }}
+          · <a href="{% url 'gigs:terms' gig.pk %}" class="text-blue-700 underline">{% translate "Modifier les échéances" %}</a>
+        </p>
+      {% endif %}
+      {% if price_changes|length > 1 %}
+        <details class="text-gray-600">
+          <summary class="cursor-pointer">{% translate "Historique du prix" %}</summary>
+          <div class="mt-1">{% include "gigs/_price_history.html" %}</div>
+        </details>
+      {% endif %}
+      {% if gig.status == 'option' and gig.option_expires_on %}
+        <p>
+          {% translate "Option valable jusqu'au" %} {{ gig.option_expires_on|date:"d/m/Y" }}
+          {% include "gigs/_option_expiry.html" %}
+        </p>
+      {% endif %}
+      {% if gig.conditions %}<p class="text-gray-600">{{ gig.conditions|linebreaksbr }}</p>{% endif %}
     </div>
-    <a href="{% url 'finance:page' gig.pk %}" class="btn btn-secondary btn-block">
-      {% translate "Paiements et dépenses" %}
-    </a>
-  </div>
 
-  <h2 class="mb-2 text-sm font-semibold uppercase text-gray-500">{% translate "Documents" %}</h2>
-  <div class="mb-6 flex flex-col gap-3">
-    {% if gig.status != 'cancelled' %}
-      <a href="{% url 'documents:contract-complete' gig.pk %}" class="btn btn-secondary">
-        {% translate "Compléter le contrat" %}
-      </a>
-    {% endif %}
-    <a href="{% url 'documents:billing' gig.pk %}" class="btn btn-secondary">
-      {% translate "Devis et factures" %}
-    </a>
-    {% if gig.status != 'cancelled' or gig.contract.latest_version %}
-      <a href="{% url 'documents:contract-preview' gig.pk %}" target="_blank" class="btn btn-secondary">
-        {% translate "Aperçu du contrat" %}
-      </a>
-      <a href="{% url 'documents:contract-history' gig.pk %}" class="btn btn-secondary">
-        {% translate "Contrat et versions" %}
-      </a>
-    {% endif %}
-  </div>
+    {% if gig.status != 'cancelled' %}{% include "gigs/_date_gauge.html" %}{% endif %}
 
-  {% if gig.status != 'cancelled' %}
-    <a href="{% url 'gigs:cancel' gig.pk %}" class="text-sm text-red-600 hover:text-red-700">
-      {% translate "Annuler cette date" %}
-    </a>
-  {% endif %}
-  </div>
+    {# Next action: the status change comes first, then the first step still to do. #}
+    <div class="space-y-2 border-t border-page-line pt-3">
+      <p class="stat-label !text-xs !font-semibold">{% translate "Prochaine action" %}</p>
+      {% if gig.status == 'option' %}
+        {% if gig.option_expiry.state == 'expired' %}
+          <p>{% translate "L'option a expiré : confirmez la date si l'organisateur est toujours d'accord, sinon annulez-la." %}</p>
+        {% else %}
+          <p>{% translate "Dès que l'organisateur a confirmé, confirmez la date." %}</p>
+        {% endif %}
+        <form method="post" action="{% url 'gigs:confirm' gig.pk %}">
+          {% csrf_token %}
+          <button type="submit" class="btn btn-primary">{% translate "Confirmer la date" %}</button>
+        </form>
+      {% elif gig.status == 'cancelled' %}
+        <p>{% translate "Cette date est annulée. Elle reste dans votre historique." %}</p>
+        <form method="post" action="{% url 'gigs:reactivate' gig.pk %}">
+          {% csrf_token %}
+          <button type="submit" class="btn btn-secondary">{% translate "Réactiver la date" %}</button>
+        </form>
+      {% elif next_step %}
+        <p>{{ next_step.volet.label }} : {{ next_step.todo|lower }}.</p>
+        <a href="{{ next_step.url }}" class="btn btn-primary">{{ next_step.todo }}</a>
+      {% else %}
+        <p>{% translate "Aucune action en attente pour cette date." %}</p>
+      {% endif %}
+    </div>
+
+    <details class="text-gray-600">
+      <summary class="flex min-h-11 cursor-pointer items-center">{% translate "Autres actions" %}</summary>
+      <div class="flex flex-wrap items-center gap-x-4 gap-y-1">
+        {% if gig.status != 'cancelled' %}
+          <a href="{% url 'gigs:ical' gig.pk %}" class="btn btn-secondary btn-sm btn-download">{% translate "Ajouter à mon agenda" %}</a>
+          <a href="{% url 'gigs:cancel' gig.pk %}" class="text-red-700 underline">{% translate "Annuler cette date" %}</a>
+        {% endif %}
+        <a href="{% url 'gigs:delete' gig.pk %}" class="underline">{% translate "Supprimer cette date" %}</a>
+      </div>
+    </details>
+  </section>
+
+  {# b. Latest actions #}
+  {% include "gigs/_date_history.html" %}
+
+  {# c. The four volets, as cards #}
+  <div class="grid grid-cols-1 gap-4 lg:grid-cols-2 lg:items-start">
+    {% for volet in progress %}
+      <section id="volet-{{ volet.key }}" class="overflow-hidden rounded-xl border border-page-line bg-white" aria-labelledby="volet-title-{{ volet.key }}">
+        {% include "gigs/_volet_card_head.html" %}
+        <div class="space-y-3 p-4 text-sm">
+          {% if volet.key == 'contrats' %}
+            {% if gig.status != 'cancelled' %}
+              <a href="{% url 'documents:contract-complete' gig.pk %}" class="btn btn-secondary btn-block">{% translate "Compléter le contrat" %}</a>
+            {% endif %}
+            {% if gig.status != 'cancelled' or gig.contract.latest_version %}
+              <a href="{% url 'documents:contract-preview' gig.pk %}" target="_blank" class="btn btn-secondary btn-block">{% translate "Aperçu du contrat" %}</a>
+              <a href="{% url 'documents:contract-history' gig.pk %}" class="btn btn-secondary btn-block">{% translate "Contrat et versions" %}</a>
+            {% endif %}
+          {% elif volet.key == 'budget' %}
+            <div class="space-y-1">
+              <p class="flex justify-between"><span>{% translate "Encaissé" %}</span><span class="data">{{ balance.received|floatformat:"0g" }} €</span></p>
+              <p class="flex justify-between"><span>{% translate "Dépensé" %}</span><span class="data">{{ balance.spent|floatformat:"0g" }} €</span></p>
+              <p class="flex justify-between font-semibold"><span>{% translate "Résultat" %}</span><span class="data">{{ balance.result|floatformat:"0g" }} €</span></p>
+            </div>
+            <a href="{% url 'documents:billing' gig.pk %}" class="btn btn-secondary btn-block">{% translate "Devis et factures" %}</a>
+            <a href="{% url 'finance:page' gig.pk %}" class="btn btn-secondary btn-block">{% translate "Paiements et dépenses" %}</a>
+          {% elif volet.key == 'social' %}
+            {% include "gigs/_team.html" %}
+          {% else %}
+            <p>
+              {% if gig.roadmap.is_published %}{% translate "Partage activé : le lien est actif." %}
+              {% else %}{% translate "Horaires, hébergement, repas et équipe, à partager avec les musiciens." %}{% endif %}
+            </p>
+            {% if crew %}
+              <p>
+                <span class="font-medium">{% translate "Équipe" %} :</span>
+                {% for member in crew %}{{ member.name }}{% if not forloop.last %}, {% endif %}{% endfor %}
+                {% if team_total %}<span class="text-gray-500">({% blocktranslate with on=team_on_gig total=team_total %}{{ on }} sur {{ total }} de votre équipe{% endblocktranslate %})</span>{% endif %}
+              </p>
+            {% endif %}
+            <a href="{% url 'roadmaps:editor' gig.pk %}" class="btn btn-secondary btn-block">{% translate "Feuille de route" %}</a>
+          {% endif %}
+        </div>
+      </section>
+    {% endfor %}
   </div>
 {% endblock %}

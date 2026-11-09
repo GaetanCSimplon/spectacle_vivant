@@ -125,8 +125,8 @@ def test_detail_shows_the_gig(client):
     ("status", "expected", "absent"),
     [
         (S.OPTION, "Confirmer la date", "Réactiver"),
-        (S.CONFIRMED, "Faites signer le contrat", "Confirmer la date"),
-        (S.SIGNED, "Aucune action en attente", "Confirmer la date"),
+        (S.CONFIRMED, "Générer le contrat", "Confirmer la date"),
+        (S.SIGNED, "Prochaine action", "Confirmer la date"),
         (S.CANCELLED, "Réactiver la date", "Confirmer la date"),
     ],
 )

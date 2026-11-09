@@ -1,0 +1,20 @@
+{% load i18n %}{% comment %}Progress rule of a date (charter v1.3): one segment per volet, filled in the volet colour
+by the share of its steps done. Name, letter and "2/3" are written, so colour is never alone.
+Needs: progress, overall_percent.{% endcomment %}
+<div>
+  <p class="stat-label !text-xs !font-semibold">{% blocktranslate with n=overall_percent %}Avancement de la date : {{ n }} %{% endblocktranslate %}</p>
+  <ul class="mt-2 grid grid-cols-2 gap-x-2 gap-y-3 sm:grid-cols-4" aria-label="{% translate 'Avancement par volet' %}">
+    {% for volet in progress %}
+      <li>
+        <a href="#volet-{{ volet.key }}" class="flex items-center justify-between text-xs font-semibold">
+          <span>{{ volet.letter }} · {{ volet.label }}</span>
+          <span class="data">{{ volet.done_count }}/{{ volet.total }}</span>
+        </a>
+        <div class="mt-1 h-3 overflow-hidden rounded-full border border-page-line bg-stone-100" aria-hidden="true">
+          <div class="h-full volet-{{ volet.key }} {% if volet.percent == 0 %}hidden{% endif %}" style="width: {{ volet.percent }}%"></div>
+        </div>
+        <span class="sr-only">{{ volet.label }} : {{ volet.done_count }} {% translate "étape(s) sur" %} {{ volet.total }}</span>
+      </li>
+    {% endfor %}
+  </ul>
+</div>
