@@ -28,7 +28,7 @@ Les neuf critères de la recette du MVP (`cahier-des-charges.md` §11) sont couv
 
 
 ## 2. Déploiement (Scalingo, app `bordpro`)
-Branches : `main` (travail) et `production` (livré). **Dernière livraison : `v2026-11-06b`** (2026-11-06, commit `2504df4`, migrations `roadmaps/0006` à `0008`), après `v2026-11-02`, `v2026-11-01` et `v2026-10-29` ; historique : `docs/technique/livraison.md`. Scalingo se déploie à la main depuis la branche **`production`** (jamais `main`). Aucune migration en attente (`roadmaps/0006` à `0008` s'appliquent au déploiement de `v2026-11-06b`).
+Branches : `main` (travail) et `production` (livré). **Dernière livraison : `v2026-11-09`** (2026-11-09, commit `db119d4`, migration `documents/0010`), après `v2026-11-06b`, après `v2026-11-02`, `v2026-11-01` et `v2026-10-29` ; historique : `docs/technique/livraison.md`. Scalingo se déploie à la main depuis la branche **`production`** (jamais `main`). Aucune migration en attente (`roadmaps/0006` à `0008` s'appliquent au déploiement de `v2026-11-06b`).
 Guide pas à pas pour toutes les étapes ci-dessous : `docs/technique/guide-mise-en-ligne.md`. Ce que la mise en place a appris : `docs/technique/services-production.md`.
 
 Adresse de l'application : **`https://app.bordpro.fr`** (début novembre 2026). `bordpro.fr` reste libre pour le futur site vitrine. L'ancienne adresse `bordpro.osc-fr1.scalingo.io` répond encore.
