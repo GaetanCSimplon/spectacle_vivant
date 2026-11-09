@@ -59,7 +59,7 @@
   --bord-brand-plum: #8e1f3f;
   --bord-bg: #ffffff;
   --bord-surface: #ffffff;
-  --bord-info-bg: var(--bord-brand-ocean);
+  --bord-info-bg: var(--bord-brand-cream); /* charter v1.3: ocean is the Social volet only */
   --bord-context-bg: #e2f1f6;
   /* The three kinds of entity of the address book, told apart by colour AND icon AND a word. */
   --bord-promoter-bg: var(--bord-context-bg);
@@ -482,11 +482,11 @@
     color: var(--bord-text);
   }
 
-  /* Ocean block: white text (5.4:1). */
+  /* Information block: cream with navy text (13.9:1). Ocean is kept for the Social volet (v1.3). */
   .card-info {
     background: var(--bord-info-bg);
     border-color: var(--bord-info-bg);
-    color: var(--bord-surface);
+    color: var(--bord-text);
   }
 
   /* Discreet context (light blue): never the dominant background of a screen. */
@@ -537,9 +537,11 @@
     color: var(--bord-promoter-text);
   }
 
+  /* Roadmap shortcut: light blue with a navy outline (the Régie look of the charter v1.3). */
   .icon-chip-ocean {
-    background: var(--bord-info-bg);
-    color: var(--bord-surface);
+    background: var(--bord-context-bg);
+    color: var(--bord-text);
+    border: 1.5px solid var(--bord-text);
   }
 
   /* The fields of a form block: one column on a phone, two from md. A text box takes the whole row. */
@@ -674,8 +676,7 @@
   }
 
   .sidebar :focus-visible,
-  .card-navy :focus-visible,
-  .card-info :focus-visible {
+  .card-navy :focus-visible {
     outline-color: var(--bord-surface);
   }
 
