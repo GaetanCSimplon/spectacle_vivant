@@ -168,6 +168,8 @@ ROUTES = [
     ("documents:contract-sign", {"gig_id": "gig"}),
     ("documents:contract-signed-pdf", {"gig_id": "gig"}),
     ("documents:contract-generate", {"gig_id": "gig"}),
+    ("documents:contract-sent", {"gig_id": "gig", "action": "=envoye"}),
+    ("documents:contract-sent", {"gig_id": "gig", "action": "=non-envoye"}),
     ("documents:contract-download", {"gig_id": "gig"}),
     ("documents:contract-version-download", {"gig_id": "gig", "number": "=1"}),
     ("documents:billing", {"gig_id": "gig"}),

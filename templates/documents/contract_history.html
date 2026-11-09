@@ -34,7 +34,16 @@
     </div>
   {% endif %}
 
+  {% if contract.sent_at and contract.status != 'signed' %}
+    <p class="mb-3 text-sm font-semibold">{% blocktranslate with date=contract.sent_at|date:"d/m/Y" %}Envoyé à l'organisateur le {{ date }}{% endblocktranslate %}</p>
+  {% endif %}
   <div class="mb-6 flex flex-col gap-3">
+    {% if can_mark_sent %}
+      <form method="post" action="{% url 'documents:contract-sent' gig.pk contract.sent_at|yesno:'non-envoye,envoye' %}">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-secondary btn-block">{% if contract.sent_at %}{% translate "Retirer la mention « envoyé »" %}{% else %}{% translate "Marquer comme envoyé" %}{% endif %}</button>
+      </form>
+    {% endif %}
     {% if can_sign %}
       <a href="{% url 'documents:contract-sign' gig.pk %}" class="btn btn-primary btn-block">
         {% translate "Marquer comme signé" %}

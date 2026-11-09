@@ -70,6 +70,7 @@ class ContractHistoryView(TenantScopedMixin, View):
             "can_sign": gig.status == Gig.Status.CONFIRMED
             and bool(contract and contract.latest_version)
             and not signed,
+            "can_mark_sent": bool(contract and contract.latest_version) and not signed,
             "can_add_signed_pdf": signed and not contract.signed_pdf,
             "signed_pdf_form": SignedPdfForm(),
             "template_choices": services.available_contract_templates(),
@@ -171,6 +172,23 @@ class ContractGenerateView(TenantScopedMixin, View):
             messages.error(request, _("Ce contrat est signé : il ne peut plus être régénéré."))
         else:
             messages.success(request, _("Une nouvelle version du contrat a été générée."))
+        return redirect("documents:contract-history", gig_id=gig.pk)
+
+
+class ContractSentView(TenantScopedMixin, View):
+    """POST only: mark the contract as sent to the promoter, or take the mark back."""
+
+    def post(self, request, gig_id, action):
+        gig = get_object_or_404(Gig, pk=gig_id, tenant=request.tenant)
+        try:
+            if action == "envoye":
+                services.mark_contract_sent(gig)
+                messages.success(request, _("Le contrat est marqué comme envoyé."))
+            else:
+                services.unmark_contract_sent(gig)
+                messages.success(request, _("La mention « envoyé » est retirée."))
+        except services.ContractSigningError as error:
+            messages.error(request, error.args[0])
         return redirect("documents:contract-history", gig_id=gig.pk)
 
 
