@@ -8,30 +8,30 @@
     href="{% url 'home' %}"
     class="{{ link_class }} {% if view == 'home' %}{{ active_class }}{% endif %}"
     {% if view == 'home' %}aria-current="page"{% endif %}
-  >{% translate "Accueil" %}</a>
+  >{% if puce %}{% include "components/_gimic_puce.html" %}{% endif %}{% translate "Accueil" %}</a>
   <a
     href="{% url 'tenants:profile' %}"
     class="{{ link_class }} font-bold {% if ns == 'tenants' %}{{ active_class }}{% endif %}"
     {% if ns == 'tenants' %}aria-current="page"{% endif %}
-  >{% translate "Bòrd" %}</a>
+  >{% if puce %}{% include "components/_gimic_puce.html" %}{% endif %}{% translate "Bòrd" %}</a>
   <a
     href="{% url 'gigs:list' %}"
     class="{{ link_class }} {% if ns == 'gigs' or ns == 'documents' %}{{ active_class }}{% endif %}"
     {% if ns == 'gigs' or ns == 'documents' %}aria-current="page"{% endif %}
-  >{% translate "Mes dates" %}</a>
+  >{% if puce %}{% include "components/_gimic_puce.html" %}{% endif %}{% translate "Mes dates" %}</a>
   <a
     href="{% url 'document-library' %}"
     class="{{ link_class }} {% if view == 'document-library' %}{{ active_class }}{% endif %}"
     {% if view == 'document-library' %}aria-current="page"{% endif %}
-  >{% translate "Documents" %}</a>
+  >{% if puce %}{% include "components/_gimic_puce.html" %}{% endif %}{% translate "Documents" %}</a>
   <a
     href="{% url 'catalog:show-list' %}"
     class="{{ link_class }} {% if ns == 'catalog' %}{{ active_class }}{% endif %}"
     {% if ns == 'catalog' %}aria-current="page"{% endif %}
-  >{% translate "Spectacles" %}</a>
+  >{% if puce %}{% include "components/_gimic_puce.html" %}{% endif %}{% translate "Spectacles" %}</a>
   <a
     href="{% url 'addressbook:promoter-list' %}"
     class="{{ link_class }} {% if ns == 'addressbook' %}{{ active_class }}{% endif %}"
     {% if ns == 'addressbook' %}aria-current="page"{% endif %}
-  >{% translate "Contacts" %}</a>
+  >{% if puce %}{% include "components/_gimic_puce.html" %}{% endif %}{% translate "Contacts" %}</a>
 {% endwith %}
