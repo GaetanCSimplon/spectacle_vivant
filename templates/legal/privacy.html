@@ -4,8 +4,8 @@
 {% block legal_body %}
   <h2 class="font-semibold text-gray-900">Qui est responsable de vos données ?</h2>
   <p>
-    [À compléter : identité de l'éditeur, voir les
-    <a class="underline" href="{% url 'legal-notice' %}">mentions légales</a>] est responsable
+    L'éditeur de Bòrd Pro (voir les
+    <a class="underline" href="{% url 'legal-notice' %}">mentions légales</a>) est responsable
     du traitement de vos données de compte. Pour les données de vos organisateurs, contacts
     et dates, c'est vous qui décidez de leur usage : nous ne les utilisons que pour faire
     fonctionner le service.
@@ -49,10 +49,20 @@
 
   <h2 class="font-semibold text-gray-900">Où et chez qui ?</h2>
   <p>
-    Données hébergées dans l'Union européenne : [À compléter : hébergeur, stockage de
-    fichiers, service d'envoi d'e-mails, suivi des erreurs — à confirmer au déploiement].
-    Ces prestataires n'agissent que sur nos instructions.
+    Vos données sont hébergées dans l'Union européenne. Ces prestataires n'agissent que sur
+    nos instructions :
   </p>
+  <ul class="list-disc space-y-1 pl-5">
+    <li>Scalingo SAS (France) : hébergement de l'application et de la base de données.</li>
+    <li>Scaleway SAS (France, Paris) : stockage privé des fichiers (contrats, justificatifs).</li>
+    <li>Brevo (Sendinblue SAS, France) : envoi des e-mails du service (invitations, liens
+      de connexion, formulaires).</li>
+    <li>Sentry (Functional Software, Inc.) : suivi des erreurs techniques, avec hébergement des
+      données dans l'Union européenne. Aucune donnée personnelle (adresse e-mail, adresse IP,
+      contenu des pages) n'y est envoyée.</li>
+    <li>OpenStreetMap (Nominatim) : position des adresses des feuilles de route, comme décrit
+      plus haut.</li>
+  </ul>
 
   <h2 class="font-semibold text-gray-900">Combien de temps ?</h2>
   <ul class="list-disc space-y-1 pl-5">
@@ -65,7 +75,7 @@
   <h2 class="font-semibold text-gray-900">Vos droits</h2>
   <p>
     Vous pouvez accéder à vos données, les corriger, les exporter et les supprimer depuis
-    l'application, ou en faire la demande à [À compléter : adresse e-mail]. Vous pouvez aussi
+    l'application, ou en faire la demande à <a class="underline" href="mailto:contact@bordpro.fr">contact@bordpro.fr</a>. Vous pouvez aussi
     saisir la CNIL (<span class="whitespace-nowrap">cnil.fr</span>).
   </p>
 
