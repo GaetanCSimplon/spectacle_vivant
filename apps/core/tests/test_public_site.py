@@ -1,5 +1,7 @@
 """The public presentation site: what a visitor sees before logging in."""
 
+from pathlib import Path
+
 import pytest
 from django.urls import reverse
 
@@ -287,3 +289,14 @@ def test_the_contact_page_is_the_invitation_request(client):
     assert 'aria-labelledby="form-title"' in content and 'id="form-title"' in content
     assert "n'est pas enregistré" in html.unescape(content)
     assert "v-hero" in content  # same header block as the other pages
+
+
+def test_features_dark_section_keeps_dark_text_on_its_cream_card():
+    """Audit axe-core 2026-11-10: white text on the cream « ne fait pas » card (contrast 1.1)."""
+    css = (Path(__file__).resolve().parents[3] / "static" / "css" / "vitrine.css").read_text()
+    assert ".v-night .v-soft { color: var(--v-night); }" in css
+
+
+def test_contact_page_has_no_landmark_inside_main(client):
+    html = client.get(reverse("site-contact")).content.decode()
+    assert "<aside" not in html

@@ -258,3 +258,12 @@ def test_the_buttons_are_on_the_date_and_on_the_contract_page(client, gig):
         assert "Checklist contractualisation" in content
         assert f'hx-get="{_url("checklist", gig)}"' in content
         assert 'id="checklist-modal"' in content
+
+
+def test_headings_follow_the_page_title_without_skipping_a_level(client, gig):
+    """Audit axe-core 2026-11-10: the page (h1) has h2 sections; the modal (h2) has h3."""
+    page = client.get(_url("checklist", gig)).content.decode()
+    modal = client.get(_url("checklist", gig), **HTMX).content.decode()
+
+    assert "<h1" in page and '<h2 id="checklist-section-1"' in page and "<h3" not in page
+    assert '<h3 id="checklist-section-1"' in modal

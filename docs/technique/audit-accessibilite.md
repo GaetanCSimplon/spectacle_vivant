@@ -1,5 +1,18 @@
 # Audit d'accessibilité automatique (axe-core)
 
+## Audit du 2026-11-10 (charte v1.3 : accueil, page d'une date, tableau de bord, site)
+
+- **Méthode** : la même que ci-dessous, mais avec un parcours automatique : la démonstration (`seed_demo`) est explorée de lien en lien (2 pages par type d'adresse au plus), ce qui donne **84 pages** (78 connectées, 6 publiques : accueil et fonctionnalités du site, contact, connexion, inscription, mot de passe oublié ; les pages légales sont dans le parcours connecté). Chaque page est testée à **1440 px et 375 px** (axe-core 4.10.2, WCAG 2.0 à 2.2 AA + bonnes pratiques, et débordement horizontal). Les outils (Playwright, axe-core, script d'exploration) restent hors du dépôt.
+- **Défauts trouvés et corrigés** :
+  1. site, page Fonctionnalités : texte blanc sur la carte crème « Ce qu'il ne fait pas » (contraste 1,1:1) ;
+  2. checklist de contractualisation (page seule) : titres de section en h3 juste après le h1 (niveau sauté), maintenant h2 ; dans la fenêtre, le titre est un h2, les sections restent en h3 ;
+  3. site, page Contact : `aside` à l'intérieur de `main` (repère mal placé), remplacé par un groupe nommé ;
+  4. à 375 px, les bulles d'aide (`.tip-body`, 16 rem) élargissaient les fiches d'un lieu et d'un organisateur : sur téléphone, la bulle prend la largeur de l'écran sous son déclencheur.
+- **Résultat final : 0 violation, 0 débordement horizontal** aux deux largeurs.
+- **Limites** : les pages dont le contenu dépend d'un état particulier (contrat signé avec moment fort, erreurs de formulaire, menus ouverts) n'ont pas été rejouées cette fois ; les contrôles manuels listés plus bas restent à faire.
+
+## Audit du 2026-10-29
+
 Relancé le **2026-10-29** sur l'application du jour (annuaire avec import/export, étiquettes colorées, boutons de téléchargement). Le premier audit date du 2026-10-23 (voir `feuille-de-route.md`, Sprint « Charte v1.0 », PR 5).
 
 ## Méthode (reproductible)

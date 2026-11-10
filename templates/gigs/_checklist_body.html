@@ -14,7 +14,7 @@ The Alpine state only handles a failed save: the box goes back and a quiet messa
   <div class="space-y-4">
     {% for section in sections %}
       <section aria-labelledby="checklist-section-{{ forloop.counter }}">
-        <h3 id="checklist-section-{{ forloop.counter }}" class="mb-1 text-sm font-semibold uppercase text-stone-500">{{ section.title }}</h3>
+        <h{{ section_level|default:3 }} id="checklist-section-{{ forloop.counter }}" class="mb-1 text-sm font-semibold uppercase text-stone-500">{{ section.title }}</h{{ section_level|default:3 }}>
         <ul class="divide-y divide-page-line">
           {% for item in section.items %}{% include "gigs/_checklist_item.html" %}{% endfor %}
         </ul>
