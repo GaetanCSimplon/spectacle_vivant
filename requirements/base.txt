@@ -1,6 +1,6 @@
 -c constraints.txt
-Django>=5.2.18,<5.3
-psycopg[binary]>=3.2
+Django>=5.2.19,<5.3
+psycopg[binary]>=3.3.8
 django-environ
 django-allauth
 django-htmx
