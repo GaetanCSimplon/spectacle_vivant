@@ -35,6 +35,7 @@ Déjà rempli (2026-11-10) : contact `contact@bordpro.fr`, hébergeur Scalingo, 
 | ☐ | Validation des icônes de volet Social et Régie (propositions « à valider ») |
 | ☐ | Nouveau fichier de l'icône RADAR sans dégradé |
 | ☐ | Exports finaux du logo depuis Affinity (le fichier Régie est aujourd'hui rogné) |
+| ☐ | **Filigrane des PDF : que veut-il exactement ?** Un motif de marque (gimic) en fond de page contredit la règle de la charte §4 (les PDF sont les documents de l'utilisateur, sans habillage de marque). Alternative proposée : filigrane « BROUILLON » sur les contrats et factures non définitifs. Voir la feuille de route, charte v1.3 |
 
 ## 4. Documents (contrat, factures)
 
