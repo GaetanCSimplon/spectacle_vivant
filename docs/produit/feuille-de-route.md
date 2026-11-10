@@ -415,6 +415,7 @@ Constat : presque toutes les pages tiennent dans une colonne d'environ 768 px, a
 - [ ] Rituel hebdomadaire : trier les retours en **bugs / confusions / demandes**.
 - [ ] Corriger d'abord les bugs bloquants et les confusions, **pas** les demandes de fonctionnalités.
 - [ ] Faire valider définitivement contrat, factures, mentions légales par les professionnels.
+- [x] **Audit d'accessibilité axe-core relancé** (2026-11-10, sans migration) : 84 pages × 2 largeurs, 4 défauts corrigés (contraste du site, ordre des titres de la checklist, repère `aside`, bulles d'aide qui débordaient à 375 px), résultat 0 violation ; détail dans `docs/technique/audit-accessibilite.md`.
 - [x] **Pages légales : prestataires et contact remplis** (2026-11-10, sans migration) : hébergeur (Scalingo), stockage (Scaleway, Paris), e-mails (Brevo), suivi d'erreurs (Sentry, UE), contact@bordpro.fr. **Reste à compléter par l'éditeur** : identité de l'éditeur et directeur de la publication, adresse du siège de Scalingo (à copier de son site), conservation des factures après suppression, tarifs/résiliation, tribunal compétent.
 - [ ] Rédiger le **registre des traitements RGPD** et vérifier les sous-traitants (hébergeur, e-mail, Sentry, S3).
 - [ ] Tester une restauration de sauvegarde réelle ; vérifier les alertes.

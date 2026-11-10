@@ -617,7 +617,7 @@
   }
 
   .tip-body {
-    @apply invisible absolute top-full left-0 z-30 mt-1 w-64 rounded-xl border border-page-line bg-white p-3 text-left text-sm font-normal normal-case text-stone-700 opacity-0 transition-opacity;
+    @apply invisible absolute top-full left-0 z-30 mt-1 w-64 rounded-xl border border-page-line bg-white p-3 max-sm:fixed max-sm:inset-x-4 max-sm:top-auto max-sm:mt-7 max-sm:w-auto text-left text-sm font-normal normal-case text-stone-700 opacity-0 transition-opacity;
   }
 
   .tip:hover .tip-body,

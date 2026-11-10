@@ -46,7 +46,7 @@
       </form>
     </div>
 
-    <aside class="v-grid" aria-label="{% translate 'Autres moyens et confidentialité' %}">
+    <div class="v-grid" role="group" aria-label="{% translate 'Autres moyens et confidentialité' %}">
       <div class="v-card">
         <h3>{% translate "Par e-mail" %}</h3>
         <p>{% translate "Vous préférez écrire depuis votre messagerie ?" %}
@@ -57,7 +57,7 @@
         <p class="v-small">{% blocktranslate %}Votre message est envoyé par e-mail à l'équipe et n'est pas enregistré sur ce site. Il ne sert qu'à vous répondre.{% endblocktranslate %}
           <a href="{% url 'legal-privacy' %}" style="text-decoration:underline">{% translate "Confidentialité" %}</a></p>
       </div>
-    </aside>
+    </div>
     </div>
   </section>
 {% endblock %}

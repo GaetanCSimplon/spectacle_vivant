@@ -93,6 +93,7 @@
 .v-ocean p, .v-ocean li { color: var(--v-white); }
 .v-soft { background: var(--v-cream); border-radius: var(--v-r-card); padding: var(--v-s5); display: grid; gap: var(--v-s2); align-content: start; }
 .v-cream .v-soft { background: var(--v-white); }
+.v-night .v-soft { color: var(--v-night); }
 .v-note { background: var(--v-light); border-radius: var(--v-r-control); padding: var(--v-s4); color: var(--v-night); }
 .v-num { font-family: "IBM Plex Mono", monospace; font-weight: 500; color: var(--v-ocean); font-size: 14px; }
 .v-bento { grid-template-columns: repeat(4, 1fr); }

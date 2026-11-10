@@ -273,3 +273,10 @@ def test_no_blurred_shadow_is_left_on_the_interface():
     ]
 
     assert leftovers == []
+
+
+def test_help_bubbles_stay_inside_a_phone_screen():
+    """Audit axe-core 2026-11-10: the 16 rem bubble pushed the page wider than 375 px."""
+    css = (ROOT / "css" / "source.css").read_text()
+    block = css[css.index("  .tip-body {") :].split("}")[0]
+    assert "max-sm:fixed" in block and "max-sm:inset-x-4" in block
