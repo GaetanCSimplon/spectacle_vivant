@@ -44,8 +44,8 @@ def test_the_parties_the_show_and_the_siren_come_from_our_data():
     text = _render(gig)
 
     assert "Raison sociale de l’entreprise : Compagnie du Soleil" in text
-    assert "Numéro SIREN : 123456789 " in text
-    assert "Numéro SIREN : 987654321 " in text
+    assert "Numéro SIREN : 123 456 789 " in text
+    assert "Numéro SIREN : 987 654 321 " in text
     assert "Licence d’entrepreneur de spectacles n° et catégorie : L-1" in text
     assert "Raison sociale de l’entreprise : Mairie de Sète" in text
     assert f"Titre du spectacle : {gig.show.title}" in text

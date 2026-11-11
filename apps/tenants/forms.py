@@ -8,40 +8,148 @@ from apps.catalog.models import Show
 from apps.core.forms import AddressModelForm, SectionedFormMixin
 from apps.finance import bord
 
-from . import services
+from . import choices, services
 from .models import Person, Tenant
 from .validators import (
+    format_siret,
     normalize_bic,
     normalize_code_ape,
     normalize_iban,
+    normalize_siret,
     normalize_social_security_number,
     validate_code_ape,
+    validate_siret,
     validate_social_security_number,
 )
 
+OTHER = "other"
 
-class OnboardingForm(forms.ModelForm):
+
+def _legal_form_choices():
+    return [
+        ("", "---------"),
+        *((label, label) for label in choices.LEGAL_FORMS),
+        (OTHER, _("Autre (à préciser)")),
+    ]
+
+
+def _role_choices():
+    return [
+        ("", "---------"),
+        *(
+            (group, [(role, role) for role in roles])
+            for group, roles in choices.REPRESENTATIVE_ROLES
+        ),
+        (OTHER, _("Autre (à préciser)")),
+    ]
+
+
+class ChoiceOrOtherMixin:
+    """A field offered as a list with "Autre (à préciser)" and a free text next to it.
+
+    The model field keeps the readable text, so a value typed before the list existed is shown
+    under "Autre" and is never lost. Subclasses declare `<name>` (the list) and `<name>_other`.
+    """
+
+    other_fields = ()  # ((field name, the values of its list), ...)
+
+    def _show_current_choices(self):
+        for name, known in self.other_fields:
+            current = getattr(self.instance, name, "")
+            if current and current not in known:
+                self.initial[name] = OTHER
+                self.initial[f"{name}_other"] = current
+
+    def _merge_others(self, cleaned):
+        for name, _known in self.other_fields:
+            other = " ".join(cleaned.pop(f"{name}_other", "").split())
+            if cleaned.get(name) == OTHER:
+                if not other:
+                    self.add_error(f"{name}_other", _("Précisez votre choix."))
+                cleaned[name] = other
+
+
+class OnboardingForm(ChoiceOrOtherMixin, forms.ModelForm):
+    other_fields = (("legal_form", choices.LEGAL_FORMS),)
+
+    legal_form = forms.ChoiceField(
+        label=_("Forme juridique"), required=False, choices=_legal_form_choices
+    )
+    legal_form_other = forms.CharField(
+        label=_("Autre forme juridique"),
+        required=False,
+        max_length=255,
+        help_text=_("À remplir seulement si vous avez choisi « Autre »."),
+    )
+
+    field_order = ["name", "legal_form", "legal_form_other", "vat_regime"]
+
     class Meta:
         model = Tenant
         fields = ["name", "legal_form", "vat_regime"]
-        help_texts = {
-            "legal_form": _("Par exemple : association loi 1901, micro-entreprise, SARL…"),
-        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self._show_current_choices()
+
+    def clean(self):
+        cleaned = super().clean()
+        self._merge_others(cleaned)
+        return cleaned
 
 
-class TenantProfileForm(SectionedFormMixin, AddressModelForm):
+class TenantProfileForm(ChoiceOrOtherMixin, SectionedFormMixin, AddressModelForm):
     layout = [
-        (_("La structure"), ["name", "legal_form", "siret", "code_ape", "licence_number"]),
+        (
+            _("La structure"),
+            ["name", "legal_form", "legal_form_other", "siret", "code_ape", "licence_number"],
+        ),
         (_("Adresse"), ["address", "postal_code", "city", "department"]),
         (_("Contact"), ["phone", "email"]),
         (_("TVA"), ["vat_regime", "vat_rate", "vat_number"]),
         (_("Coordonnées bancaires"), ["iban", "bic"]),
         (
             _("Représentant et tribunal"),
-            ["representative_name", "representative_role", "jurisdiction_city"],
+            [
+                "representative_first_name",
+                "representative_last_name",
+                "representative_role",
+                "representative_role_other",
+                "jurisdiction_city",
+            ],
         ),
     ]
+    other_fields = (
+        ("legal_form", choices.LEGAL_FORMS),
+        ("representative_role", choices.ROLES),
+    )
 
+    legal_form = forms.ChoiceField(
+        label=_("Forme juridique"), required=False, choices=_legal_form_choices
+    )
+    legal_form_other = forms.CharField(
+        label=_("Autre forme juridique"),
+        required=False,
+        max_length=255,
+        help_text=_("À remplir seulement si vous avez choisi « Autre »."),
+    )
+    representative_role = forms.ChoiceField(
+        label=_("Qualité du représentant"), required=False, choices=_role_choices
+    )
+    representative_role_other = forms.CharField(
+        label=_("Autre qualité"),
+        required=False,
+        max_length=255,
+        help_text=_("À remplir seulement si vous avez choisi « Autre »."),
+    )
+    # Declared here because people type "123 456 789 00012": the model's 14 digits apply after
+    # cleaning.
+    siret = forms.CharField(
+        label=_("SIRET"),
+        required=False,
+        max_length=20,
+        help_text=_("14 chiffres. Les espaces sont acceptés."),
+    )
     # Declared here because people type "90.01 Z": the model's 5 characters apply after cleaning.
     code_ape = forms.CharField(
         label=_("Code APE"),
@@ -69,18 +177,38 @@ class TenantProfileForm(SectionedFormMixin, AddressModelForm):
             "phone",
             "email",
             "licence_number",
-            "representative_name",
+            "representative_first_name",
+            "representative_last_name",
             "representative_role",
             "jurisdiction_city",
         ]
         widgets = {"address": forms.Textarea(attrs={"rows": 2})}
         help_texts = {
-            "legal_form": _("Par exemple : association loi 1901, micro-entreprise, SARL…"),
             "licence_number": _(
                 "Numéro de licence d'entrepreneur de spectacles, si vous en avez un."
             ),
             "jurisdiction_city": _("Ville dont les tribunaux sont compétents en cas de litige."),
         }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self._show_current_choices()
+        self.initial["siret"] = format_siret(self.instance.siret)
+        instance = self.instance
+        if instance.representative_name and not (
+            instance.representative_first_name or instance.representative_last_name
+        ):
+            # Typed in one field before: shown as the last name, to be split once by the user.
+            self.initial["representative_last_name"] = instance.representative_name
+            self.fields["representative_last_name"].help_text = _(
+                "Ce nom était saisi en un seul champ : répartissez-le entre prénom et nom."
+            )
+
+    def clean_siret(self):
+        siret = normalize_siret(self.cleaned_data["siret"])
+        if siret:
+            validate_siret(siret)
+        return siret
 
     def clean_vat_number(self):
         return "".join(self.cleaned_data["vat_number"].split()).upper()
@@ -96,6 +224,16 @@ class TenantProfileForm(SectionedFormMixin, AddressModelForm):
 
     def clean_bic(self):
         return normalize_bic(self.cleaned_data["bic"])
+
+    def clean(self):
+        cleaned = super().clean()
+        self._merge_others(cleaned)
+        first = " ".join(cleaned.get("representative_first_name", "").split())
+        last = " ".join(cleaned.get("representative_last_name", "").split())
+        cleaned["representative_first_name"], cleaned["representative_last_name"] = first, last
+        # The documents print this one: "First Last".
+        self.instance.representative_name = f"{first} {last}".strip()
+        return cleaned
 
 
 class DeleteTenantForm(forms.Form):

@@ -34,6 +34,44 @@ def validate_bic(value):
         raise ValidationError(_("Un BIC comporte 8 ou 11 caractères, par exemple AGRIFRPP."))
 
 
+def normalize_siret(value):
+    """Spaces and dots are only for reading: store the 14 digits."""
+    return re.sub(r"[\s.]+", "", value or "")
+
+
+def _luhn_ok(digits):
+    total = 0
+    for position, char in enumerate(reversed(digits)):
+        number = int(char)
+        if position % 2 == 1:
+            number *= 2
+            if number > 9:
+                number -= 9
+        total += number
+    return total % 10 == 0
+
+
+def validate_siret(value):
+    """14 digits and a valid Luhn key (La Poste's establishments: digit sum divisible by 5)."""
+    siret = normalize_siret(value)
+    if not re.fullmatch(r"\d{14}", siret):
+        raise ValidationError(_("Un SIRET comporte 14 chiffres, par exemple 123 456 789 00012."))
+    # La Poste's establishments (SIREN 356 000 000) follow another rule: digit sum divisible by 5.
+    la_poste = siret.startswith("356000000") and sum(int(char) for char in siret) % 5 == 0
+    if not (_luhn_ok(siret) or la_poste):
+        raise ValidationError(_("Ce SIRET semble contenir une erreur de saisie."))
+
+
+def format_siret(value):
+    """ "12345678900012" -> "123 456 789 00012" (a SIREN: "123 456 789"); anything else as is."""
+    digits = normalize_siret(value)
+    if re.fullmatch(r"\d{14}", digits):
+        return f"{digits[:3]} {digits[3:6]} {digits[6:9]} {digits[9:]}"
+    if re.fullmatch(r"\d{9}", digits):
+        return f"{digits[:3]} {digits[3:6]} {digits[6:]}"
+    return value or ""
+
+
 APE_SHAPE = re.compile(r"^\d{4}[A-Z]$")
 
 

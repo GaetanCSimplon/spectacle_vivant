@@ -1,4 +1,4 @@
-{% extends "documents/contracts/_base.html" %}
+{% extends "documents/contracts/_base.html" %}{% load formats %}
 
 {% block content %}
     <h1>Contrat de cession de droits de représentation</h1>
@@ -11,7 +11,7 @@
         <p>
           {{ promoter.name }}<br>
           {{ promoter.full_address|linebreaksbr }}<br>
-          SIRET : {{ promoter.siret|default:"……" }}<br>
+          SIRET : {{ promoter.siret|siret|default:"……" }}<br>
           N° de licence : {{ promoter.licence_number|default:"……" }}<br>
           Représenté par {{ promoter.representative_name|default:"……" }}
           en qualité de {{ promoter.representative_role|default:"……" }}
@@ -22,7 +22,7 @@
         <p>
           {{ tenant.name }}<br>
           {{ tenant.full_address|linebreaksbr }}<br>
-          SIRET : {{ tenant.siret|default:"……" }}<br>
+          SIRET : {{ tenant.siret|siret|default:"……" }}<br>
           {% if tenant.code_ape %}Code APE : {{ tenant.code_ape }}<br>{% endif %}
           {% if not vat_exempt %}N° de TVA : {{ tenant.vat_number|default:"……" }}<br>{% endif %}
           N° de licence : {{ tenant.licence_number|default:"……" }}<br>

@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+{% load formats %}<!DOCTYPE html>
 <html lang="fr">
   <head>
     <meta charset="utf-8">
@@ -71,7 +71,7 @@
         <h2>Émetteur</h2>
         <p><strong>{{ issuer.name }}</strong>{% if issuer.legal_form %} — {{ issuer.legal_form }}{% endif %}</p>
         <p>{{ issuer.address|linebreaksbr }}</p>
-        <p>SIRET : {{ issuer.siret|default:"……" }}</p>
+        <p>SIRET : {{ issuer.siret|siret|default:"……" }}</p>
         {% if issuer.code_ape %}<p>Code APE : {{ issuer.code_ape }}</p>{% endif %}
         {% if show_vat %}<p>N° de TVA : {{ issuer.vat_number|default:"……" }}</p>{% endif %}
         {% if issuer.licence_number %}<p>Licence d'entrepreneur de spectacles : {{ issuer.licence_number }}</p>{% endif %}
@@ -80,7 +80,7 @@
         <h2>Client</h2>
         <p><strong>{{ customer.name }}</strong></p>
         <p>{{ customer.billing_address|linebreaksbr }}</p>
-        {% if customer.siret %}<p>SIRET : {{ customer.siret }}</p>{% endif %}
+        {% if customer.siret %}<p>SIRET : {{ customer.siret|siret }}</p>{% endif %}
       </div>
     </div>
 

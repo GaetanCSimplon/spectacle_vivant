@@ -22,15 +22,16 @@ def _payload(**overrides):
     data = {
         "name": "Compagnie du Soleil",
         "legal_form": "Association loi 1901",
-        "siret": "12345678900012",
+        "siret": "73282932000074",
         "address": "1 rue des Arts\n69001 Lyon",
         "vat_regime": "franchise",
         "vat_rate": "",
         "vat_number": "",
         "iban": "",
         "licence_number": "L-2",
-        "representative_name": "Julie Martin",
-        "representative_role": "Présidente",
+        "representative_first_name": "Julie",
+        "representative_last_name": "Martin",
+        "representative_role": "Président(e)",
         "jurisdiction_city": "Montpellier",
     }
     data.update(overrides)
@@ -66,7 +67,7 @@ def test_owner_can_update_the_tenant(client):
     assert response.url == URL
     tenant.refresh_from_db()
     assert tenant.name == "Compagnie du Soleil"
-    assert tenant.siret == "12345678900012"
+    assert tenant.siret == "73282932000074"
     assert tenant.vat_regime == "franchise"
     assert tenant.jurisdiction_city == "Montpellier"
 

@@ -68,7 +68,15 @@ class Tenant(AddressMixin, models.Model):
     phone = models.CharField(_("téléphone"), max_length=30, blank=True)
     email = models.EmailField(_("e-mail"), blank=True)
     licence_number = models.CharField(_("n° de licence"), max_length=50, blank=True)
+    # The documents print `representative_name`. The form asks for the first and the last name
+    # apart and writes "First Last" back into it, so no document changes (STR-05).
     representative_name = models.CharField(_("représentant légal"), max_length=255, blank=True)
+    representative_first_name = models.CharField(
+        _("prénom du représentant"), max_length=100, blank=True
+    )
+    representative_last_name = models.CharField(
+        _("nom du représentant"), max_length=150, blank=True
+    )
     representative_role = models.CharField(_("qualité du représentant"), max_length=255, blank=True)
     jurisdiction_city = models.CharField(
         _("ville du tribunal compétent"), max_length=255, blank=True

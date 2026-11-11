@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% load i18n %}
+{% load i18n formats %}
 
 {% block title %}{{ promoter.name }} — Bòrd Pro{% endblock %}
 
@@ -20,7 +20,7 @@
     {% if promoter.qualification_other %}<p class="text-gray-600">{% translate "Autres précisions" %} : {{ promoter.qualification_other }}</p>{% endif %}
     {% if promoter.email %}<p><a href="mailto:{{ promoter.email }}" class="inline-flex min-h-6 items-center text-blue-700 underline">{{ promoter.email }}</a></p>{% endif %}
     {% if promoter.phone %}<p><a href="tel:{{ promoter.phone }}" class="inline-flex min-h-6 items-center text-blue-700 underline">{{ promoter.phone }}</a></p>{% endif %}
-    {% if promoter.siret %}<p>SIRET : {{ promoter.siret }}</p>{% endif %}
+    {% if promoter.siret %}<p>SIRET : {{ promoter.siret|siret }}</p>{% endif %}
     {% if promoter.code_ape %}<p>{% translate "Code APE" %} : {{ promoter.code_ape }}</p>{% endif %}
     {% if promoter.vat_number %}<p>{% translate "N° de TVA" %} : {{ promoter.vat_number }}</p>{% endif %}
     {% if promoter.full_address %}<p>{{ promoter.full_address|linebreaksbr }}</p>{% endif %}
