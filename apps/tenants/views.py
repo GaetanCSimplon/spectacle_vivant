@@ -9,6 +9,7 @@ from django.shortcuts import get_object_or_404, redirect
 from django.urls import reverse, reverse_lazy
 from django.utils import timezone
 from django.utils.decorators import method_decorator
+from django.utils.html import format_html
 from django.utils.translation import gettext_lazy as _
 from django.views import View
 from django.views.decorators.cache import never_cache
@@ -70,6 +71,16 @@ class OnboardingView(LoginRequiredMixin, FormView):
 
     def form_valid(self, form):
         create_tenant_for_user(self.request.user, **form.cleaned_data)
+        # STR-02: say where the legal information is completed, without changing the path.
+        messages.info(
+            self.request,
+            format_html(
+                '{} <a href="{}" class="underline">{}</a>',
+                _("Vos informations légales (SIRET, adresse, représentant) servent aux contrats."),
+                reverse("tenants:settings"),
+                _("Les compléter maintenant"),
+            ),
+        )
         return super().form_valid(form)
 
 

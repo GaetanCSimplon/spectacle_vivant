@@ -64,7 +64,7 @@ def test_the_parties_and_the_show_come_from_our_data():
     text = _render(gig)
 
     assert "Raison sociale : Compagnie du Soleil" in text
-    assert "SIRET : 12345678900012" in text
+    assert "SIRET : 123 456 789 00012" in text
     assert "Code APE : 9001Z" in text
     assert "Téléphone : 04 67 00 00 00" in text
     assert "Raison sociale : Mairie de Sète" in text

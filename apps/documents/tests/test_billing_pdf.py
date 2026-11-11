@@ -83,7 +83,7 @@ def test_an_invoice_shows_the_parties_lines_and_payment_details():
 
     assert f"FACTURE F-{YEAR}-0001" in text
     assert "Compagnie du Soleil" in text
-    assert "SIRET : 12345678900012" in text
+    assert "SIRET : 123 456 789 00012" in text
     assert "Mairie de Nîmes" in text
     assert "3 place de la Mairie" in text
     assert "Cession du spectacle" in text

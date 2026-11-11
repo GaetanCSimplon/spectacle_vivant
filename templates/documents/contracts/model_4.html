@@ -1,4 +1,4 @@
-{% extends "documents/contracts/_base.html" %}
+{% extends "documents/contracts/_base.html" %}{% load formats %}
 
 {% block content %}
     <h1>CONTRAT DE CESSION DU DROIT D’EXPLOITATION D’UN SPECTACLE</h1>
@@ -7,7 +7,7 @@
 
     <p>
       Raison sociale de l’entreprise : {{ tenant.name }}<br>
-      Numéro SIREN : {{ tenant_siren|default:"……" }}<br>
+      Numéro SIREN : {{ tenant_siren|siret|default:"……" }}<br>
       Licence d’entrepreneur de spectacles n° et catégorie : {{ tenant.licence_number|default:"……" }}<br>
       Siège social : {{ tenant.full_address|default:"……"|linebreaksbr }}<br>
       Représentée par : {{ tenant.representative_name|default:"……" }} &nbsp; Qualité : {{ tenant.representative_role|default:"……" }}
@@ -17,7 +17,7 @@
     <p>Et :</p>
     <p>
       Raison sociale de l’entreprise : {{ promoter.name }}<br>
-      Numéro SIREN : {{ promoter_siren|default:"……" }}<br>
+      Numéro SIREN : {{ promoter_siren|siret|default:"……" }}<br>
       Licence d’entrepreneur de spectacles n° : {{ promoter.licence_number|default:"……" }} &nbsp; Catégorie n° : ……<br>
       Siège social : {{ promoter.full_address|default:"……"|linebreaksbr }}<br>
       Représentée par : {{ promoter.representative_name|default:"……" }} &nbsp; Qualité : {{ promoter.representative_role|default:"……" }}
@@ -239,7 +239,7 @@
       <h1>Annexe n°4 : frais liés à l’exécution du contrat (les frais annexes)</h1>
       <p>
         Raison sociale de l’entreprise : {{ tenant.name }}<br>
-        Numéro SIREN : {{ tenant_siren|default:"……" }}<br>
+        Numéro SIREN : {{ tenant_siren|siret|default:"……" }}<br>
         Licence d’entrepreneur de spectacles n° : {{ tenant.licence_number|default:"……" }} &nbsp; Catégorie n° : ……<br>
         Siège social : {{ tenant.full_address|default:"……"|linebreaksbr }}<br>
         Téléphone : {{ tenant.phone|default:"……" }}<br>
@@ -249,7 +249,7 @@
       <p>Et :</p>
       <p>
         Raison sociale de l’entreprise : {{ promoter.name }}<br>
-        Numéro SIREN : {{ promoter_siren|default:"……" }}<br>
+        Numéro SIREN : {{ promoter_siren|siret|default:"……" }}<br>
         Licence d’entrepreneur de spectacles n° : {{ promoter.licence_number|default:"……" }} &nbsp; Catégorie n° : ……<br>
         Siège social : {{ promoter.full_address|default:"……"|linebreaksbr }}<br>
         Téléphone : {{ promoter.phone|default:"……" }}<br>
