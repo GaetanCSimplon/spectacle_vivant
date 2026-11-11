@@ -5,6 +5,8 @@
 
 {% block main_width %}max-w-5xl{% endblock %}
 
+{% block breadcrumb %}{% include "components/_breadcrumb.html" with current=_("Compléter le contrat") %}{% endblock %}
+
 {% block page_content %}
   <h1 class="mb-1">{% translate "Compléter le contrat" %}</h1>
   <p class="mb-3">{% include "components/_volet_chip.html" with volet="contrats" %}</p>

@@ -70,7 +70,16 @@
         </section>
 
         <section class="card card-accent" aria-labelledby="balance-title">
-          <h2 id="balance-title" class="stat-label !text-xs !font-semibold">{% blocktranslate %}Solde de l'année {{ year }}{% endblocktranslate %}</h2>
+          <h2 id="balance-title" class="stat-label !text-xs !font-semibold">{% if all_years %}{% translate "Solde de toutes les années" %}{% else %}{% blocktranslate %}Solde de l'année {{ year }}{% endblocktranslate %}{% endif %}</h2>
+          <form method="get" class="mt-1" x-data>
+            {% if period != "mois" %}<input type="hidden" name="periode" value="{{ period }}">{% endif %}
+            <label for="year-filter" class="sr-only">{% translate "Année affichée" %}</label>
+            <select id="year-filter" name="annee" class="text-sm" @change="$el.form.submit()">
+              {% for choice in year_choices %}<option value="{{ choice }}" {% if choice == year %}selected{% endif %}>{{ choice }}</option>{% endfor %}
+              <option value="toutes" {% if all_years %}selected{% endif %}>{% translate "Toutes les années" %}</option>
+            </select>
+            <noscript><button type="submit" class="btn btn-secondary">{% translate "Afficher" %}</button></noscript>
+          </form>
           <p class="stat-value !text-3xl">{% if overview.result > 0 %}+ {% endif %}{{ overview.result|floatformat:"0g" }} €</p>
           <p class="mt-1">
             {% if overview.result > 0 %}<span class="pill pill-good">{% translate "Excédent" %}</span>
@@ -88,8 +97,8 @@
               <p class="flex justify-between text-stone-500"><span>{% translate "Reste à encaisser" %}</span><span>{{ overview.to_collect|floatformat:"0g" }} €</span></p>
               <p class="flex justify-between"><span>{% translate "Dépensé" %}</span><span>{{ overview.spent|floatformat:"0g" }} €</span></p>
               <p class="pt-1 text-xs text-stone-500">{% translate "Les dates annulées ne sont pas comptées." %}</p>
-              <p class="flex justify-between border-t border-page-line pt-2"><span>{% translate "Facturé en" %} {{ year }} ({% translate "caisse" %})</span><span>{{ invoiced_year|floatformat:"0g" }} €</span></p>
-              <p class="flex justify-between"><span>{% translate "Encaissé en" %} {{ year }}</span><span>{{ received_year|floatformat:"0g" }} €</span></p>
+              <p class="flex justify-between border-t border-page-line pt-2"><span>{% if all_years %}{% translate "Facturé" %}{% else %}{% translate "Facturé en" %} {{ year }}{% endif %} ({% translate "caisse" %})</span><span>{{ invoiced_year|floatformat:"0g" }} €</span></p>
+              <p class="flex justify-between"><span>{% if all_years %}{% translate "Encaissé" %}{% else %}{% translate "Encaissé en" %} {{ year }}{% endif %}</span><span>{{ received_year|floatformat:"0g" }} €</span></p>
               {% if awaiting %}
                 <h3 class="pt-2 text-xs font-semibold uppercase tracking-wider text-stone-500">
                   {% translate "Factures à encaisser" %}

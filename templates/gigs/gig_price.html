@@ -3,6 +3,8 @@
 
 {% block title %}Prix de la date — Bòrd Pro{% endblock %}
 
+{% block breadcrumb %}{% include "components/_breadcrumb.html" with current=_("Prix de cession") %}{% endblock %}
+
 {% block page_content %}
   <h1 class="mb-1">{% translate "Prix de cession" %}</h1>
   <p class="mb-4 text-sm text-gray-600">{{ gig.date|date:"d/m/Y" }} — {{ gig.show.title }} · {{ gig.promoter.name }}</p>

@@ -5,6 +5,10 @@
   <div class="mx-auto flex max-w-5xl items-center justify-between gap-4 px-4 py-2">
     <a href="{% url 'home' %}" class="inline-block rounded-lg"><img src="{% static 'brand/logo.svg' %}" alt="Bòrd Pro" width="2000" height="700" class="h-auto w-36"></a>
     {% if user.is_authenticated %}
+    <div class="flex items-center gap-1">
+      {% if request.tenant %}
+        <a href="{% url 'tenants:settings' %}" class="flex size-11 items-center justify-center rounded-lg text-blue-700 hover:bg-gray-100" aria-label="{% translate 'Informations de la structure' %}" title="{% translate 'Informations de la structure' %}">{% include "components/_icon.html" with name="settings" size=24 %}</a>
+      {% endif %}
       {# A burger menu. A <details> element, so it also works without JavaScript. #}
       <details class="group relative"
                x-data
@@ -17,13 +21,14 @@
         </summary>
         <nav aria-label="{% translate 'Navigation principale' %}"
              class="absolute right-0 top-full mt-2 flex w-64 flex-col gap-1 rounded-xl border border-page-line bg-white p-2 text-blue-700">
-          {% include "components/_nav.html" with link_class="nav-link flex min-h-11 items-center" active_class="" %}
+          {% include "components/_nav.html" with link_class="nav-link flex min-h-11 items-center gap-2" active_class="" icons=True %}
           <form method="post" action="{% url 'account_logout' %}" class="mt-1 border-t border-page-line pt-1">
             {% csrf_token %}
             <button type="submit" class="nav-link flex min-h-11 w-full items-center text-left">{% translate "Se déconnecter" %}</button>
           </form>
         </nav>
       </details>
+    </div>
     {% endif %}
   </div>
 </header>
