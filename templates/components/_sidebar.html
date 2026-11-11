@@ -6,7 +6,7 @@ Below that, the top bar with the burger menu (_header.html) is used instead.{% e
     <a href="{% url 'home' %}" class="inline-block rounded-lg"><img src="{% static 'brand/logo-white.svg' %}" alt="Bòrd Pro" width="2000" height="700" class="h-auto w-36"></a>
   </div>
   <nav aria-label="{% translate 'Navigation principale' %}" class="sidebar-nav flex flex-1 flex-col gap-1 overflow-y-auto px-3 py-2">
-    {% include "components/_nav.html" with link_class="nav-link flex min-h-11 items-center gap-2" active_class="" puce=True %}
+    {% include "components/_nav.html" with link_class="nav-link flex min-h-11 items-center gap-2" active_class="" icons=True %}
   </nav>
   <div class="border-t border-white/20 p-3">
     {% if request.tenant %}

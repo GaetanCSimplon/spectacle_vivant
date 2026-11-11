@@ -1,7 +1,7 @@
 {% load i18n %}
 {% comment %}
   Main navigation: bottom bar on mobile, links in the header from `sm` up.
-  `puce`: charter bullet (desktop column); `icons`: an outline icon in front of each entry (burger menu).
+  `icons`: an outline icon in front of each entry (the same in the desktop column and the burger menu).
   The active link gets aria-current="page".
 {% endcomment %}
 {% with view=request.resolver_match.view_name name=request.resolver_match.url_name ns=request.resolver_match.namespace %}
@@ -9,31 +9,31 @@
     href="{% url 'home' %}"
     class="{{ link_class }} {% if view == 'home' %}{{ active_class }}{% endif %}"
     {% if view == 'home' %}aria-current="page"{% endif %}
-  >{% if puce %}{% include "components/_gimic_puce.html" %}{% elif icons %}{% include "components/_icon.html" with name="home" size=20 %}{% endif %}{% translate "Accueil" %}</a>
+  >{% if icons %}{% include "components/_icon.html" with name="home" size=20 %}{% endif %}{% translate "Accueil" %}</a>
   <a
     href="{% url 'tenants:profile' %}"
     class="{{ link_class }} font-bold {% if ns == 'tenants' %}{{ active_class }}{% endif %}"
     {% if ns == 'tenants' %}aria-current="page"{% endif %}
-  >{% if puce %}{% include "components/_gimic_puce.html" %}{% elif icons %}{% include "components/_icon.html" with name="chart" size=20 %}{% endif %}{% translate "Bòrd" %}</a>
+  >{% if icons %}{% include "components/_icon.html" with name="chart" size=20 %}{% endif %}{% translate "Bòrd" %}</a>
   <a
     href="{% url 'gigs:list' %}"
     class="{{ link_class }} {% if ns == 'gigs' or ns == 'documents' %}{{ active_class }}{% endif %}"
     {% if ns == 'gigs' or ns == 'documents' %}aria-current="page"{% endif %}
-  >{% if puce %}{% include "components/_gimic_puce.html" %}{% elif icons %}{% include "components/_icon.html" with name="calendar" size=20 %}{% endif %}{% translate "Mes dates" %}</a>
+  >{% if icons %}{% include "components/_icon.html" with name="calendar" size=20 %}{% endif %}{% translate "Mes dates" %}</a>
   {% if gig_nav %}{% include "components/_gig_nav.html" %}{% endif %}
   <a
     href="{% url 'document-library' %}"
     class="{{ link_class }} {% if view == 'document-library' %}{{ active_class }}{% endif %}"
     {% if view == 'document-library' %}aria-current="page"{% endif %}
-  >{% if puce %}{% include "components/_gimic_puce.html" %}{% elif icons %}{% include "components/_icon.html" with name="file" size=20 %}{% endif %}{% translate "Documents" %}</a>
+  >{% if icons %}{% include "components/_icon.html" with name="file" size=20 %}{% endif %}{% translate "Documents" %}</a>
   <a
     href="{% url 'catalog:show-list' %}"
     class="{{ link_class }} {% if ns == 'catalog' %}{{ active_class }}{% endif %}"
     {% if ns == 'catalog' %}aria-current="page"{% endif %}
-  >{% if puce %}{% include "components/_gimic_puce.html" %}{% elif icons %}{% include "components/_icon.html" with name="star" size=20 %}{% endif %}{% translate "Spectacles" %}</a>
+  >{% if icons %}{% include "components/_icon.html" with name="star" size=20 %}{% endif %}{% translate "Spectacles" %}</a>
   <a
     href="{% url 'addressbook:promoter-list' %}"
     class="{{ link_class }} {% if ns == 'addressbook' %}{{ active_class }}{% endif %}"
     {% if ns == 'addressbook' %}aria-current="page"{% endif %}
-  >{% if puce %}{% include "components/_gimic_puce.html" %}{% elif icons %}{% include "components/_icon.html" with name="users" size=20 %}{% endif %}{% translate "Contacts" %}</a>
+  >{% if icons %}{% include "components/_icon.html" with name="users" size=20 %}{% endif %}{% translate "Contacts" %}</a>
 {% endwith %}

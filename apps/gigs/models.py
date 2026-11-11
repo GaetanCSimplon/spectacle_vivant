@@ -103,8 +103,9 @@ class Gig(TenantOwnedModel):
 
     @property
     def display_title(self):
-        """What names the date on a card or in a breadcrumb: the event, else the show (DAT-02)."""
-        return self.event_name or self.show.title
+        """What names the date on a card or in a breadcrumb: "Lieu, Ville, Spectacle" (DAT-02)."""
+        parts = (self.venue.name, self.venue.city, self.show.title)
+        return ", ".join(part for part in parts if part)
 
     def save(self, *args, **kwargs):
         # RG-12: a free gig always has a ticket price of 0.

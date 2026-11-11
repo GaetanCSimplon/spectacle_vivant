@@ -137,14 +137,15 @@ def test_bord_comes_right_after_the_home_page_and_is_in_bold(client):
     content = client.get(reverse("home")).content.decode()
     sidebar = content.split("<aside")[1].split("</aside>")[0]
     nav = sidebar.split("<nav")[1].split("</nav>")[0]
-    labels = re.findall(r">(?:<img[^>]*>\s*)?(Accueil|Bòrd|Mes dates|Spectacles|Contacts)</a>", nav)
+    nav = re.sub(r"<svg.*?</svg>", "", nav, flags=re.S)  # the icons are not part of the labels
+    labels = re.findall(r">\s*(Accueil|Bòrd|Mes dates|Spectacles|Contacts)</a>", nav)
 
     assert labels == ["Accueil", "Bòrd", "Mes dates", "Spectacles", "Contacts"]
-    bord_link = re.search(r"<a[^>]*>(?:<img[^>]*>\s*)?Bòrd</a>", nav.replace("\n", " ")).group(0)
+    bord_link = re.search(r"<a[^>]*>\s*Bòrd</a>", nav.replace("\n", " ")).group(0)
     assert "font-bold" in bord_link
-    assert "font-bold" not in re.search(
-        r"<a[^>]*>(?:<img[^>]*>\s*)?Mes dates</a>", nav.replace("\n", " ")
-    ).group(0)
+    assert "font-bold" not in re.search(r"<a[^>]*>\s*Mes dates</a>", nav.replace("\n", " ")).group(
+        0
+    )
 
 
 # --- "Retour" button (F-86) ----------------------------------------------------------------------
