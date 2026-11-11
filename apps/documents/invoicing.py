@@ -371,17 +371,31 @@ PAYMENT_MENTION = (
 )
 
 
+VAT_MENTION_FRANCHISE = "TVA non applicable, article 293 B du CGI."
+VAT_MENTION_NOT_TAXABLE = "TVA non applicable."
+VAT_MENTION_ASSOCIATION = "Association exonérée des impôts commerciaux."
+
+
+def vat_mentions(vat_regime):
+    """The sentences that say why a document has no VAT, for one regime (CTR-02).
+
+    The single source for the screen, the PDF of quotes, invoices and credit notes, and the
+    contracts that print them. A taxable structure prints none.
+    """
+    if vat_regime == Tenant.VatRegime.FRANCHISE:
+        return [VAT_MENTION_FRANCHISE]
+    if vat_regime == Tenant.VatRegime.NOT_TAXABLE:
+        return [VAT_MENTION_NOT_TAXABLE, VAT_MENTION_ASSOCIATION]
+    return []
+
+
 def legal_mentions(issuer, is_invoice, is_credit_note):
     """The legal sentences printed at the bottom of a document.
 
     Provisional wording, to be checked by an accountant (F-56, Q13): all the texts
     live here so that they can be corrected in one place.
     """
-    mentions = []
-    if issuer["vat_regime"] == Tenant.VatRegime.FRANCHISE:
-        mentions.append("TVA non applicable, article 293 B du CGI.")
-    elif issuer["vat_regime"] == Tenant.VatRegime.NOT_TAXABLE:
-        mentions.append("TVA non applicable.")
+    mentions = vat_mentions(issuer["vat_regime"])
     if is_invoice and not is_credit_note:
         mentions.append(PAYMENT_MENTION)
     return mentions

@@ -63,7 +63,7 @@
       <p class="flex justify-between font-semibold"><span>{% translate "Total TTC" %}</span><span>{{ document.total_incl_tax }} €</span></p>
     {% else %}
       <p class="flex justify-between font-semibold"><span>{% translate "Total" %}</span><span>{{ document.total_incl_tax }} €</span></p>
-      <p class="text-gray-500">{% translate "TVA non applicable." %}</p>
+      {% for mention in vat_mentions %}<p class="text-gray-500">{{ mention }}</p>{% endfor %}
     {% endif %}
   </div>
 

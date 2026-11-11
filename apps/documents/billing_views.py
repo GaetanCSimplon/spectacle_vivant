@@ -77,8 +77,14 @@ class DocumentMixin(TenantScopedMixin):
             DocumentLine, pk=line_pk, tenant=self.request.tenant, **{parent: self.document}
         )
 
+    def vat_regime(self):
+        """The regime a document follows: the frozen one once issued, the live one for a draft."""
+        if self.document.is_draft:
+            return self.request.tenant.vat_regime
+        return self.document.issuer_snapshot.get("vat_regime", self.request.tenant.vat_regime)
+
     def show_vat(self):
-        return self.request.tenant.vat_regime == Tenant.VatRegime.TAXABLE
+        return self.vat_regime() == Tenant.VatRegime.TAXABLE
 
     def context(self, **extra):
         document = self.document
@@ -93,6 +99,7 @@ class DocumentMixin(TenantScopedMixin):
                 {"line": line, "total": invoicing.line_total(line)} for line in document.lines.all()
             ],
             "show_vat": self.show_vat(),
+            "vat_mentions": invoicing.vat_mentions(self.vat_regime()),
             "line_form": DocumentLineForm(show_vat=self.show_vat()),
             "editing": None,
         }
