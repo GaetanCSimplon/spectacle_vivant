@@ -45,11 +45,27 @@ jobs:
           python-version: "3.12"
 
       - name: Install WeasyPrint system dependencies
+        # The Ubuntu mirror of the runners (azure.archive.ubuntu.com) is sometimes unreachable
+        # (2026-11-11: four runs in a row failed here, before any test): try again a few times, then
+        # fall back on the main archive.
         run: |
-          sudo apt-get update
-          sudo apt-get install -y --no-install-recommends \
-            libpango-1.0-0 libpangocairo-1.0-0 libgdk-pixbuf2.0-0 \
-            libcairo2 libharfbuzz-subset0
+          install() {
+            sudo apt-get -o Acquire::Retries=5 update &&
+            sudo apt-get -o Acquire::Retries=5 install -y --no-install-recommends \
+              libpango-1.0-0 libpangocairo-1.0-0 libgdk-pixbuf2.0-0 \
+              libcairo2 libharfbuzz-subset0
+          }
+          for attempt in 1 2 3; do
+            install && exit 0
+            echo "apt attempt $attempt failed"
+            sleep $((attempt * 20))
+          done
+          echo "Falling back on archive.ubuntu.com"
+          sudo sed -i \
+            -e 's|mirror+file:/etc/apt/apt-mirrors.txt|http://archive.ubuntu.com/ubuntu/|' \
+            -e 's|http://azure.archive.ubuntu.com/ubuntu/|http://archive.ubuntu.com/ubuntu/|' \
+            /etc/apt/sources.list.d/ubuntu.sources || true
+          install
 
       - name: Install Python dependencies
         run: pip install -r requirements/dev.txt
