@@ -505,6 +505,24 @@ Détail : `docs/archives/2026-11-05-reunion-associe.md` ; exigences F-86 à F-93
 - [ ] Site vitrine : intégrer la maquette de l'associé (décisions du 2026-11-08 : ce qui n'existe pas encore est annoncé avec le badge « En cours de développement » au lieu d'être retiré ; action principale « Demander une invitation » ; pas de page Tarifs ; site toujours fermé aux moteurs de recherche ; logos actuels tant que le pack v1.3 est provisoire). **PR 1 faite (2026-11-08, sans migration)** : en-tête nuit avec le logo capsule, page d'accueil (slogan, ruban fixe, « Vous tenez tous les rôles », « Moins de dispersion », « Ce que ça change », profils, **« Ce qui arrive »** avec le badge sur Radar, accès pour les artistes, signature et facturation électroniques, application installable), bloc final ; ruban sans défilement ; formes décoratives qui s'arrêtent si le visiteur demande moins de mouvement ; un test garde les textes honnêtes (rien d'indisponible sans son badge, aucune offre ni prix). **PR 2 faite (2026-11-08, sans migration)** : page Fonctionnalités (« Ce que vous pouvez faire aujourd'hui », budget prévu / facturé / encaissé, du formulaire à la feuille de route, l'essentiel sur la route avec l'espace personnel, une paie mieux préparée avec la mention « ne calcule pas », « Ce qui arrive » avec la même liste que l'accueil, « Un périmètre clair ») ; chaque phrase vérifiée contre l'application, un test relie par exemple « quatre modèles » au nombre réel de modèles de contrat. **PR 3 faite (2026-11-08, sans migration)** : page Contact refaite comme la demande d'invitation (en-tête nuit, formulaire inchangé : e-mail seul, rien d'enregistré, piège anti-robots ; bouton « Envoyer ma demande » ; adresse et confidentialité à côté). **Reprise du style (2026-11-08)** : les trois pages reprennent l'esthétique de la maquette de l'associé (feuille `static/css/vitrine.css`, classes `v-*`, hors Tailwind : bandeau nuit collant, grand bloc d'accueil avec formes et illustration, bandeau corail fixe, chiffres, grille de fonctionnalités, bloc final corail, pied de page nuit) ; le site n'est plus lié à la charte v1.0 de l'application. Écarts voulus par rapport à la maquette : bandeau sans défilement (accessibilité), aucune offre ni prix, chiffres réels, badge « En cours de développement » conservé. **À faire** : audit axe-core du site ; validation des textes par l'associé.
 - Après le MVP : espace artiste / technicien ; reste de la spécification `specification-feuille-de-route-type.md` ; page Tarifs (trois formules).
 
+## Retours de la recette n°1 de l'associé (2026-11-05, 44 retours)
+Source : `docs/marque/sources-associe/bord-pro-retours-recette-1.md`. Ordre des PR validé le 2026-11-11 ; plan à valider avant de coder pour toute PR qui touche modèles, migrations ou PDF. Décisions : DAT-07 = liste « À faire » et bouton « Relancer » (modèle B3, `mailto:`), sans envoi automatique ; FDR-01 = avertissement d'abord, bloquant à voir avec le Radar ; BRD-04 = chiffre d'affaires par date de prestation, trésorerie par date d'encaissement (révision de `indicateurs-bord.md` d'abord) ; SPE-02 = `AA-C-T-NNNNNN-KK`.
+- [x] PR 1 Bord : BRD-01, BRD-03 (2026-11-11, sans migration). Le cas de l'associé n'était pas un calcul faux : date encore au statut Option (hors du prévisionnel) et factures émises en 2026 (hors de la période 2027). Libellé « Prévisionnel », ligne d'explication quand des factures sont émises hors de la période, avertissement (sans blocage) à l'émission d'une facture sur une option. BRD-02 : réglé par la PR 11.
+- [ ] PR 2 Navigation et libellés : NAV-01 à NAV-04, DAT-02, CTR-04.
+- [ ] PR 3 Champs de « Ma structure » : STR-01, STR-03, STR-05, STR-06 (plan).
+- [ ] PR 4 Mentions TVA : CTR-02, STR-09 dans l'onboarding (plan ; relecture comptable).
+- [ ] PR 5 Historique sur la facture : CTR-10 (plan).
+- [ ] PR 6 Remplissage par SIRET : ORG-01, ORG-02, STR-04 (plan).
+- [ ] PR 7 Compléter le contrat : CTR-05, CTR-06, CTR-07, FDR-04 (plan).
+- [ ] PR 8 Page d'une date : DAT-01 (le champ existe déjà), DAT-03, DAT-04, DAT-05, DAT-08 (plan).
+- [ ] PR 9 Formulaires organisateur et e-mails : ORG-04 à ORG-07, CTR-08 (plan).
+- [ ] PR 10 Feuille de route sur plusieurs jours : FDR-02, FDR-03 (plan).
+- [ ] PR 11 Bord en deux vues : BRD-04 (après révision de `indicateurs-bord.md`).
+- [ ] PR 12 Règles Radar dans `specification-radar.md` : FDR-01.
+- [ ] PR 13 Le reste après arbitrage : STR-07, STR-08, CTR-01, CTR-03, SPE-01 à SPE-03, DAT-06, DAT-07, ORG-03.
+
+---
+
 ## Décisions à prendre (à consigner ici)
 
 | Décision | Quand | Statut |

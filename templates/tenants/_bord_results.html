@@ -34,11 +34,12 @@
     <p class="stat-value whitespace-nowrap">{% if filters.figure == 'planned' %}{{ revenue.planned|floatformat:"0g" }}{% elif filters.figure == 'invoiced' %}{{ revenue.invoiced|floatformat:"0g" }}{% else %}{{ revenue.received|floatformat:"0g" }}{% endif %} €</p>
     <p class="mt-1 text-sm">{% translate "Ce que les concerts doivent rapporter" %} · {{ figure_label }}</p>
     <ul class="mt-2 space-y-0.5 text-sm">
-      <li>{% translate "Prévue" %} (HT) : {{ revenue.planned|floatformat:"0g" }} €</li>
+      <li>{% translate "Prévisionnelle" %} (HT) : {{ revenue.planned|floatformat:"0g" }} €</li>
       <li>{% translate "Facturée" %} (HT) : {{ revenue.invoiced|floatformat:"0g" }} €</li>
       <li>{% translate "Encaissée" %} (TTC) : {{ revenue.received|floatformat:"0g" }} €</li>
       {% if revenue.options_planned %}<li>{% blocktranslate with amount=revenue.options_planned|floatformat:"0g" %}+ {{ amount }} € HT si les options sont confirmées{% endblocktranslate %}</li>{% endif %}
     </ul>
+    {% if invoices_outside_period %}<p class="mt-2 text-sm">{% blocktranslate count counter=invoices_outside_period %}{{ counter }} facture de ces dates a été émise hors de la période affichée : elle compte dans « Reste à encaisser » mais pas dans « Facturée » ni « Encaissée ».{% plural %}{{ counter }} factures de ces dates ont été émises hors de la période affichée : elles comptent dans « Reste à encaisser » mais pas dans « Facturée » ni « Encaissée ».{% endblocktranslate %}</p>{% endif %}
     <ul class="mt-2 space-y-0.5 border-t border-current pt-2 text-sm">
       <li class="flex justify-between gap-2"><span>{% translate "Les frais déjà ajoutés" %}</span><strong class="data whitespace-nowrap">{{ expenses.total|floatformat:"0g" }} €</strong></li>
       <li class="flex justify-between gap-2"><span>{% translate "Ce qu'il reste après ces frais" %} ({% if balance > 0 %}{% translate "excédent" %}{% elif balance < 0 %}{% translate "déficit" %}{% else %}{% translate "équilibre" %}{% endif %})</span><strong class="data whitespace-nowrap">{% if balance > 0 %}+ {% endif %}{{ balance|floatformat:"0g" }} €</strong></li>

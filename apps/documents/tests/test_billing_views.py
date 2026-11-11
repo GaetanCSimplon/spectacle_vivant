@@ -5,6 +5,7 @@ from django.template.loader import render_to_string
 from django.urls import reverse
 
 from apps.gigs.factories import GigFactory
+from apps.gigs.models import Gig
 from apps.tenants.factories import MembershipFactory
 from apps.tenants.models import Tenant
 
@@ -350,6 +351,43 @@ def test_issue_asks_for_confirmation_then_issues(client):
     assert invoice.status == Invoice.Status.ISSUED
     assert invoice.number
     assert response.url == _detail(gig, invoice)
+
+
+def test_issuing_an_invoice_on_an_option_warns_without_blocking(client):
+    tenant = _login(client)
+    gig = _gig(tenant)
+    gig.status = Gig.Status.OPTION
+    gig.save()
+    invoice = _draft(gig)
+    url = _url("document-issue", gig, "factures", invoice.pk)
+
+    page = client.get(url)
+    response = client.post(url, follow=True)
+
+    assert "encore une option" in page.content.decode()
+    assert "encore une option" in response.content.decode()
+    invoice.refresh_from_db()
+    assert invoice.status == Invoice.Status.ISSUED
+
+
+def test_a_quote_or_a_confirmed_date_gets_no_option_warning(client):
+    tenant = _login(client)
+    gig = _gig(tenant)
+    gig.status = Gig.Status.CONFIRMED
+    gig.save()
+    quote_page = client.get(_url("document-issue", gig, "devis", invoicing.create_quote(gig).pk))
+    gig.status = Gig.Status.OPTION
+    gig.save()
+    option_quote_page = client.get(
+        _url("document-issue", gig, "devis", invoicing.create_quote(gig).pk)
+    )
+    gig.status = Gig.Status.CONFIRMED
+    gig.save()
+    invoice_page = client.get(_url("document-issue", gig, "factures", _draft(gig).pk))
+
+    for page in (quote_page, option_quote_page, invoice_page):
+        assert page.status_code == 200
+        assert "encore une option" not in page.content.decode()
 
 
 def test_issuing_twice_does_not_consume_a_second_number(client):

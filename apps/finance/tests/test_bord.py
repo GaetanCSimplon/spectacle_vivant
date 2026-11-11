@@ -7,6 +7,7 @@ import pytest
 from django.utils import timezone
 
 from apps.documents import invoicing
+from apps.documents.models import Invoice
 from apps.finance import bord, services
 from apps.finance.factories import ExpenseFactory
 from apps.finance.models import Expense
@@ -154,6 +155,66 @@ def test_invoiced_follows_the_issue_date_and_counts_credit_notes_negative(tenant
     only_invoice = issued_invoice(_gig(tenant, price="250.00"))
     assert only_invoice.status == "issued"
     assert bord.revenue(tenant, _filters())["invoiced"] == D("250.00")
+
+
+def _associate_case(tenant, status):
+    """Recette n°1 (BRD-03): a 2027 date, deposit invoiced and paid in 2026, balance invoiced."""
+    gig = make_gig(
+        tenant=tenant,
+        price="3000.00",
+        gig_fields={"status": status, "date": datetime.date(2027, 3, 15)},
+    )
+    deposit = issued_invoice(gig, Invoice.Kind.DEPOSIT)
+    services.record_payment(
+        deposit, deposit.total_incl_tax, datetime.date(2026, 11, 10), "transfer"
+    )
+    issued_invoice(gig, Invoice.Kind.BALANCE)
+    return gig
+
+
+def _year_2027(**kwargs):
+    return bord.Filters(start=datetime.date(2027, 1, 1), end=datetime.date(2027, 12, 31), **kwargs)
+
+
+def test_a_confirmed_2027_date_invoiced_in_2026_is_planned_in_2027_and_not_invoiced_there(tenant):
+    _associate_case(tenant, Gig.Status.CONFIRMED)
+
+    totals = bord.revenue(tenant, _year_2027())
+
+    assert totals["planned"] == D("3000.00")
+    assert totals["invoiced"] == D("0.00")
+    assert totals["received"] == D("0.00")
+    assert bord.receivables(tenant, TODAY)["remaining"] > 0
+
+
+def test_the_same_date_still_an_option_is_not_planned_but_kept_apart(tenant):
+    _associate_case(tenant, Gig.Status.OPTION)
+
+    totals = bord.revenue(tenant, _year_2027())
+
+    assert totals["planned"] == D("0.00")
+    assert totals["options_planned"] == D("3000.00")
+
+
+def test_invoices_issued_outside_the_period_are_counted_for_the_note(tenant):
+    _associate_case(tenant, Gig.Status.CONFIRMED)
+
+    assert bord.invoices_outside_period(tenant, _year_2027()) == 2
+    assert bord.summary(tenant, _year_2027(), TODAY)["invoices_outside_period"] == 2
+
+
+def test_no_note_when_the_invoices_are_in_the_period(tenant):
+    issued_invoice(_gig(tenant, price="1000.00"))
+
+    assert bord.invoices_outside_period(tenant, _filters()) == 0
+
+
+def test_the_note_ignores_cancelled_dates_and_other_shows_and_tenants(tenant):
+    other = TenantFactory(**TENANT_FIELDS)
+    _associate_case(other, Gig.Status.CONFIRMED)
+    _associate_case(tenant, Gig.Status.CANCELLED)
+
+    assert bord.invoices_outside_period(tenant, _year_2027()) == 0
 
 
 def test_received_follows_the_payment_date(tenant):
