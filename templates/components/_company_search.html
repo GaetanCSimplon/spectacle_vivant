@@ -1,0 +1,40 @@
+{% load i18n %}{% comment %}
+  "Retrouver par SIRET ou par nom" (ORG-01): a search box above a form. A click on a result fills the
+  fields below (name, SIRET, APE, address, VAT number); they stay editable and nothing is saved
+  until the form is sent. Needs: street_field (the form field holding the street, "billing_address"
+  for an organiser, "address" for the structure). Optional: keep_name (do not replace a name already
+  typed, for the structure).
+  The few lines of Alpine only copy values into the fields of the same page.
+{% endcomment %}
+<div class="card mb-6" x-data="{
+  note: false,
+  fill(d) {
+    const set = (field, value) => {
+      const el = document.getElementById('id_' + field)
+      if (el && value !== undefined) { el.value = value; el.dispatchEvent(new Event('change', { bubbles: true })) }
+    }
+    {% if keep_name %}if (!document.getElementById('id_name').value) {% endif %}set('name', d.name)
+    set('siret', d.siret)
+    const ape = document.getElementById('id_code_ape')
+    if (ape && ape.tagName === 'SELECT' && !Array.from(ape.options).some(o => o.value === d.codeApe)) {
+      set('code_ape', 'other'); set('code_ape_other', d.codeApe)
+    } else { set('code_ape', d.codeApe) }
+    set('{{ street_field }}', d.street)
+    set('postal_code', d.postalCode)
+    set('city', d.city)
+    set('department', d.department)
+    set('vat_number', d.vatNumber)
+    this.note = true
+  }
+}">
+  <label for="company-q" class="block text-sm font-semibold">{% translate "Retrouver par SIRET ou par nom" %}</label>
+  <p class="mb-2 text-sm text-gray-600">{% translate "Les informations connues de l'État remplissent les champs ci-dessous ; vous pouvez les corriger." %}</p>
+  <input id="company-q" name="q" type="search" autocomplete="off" maxlength="100" class="w-full"
+         placeholder="{% translate 'SIRET (14 chiffres) ou nom de la structure' %}"
+         hx-get="{% url 'lookup-companies' %}" hx-trigger="keyup changed delay:600ms, search"
+         hx-target="#company-results" hx-swap="innerHTML">
+  <div id="company-results" class="mt-2" aria-live="polite"></div>
+  <p x-show="note" x-cloak class="mt-2 rounded-lg bg-amber-50 p-2 text-sm text-amber-900" role="status">
+    {% translate "Champs remplis. Le n° de TVA est calculé à partir du SIREN : vérifiez-le, toutes les structures n'en ont pas." %}
+  </p>
+</div>

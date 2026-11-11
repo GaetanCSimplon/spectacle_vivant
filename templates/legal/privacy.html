@@ -30,6 +30,11 @@
       obtenir la position, que nous conservons. Quand une personne ouvre une feuille de route
       partagée, son navigateur charge la carte depuis openstreetmap.org (qui reçoit son adresse IP,
       sans cookie ni compte). Aucune donnée personnelle n'est envoyée avec l'adresse.</li>
+    <li>Les aides à la saisie : quand vous tapez un SIRET ou un nom dans « Retrouver par SIRET ou
+      par nom », ce texte est envoyé à l'API publique « Recherche d'entreprises » de l'État (le nom
+      d'un entrepreneur individuel peut être une donnée personnelle) ; quand vous tapez un code
+      postal, il est envoyé à l'API « Découpage administratif ». Rien d'autre n'est envoyé, rien
+      n'est conservé par ces services à votre sujet, et nous ne gardons pas le texte tapé.</li>
     <li>Vos données de travail : spectacles, organisateurs, lieux, contacts, dates, documents,
       paiements, dépenses et justificatifs.</li>
   </ul>
@@ -62,6 +67,9 @@
       contenu des pages) n'y est envoyée.</li>
     <li>OpenStreetMap (Nominatim) : position des adresses des feuilles de route, comme décrit
       plus haut.</li>
+    <li>API « Recherche d'entreprises » et API « Découpage administratif » (services publics de
+      l'État, France) : recherche d'une structure par SIRET ou par nom, communes d'un code postal,
+      comme décrit plus haut.</li>
   </ul>
 
   <h2 class="font-semibold text-gray-900">Combien de temps ?</h2>

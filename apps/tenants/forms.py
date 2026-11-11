@@ -40,6 +40,14 @@ def _legal_form_choices():
     ]
 
 
+def _ape_choices():
+    return [
+        ("", "---------"),
+        *((code, f"{code[:2]}.{code[2:]} — {label}") for code, label in choices.APE_CODES),
+        (OTHER, _("Autre (à préciser)")),
+    ]
+
+
 def _role_choices():
     return [
         ("", "---------"),
@@ -110,7 +118,15 @@ class TenantProfileForm(ChoiceOrOtherMixin, SectionedFormMixin, AddressModelForm
     layout = [
         (
             _("La structure"),
-            ["name", "legal_form", "legal_form_other", "siret", "code_ape", "licence_number"],
+            [
+                "name",
+                "legal_form",
+                "legal_form_other",
+                "siret",
+                "code_ape",
+                "code_ape_other",
+                "licence_number",
+            ],
         ),
         (_("Adresse"), ["address", "postal_code", "city", "department"]),
         (_("Contact"), ["phone", "email"]),
@@ -130,6 +146,7 @@ class TenantProfileForm(ChoiceOrOtherMixin, SectionedFormMixin, AddressModelForm
     other_fields = (
         ("legal_form", choices.LEGAL_FORMS),
         ("representative_role", choices.ROLES),
+        ("code_ape", choices.APE_CODE_VALUES),
     )
 
     legal_form = forms.ChoiceField(
@@ -158,12 +175,13 @@ class TenantProfileForm(ChoiceOrOtherMixin, SectionedFormMixin, AddressModelForm
         max_length=20,
         help_text=_("14 chiffres. Les espaces sont acceptés."),
     )
-    # Declared here because people type "90.01 Z": the model's 5 characters apply after cleaning.
-    code_ape = forms.CharField(
-        label=_("Code APE"),
+    # A list of the codes of the live performance; "Autre" for any other one.
+    code_ape = forms.ChoiceField(label=_("Code APE"), required=False, choices=_ape_choices)
+    code_ape_other = forms.CharField(
+        label=_("Autre code APE"),
         required=False,
         max_length=10,
-        help_text=_("4 chiffres et 1 lettre, par exemple 9001Z (spectacle vivant)."),
+        help_text=_("À remplir seulement si vous avez choisi « Autre » : 4 chiffres et 1 lettre."),
     )
 
     class Meta:
@@ -222,8 +240,8 @@ class TenantProfileForm(ChoiceOrOtherMixin, SectionedFormMixin, AddressModelForm
     def clean_vat_number(self):
         return "".join(self.cleaned_data["vat_number"].split()).upper()
 
-    def clean_code_ape(self):
-        code = normalize_code_ape(self.cleaned_data["code_ape"])
+    def clean_code_ape_other(self):
+        code = normalize_code_ape(self.cleaned_data["code_ape_other"])
         if code:
             validate_code_ape(code)
         return code

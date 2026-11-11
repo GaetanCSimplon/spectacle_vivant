@@ -192,3 +192,9 @@ MEDIA_ROOT = BASE_DIR / "media"
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+
+# Look-ups that save typing (recette n°1, ORG-01 and ORG-02): two free public APIs of the French
+# State, no account and no key. Only what the user typed in the search box leaves the server.
+LOOKUPS_ENABLED = env.bool("LOOKUPS_ENABLED", default=True)
+COMPANY_SEARCH_URL = "https://recherche-entreprises.api.gouv.fr/search"
+COMMUNES_URL = "https://geo.api.gouv.fr/communes"

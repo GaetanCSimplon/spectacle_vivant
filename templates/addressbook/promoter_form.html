@@ -15,6 +15,8 @@
     {% endif %}
   </h1>
 
+  {% include "components/_company_search.html" with street_field="billing_address" %}
+
   <form method="post" class="space-y-4">
     {% csrf_token %}
     {% include "components/_sectioned_form.html" %}
