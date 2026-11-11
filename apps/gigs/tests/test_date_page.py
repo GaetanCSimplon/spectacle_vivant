@@ -217,3 +217,33 @@ def test_the_progress_of_a_list_never_reads_another_tenants_data():
     [bulk] = services.attach_progress([gig])
 
     assert bulk.progress[0]["done_count"] == 0
+
+
+def test_the_summary_shows_the_address_of_the_venue_next_to_its_name(client):
+    gig = GigFactory(
+        tenant=_login(client),
+        venue__name="Le Bikini",
+        venue__address="Parc de la Plaine",
+        venue__postal_code="31520",
+        venue__city="Ramonville-Saint-Agne",
+    )
+
+    content = _page(client, gig)
+
+    assert "Le Bikini" in content
+    assert "Parc de la Plaine, 31520 Ramonville-Saint-Agne" in content
+
+
+def test_the_summary_shows_the_venue_alone_when_it_has_no_address(client):
+    gig = GigFactory(
+        tenant=_login(client),
+        venue__name="Salle sans adresse",
+        venue__address="",
+        venue__postal_code="",
+        venue__city="",
+    )
+
+    summary = _page(client, gig).split("gig-summary", 1)[1].split("</section>", 1)[0]
+
+    assert "Salle sans adresse" in summary
+    assert "·</span>" not in summary.split("Lieu", 1)[1].split("</p>", 1)[0]

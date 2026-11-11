@@ -27,6 +27,7 @@
       <p>
         {% translate "Lieu" %} :
         <a href="{% url 'addressbook:venue-detail' gig.venue.pk %}" class="text-blue-700 underline">{{ gig.venue.name }}</a>
+        {% if gig.venue.one_line_address %}<span class="text-gray-600">· {{ gig.venue.one_line_address }}</span>{% endif %}
       </p>
       {% if gig.status == 'cancelled' %}
         <p class="text-gray-500"><s>{% translate "Prix de cession" %} : {{ gig.price }} € HT</s> · {% translate "date annulée" %}</p>
