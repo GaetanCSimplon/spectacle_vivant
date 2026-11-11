@@ -25,6 +25,13 @@ from .validators import (
 OTHER = "other"
 
 
+VAT_REGIME_HELP = _(
+    "Franchise en base : vous ne facturez pas de TVA (par exemple en micro-entreprise). "
+    "Non assujetti : par exemple une association hors du champ de la TVA. "
+    "Assujetti : vous facturez la TVA ; indiquez alors votre taux et votre n° de TVA."
+)
+
+
 def _legal_form_choices():
     return [
         ("", "---------"),
@@ -87,6 +94,7 @@ class OnboardingForm(ChoiceOrOtherMixin, forms.ModelForm):
     class Meta:
         model = Tenant
         fields = ["name", "legal_form", "vat_regime"]
+        help_texts = {"vat_regime": VAT_REGIME_HELP}
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -184,6 +192,7 @@ class TenantProfileForm(ChoiceOrOtherMixin, SectionedFormMixin, AddressModelForm
         ]
         widgets = {"address": forms.Textarea(attrs={"rows": 2})}
         help_texts = {
+            "vat_regime": VAT_REGIME_HELP,
             "licence_number": _(
                 "Numéro de licence d'entrepreneur de spectacles, si vous en avez un."
             ),
