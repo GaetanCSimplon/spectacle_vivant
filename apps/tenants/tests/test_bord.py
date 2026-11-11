@@ -122,6 +122,20 @@ def test_the_default_period_is_the_year_and_the_default_figure_is_the_planned_on
     assert context["revenue"]["planned"] == 800 or context["dates"]["confirmed"] == 0
 
 
+def test_the_page_explains_a_zero_invoiced_when_invoices_are_issued_outside_the_period(client):
+    membership = _membership(client)
+    gig = _gig(membership.tenant, price="3000.00", date=datetime.date(2027, 3, 15))
+    issued_invoice(gig)
+
+    around = {"period": "perso", "start": "2027-01-01", "end": "2027-12-31"}
+    content = client.get(URL, around).content.decode()
+    in_period = {"period": "perso", "start": "2000-01-01", "end": "2100-12-31"}
+    other = client.get(URL, in_period).content.decode()
+
+    assert "hors de la période affichée" in content
+    assert "hors de la période affichée" not in other
+
+
 def test_nothing_to_report_is_said_with_care(client):
     _membership(client)
 

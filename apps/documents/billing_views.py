@@ -207,6 +207,11 @@ class LineRemoveView(DocumentMixin, View):
         return self.render_lines_or_redirect()
 
 
+OPTION_INVOICE_WARNING = _(
+    "Cette date est encore une option : confirmez-la pour qu'elle compte dans votre prévisionnel."
+)
+
+
 class DocumentIssueView(DocumentMixin, View):
     """Issuing is final: a confirmation page first, then POST."""
 
@@ -214,10 +219,14 @@ class DocumentIssueView(DocumentMixin, View):
         self.load(gig_id, doc_type, pk)
         if not self.document.is_draft:
             return self.refuse(_("Ce document est déjà émis."))
-        context = self.context()
+        context = self.context(invoice_on_option=self._invoice_on_option())
         if context["missing"] or not context["rows"]:
             return self.refuse(_("Ce document n'est pas prêt à être émis."))
         return render(request, "documents/document_issue.html", context)
+
+    def _invoice_on_option(self):
+        """An invoice on a date still an option: it will not count in the planned revenue."""
+        return self.doc_type == "factures" and self.gig.status == Gig.Status.OPTION
 
     def post(self, request, gig_id, doc_type, pk):
         self.load(gig_id, doc_type, pk)
@@ -231,6 +240,8 @@ class DocumentIssueView(DocumentMixin, View):
             _("Le document est émis : il porte le numéro %(number)s.")
             % {"number": self.document.number},
         )
+        if self._invoice_on_option():
+            messages.warning(request, OPTION_INVOICE_WARNING)
         return redirect(
             "documents:document-detail", gig_id=self.gig.pk, doc_type=doc_type, pk=self.document.pk
         )

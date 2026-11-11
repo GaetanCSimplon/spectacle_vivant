@@ -10,6 +10,11 @@
     <p>{% translate "Client" %} : {{ customer.name }}</p>
     <p class="font-semibold">{% translate "Total" %} : {{ document.total_incl_tax }} €</p>
   </div>
+  {% if invoice_on_option %}
+    <p class="mb-4 rounded-lg bg-amber-50 p-3 text-sm text-amber-900" role="note">
+      {% translate "Cette date est encore une option : confirmez-la pour qu'elle compte dans votre prévisionnel. Vous pouvez quand même émettre la facture." %}
+    </p>
+  {% endif %}
   <p class="mb-6 text-sm">
     {% translate "Un numéro lui sera attribué et ses informations seront figées. Une fois émis, il ne pourra plus être modifié ni supprimé : une erreur se corrige par un avoir." %}
   </p>

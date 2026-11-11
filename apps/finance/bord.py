@@ -27,7 +27,7 @@ SOON_DAYS = 30
 ATTENTION_LIMIT = 5
 
 FIGURES = {
-    "planned": _("Prévu (HT)"),
+    "planned": _("Prévisionnel (HT)"),
     "invoiced": _("Facturé (HT)"),
     "received": _("Encaissé (TTC)"),
 }
@@ -114,6 +114,17 @@ def revenue(tenant, filters):
         "invoiced": invoices.aggregate(total=Sum("total_excl_tax"))["total"] or ZERO,
         "received": payments.aggregate(total=Sum("amount"))["total"] or ZERO,
     }
+
+
+def invoices_outside_period(tenant, filters):
+    """Issued invoices of the dates of the period that were issued before or after it.
+
+    The invoiced and received figures follow the issue and payment dates, not the date of the
+    show: a 2027 date invoiced in 2026 shows 0 in 2027. This count lets the page say so.
+    """
+    gigs = _gigs(tenant, filters).exclude(status=Gig.Status.CANCELLED)
+    invoices = Invoice.objects.filter(tenant=tenant, status__in=INVOICED, gig__in=gigs)
+    return invoices.exclude(issue_date__range=(filters.start, filters.end)).count()
 
 
 def _expense_rows(tenant, filters):
@@ -557,6 +568,7 @@ def summary(tenant, filters, today):
         "filters": filters,
         "dates": date_counts(tenant, filters),
         "revenue": revenue_totals,
+        "invoices_outside_period": invoices_outside_period(tenant, filters),
         "expenses": expense_totals,
         "to_reimburse": to_reimburse(tenant),
         "claims": pending_claims(tenant),
