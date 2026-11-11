@@ -43,20 +43,21 @@
       {% endfor %}
     {% endif %}
 
-    {% if slots %}
+    {% if program %}
       <h2>Programme de la journée</h2>
       <table>
-        {% for slot in slots %}
+        {% for slot in program %}
           <tr>
             <td class="time">{{ slot.time|time:"H:i" }}</td>
-            <td>{{ slot.label|default:slot.get_kind_display }}{% if slot.note %}<br><span class="muted">{{ slot.note|linebreaksbr }}</span>{% endif %}</td>
+            <td>{{ slot.label }}{% if slot.note %}<br><span class="muted">{{ slot.note|linebreaksbr }}</span>{% endif %}</td>
           </tr>
         {% endfor %}
       </table>
     {% endif %}
 
-    {% if lodgings %}
+    {% if lodgings or lodging_cover %}
       <h2>Hébergement</h2>
+      {% if lodging_cover %}<p>{{ lodging_cover|capfirst }}</p>{% endif %}
       {% for lodging in lodgings %}
         <p><strong>{{ lodging.name }}</strong>{% if lodging.arrival_time %} — arrivée {{ lodging.arrival_time|time:"H:i" }}{% endif %}</p>
         {% if lodging.full_address %}<p>{{ lodging.full_address|linebreaksbr }}</p>{% endif %}
@@ -65,8 +66,9 @@
       {% endfor %}
     {% endif %}
 
-    {% if meals or crew_headcount %}
+    {% if meals or crew_headcount or meals_cover %}
       <h2>Repas</h2>
+      {% if meals_cover %}<p>{{ meals_cover|capfirst }}</p>{% endif %}
       {% if crew_headcount %}<p>{{ crew_headcount }} personne{{ crew_headcount|pluralize }}</p>{% endif %}
       {% for meal in meals %}
         <p><strong>{{ meal.place }}</strong>{% if meal.time %} — {{ meal.time|time:"H:i" }}{% endif %}</p>

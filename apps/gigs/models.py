@@ -11,6 +11,7 @@ from django.utils.translation import gettext_lazy as _
 from apps.core.models import TenantOwnedModel
 
 from . import payment_terms
+from .hospitality import CoveredBy
 from .payment_terms import BalanceTerm, DepositTerm
 
 # An option is highlighted as "soon" when it expires within this many days.
@@ -97,8 +98,29 @@ class Gig(TenantOwnedModel):
     copies_count = models.PositiveIntegerField(
         _("nombre d'exemplaires du contrat"), default=2, validators=[MinValueValidator(1)]
     )
+    # What the contract prints, composed from the answers below (see hospitality.py).
     meals = models.CharField(_("repas pris en charge"), max_length=255, blank=True)
     lodging = models.CharField(_("hébergement pris en charge"), max_length=255, blank=True)
+    meals_covered_by = models.CharField(
+        _("repas pris en charge par"), max_length=20, choices=CoveredBy, blank=True
+    )
+    meals_count = models.PositiveSmallIntegerField(_("nombre de repas"), null=True, blank=True)
+    meals_notes = models.CharField(
+        _("précisions sur les repas"),
+        max_length=150,
+        blank=True,
+        help_text=_("Par exemple : régime alimentaire, répartition. Imprimé dans le contrat."),
+    )
+    lodging_covered_by = models.CharField(
+        _("hébergement pris en charge par"), max_length=20, choices=CoveredBy, blank=True
+    )
+    lodging_nights = models.PositiveSmallIntegerField(_("nombre de nuits"), null=True, blank=True)
+    lodging_notes = models.CharField(
+        _("précisions sur l'hébergement"),
+        max_length=150,
+        blank=True,
+        help_text=_("Par exemple : chambres, répartition. Imprimé dans le contrat."),
+    )
     local_transport = models.CharField(_("transports locaux"), max_length=255, blank=True)
     other_hospitality = models.CharField(
         _("autres éléments d'accueil"),

@@ -186,8 +186,12 @@ def test_the_date_form_saves_the_contract_wording_fields(client):
             "gig-deposit_percent": "30",
             "gig-deposit_due_on": "2026-11-01",
             "gig-balance_due_on": "2026-12-15",
-            "gig-meals": "3 repas chauds",
-            "gig-lodging": "2 chambres",
+            "gig-meals_covered_by": "organiser",
+            "gig-meals_count": "3",
+            "gig-meals_notes": "chauds",
+            "gig-lodging_covered_by": "producer",
+            "gig-lodging_nights": "2",
+            "gig-lodging_notes": "",
             "gig-local_transport": "Navette",
             "gig-other_hospitality": "Parking gardé",
         },
@@ -201,8 +205,8 @@ def test_the_date_form_saves_the_contract_wording_fields(client):
     assert gig.deposit_due_on == datetime.date(2026, 11, 1)
     assert gig.balance_due_on == datetime.date(2026, 12, 15)
     assert (gig.meals, gig.lodging, gig.local_transport) == (
-        "3 repas chauds",
-        "2 chambres",
+        "À la charge de l'Organisateur : 3 repas. chauds",
+        "À la charge du Producteur : 2 nuits",
         "Navette",
     )
     assert gig.other_hospitality == "Parking gardé"
