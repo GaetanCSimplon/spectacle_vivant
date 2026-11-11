@@ -226,6 +226,10 @@ class Invoice(BillingDocument):
         _("statut"), max_length=20, choices=Status.choices, default=Status.DRAFT
     )
     due_date = models.DateField(_("échéance"), null=True, blank=True)
+    # What the invoice recalls of the order (quote, contract, deposit, balance), copied when it is
+    # issued: nothing here is read again from the gig afterwards (CTR-10). Empty on credit notes
+    # and on the invoices issued before it existed.
+    history_snapshot = models.JSONField(_("rappel de la commande (figé)"), default=dict, blank=True)
     credit_note_of = models.ForeignKey(
         "self",
         on_delete=models.PROTECT,

@@ -230,6 +230,112 @@ def next_document_number(tenant, kind):
     return f"{prefix}-{year}-{sequence.last_number:04d}"
 
 
+def _iso(value):
+    return value.isoformat() if value else None
+
+
+def _paid_on(invoice):
+    """The day the invoice was settled, or None while payments do not cover it."""
+    payments = list(invoice.payments.all())
+    if not payments or sum((p.amount for p in payments), ZERO) < invoice.total_incl_tax:
+        return None
+    return max(p.date for p in payments)
+
+
+def build_history_snapshot(invoice):
+    """What an invoice recalls of the order, to be frozen when it is issued (CTR-10).
+
+    The quote (the latest issued one of the date), the contract (price, and the signature day if
+    it was marked signed), the deposit and the contractual balance. Amounts are strings and dates
+    ISO strings so that the JSON column keeps them exactly; `history_for_display` reads them back.
+    """
+    from .services import payment_schedule
+
+    if invoice.kind == Invoice.Kind.CREDIT_NOTE:
+        return {}
+    gig = invoice.gig
+    schedule = payment_schedule(gig)
+    quote = (
+        Quote.objects.filter(tenant=invoice.tenant, gig=gig, status=Quote.Status.ISSUED)
+        .order_by("-issue_date", "-pk")
+        .first()
+    )
+    contract = getattr(gig, "contract", None)
+    signed = contract is not None and contract.status == contract.Status.SIGNED
+    history = {
+        "quote": quote and {"number": quote.number, "issue_date": _iso(quote.issue_date)},
+        "contract": {
+            "total_excl_tax": str(schedule["total_ht"]),
+            "total_incl_tax": None if schedule["total_ttc"] is None else str(schedule["total_ttc"]),
+            "signed_on": _iso(contract.signed_at.date()) if signed and contract.signed_at else None,
+        },
+    }
+    if invoice.kind == Invoice.Kind.FULL:
+        return history
+    if invoice.kind == Invoice.Kind.DEPOSIT:
+        deposit = {"amount_incl_tax": str(invoice.total_incl_tax), "this_invoice": True}
+    else:
+        earlier = (
+            Invoice.objects.filter(
+                tenant=invoice.tenant,
+                gig=gig,
+                kind=Invoice.Kind.DEPOSIT,
+                status__in=(Invoice.Status.ISSUED, Invoice.Status.PAID),
+            )
+            .order_by("-issue_date", "-pk")
+            .first()
+        )
+        if earlier is not None:
+            deposit = {
+                "amount_incl_tax": str(earlier.total_incl_tax),
+                "number": earlier.number,
+                "issue_date": _iso(earlier.issue_date),
+                "paid_on": _iso(_paid_on(earlier)),
+            }
+        elif schedule["deposit_ttc"] is not None:
+            deposit = {"amount_incl_tax": str(schedule["deposit_ttc"]), "planned": True}
+        else:
+            deposit = None
+    history["deposit"] = deposit
+    total, paid = schedule["total_ttc"], deposit and deposit["amount_incl_tax"]
+    if total is not None and paid is not None:
+        history["balance_incl_tax"] = str(total - Decimal(paid))
+    return history
+
+
+def history_for_display(snapshot):
+    """The frozen recall with real dates and amounts, or None when the invoice has none."""
+    if not snapshot:
+        return None
+
+    def day(value):
+        return datetime.date.fromisoformat(value) if value else None
+
+    def amount(value):
+        return None if value is None else Decimal(value)
+
+    quote = snapshot.get("quote")
+    contract = snapshot["contract"]
+    deposit = snapshot.get("deposit")
+    return {
+        "quote": quote and {"number": quote["number"], "issue_date": day(quote["issue_date"])},
+        "contract": {
+            "total_excl_tax": amount(contract["total_excl_tax"]),
+            "total_incl_tax": amount(contract["total_incl_tax"]),
+            "signed_on": day(contract["signed_on"]),
+        },
+        "has_deposit_lines": "deposit" in snapshot,
+        "deposit": deposit
+        and {
+            **deposit,
+            "amount_incl_tax": amount(deposit["amount_incl_tax"]),
+            "issue_date": day(deposit.get("issue_date")),
+            "paid_on": day(deposit.get("paid_on")),
+        },
+        "balance_incl_tax": amount(snapshot.get("balance_incl_tax")),
+    }
+
+
 def missing_issue_requirements(document):
     """What the user still has to fill in before the document can be issued."""
     tenant, promoter = document.tenant, document.gig.promoter
@@ -303,6 +409,7 @@ def issue_invoice(invoice):
         if locked.kind == Invoice.Kind.CREDIT_NOTE:
             original = _lock(locked.credit_note_of)
         _issue(locked)
+        locked.history_snapshot = build_history_snapshot(locked)
         if original is not None:
             _check_credit_note(locked, original)
         else:
@@ -434,6 +541,7 @@ def build_pdf_context(document):
         "total_vat": total_vat,
         "total_incl_tax": total_incl_tax,
         "mentions": legal_mentions(issuer, is_invoice, is_credit_note),
+        "history": history_for_display(getattr(document, "history_snapshot", None)),
     }
 
 

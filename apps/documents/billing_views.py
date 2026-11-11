@@ -100,6 +100,7 @@ class DocumentMixin(TenantScopedMixin):
             ],
             "show_vat": self.show_vat(),
             "vat_mentions": invoicing.vat_mentions(self.vat_regime()),
+            "history": invoicing.history_for_display(getattr(document, "history_snapshot", None)),
             "line_form": DocumentLineForm(show_vat=self.show_vat()),
             "editing": None,
         }
