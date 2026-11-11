@@ -20,6 +20,7 @@ from django.contrib.sitemaps.views import sitemap as sitemap_view
 from django.urls import include, path
 
 from apps.addressbook import public_views as addressbook_public_views
+from apps.core.lookup_views import CommuneSearchView, CompanySearchView
 from apps.core.sitemaps import SitePagesSitemap
 from apps.core.views import (
     ContactThanksView,
@@ -54,6 +55,8 @@ urlpatterns = [
     path("apple-touch-icon.png", apple_touch_icon, name="apple-touch-icon"),
     path("bienvenue/", OnboardingView.as_view(), name="tenants-onboarding"),
     path("infos/", include("apps.core.urls")),
+    path("recherche/entreprises/", CompanySearchView.as_view(), name="lookup-companies"),
+    path("recherche/communes/", CommuneSearchView.as_view(), name="lookup-communes"),
     path("bord/", include("apps.tenants.urls")),
     path("", include("apps.addressbook.urls")),
     path("spectacles/", include("apps.catalog.urls")),

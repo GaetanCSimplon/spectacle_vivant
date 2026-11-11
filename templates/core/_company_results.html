@@ -1,0 +1,26 @@
+{% load i18n formats %}{% comment %}
+  The result of the search box "Retrouver par SIRET ou par nom" (ORG-01). Each button carries the data
+  of one company; clicking it fills the form (components/_company_search.html), nothing is saved.
+{% endcomment %}
+{% if search.too_short %}
+  <p class="text-sm text-gray-600">{% translate "Tapez au moins 3 caractères : un SIRET ou le nom de la structure." %}</p>
+{% elif not search.available %}
+  <p class="text-sm text-amber-800" role="status">{% translate "La recherche est indisponible pour le moment. Vous pouvez remplir les champs à la main." %}</p>
+{% elif not search.companies %}
+  <p class="text-sm text-gray-600" role="status">{% translate "Aucune structure trouvée. Vérifiez le SIRET ou remplissez les champs à la main." %}</p>
+{% else %}
+  <ul class="space-y-1" role="list">
+    {% for company in search.companies %}
+      <li>
+        <button type="button" class="w-full min-h-11 rounded-lg border border-page-line bg-white px-3 py-2 text-left text-sm hover:bg-gray-50"
+                @click="fill($el.dataset)"
+                data-name="{{ company.name }}" data-siret="{{ company.siret }}" data-code-ape="{{ company.code_ape }}"
+                data-street="{{ company.street }}" data-postal-code="{{ company.postal_code }}" data-city="{{ company.city }}"
+                data-department="{{ company.department }}" data-vat-number="{{ company.vat_number }}">
+          <span class="block font-semibold">{{ company.name }}</span>
+          <span class="block text-gray-600">{{ company.siret|siret }} · {{ company.postal_code }} {{ company.city }}</span>
+        </button>
+      </li>
+    {% endfor %}
+  </ul>
+{% endif %}

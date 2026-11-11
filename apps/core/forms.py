@@ -1,5 +1,6 @@
 from django import forms
 from django.template.loader import render_to_string
+from django.urls import reverse_lazy
 from django.utils.safestring import mark_safe
 from django.utils.translation import gettext_lazy as _
 
@@ -29,6 +30,15 @@ class SectionedFormMixin:
         return [block for block in blocks if block["fields"]]
 
 
+class CityInput(forms.TextInput):
+    """The city field: it offers the communes of the postal code (a `<datalist>` refreshed by HTMX)
+    and fills itself, when empty, if the postal code points to a single commune (ORG-02)."""
+
+    def render(self, name, value, attrs=None, renderer=None):
+        field = super().render(name, value, attrs, renderer)
+        return mark_safe(f'{field}<datalist id="city-options"></datalist>')  # noqa: S308
+
+
 class AddressModelForm(forms.ModelForm):
     """Base of the forms of a model with `AddressMixin`: tidy postal code, guess the department.
 
@@ -42,6 +52,26 @@ class AddressModelForm(forms.ModelForm):
         max_length=10,
         widget=forms.TextInput(attrs={"inputmode": "numeric", "autocomplete": "postal-code"}),
     )
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        if "postal_code" in self.fields and "city" in self.fields:
+            self.fields["postal_code"].widget.attrs.update(
+                {
+                    "hx-get": reverse_lazy("lookup-communes"),
+                    "hx-trigger": "input[this.value.length >= 5] changed delay:400ms",
+                    "hx-target": "#city-options",
+                    "hx-swap": "outerHTML",
+                }
+            )
+            self.fields["city"].widget = CityInput(
+                attrs={
+                    "list": "city-options",
+                    "autocomplete": "address-level2",
+                    "x-data": "{}",
+                    "@commune-found.window": "if (!$el.value) $el.value = $event.detail.name",
+                }
+            )
 
     def clean_postal_code(self):
         return normalize_postal_code(self.cleaned_data["postal_code"])

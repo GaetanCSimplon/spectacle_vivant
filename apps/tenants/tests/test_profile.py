@@ -246,7 +246,7 @@ def test_vat_number_and_iban_are_not_leaked_to_another_tenant(client):
 def test_code_ape_is_normalized_and_saved(client):
     tenant = _login(client)
 
-    client.post(URL, _payload(code_ape="90.01 z"))
+    client.post(URL, _payload(code_ape="other", code_ape_other="90.01 z"))
 
     tenant.refresh_from_db()
     assert tenant.code_ape == "9001Z"
@@ -266,7 +266,7 @@ def test_code_ape_is_optional(client):
 def test_invalid_code_ape_is_rejected(client, bad):
     tenant = _login(client)
 
-    response = client.post(URL, _payload(code_ape=bad))
+    response = client.post(URL, _payload(code_ape="other", code_ape_other=bad))
 
     assert response.status_code == 200
     assert "4 chiffres et 1 lettre" in response.content.decode()

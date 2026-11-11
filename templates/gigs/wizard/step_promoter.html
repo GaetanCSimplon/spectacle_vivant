@@ -38,6 +38,10 @@
       </button>
     </form>
 
+    <div x-show="mode === 'new'" x-cloak>
+      {% include "components/_company_search.html" with street_field="billing_address" %}
+    </div>
+
     <form method="post" x-show="mode === 'new'">
       {% csrf_token %}
       <input type="hidden" name="mode" value="new">
