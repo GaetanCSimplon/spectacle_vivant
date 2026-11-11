@@ -16,6 +16,7 @@ from apps.documents.models import Contract, ContractVersion, Invoice, Quote
 from apps.finance.models import Expense
 from apps.roadmaps.models import Roadmap
 
+from . import payment_terms
 from .models import Gig, GigMember, PriceChange
 
 
@@ -271,8 +272,41 @@ class CannotChangeTerms(Exception):
     """Raised when the payment terms of a gig may not change."""
 
 
-def update_terms(gig, deposit_due_on, balance_due_on, payment_method):
-    """Set the payment terms printed in the contract (refused once the contract is signed)."""
+TERM_FIELDS = (
+    "payment_method",
+    "deposit_term",
+    "deposit_term_days",
+    "deposit_due_on",
+    "balance_term",
+    "balance_due_on",
+)
+
+
+def signature_date(gig):
+    """The day the contract of a date was marked signed, or None."""
+    if gig.pk is None:
+        return None
+    signed_at = (
+        Contract.objects.filter(gig=gig, tenant=gig.tenant, status=Contract.Status.SIGNED)
+        .values_list("signed_at", flat=True)
+        .first()
+    )
+    return timezone.localtime(signed_at).date() if signed_at else None
+
+
+def due_dates(gig, deposit_term, deposit_term_days, balance_term):
+    """(deposit date, balance date) the chosen rules give; None where a rule has no date."""
+    return (
+        payment_terms.deposit_date(deposit_term, deposit_term_days, gig.date, signature_date(gig)),
+        payment_terms.balance_date(balance_term, gig.date),
+    )
+
+
+def update_terms(gig, **fields):
+    """Set the payment terms printed in the contract (refused once the contract is signed).
+
+    `fields` are the `TERM_FIELDS`; the dates are the ones the rules give, worked out by the form.
+    """
     with transaction.atomic():
         locked = _lock_gig(gig)
         if Contract.objects.filter(
@@ -281,13 +315,25 @@ def update_terms(gig, deposit_due_on, balance_due_on, payment_method):
             raise CannotChangeTerms(
                 _("Ce contrat est signé : ses informations ne peuvent plus être modifiées.")
             )
-        locked.deposit_due_on = deposit_due_on
-        locked.balance_due_on = balance_due_on
-        locked.payment_method = payment_method
-        locked.save(update_fields=["deposit_due_on", "balance_due_on", "payment_method"])
-    gig.deposit_due_on = deposit_due_on
-    gig.balance_due_on = balance_due_on
-    gig.payment_method = payment_method
+        for name in TERM_FIELDS:
+            setattr(locked, name, fields[name])
+        locked.save(update_fields=list(TERM_FIELDS))
+    for name in TERM_FIELDS:
+        setattr(gig, name, fields[name])
+    return gig
+
+
+def refresh_due_dates(gig):
+    """Work the dates out again from the rules, once the contract is signed (CTR-05).
+
+    Only the rules that give a date change it; "Date précise" keeps the date typed.
+    """
+    deposit, balance = due_dates(gig, gig.deposit_term, gig.deposit_term_days, gig.balance_term)
+    if gig.deposit_term != payment_terms.DepositTerm.SPECIFIC:
+        gig.deposit_due_on = deposit
+    if gig.balance_term != payment_terms.BalanceTerm.SPECIFIC:
+        gig.balance_due_on = balance
+    gig.save(update_fields=["deposit_due_on", "balance_due_on"])
     return gig
 
 

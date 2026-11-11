@@ -7,6 +7,7 @@ from apps.addressbook.forms import PromoterIdentifiersMixin
 from apps.addressbook.models import Promoter, Venue
 from apps.catalog.models import Show
 from apps.core.forms import MultiSelectDropdown
+from apps.gigs.forms import PaymentTermsMixin
 from apps.gigs.models import Gig
 
 from . import library
@@ -19,7 +20,7 @@ def _time_widget():
     return forms.TimeInput(attrs={"type": "time"}, format=TIME_FORMAT)
 
 
-class GigCompletionForm(forms.ModelForm):
+class GigCompletionForm(PaymentTermsMixin, forms.ModelForm):
     class Meta:
         model = Gig
         fields = [
@@ -36,7 +37,10 @@ class GigCompletionForm(forms.ModelForm):
             "signature_deadline_days",
             "payment_method",
             "deposit_percent",
+            "deposit_term",
+            "deposit_term_days",
             "deposit_due_on",
+            "balance_term",
             "balance_due_on",
             "meals",
             "lodging",
@@ -49,8 +53,7 @@ class GigCompletionForm(forms.ModelForm):
         widgets = {
             "option_expires_on": forms.DateInput(attrs={"type": "date"}, format="%Y-%m-%d"),
             "conditions": forms.Textarea(attrs={"rows": 4}),
-            "deposit_due_on": forms.DateInput(attrs={"type": "date"}, format="%Y-%m-%d"),
-            "balance_due_on": forms.DateInput(attrs={"type": "date"}, format="%Y-%m-%d"),
+            **PaymentTermsMixin.term_widgets(),
             "get_in_time": _time_widget(),
             "soundcheck_time": _time_widget(),
             "performance_time": _time_widget(),
@@ -66,9 +69,58 @@ class GigCompletionForm(forms.ModelForm):
         self.fields["deposit_percent"].required = False
         self.fields["performances_count"].required = False
         self.fields["copies_count"].required = False
+        self._prepare_terms()
         # An option's validity only matters while the gig is still an option.
         if self.instance.status != Gig.Status.OPTION:
             del self.fields["option_expires_on"]
+
+    # The three blocks of the page "Compléter le contrat" (CTR-06), by volet.
+    CONTRACT_FIELDS = (
+        "event_name",
+        "option_expires_on",
+        "performances_count",
+        "copies_count",
+        "signing_place",
+        "signature_deadline_days",
+        "invitations_count",
+        "is_free",
+        "ticket_price",
+        "conditions",
+    )
+    BUDGET_FIELDS = (
+        "payment_method",
+        "deposit_percent",
+        "deposit_term",
+        "deposit_term_days",
+        "deposit_due_on",
+        "balance_term",
+        "balance_due_on",
+        "meals",
+        "lodging",
+    )
+    ROADMAP_FIELDS = (
+        "get_in_time",
+        "soundcheck_time",
+        "performance_time",
+        "crew_headcount",
+        "local_transport",
+        "other_hospitality",
+    )
+
+    def _block(self, names):
+        return [self[name] for name in names if name in self.fields]
+
+    @property
+    def contract_fields(self):
+        return self._block(self.CONTRACT_FIELDS)
+
+    @property
+    def budget_fields(self):
+        return self._block(self.BUDGET_FIELDS)
+
+    @property
+    def roadmap_fields(self):
+        return self._block(self.ROADMAP_FIELDS)
 
     def clean_deposit_percent(self):
         # Left empty: keep the current value (30 % for a new gig).
@@ -98,7 +150,7 @@ class GigCompletionForm(forms.ModelForm):
             )
         if cleaned_data.get("is_free") or cleaned_data.get("ticket_price") is None:
             cleaned_data["ticket_price"] = 0
-        return cleaned_data
+        return self.clean_terms(cleaned_data)
 
 
 class ShowCompletionForm(forms.ModelForm):

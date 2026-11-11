@@ -136,13 +136,13 @@
             <td>Acompte à la signature du contrat</td>
             <td class="amount">{{ payment.deposit_ht }} €</td>
             <td class="amount">{% if payment.deposit_ttc is not None %}{{ payment.deposit_ttc }} €{% else %}……{% endif %}</td>
-            <td>{{ gig.deposit_due_on|date:"d/m/Y"|default:"……" }}</td>
+            <td>{{ gig.deposit_due_phrase|default:"……" }}</td>
           </tr>
           <tr>
             <td>Solde</td>
             <td class="amount">{{ payment.balance_ht }} €</td>
             <td class="amount">{% if payment.balance_ttc is not None %}{{ payment.balance_ttc }} €{% else %}……{% endif %}</td>
-            <td>{{ gig.balance_due_on|date:"d/m/Y"|default:"……" }}</td>
+            <td>{{ gig.balance_due_phrase|default:"……" }}</td>
           </tr>
           <tr>
             <td><strong>Total</strong></td>

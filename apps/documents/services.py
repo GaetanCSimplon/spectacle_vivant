@@ -226,6 +226,8 @@ def mark_contract_signed(gig, signed_pdf=None):
         if signed_pdf:
             contract.signed_pdf = signed_pdf
         contract.save()
+        # The deposit due "10 days after the signature" now has its date.
+        gig_services.refresh_due_dates(gig)
     return contract
 
 
