@@ -77,13 +77,13 @@ def _pages(gig):
 
 def test_the_pages_of_a_date_show_a_breadcrumb_back_to_the_date(client):
     tenant = _login(client)
-    gig = make_gig(tenant=tenant, gig_fields={"event_name": "Festival des Arènes"})
+    gig = make_gig(tenant=tenant)
 
     for url in _pages(gig):
         content = _html(client, url)
         assert "Fil d&#x27;Ariane" in content or "Fil d'Ariane" in content, url
         assert f'href="{reverse("gigs:detail", args=[gig.pk])}"' in content, url
-        assert "Festival des Arènes" in content, url
+        assert gig.display_title in content, url
 
 
 def test_the_breadcrumb_does_not_open_the_date_of_another_structure(client):
@@ -129,23 +129,36 @@ def test_issuing_an_invoice_still_shows_the_invoice(client):
 # --- DAT-02: the title of a date card ---------------------------------------------------------
 
 
-def test_a_date_is_named_after_its_event_else_its_show(client):
+def test_a_date_is_named_venue_city_show(client):
     tenant = _login(client)
-    plain = GigFactory(tenant=tenant, event_name="")
-    festival = GigFactory(tenant=tenant, event_name="Les Nuits de Fourvière")
+    gig = GigFactory(
+        tenant=tenant, venue__name="Le Bikini", venue__city="Ramonville", show__title="Aube"
+    )
 
-    assert plain.display_title == plain.show.title
-    assert festival.display_title == "Les Nuits de Fourvière"
+    assert gig.display_title == "Le Bikini, Ramonville, Aube"
 
 
-def test_the_card_shows_the_event_as_title_and_the_show_under_it(client):
+def test_a_missing_city_leaves_no_stray_comma(client):
     tenant = _login(client)
-    gig = GigFactory(tenant=tenant, event_name="Les Nuits de Fourvière")
+    gig = GigFactory(tenant=tenant, venue__name="Le Bikini", venue__city="", show__title="Aube")
+
+    assert gig.display_title == "Le Bikini, Aube"
+
+
+def test_the_card_title_is_venue_city_show_and_keeps_the_event_underneath(client):
+    tenant = _login(client)
+    GigFactory(
+        tenant=tenant,
+        event_name="Les Nuits de Fourvière",
+        venue__name="Le Bikini",
+        venue__city="Ramonville",
+        show__title="Aube",
+    )
 
     content = _html(client, reverse("gigs:list"))
 
+    assert "Le Bikini, Ramonville, Aube" in content
     assert "Les Nuits de Fourvière" in content
-    assert gig.show.title in content
 
 
 # --- NAV-04: year filter of the home page -----------------------------------------------------

@@ -1,4 +1,6 @@
-"""Charter v1.3: the gimic as navigation bullet, in empty states and as the "signed" moment."""
+"""Charter v1.3: the gimic in empty states and as the "signed" moment; same icons in both menus."""
+
+import re
 
 import pytest
 from django.urls import reverse
@@ -16,16 +18,21 @@ def _media_root(settings, tmp_path):
     settings.MEDIA_ROOT = tmp_path
 
 
-def test_the_navy_sidebar_has_a_cream_gimic_bullet_on_every_link_and_the_top_bar_has_none(client):
+def test_the_sidebar_and_the_burger_menu_use_the_same_icons(client):
+    """NAV-01 (recette n°1): an icon on every link, the same on the desktop column and burger."""
     client.force_login(MembershipFactory().user)
 
     content = client.get(reverse("home")).content.decode()
     sidebar = content.split("<aside")[1].split("</aside>")[0]
-    rest = content.split("</aside>")[1]
+    burger = content.split("<details")[1].split("</details>")[0]
 
-    assert sidebar.count("brand/gimic-creme.svg") == 6  # one per link
-    assert "brand/gimic-creme.svg" not in rest  # cream on white would vanish (1.0:1)
-    assert 'alt=""' in sidebar
+    def icons(html):
+        nav = html.split("<nav", 1)[1].split("</nav>", 1)[0]
+        return re.findall(r'<svg aria-hidden="true" width="20"[^>]*>(.*?)</svg>', nav, re.S)
+
+    assert len(icons(sidebar)) == len(icons(burger)) == 6  # one per link
+    assert icons(sidebar) == icons(burger)
+    assert "brand/gimic-creme.svg" not in content
 
 
 def test_the_empty_list_of_dates_shows_the_navy_gimic_and_one_action(client):
