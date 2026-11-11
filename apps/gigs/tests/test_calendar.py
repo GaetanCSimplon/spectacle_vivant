@@ -1,4 +1,5 @@
 import datetime
+import re
 
 import pytest
 from django.urls import reverse
@@ -300,4 +301,4 @@ def test_main_navigation_keeps_mes_dates_active_on_the_calendar(client):
     content = _calendar(client).content.decode()
 
     assert content.count('aria-current="page"') == 2  # top bar + bottom bar
-    assert 'aria-current="page"\n  >Mes dates</a>' in content
+    assert re.search(r'aria-current="page"\s*>(?:(?!</a>).)*?Mes dates</a>', content, re.S)

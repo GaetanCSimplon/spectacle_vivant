@@ -101,6 +101,11 @@ class Gig(TenantOwnedModel):
             return OptionExpiry("soon", days_left)
         return OptionExpiry("ok", days_left)
 
+    @property
+    def display_title(self):
+        """What names the date on a card or in a breadcrumb: the event, else the show (DAT-02)."""
+        return self.event_name or self.show.title
+
     def save(self, *args, **kwargs):
         # RG-12: a free gig always has a ticket price of 0.
         if self.is_free:

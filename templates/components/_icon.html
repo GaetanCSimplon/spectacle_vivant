@@ -1,5 +1,5 @@
 {% comment %}Outline icons of the app: 24 px grid, 1.75 px stroke, round ends, `currentColor`.
-{% include "components/_icon.html" with name="pencil" size=16 %} (names: pencil, check, settings, pin, building, euro, route, calendar, clock, file).
+{% include "components/_icon.html" with name="pencil" size=16 %} (names: pencil, check, settings, pin, building, euro, route, calendar, clock, file, home, chart, star, users).
 Decorative: the label is always in the text next to it or in an sr-only span.{% endcomment %}
 <svg aria-hidden="true" width="{{ size|default:20 }}" height="{{ size|default:20 }}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" class="shrink-0">
   {% if name == "pencil" %}<path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/><path d="m15 5 4 4"/>
@@ -12,5 +12,9 @@ Decorative: the label is always in the text next to it or in an sr-only span.{% 
   {% elif name == "calendar" %}<rect x="3.5" y="5" width="17" height="15.5" rx="3"/><path d="M8 3v4M16 3v4M3.5 10h17"/>
   {% elif name == "clock" %}<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>
   {% elif name == "file" %}<path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5M9 13h6M9 17h4"/>
+  {% elif name == "home" %}<path d="M3.5 11.5 12 4l8.5 7.5"/><path d="M5.5 10v9.5h4.5v-5h4v5h4.5V10"/>
+  {% elif name == "chart" %}<path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/>
+  {% elif name == "star" %}<path d="m12 3 2.7 5.6 6.1.9-4.4 4.3 1 6.1-5.4-2.9-5.4 2.9 1-6.1-4.4-4.3 6.1-.9z"/>
+  {% elif name == "users" %}<circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c0-3.6 2.9-6 6.5-6s6.5 2.4 6.5 6"/><path d="M16 4.7a3.5 3.5 0 0 1 0 6.6M18.5 14.4c1.8.8 3 2.6 3 5.6"/>
   {% endif %}
 </svg>

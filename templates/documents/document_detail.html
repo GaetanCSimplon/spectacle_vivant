@@ -3,6 +3,8 @@
 
 {% block title %}{% if is_credit_note %}Avoir{% elif is_invoice %}Facture{% else %}Devis{% endif %} — Bòrd Pro{% endblock %}
 
+{% block breadcrumb %}{% if is_credit_note %}{% translate "Avoir" as crumb %}{% elif is_invoice %}{% translate "Facture" as crumb %}{% else %}{% translate "Devis" as crumb %}{% endif %}{% include "components/_breadcrumb.html" with current=crumb %}{% endblock %}
+
 {% block page_content %}
   <div class="mb-4 flex items-start justify-between gap-3">
     <div class="min-w-0">

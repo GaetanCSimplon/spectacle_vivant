@@ -242,6 +242,9 @@ class DocumentIssueView(DocumentMixin, View):
         )
         if self._invoice_on_option():
             messages.warning(request, OPTION_INVOICE_WARNING)
+        if doc_type == "devis":
+            # CTR-04: nothing more to do on an issued quote here, go back to the date.
+            return redirect("gigs:detail", pk=self.gig.pk)
         return redirect(
             "documents:document-detail", gig_id=self.gig.pk, doc_type=doc_type, pk=self.document.pk
         )

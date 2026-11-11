@@ -29,14 +29,37 @@ def _money_field():
 
 
 def year_totals(tenant, year):
-    """(invoiced, received) incl. tax over a calendar year; credit notes count as negative."""
-    invoiced = Invoice.objects.filter(
-        tenant=tenant, status__in=INVOICED, issue_date__year=year
-    ).aggregate(total=Sum("total_incl_tax"))["total"]
-    received = Payment.objects.filter(tenant=tenant, date__year=year).aggregate(
-        total=Sum("amount")
-    )["total"]
+    """(invoiced, received) incl. tax over a calendar year (all years if None); credit notes < 0."""
+    invoices = Invoice.objects.filter(tenant=tenant, status__in=INVOICED)
+    payments = Payment.objects.filter(tenant=tenant)
+    if year is not None:
+        invoices = invoices.filter(issue_date__year=year)
+        payments = payments.filter(date__year=year)
+    invoiced = invoices.aggregate(total=Sum("total_incl_tax"))["total"]
+    received = payments.aggregate(total=Sum("amount"))["total"]
     return invoiced or ZERO, received or ZERO
+
+
+ALL_YEARS = "toutes"
+YEARS_AHEAD = 2
+
+
+def year_choices(tenant, today):
+    """Years the home page can show: those with a date, this one and the next two (NAV-04)."""
+    years = {today.year + offset for offset in range(YEARS_AHEAD + 1)}
+    years.update(
+        Gig.objects.filter(tenant=tenant).dates("date", "year").values_list("date__year", flat=True)
+    )
+    return sorted(years)
+
+
+def parse_year(value, tenant, today):
+    """The year asked for ("2027"); this year if unknown or not offered by `year_choices`."""
+    try:
+        year = int(value)
+    except (TypeError, ValueError):
+        return today.year
+    return year if year in year_choices(tenant, today) else today.year
 
 
 def awaiting_payment(tenant, today):
@@ -353,7 +376,9 @@ def year_overview(tenant, year):
 
     Cancelled gigs are left out. There is no planned expense yet: spent is what was recorded.
     """
-    gigs = Gig.objects.filter(tenant=tenant, date__year=year).exclude(status=Gig.Status.CANCELLED)
+    gigs = Gig.objects.filter(tenant=tenant).exclude(status=Gig.Status.CANCELLED)
+    if year is not None:
+        gigs = gigs.filter(date__year=year)
     rate = invoicing.vat_rate_for(tenant)
     planned = sum(
         (
@@ -384,15 +409,19 @@ def year_overview(tenant, year):
     }
 
 
-def build_dashboard(tenant, today, period=DEFAULT_PERIOD):
+def build_dashboard(tenant, today, period=DEFAULT_PERIOD, year=None, all_years=False):
+    """`year` is the year of the balance card (this year if None); `all_years` shows them all."""
     if period not in PERIODS:
         period = DEFAULT_PERIOD
-    invoiced, received = year_totals(tenant, today.year)
+    shown_year = None if all_years else (year or today.year)
+    invoiced, received = year_totals(tenant, shown_year)
     awaiting = awaiting_payment(tenant, today)
     end = period_end(today, period)
     upcoming_count = _live_upcoming(tenant, today, end).count()
     return {
-        "year": today.year,
+        "year": shown_year,
+        "year_choices": year_choices(tenant, today),
+        "all_years": all_years,
         "period": period,
         "periods": PERIODS,
         "period_end": end,
@@ -400,7 +429,7 @@ def build_dashboard(tenant, today, period=DEFAULT_PERIOD):
         "active_shows": active_shows_count(tenant, today),
         "upcoming_count": upcoming_count,
         "upcoming_hidden": max(upcoming_count - NEXT_GIGS_LIMIT, 0),
-        "overview": year_overview(tenant, today.year),
+        "overview": year_overview(tenant, shown_year),
         "invoiced_year": invoiced,
         "received_year": received,
         "awaiting": awaiting,

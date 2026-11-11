@@ -49,7 +49,9 @@ def test_current_page_is_marked_active(client, url_name, label):
 
     # One active link per navigation (header + burger menu), and it is the right one.
     assert content.count('aria-current="page"') == 2
-    assert f'aria-current="page"\n  >{label}</a>' in content
+    # The label follows the icon (burger menu) or the bullet (left column), inside the same link.
+    active = rf'aria-current="page"\s*>(?:(?!</a>).)*?{label}</a>'
+    assert re.search(active, content, re.S)
 
 
 def test_phone_navigation_is_a_burger_menu_without_a_bottom_bar(client):

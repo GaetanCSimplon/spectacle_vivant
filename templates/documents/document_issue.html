@@ -3,6 +3,8 @@
 
 {% block title %}Émettre — Bòrd Pro{% endblock %}
 
+{% block breadcrumb %}{% include "components/_breadcrumb.html" with current=_("Émettre") %}{% endblock %}
+
 {% block page_content %}
   <h1 class="mb-4">{% translate "Émettre ce document ?" %}</h1>
   <div class="card mb-4 space-y-1 text-sm">

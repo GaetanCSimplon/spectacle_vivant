@@ -12,7 +12,8 @@ of the address book), the payments sit on a cream band, the roadmap badge is oce
         <span class="date-tile-month">{{ gig.date|date:"M" }}</span>
       </span>
       <span class="min-w-0 flex-1">
-        <a href="{% url 'gigs:detail' gig.pk %}" class="block text-lg font-semibold leading-snug text-gray-900 after:absolute after:inset-0 after:rounded-2xl"><span class="sr-only">{{ gig.date|date:"d/m/Y" }} — </span>{{ gig.show.title }}</a>
+        <a href="{% url 'gigs:detail' gig.pk %}" class="block text-lg font-semibold leading-snug text-gray-900 after:absolute after:inset-0 after:rounded-2xl"><span class="sr-only">{{ gig.date|date:"d/m/Y" }} — </span>{{ gig.display_title }}</a>
+        {% if gig.event_name %}<span class="block text-sm text-gray-600"><span class="sr-only">{% translate "Spectacle" %} : </span>{{ gig.show.title }}</span>{% endif %}
         {% include "gigs/_option_expiry.html" %}
       </span>
       {% include "gigs/_status_badge.html" %}

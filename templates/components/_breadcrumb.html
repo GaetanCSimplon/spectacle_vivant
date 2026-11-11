@@ -1,0 +1,13 @@
+{% load i18n %}{% comment %}
+  Breadcrumb of the pages that belong to a date: Mes dates › the date › this page (NAV-03).
+  Needs: gig, current (label of the page). The date is a link, the current page is not.
+{% endcomment %}
+<nav aria-label="{% translate "Fil d'Ariane" %}" class="mb-3 text-sm text-gray-600">
+  <ol class="flex flex-wrap items-center gap-x-1.5 gap-y-1">
+    <li><a href="{% url 'gigs:list' %}" class="underline hover:text-gray-900">{% translate "Mes dates" %}</a></li>
+    <li aria-hidden="true">›</li>
+    <li class="min-w-0"><a href="{% url 'gigs:detail' gig.pk %}" class="underline hover:text-gray-900">{{ gig.display_title }} · {{ gig.date|date:"d/m/Y" }}</a></li>
+    <li aria-hidden="true">›</li>
+    <li aria-current="page" class="font-semibold text-gray-900">{{ current }}</li>
+  </ol>
+</nav>
