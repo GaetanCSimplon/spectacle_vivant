@@ -1,0 +1,31 @@
+{% load i18n %}{% comment %}
+  "Rappel de la commande" of an issued invoice (CTR-10): the quote, the contract, the deposit and the
+  balance, as they were when it was issued. Needs: history (invoicing.history_for_display), show_vat.
+  Used on the screen and in the PDF: the amounts below are incl. tax (equal to excl. tax without VAT).
+{% endcomment %}
+{% if history %}
+  <section class="history card mt-3 text-sm" aria-labelledby="history-title">
+    <h3 id="history-title" class="text-sm font-semibold">{% translate "Rappel de la commande" %}</h3>
+    <ul class="mt-1 space-y-1">
+      {% if history.quote %}
+        <li>{% blocktranslate with number=history.quote.number date=history.quote.issue_date|date:"d/m/Y" %}Devis n° {{ number }} validé le {{ date }}.{% endblocktranslate %}</li>
+      {% endif %}
+      <li>
+        {% translate "Contrat" %} :
+        {% if show_vat %}{{ history.contract.total_excl_tax }} € HT{% if history.contract.total_incl_tax is not None %} · {{ history.contract.total_incl_tax }} € TTC{% endif %}{% else %}{{ history.contract.total_excl_tax }} €{% endif %}
+        {% if history.contract.signed_on %}— {% blocktranslate with date=history.contract.signed_on|date:"d/m/Y" %}contrat signé le {{ date }}{% endblocktranslate %}{% else %}— {% translate "prix de cession convenu" %}{% endif %}.
+      </li>
+      {% if history.deposit %}
+        <li>
+          {% translate "Acompte" %} : {{ history.deposit.amount_incl_tax }} €{% if show_vat %} TTC{% endif %}
+          {% if history.deposit.this_invoice %}— {% translate "objet de cette facture" %}
+          {% elif history.deposit.planned %}— {% translate "prévu, pas encore facturé" %}
+          {% else %}— {% blocktranslate with number=history.deposit.number date=history.deposit.issue_date|date:"d/m/Y" %}facturé le {{ date }} ({{ number }}){% endblocktranslate %}{% if history.deposit.paid_on %}, {% blocktranslate with date=history.deposit.paid_on|date:"d/m/Y" %}réglé le {{ date }}{% endblocktranslate %}{% else %}, {% translate "pas encore réglé" %}{% endif %}{% endif %}.
+        </li>
+      {% endif %}
+      {% if history.balance_incl_tax is not None %}
+        <li><strong>{% translate "Solde restant dû" %} : {{ history.balance_incl_tax }} €{% if show_vat %} TTC{% endif %}</strong></li>
+      {% endif %}
+    </ul>
+  </section>
+{% endif %}
