@@ -1,3 +1,4 @@
-<p class="font-medium">{{ item.time|time:"H:i" }} · {{ item.label|default:item.get_kind_display }}</p>
+{% load i18n %}<p class="font-medium">{% if item.day %}{{ item.day|date:"D j/m" }} {% endif %}{{ item.time|time:"H:i" }} · {{ item.label|default:item.get_kind_display }}</p>
 {% if item.label %}<p class="text-gray-600">{{ item.get_kind_display }}</p>{% endif %}
 {% if item.note %}<p class="text-gray-600">{{ item.note|linebreaksbr }}</p>{% endif %}
+{% if item.documents.all %}<p class="text-sm text-gray-600">{% blocktranslate count n=item.documents.all|length %}{{ n }} pièce jointe{% plural %}{{ n }} pièces jointes{% endblocktranslate %}</p>{% endif %}

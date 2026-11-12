@@ -1,2 +1,2 @@
-<p class="font-medium">{{ item.place }}{% if item.time %} · {{ item.time|time:"H:i" }}{% endif %}</p>
+<p class="font-medium">{{ item.place }}{% if item.day %} · {{ item.day|date:"D j/m" }}{% endif %}{% if item.time %} · {{ item.time|time:"H:i" }}{% endif %}</p>
 {% if item.notes %}<p class="text-gray-600">{{ item.notes|linebreaksbr }}</p>{% endif %}

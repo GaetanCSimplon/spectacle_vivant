@@ -118,44 +118,104 @@ def _people(people):
     ]
 
 
+def chronological(items, gig):
+    """Slots, meals or lodgings in the order they happen: by day (an empty day is the day of the
+    concert), then by time (none first), then as they were added."""
+    return sorted(
+        items,
+        key=lambda item: (
+            item.day or gig.date,
+            getattr(item, "time", None) or getattr(item, "arrival_time", None) or datetime.time(0),
+            item.pk,
+        ),
+    )
+
+
 @dataclass(frozen=True)
 class ProgramItem:
-    """One line of the "Programme de la journée": a slot, a meal or an arrival at the lodging."""
+    """One line of the program: a slot, a meal or an arrival at the lodging."""
 
     time: datetime.time
     kind: str
     label: str
     note: str = ""
+    day: datetime.date = None
+    # A file hangs from this slot: the shared page only says so; the files are in `files`, which
+    # only the personal space fills (FDR-03).
+    has_files: bool = False
+    files: tuple = ()
 
 
-def build_program(roadmap):
-    """The day in order: the slots, plus the meals and the lodging arrivals that have a time.
+@dataclass(frozen=True)
+class ProgramDay:
+    """The items of one day of the program."""
 
-    A meal at the very time of a "Repas" slot is not repeated (FDR-04). The details of a meal or
-    of a lodging (address, map, contacts) stay in their own sections.
+    day: datetime.date
+    is_concert_day: bool
+    items: list
+
+
+def build_program(roadmap, file_link=None, person=None):
+    """The program in order, by day: the slots, plus the meals and the lodging arrivals that have
+    a time. A meal at the very day and time of a "Repas" slot is not repeated (FDR-04). The
+    details of a meal or of a lodging (address, map, contacts) stay in their own sections.
+
+    `file_link(document)` makes the link of a file; with it (personal space), the files of each
+    slot visible to `person` are listed under it. Without it, a slot only says it has files.
     """
+    gig_day = roadmap.gig.date
     slots = list(roadmap.slots.all())
-    meal_times = {slot.time for slot in slots if slot.kind == RoadmapSlot.Kind.MEAL}
-    items = [
-        ProgramItem(slot.time, slot.kind, slot.label or slot.get_kind_display(), slot.note)
-        for slot in slots
-    ]
+    meal_keys = {(slot.day or gig_day, slot.time) for slot in slots if slot.kind == "meal"}
+    by_slot = {}
+    for document in roadmap.documents.filter(slot__isnull=False):
+        by_slot.setdefault(document.slot_id, []).append(document)
+    visible = {
+        pk: [doc for doc in docs if doc.person_id in (None, getattr(person, "pk", None))]
+        for pk, docs in by_slot.items()
+    }
+    items = []
+    for slot in slots:
+        files = ()
+        if file_link is not None:
+            files = tuple(file_link(doc) for doc in visible.get(slot.pk, []))
+        items.append(
+            ProgramItem(
+                slot.time,
+                slot.kind,
+                slot.label or slot.get_kind_display(),
+                slot.note,
+                day=slot.day or gig_day,
+                has_files=slot.pk in by_slot,
+                files=files,
+            )
+        )
     items += [
-        ProgramItem(meal.time, "meal", f"{_('Repas')} — {meal.place}")
+        ProgramItem(meal.time, "meal", f"{_('Repas')} — {meal.place}", day=meal.day or gig_day)
         for meal in roadmap.meals.all()
-        if meal.time and meal.time not in meal_times
+        if meal.time and (meal.day or gig_day, meal.time) not in meal_keys
     ]
     items += [
         ProgramItem(
-            lodging.arrival_time, "lodging", f"{_('Arrivée à l’hébergement')} — {lodging.name}"
+            lodging.arrival_time,
+            "lodging",
+            f"{_('Arrivée à l’hébergement')} — {lodging.name}",
+            day=lodging.day or gig_day,
         )
         for lodging in roadmap.lodgings.all()
         if lodging.arrival_time
     ]
-    return sorted(items, key=lambda item: item.time)  # stable: the slots stay first at a tie
+    return sorted(items, key=lambda item: (item.day, item.time))  # stable: slots first at a tie
 
 
-def public_context(roadmap):
+def program_days(program, gig_day):
+    """The program grouped by day (the page shows a heading per day when there are several)."""
+    days = {}
+    for item in program:
+        days.setdefault(item.day, []).append(item)
+    return [ProgramDay(day, day == gig_day, days[day]) for day in sorted(days)]
+
+
+def public_context(roadmap, file_link=None, person=None):
     """Everything a roadmap may show to someone who only has the link.
 
     This is a whitelist, on purpose: prices, conditions, contract, invoices, the billed
@@ -164,6 +224,7 @@ def public_context(roadmap):
     """
     gig = roadmap.gig
     venue = gig.venue
+    program = build_program(roadmap, file_link, person)
     venue_contacts = list(venue.contacts.filter(tenant=gig.tenant))
     # The people to call on the organiser's side (names, roles, phones: no e-mail, and never the
     # name or the billing address of the organiser). Someone who also works for the venue is
@@ -186,7 +247,8 @@ def public_context(roadmap):
             "map_url": venue.map_embed_url,
         },
         "crew_headcount": gig.crew_headcount,
-        "program": build_program(roadmap),
+        "program": program,
+        "program_days": program_days(program, gig.date),
         # Only who takes it in charge and how many: never the free text, which may speak of money.
         "meals_cover": hospitality.roadmap_line(
             gig.meals_covered_by, gig.meals_count, hospitality.MEAL_UNIT

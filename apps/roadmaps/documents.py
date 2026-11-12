@@ -41,7 +41,7 @@ def visible_to(roadmap, person):
     return roadmap.documents.filter(Q(person=None) | Q(person=person), tenant=roadmap.tenant)
 
 
-def add_document(roadmap, *, title, file, kind, person, user):
+def add_document(roadmap, *, title, file, kind, person, user, slot=None):
     if roadmap.documents.count() >= RoadmapDocument.MAX_PER_ROADMAP:
         raise TooManyDocuments
     return RoadmapDocument.objects.create(
@@ -51,6 +51,7 @@ def add_document(roadmap, *, title, file, kind, person, user):
         file=file,
         content_type=kind,
         person=person,
+        slot=slot,
         created_by=user,
     )
 
