@@ -299,3 +299,29 @@ def test_the_summary_shows_the_venue_alone_when_it_has_no_address(client):
 
     assert "Salle sans adresse" in summary
     assert "·</span>" not in summary.split("Lieu", 1)[1].split("</p>", 1)[0]
+
+
+def test_the_title_names_the_organiser_the_venue_and_the_city(client):
+    gig = GigFactory(tenant=_login(client), status=Gig.Status.CONFIRMED)
+
+    content = _page(client, gig)
+
+    heading = content.split("<h1")[1].split("</h1>")[0]
+    assert gig.promoter.name in heading and gig.venue.name in heading
+    if gig.venue.city:
+        assert gig.venue.city in heading
+    assert gig.show.title not in heading  # the show is only a line under the title
+
+
+def test_the_next_action_and_the_follow_up_share_one_card_under_the_date_and_contacts(client):
+    gig = GigFactory(tenant=_login(client), status=Gig.Status.CONFIRMED)
+
+    content = _page(client, gig)
+
+    order = [content.index(f'id="{name}"') for name in ("gig-summary", "gig-contacts")]
+    assert order == sorted(order)
+    card = content.split('id="gig-next"')[0].rsplit('<div class="card', 1)[1]
+    assert 'id="gig-timeline"' in content.split(card, 1)[1].split('id="volet-')[0]
+    assert content.index('id="gig-contacts"') < content.index('id="gig-next"')
+    assert content.index('id="gig-next"') < content.index('id="gig-timeline"')
+    assert content.index('id="gig-timeline"') < content.index('id="gig-documents"')
