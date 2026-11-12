@@ -158,9 +158,11 @@ def test_bord_splits_the_period_and_totals_what_is_owed_whatever_the_period():
     ExpenseFactory(gig=gig, amount="12.00", person=lea, date=TODAY - datetime.timedelta(days=400))
     ExpenseFactory(gig=gig, amount="9.00", person=lea, date=TODAY, reimbursed_on=TODAY)
 
-    totals = bord.expenses(tenant, _filters())
+    totals = bord.expenses(tenant, _filters(view="cash"))  # cash: by the date of the expense
+    activity = bord.expenses(tenant, _filters())  # activity: by the date of the show
     owed = bord.to_reimburse(tenant)
 
+    assert activity["total"] == D("151.00")
     assert totals["total"] == D("139.00")
     assert totals["split"]["structure"] == D("100.00") and totals["split"]["members"] == D("39.00")
     assert owed["total"] == D("42.00")  # the old one counts too

@@ -1,8 +1,14 @@
 """The figures of the Bòrd page (see docs/produit/indicateurs-bord.md for every definition).
 
-Reference dates: gig date (dates, planned), issue date (invoiced), reception date (received),
-expense date (expenses), due date (late). "Still to collect" is a stock as of today: it only
-follows the show filter, not the period. Everything is scoped to one tenant.
+Two readings of the same data (BRD-04):
+- "activity" (what my dates bring in): everything hangs from the date of the show. Planned,
+  signed and invoiced (whatever the issue date of the invoice) are those of the dates of the
+  period; the expenses are those of these dates.
+- "cash" (money received and to receive): everything hangs from the date of the money. Received
+  is the payments of the period; to receive is what is expected in the period; the expenses are
+  those spent in the period.
+"Still to collect" and "late" are stocks as of today: they only follow the show filter, not the
+period. Everything is scoped to one tenant.
 """
 
 import datetime
@@ -28,10 +34,23 @@ ATTENTION_LIMIT = 5
 
 FIGURES = {
     "planned": _("Prévisionnel (HT)"),
+    "signed": _("Signé (HT)"),
     "invoiced": _("Facturé (HT)"),
     "received": _("Encaissé (TTC)"),
+    "expected": _("À encaisser (TTC)"),
 }
 DEFAULT_FIGURE = "planned"
+
+VIEWS = {
+    "activity": _("Ce que rapportent mes dates"),
+    "cash": _("Argent reçu et à recevoir"),
+}
+DEFAULT_VIEW = "activity"
+# The figures each reading offers; the first one is the default of that reading.
+FIGURES_BY_VIEW = {
+    "activity": ("planned", "signed", "invoiced"),
+    "cash": ("received", "expected"),
+}
 
 STATUSES = {
     "pending": _("En attente"),
@@ -42,12 +61,13 @@ STATUSES = {
 
 @dataclass(frozen=True)
 class Filters:
-    """Period (both days included), optional show and the kind of figure to read."""
+    """Period (both days included), optional show, the reading (view) and the figure to read."""
 
     start: datetime.date
     end: datetime.date
     show: Show | None = None
     figure: str = DEFAULT_FIGURE
+    view: str = DEFAULT_VIEW
     status: str = ""
     # "" = everyone, "structure" = what the structure paid, else the id of a team member.
     spender: str = ""
@@ -85,50 +105,149 @@ def date_counts(tenant, filters):
 
 
 def _revenue_querysets(tenant, filters):
-    """The confirmed gigs, issued invoices and payments of the period (and of the show)."""
+    """The gigs of the period, the invoices of these gigs (whenever they were issued) and the
+    payments received in the period (and for the show)."""
     gigs = _gigs(tenant, filters)
-    invoices = Invoice.objects.filter(
-        tenant=tenant,
-        status__in=INVOICED,
-        issue_date__range=(filters.start, filters.end),
-    )
+    invoices = Invoice.objects.filter(tenant=tenant, status__in=INVOICED, gig__in=gigs)
     payments = Payment.objects.filter(tenant=tenant, date__range=(filters.start, filters.end))
     if filters.show:
-        invoices = invoices.filter(gig__show=filters.show)
         payments = payments.filter(invoice__gig__show=filters.show)
     return gigs, invoices, payments
 
 
 def revenue(tenant, filters):
-    """Planned and invoiced (excl. tax), received (incl. tax), and the options apart.
+    """Planned, signed and invoiced (excl. tax) of the dates of the period, received (incl. tax)
+    in the period, to receive (incl. tax) expected in the period, and the options apart.
 
     Options are not a revenue yet: `options_planned` is what would be added if they were
     confirmed. Cancelled gigs are never planned.
     """
     gigs, invoices, payments = _revenue_querysets(tenant, filters)
     planned = gigs.filter(status__in=CONFIRMED).aggregate(total=Sum("price"))["total"]
+    signed = gigs.filter(status=Gig.Status.SIGNED).aggregate(total=Sum("price"))["total"]
     options = gigs.filter(status=Gig.Status.OPTION).aggregate(total=Sum("price"))["total"]
     return {
         "planned": planned or ZERO,
+        "signed": signed or ZERO,
         "options_planned": options or ZERO,
         "invoiced": invoices.aggregate(total=Sum("total_excl_tax"))["total"] or ZERO,
         "received": payments.aggregate(total=Sum("amount"))["total"] or ZERO,
+        "expected": sum((item["amount"] for item in expected_items(tenant, filters)), ZERO),
     }
 
 
-def invoices_outside_period(tenant, filters):
-    """Issued invoices of the dates of the period that were issued before or after it.
+def expected_items(tenant, filters=None, show=None, today=None):
+    """What is still to be paid by organisers, each with the date it is expected.
 
-    The invoiced and received figures follow the issue and payment dates, not the date of the
-    show: a 2027 date invoiced in 2026 shows 0 in 2027. This count lets the page say so.
+    Per confirmed or signed date: an issued invoice not fully paid is expected at its due date;
+    the part of the price not invoiced yet is expected at the deposit due date (the deposit, if
+    no deposit invoice exists) and at the balance due date (the rest). A missing due date is
+    replaced by the date of the show. With `filters`, only the items expected in the period
+    (and for the show) are kept. Amounts include tax.
     """
-    gigs = _gigs(tenant, filters).exclude(status=Gig.Status.CANCELLED)
-    invoices = Invoice.objects.filter(tenant=tenant, status__in=INVOICED, gig__in=gigs)
-    return invoices.exclude(issue_date__range=(filters.start, filters.end)).count()
+    show = show or (filters.show if filters else None)
+    gigs = Gig.objects.filter(tenant=tenant, status__in=CONFIRMED).select_related("show", "tenant")
+    if show:
+        gigs = gigs.filter(show=show)
+    gigs = {gig.pk: gig for gig in gigs}
+    invoices = Invoice.objects.filter(tenant=tenant, status__in=INVOICED, gig_id__in=list(gigs))
+    invoiced_incl, has_deposit = {}, set()
+    for invoice in invoices:
+        invoiced_incl[invoice.gig_id] = invoiced_incl.get(invoice.gig_id, ZERO) + (
+            invoice.total_incl_tax
+        )
+        if invoice.kind in (Invoice.Kind.DEPOSIT, Invoice.Kind.FULL) and (
+            invoice.status != Invoice.Status.CANCELLED
+        ):
+            has_deposit.add(invoice.gig_id)
+    items = []
+    for row in awaiting_payment(tenant, today or datetime.date.today()):
+        gig = gigs.get(row["gig"].pk)
+        if gig is not None:
+            items.append(
+                {
+                    "date": row["invoice"].due_date or gig.date,
+                    "gig": gig,
+                    "amount": row["remaining"],
+                    "label": f"{row['invoice'].get_kind_display()} {row['invoice'].number}",
+                    "invoice": row["invoice"],
+                }
+            )
+    for gig in gigs.values():
+        remainder = _planned_incl_tax(gig) - invoiced_incl.get(gig.pk, ZERO)
+        if remainder <= 0:
+            continue
+        deposit = ZERO
+        if gig.pk not in has_deposit and gig.deposit_percent:
+            deposit = min(
+                invoicing.money(_planned_incl_tax(gig) * gig.deposit_percent / 100), remainder
+            )
+        if deposit > 0:
+            items.append(
+                {
+                    "date": gig.deposit_due_on or gig.date,
+                    "gig": gig,
+                    "amount": deposit,
+                    "label": _("Acompte à facturer"),
+                    "invoice": None,
+                }
+            )
+        if remainder - deposit > 0:
+            items.append(
+                {
+                    "date": gig.balance_due_on or gig.date,
+                    "gig": gig,
+                    "amount": remainder - deposit,
+                    "label": _("Solde à facturer"),
+                    "invoice": None,
+                }
+            )
+    if filters is not None:
+        items = [item for item in items if filters.start <= item["date"] <= filters.end]
+    return sorted(items, key=lambda item: (item["date"], item["gig"].pk))
+
+
+def cash_movements(tenant, filters, today):
+    """The money of the period for the "cash" reading: payments received and amounts expected,
+    one list in date order. Each row: date, kind ("received" or "expected"), gig, label,
+    amount (incl. tax), late (only for what is expected)."""
+    rows = []
+    payments = Payment.objects.filter(
+        tenant=tenant, date__range=(filters.start, filters.end)
+    ).select_related("invoice__gig__show")
+    if filters.show:
+        payments = payments.filter(invoice__gig__show=filters.show)
+    for payment in payments:
+        rows.append(
+            {
+                "date": payment.date,
+                "kind": "received",
+                "gig": payment.invoice.gig,
+                "label": f"{_('Paiement')} · {payment.invoice.number}",
+                "amount": payment.amount,
+                "late": False,
+            }
+        )
+    for item in expected_items(tenant, filters, today=today):
+        rows.append(
+            {
+                "date": item["date"],
+                "kind": "expected",
+                "gig": item["gig"],
+                "label": item["label"],
+                "amount": item["amount"],
+                "late": item["date"] < today,
+            }
+        )
+    return sorted(rows, key=lambda row: (row["date"], row["kind"]))
 
 
 def _expense_rows(tenant, filters):
-    rows = Expense.objects.filter(tenant=tenant, date__range=(filters.start, filters.end))
+    """Activity: the expenses of the dates of the period. Cash: the expenses spent in the period."""
+    if filters.view == "cash":
+        rows = Expense.objects.filter(tenant=tenant, date__range=(filters.start, filters.end))
+    else:
+        rows = Expense.objects.filter(tenant=tenant, gig__date__range=(filters.start, filters.end))
     if filters.show:
         rows = rows.filter(gig__show=filters.show)
     if filters.spender == "structure":
@@ -197,24 +316,40 @@ def _months(start, end):
 
 
 def monthly_series(tenant, filters):
-    """Revenue (of the chosen figure, by its own reference date) and expenses, month by month."""
+    """Revenue (of the chosen figure, by its own reference date) and expenses, month by month.
+
+    Activity figures sit in the month of the show, received in the month of the payment,
+    expected in the month it is expected.
+    """
     gigs, invoices, payments = _revenue_querysets(tenant, filters)
-    revenue_rows = {
-        "planned": gigs.filter(status__in=CONFIRMED).annotate(month=TruncMonth("date")),
-        "invoiced": invoices.annotate(month=TruncMonth("issue_date")),
-        "received": payments.annotate(month=TruncMonth("date")),
-    }[filters.figure]
-    amount_field = {"planned": "price", "invoiced": "total_excl_tax", "received": "amount"}[
-        filters.figure
-    ]
+    if filters.figure == "expected":
+        revenue_by_month = {}
+        for item in expected_items(tenant, filters):
+            month = item["date"].replace(day=1)
+            revenue_by_month[month] = revenue_by_month.get(month, ZERO) + item["amount"]
+    else:
+        revenue_rows, amount_field = {
+            "planned": (
+                gigs.filter(status__in=CONFIRMED).annotate(month=TruncMonth("date")),
+                "price",
+            ),
+            "signed": (
+                gigs.filter(status=Gig.Status.SIGNED).annotate(month=TruncMonth("date")),
+                "price",
+            ),
+            "invoiced": (invoices.annotate(month=TruncMonth("gig__date")), "total_excl_tax"),
+            "received": (payments.annotate(month=TruncMonth("date")), "amount"),
+        }[filters.figure]
+        revenue_by_month = {
+            row["month"]: row["total"]
+            for row in revenue_rows.values("month").annotate(total=Sum(amount_field))
+        }
     spent = _expense_rows(tenant, filters)
-    revenue_by_month = {
-        row["month"]: row["total"]
-        for row in revenue_rows.values("month").annotate(total=Sum(amount_field))
-    }
     expenses_by_month = {
         row["month"]: row["total"]
-        for row in spent.annotate(month=TruncMonth("date"))
+        for row in spent.annotate(
+            month=TruncMonth("date" if filters.view == "cash" else "gig__date")
+        )
         .values("month")
         .annotate(total=Sum("amount"))
     }
@@ -374,6 +509,12 @@ def operations(tenant, filters, limit=None):
         for row in spent_rows.values("gig_id").annotate(total=Sum("amount"))
     }
 
+    expected_by_gig = {}
+    if filters.figure == "expected":
+        for item in expected_items(tenant, show=filters.show):
+            gig_id = item["gig"].pk
+            expected_by_gig[gig_id] = expected_by_gig.get(gig_id, ZERO) + item["amount"]
+
     rows = []
     for gig in gigs:
         mine = [i for i in invoices if i.gig_id == gig.pk]
@@ -411,9 +552,13 @@ def operations(tenant, filters, limit=None):
                     ),
                 }
             )
-        amount = {"planned": gig.price, "invoiced": invoiced_excl, "received": received}[
-            filters.figure
-        ]
+        amount = {
+            "planned": gig.price,
+            "signed": gig.price if gig.status == Gig.Status.SIGNED else ZERO,
+            "invoiced": invoiced_excl,
+            "received": received,
+            "expected": expected_by_gig.get(gig.pk, ZERO),
+        }[filters.figure]
         rows.append(
             {
                 "gig": gig,
@@ -563,11 +708,14 @@ def summary(tenant, filters, today):
         "filters": filters,
         "dates": date_counts(tenant, filters),
         "revenue": revenue_totals,
-        "invoices_outside_period": invoices_outside_period(tenant, filters),
         "expenses": expense_totals,
         "to_reimburse": to_reimburse(tenant),
         "claims": pending_claims(tenant),
-        "balance": balance(revenue_totals, expense_totals, filters.figure),
+        "headline": revenue_totals[filters.figure],
+        # Cash: what was received minus what was spent (the figure chosen may be "to receive").
+        "balance": balance(
+            revenue_totals, expense_totals, "received" if filters.view == "cash" else filters.figure
+        ),
         "receivables": receivables(tenant, today, filters.show),
         "people": people_mobilised(tenant, filters),
         "incomplete_dates": incomplete_dates(tenant, filters),
@@ -578,4 +726,5 @@ def summary(tenant, filters, today):
         "upcoming": upcoming(tenant, filters, today),
         "monthly": monthly,
         "chart": monthly_chart(monthly),
+        "movements": cash_movements(tenant, filters, today) if filters.view == "cash" else [],
     }

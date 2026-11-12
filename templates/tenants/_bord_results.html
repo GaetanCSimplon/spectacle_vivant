@@ -31,18 +31,27 @@
 
   <section class="card card-accent" aria-labelledby="bord-budget">
     <h2 id="bord-budget" class="stat-label !text-xs !font-semibold">B · {% translate "Budget" %}</h2>
-    <p class="stat-value whitespace-nowrap">{% if filters.figure == 'planned' %}{{ revenue.planned|floatformat:"0g" }}{% elif filters.figure == 'invoiced' %}{{ revenue.invoiced|floatformat:"0g" }}{% else %}{{ revenue.received|floatformat:"0g" }}{% endif %} €</p>
-    <p class="mt-1 text-sm">{% translate "Ce que les concerts doivent rapporter" %} · {{ figure_label }}</p>
-    <ul class="mt-2 space-y-0.5 text-sm">
-      <li>{% translate "Prévisionnelle" %} (HT) : {{ revenue.planned|floatformat:"0g" }} €</li>
-      <li>{% translate "Facturée" %} (HT) : {{ revenue.invoiced|floatformat:"0g" }} €</li>
-      <li>{% translate "Encaissée" %} (TTC) : {{ revenue.received|floatformat:"0g" }} €</li>
-      {% if revenue.options_planned %}<li>{% blocktranslate with amount=revenue.options_planned|floatformat:"0g" %}+ {{ amount }} € HT si les options sont confirmées{% endblocktranslate %}</li>{% endif %}
-    </ul>
-    {% if invoices_outside_period %}<p class="mt-2 text-sm">{% blocktranslate count counter=invoices_outside_period %}{{ counter }} facture de ces dates a été émise hors de la période affichée : elle compte dans « Reste à encaisser » mais pas dans « Facturée » ni « Encaissée ».{% plural %}{{ counter }} factures de ces dates ont été émises hors de la période affichée : elles comptent dans « Reste à encaisser » mais pas dans « Facturée » ni « Encaissée ».{% endblocktranslate %}</p>{% endif %}
+    <p class="stat-value whitespace-nowrap">{{ headline|floatformat:"0g" }} €</p>
+    {% if filters.view == 'cash' %}
+      <p class="mt-1 text-sm">{% translate "Argent reçu et à recevoir" %} · {{ figure_label }}</p>
+      <ul class="mt-2 space-y-0.5 text-sm">
+        <li>{% translate "Encaissé" %} (TTC) : {{ revenue.received|floatformat:"0g" }} €</li>
+        <li>{% translate "À encaisser sur la période" %} (TTC) : {{ revenue.expected|floatformat:"0g" }} €</li>
+      </ul>
+      <p class="mt-2 text-sm text-stone-600">{% translate "Les paiements comptent à la date où l'argent est reçu, les montants attendus à leur échéance." %}</p>
+    {% else %}
+      <p class="mt-1 text-sm">{% translate "Ce que rapportent mes dates" %} · {{ figure_label }}</p>
+      <ul class="mt-2 space-y-0.5 text-sm">
+        <li>{% translate "Prévisionnel" %} (HT) : {{ revenue.planned|floatformat:"0g" }} €</li>
+        <li>{% translate "Signé" %} (HT) : {{ revenue.signed|floatformat:"0g" }} €</li>
+        <li>{% translate "Facturé" %} (HT) : {{ revenue.invoiced|floatformat:"0g" }} €</li>
+        {% if revenue.options_planned %}<li>{% blocktranslate with amount=revenue.options_planned|floatformat:"0g" %}+ {{ amount }} € HT si les options sont confirmées{% endblocktranslate %}</li>{% endif %}
+      </ul>
+      <p class="mt-2 text-sm text-stone-600">{% translate "Chaque date compte à sa date de concert, même si elle a été facturée ou payée une autre année." %}</p>
+    {% endif %}
     <ul class="mt-2 space-y-0.5 border-t border-current pt-2 text-sm">
-      <li class="flex justify-between gap-2"><span>{% translate "Les frais déjà ajoutés" %}</span><strong class="data whitespace-nowrap">{{ expenses.total|floatformat:"0g" }} €</strong></li>
-      <li class="flex justify-between gap-2"><span>{% translate "Ce qu'il reste après ces frais" %} ({% if balance > 0 %}{% translate "excédent" %}{% elif balance < 0 %}{% translate "déficit" %}{% else %}{% translate "équilibre" %}{% endif %})</span><strong class="data whitespace-nowrap">{% if balance > 0 %}+ {% endif %}{{ balance|floatformat:"0g" }} €</strong></li>
+      <li class="flex justify-between gap-2"><span>{% if filters.view == 'cash' %}{% translate "Les frais payés sur la période" %}{% else %}{% translate "Les frais de ces dates" %}{% endif %}</span><strong class="data whitespace-nowrap">{{ expenses.total|floatformat:"0g" }} €</strong></li>
+      <li class="flex justify-between gap-2"><span>{% if filters.view == 'cash' %}{% translate "Reçu moins payé" %}{% else %}{% translate "Ce qu'il reste après ces frais" %}{% endif %} ({% if balance > 0 %}{% translate "excédent" %}{% elif balance < 0 %}{% translate "déficit" %}{% else %}{% translate "équilibre" %}{% endif %})</span><strong class="data whitespace-nowrap">{% if balance > 0 %}+ {% endif %}{{ balance|floatformat:"0g" }} €</strong></li>
       <li class="flex justify-between gap-2"><span>{% translate "Reste à encaisser" %}</span><strong class="data whitespace-nowrap">{{ receivables.remaining|floatformat:"0g" }} €</strong></li>
     </ul>
     {% if receivables.late %}<p class="mt-2"><span class="pill pill-bad">{% blocktranslate with amount=receivables.late|floatformat:"0g" %}dont {{ amount }} € en retard{% endblocktranslate %}</span></p>{% endif %}
@@ -234,6 +243,28 @@
   {% endif %}
 </section>
 
+{% if filters.view == 'cash' %}
+<section class="card mb-6" id="operations" aria-labelledby="bord-operations">
+  <h2 id="bord-operations" class="stat-label !text-xs !font-semibold">{% translate "Mouvements de la période" %}</h2>
+  <p class="mt-1 text-sm text-stone-600">{% translate "Les paiements reçus et les montants attendus, par date, tous concerts confondus. Montants TTC." %}</p>
+  {% if movements %}
+    <ul class="mt-3 divide-y divide-page-line text-sm">
+      {% for row in movements|slice:":30" %}
+        <li class="flex flex-wrap items-center justify-between gap-2 py-2">
+          <span class="min-w-0"><span class="data">{{ row.date|date:"d/m/Y" }}</span> · <a href="{% url 'finance:page' row.gig.pk %}" class="text-blue-700 underline">{{ row.gig.show.title }}</a> · {{ row.label }}</span>
+          <span class="shrink-0">
+            {% if row.kind == 'received' %}<span class="pill pill-good mr-1">{% translate "reçu" %}</span>{% elif row.late %}<span class="pill pill-bad mr-1">{% translate "en retard" %}</span>{% else %}<span class="pill pill-neutral mr-1">{% translate "attendu" %}</span>{% endif %}
+            <strong class="data">{{ row.amount|floatformat:"0g" }} €</strong>
+          </span>
+        </li>
+      {% endfor %}
+    </ul>
+    {% if movements|length > 30 %}<p class="mt-2 text-sm text-stone-600">{% blocktranslate with n=movements|length|add:"-30" %}{{ n }} autre(s) mouvement(s) : affinez la période ou le spectacle.{% endblocktranslate %}</p>{% endif %}
+  {% else %}
+    <p class="mt-3 text-sm text-stone-600">{% translate "Aucun paiement reçu ni montant attendu sur cette période." %}</p>
+  {% endif %}
+</section>
+{% else %}
 <section class="card mb-6" id="operations" aria-labelledby="bord-operations">
   <h2 id="bord-operations" class="stat-label !text-xs !font-semibold">{% translate "Opérations récentes" %}</h2>
   <p class="mt-1 text-sm text-stone-600">{% blocktranslate with figure=figure_label %}Une ligne par date de la période. Crédit : {{ figure }}, toutes factures et paiements de la date. Débit : toutes les dépenses de la date.{% endblocktranslate %}</p>
@@ -286,6 +317,7 @@
     <p class="mt-3 text-sm text-stone-600">{% translate "Aucune date ne correspond à ces filtres." %}</p>
   {% endif %}
 </section>
+{% endif %}
 
   </div>
 </div>

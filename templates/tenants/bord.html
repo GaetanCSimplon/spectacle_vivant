@@ -8,6 +8,15 @@
   <h1 class="mb-2">{% translate "Bòrd" %}</h1>
   {% include "tenants/_tabs.html" with active="bord" %}
 
+  {# Two readings of the same data: by date of show, or by date of money (BRD-04). #}
+  <nav class="mb-4 flex flex-wrap gap-2" aria-label="{% translate 'Lecture du Bord' %}">
+    {% for key, label in views.items %}
+      <a href="?{% for name, value in query_pairs %}{% if name != 'view' and name != 'figure' %}{{ name }}={{ value|urlencode }}&amp;{% endif %}{% endfor %}view={{ key }}"
+         class="btn {% if filters.view == key %}btn-primary{% else %}btn-secondary{% endif %}"
+         {% if filters.view == key %}aria-current="page"{% endif %}>{{ label }}</a>
+    {% endfor %}
+  </nav>
+
   <form
     method="get"
     action="{% url 'tenants:profile' %}"
@@ -27,7 +36,11 @@
       <div x-show="period === 'perso'" x-cloak>{{ form.start.label_tag }} {{ form.start }}</div>
       <div x-show="period === 'perso'" x-cloak>{{ form.end.label_tag }} {{ form.end }}</div>
       <div>{{ form.show.label_tag }} {{ form.show }}</div>
-      <div>{{ form.figure.label_tag }} {{ form.figure }}</div>
+      <input type="hidden" name="view" value="{{ filters.view }}">
+      <div><label for="{{ form.figure.id_for_label }}">{{ form.figure.label }}</label>
+        <select name="figure" id="{{ form.figure.id_for_label }}">
+          {% for key, label in figures %}<option value="{{ key }}" {% if filters.figure == key %}selected{% endif %}>{{ label }}</option>{% endfor %}
+        </select></div>
       <div>{{ form.status.label_tag }} {{ form.status }}</div>
       <div>{{ form.spender.label_tag }} {{ form.spender }}</div>
     </div>

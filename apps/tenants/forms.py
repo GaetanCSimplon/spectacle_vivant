@@ -433,6 +433,7 @@ class BordFilterForm(forms.Form):
         queryset=Show.objects.none(),
         empty_label=_("Tous les spectacles"),
     )
+    view = forms.ChoiceField(label=_("Lecture"), required=False, choices=list(bord.VIEWS.items()))
     figure = forms.ChoiceField(
         label=_("Chiffres à afficher"), required=False, choices=list(bord.FIGURES.items())
     )
@@ -463,11 +464,16 @@ class BordFilterForm(forms.Form):
             bounds = (start, end)
         else:
             bounds = bord.period_bounds("annee" if period == "perso" else period, today)
+        view = data.get("view") or bord.DEFAULT_VIEW
+        figure = data.get("figure")
+        if figure not in bord.FIGURES_BY_VIEW[view]:
+            figure = bord.FIGURES_BY_VIEW[view][0]  # a figure of the other reading: the default
         return bord.Filters(
             start=bounds[0],
             end=bounds[1],
             show=data.get("show"),
-            figure=data.get("figure") or bord.DEFAULT_FIGURE,
+            view=view,
+            figure=figure,
             status=data.get("status") or "",
             spender=data.get("spender") or "",
         )
