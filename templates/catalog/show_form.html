@@ -16,7 +16,7 @@
     {% include "components/_sectioned_form.html" %}
     <fieldset class="card mb-6 space-y-3">
       <legend class="px-1 text-sm font-semibold">{% translate "Ajouter un autre membre à l'équipe" %}</legend>
-      <p class="text-sm text-gray-600">{% translate "Il rejoint votre équipe (onglet Équipe) et la distribution de ce spectacle. Ses autres informations se complètent ensuite dans l'équipe." %}</p>
+      <p class="text-sm text-gray-600">{% translate "Il rejoint votre équipe (onglet Équipe) et la distribution de ce spectacle. Le reste de sa fiche (adresse, statut…) se complète ensuite dans l'équipe." %}</p>
       {% for field in form.new_member_fields %}
         {% if field.name == "new_is_artist" %}
           <div class="flex flex-wrap items-center gap-x-8 gap-y-2" role="group" aria-label="{% translate 'Artiste ou technicien' %}">
