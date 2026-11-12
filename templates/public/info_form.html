@@ -1,0 +1,33 @@
+{% extends "public/base_public.html" %}
+{% load i18n %}
+
+{% block title %}Vos informations — Bòrd Pro{% endblock %}
+
+{% block content %}
+  <h1>{% translate "Compléter vos informations" %}</h1>
+  <p class="mb-2">
+    {% blocktranslate with tenant=tenant.name %}<strong>{{ tenant }}</strong> vous demande de compléter vos informations.{% endblocktranslate %}
+  </p>
+  <p class="mb-5 rounded-xl card-context px-4 py-3 text-sm">
+    {% translate "Remplissez ce que vous savez, tous les champs sont facultatifs. Ce lien ne peut servir qu'une fois." %}
+    {% if is_person %}{% translate "Votre adresse, votre date de naissance et vos numéros ne sont visibles que du responsable de la structure." %}{% endif %}
+  </p>
+
+  <form method="post" class="card space-y-1">
+    {% csrf_token %}
+    {{ form.non_field_errors }}
+    {% for field in form %}
+      <p>
+        {{ field.label_tag }}
+        {{ field }}
+        {% if field.help_text %}<span class="helptext">{{ field.help_text }}</span>{% endif %}
+        {{ field.errors }}
+      </p>
+    {% endfor %}
+    <button type="submit" class="btn btn-primary btn-block">{% translate "Envoyer mes informations" %}</button>
+  </form>
+
+  <p class="mt-4 text-xs text-stone-500">
+    {% blocktranslate with tenant=tenant.name %}Les informations saisies sont transmises à {{ tenant }}, qui les vérifie avant de les enregistrer. Pour les consulter, les corriger ou les faire supprimer, contactez directement {{ tenant }}. Bòrd Pro héberge ce formulaire en France et n'utilise pas ces données pour autre chose.{% endblocktranslate %}
+  </p>
+{% endblock %}

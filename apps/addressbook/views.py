@@ -10,7 +10,7 @@ from django.views.generic import CreateView, DeleteView, DetailView, ListView, U
 from apps.core.views import SearchListMixin, TenantScopedMixin, wants_fragment
 from apps.gigs.models import Gig
 
-from . import exports, imports, services
+from . import exports, imports, info_views, services
 from .forms import (
     ContactFilterForm,
     ContactForm,
@@ -390,6 +390,11 @@ class ContactUpdateView(ContactFormMixin, TenantScopedMixin, UpdateView):
         response = super().form_valid(form)
         messages.success(self.request, _("Le contact a été modifié."))
         return response
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context.update(info_views.form_block(self.request, self.object))
+        return context
 
 
 class ContactDeleteView(TenantScopedMixin, DeleteView):

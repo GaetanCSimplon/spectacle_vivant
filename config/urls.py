@@ -19,6 +19,7 @@ from django.contrib import admin
 from django.contrib.sitemaps.views import sitemap as sitemap_view
 from django.urls import include, path
 
+from apps.addressbook import info_public_views
 from apps.addressbook import public_views as addressbook_public_views
 from apps.core.lookup_views import CommuneSearchView, CompanySearchView
 from apps.core.sitemaps import SitePagesSitemap
@@ -126,6 +127,11 @@ urlpatterns = [
         "formulaire-organisateur/<str:token>/",
         addressbook_public_views.PublicPromoterFormView.as_view(),
         name="promoter-form-public",
+    ),
+    path(
+        "mes-informations/<str:token>/",
+        info_public_views.PublicInfoFormView.as_view(),
+        name="info-form-public",
     ),
     path(
         "contrat-partage/<str:token>/",

@@ -1,6 +1,6 @@
 from django.urls import path
 
-from . import views
+from . import info_views, views
 
 app_name = "addressbook"
 
@@ -86,5 +86,20 @@ urlpatterns = [
     path("contacts/export/", views.ContactExportView.as_view(), name="contact-export"),
     path("contacts/nouveau/", views.ContactQuickCreateView.as_view(), name="contact-create"),
     path("contacts/<int:pk>/modifier/", views.ContactUpdateView.as_view(), name="contact-update"),
+    path(
+        "contacts/<int:pk>/formulaire/",
+        info_views.InfoInviteView.as_view(kind="contact"),
+        name="contact-info-invite",
+    ),
+    path(
+        "contacts/<int:pk>/formulaire/annuler/",
+        info_views.InfoRevokeView.as_view(kind="contact"),
+        name="contact-info-revoke",
+    ),
+    path(
+        "contacts/<int:pk>/reponse/",
+        info_views.InfoAnswerView.as_view(kind="contact"),
+        name="contact-info-answer",
+    ),
     path("contacts/<int:pk>/supprimer/", views.ContactDeleteView.as_view(), name="contact-delete"),
 ]

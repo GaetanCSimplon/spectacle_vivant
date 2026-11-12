@@ -261,3 +261,67 @@ class PromoterInvitation(TenantOwnedModel):
         if self.expires_at <= timezone.now():
             return self.Status.EXPIRED
         return self.Status.ACTIVE
+
+
+class InfoInvitation(TenantOwnedModel):
+    """A temporary secret link that lets a contact or a team member fill in their own details
+    (ORG-07). Same life as the organiser's form (`PromoterInvitation`): valid for a week, used
+    once, giving access to nothing but a form. The answer waits in `response` until the user
+    reviews it, and is emptied afterwards, so the data is not kept twice.
+    """
+
+    class Status(models.TextChoices):
+        ACTIVE = "active", _("Lien actif")
+        ANSWERED = "answered", _("Réponse à vérifier")
+        REVIEWED = "reviewed", _("Réponse traitée")
+        EXPIRED = "expired", _("Lien expiré")
+        REVOKED = "revoked", _("Lien annulé")
+
+    # Exactly one of the two is set (see the constraint).
+    contact = models.ForeignKey(
+        Contact, on_delete=models.CASCADE, null=True, blank=True, related_name="invitations"
+    )
+    person = models.ForeignKey(
+        "tenants.Person", on_delete=models.CASCADE, null=True, blank=True, related_name="+"
+    )
+    token = models.CharField(max_length=64, unique=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    created_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, related_name="+"
+    )
+    expires_at = models.DateTimeField()
+    revoked_at = models.DateTimeField(null=True, blank=True)
+    completed_at = models.DateTimeField(null=True, blank=True)
+    reviewed_at = models.DateTimeField(null=True, blank=True)
+    response = models.JSONField(default=dict, blank=True)
+
+    class Meta:
+        ordering = ["-created_at"]
+        constraints = [
+            models.CheckConstraint(
+                condition=(
+                    models.Q(contact__isnull=False, person__isnull=True)
+                    | models.Q(contact__isnull=True, person__isnull=False)
+                ),
+                name="info_invitation_one_target",
+            ),
+        ]
+
+    def __str__(self):
+        return f"Formulaire — {self.target}"
+
+    @property
+    def target(self):
+        return self.contact or self.person
+
+    @property
+    def status(self):
+        if self.reviewed_at:
+            return self.Status.REVIEWED
+        if self.completed_at:
+            return self.Status.ANSWERED
+        if self.revoked_at:
+            return self.Status.REVOKED
+        if self.expires_at <= timezone.now():
+            return self.Status.EXPIRED
+        return self.Status.ACTIVE
