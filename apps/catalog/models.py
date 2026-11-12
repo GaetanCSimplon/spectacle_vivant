@@ -5,11 +5,15 @@ from django.utils.translation import gettext_lazy as _
 
 from apps.core.models import TenantOwnedModel
 
+from . import colors
+
 
 class Show(TenantOwnedModel):
     """A show (Spectacle) the artist sells."""
 
     title = models.CharField(_("titre"), max_length=255)
+    # A key of `colors.PALETTE` ("" = no colour): tells the shows apart in the lists.
+    color = models.CharField(_("couleur"), max_length=20, blank=True, choices=colors.CHOICES)
     group_name = models.CharField(_("nom du groupe / de l'artiste"), max_length=255, blank=True)
     # Free text typed before the distribution became a choice among the team: kept, read only,
     # and shown until at least one member is chosen.
@@ -60,6 +64,14 @@ class Show(TenantOwnedModel):
         if people:
             return ", ".join(p.full_name for p in people)
         return self.performers
+
+    @property
+    def color_hex(self):
+        return colors.hex_of(self.color)
+
+    @property
+    def color_name(self):
+        return colors.name_of(self.color)
 
     def get_absolute_url(self):
         return reverse("catalog:show-detail", args=[self.pk])

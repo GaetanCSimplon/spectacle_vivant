@@ -15,7 +15,7 @@
     {% for show in object_list %}
       <li>
         <a href="{% url 'catalog:show-detail' show.pk %}" class="card card-link block">
-          <span class="block font-medium text-gray-900">{{ show.title }}</span>
+          <span class="block font-medium text-gray-900">{% include "components/_show_dot.html" %}{{ show.title }}</span>
           <span class="block text-sm text-gray-600">
             {% if show.group_name %}{{ show.group_name }} · {% endif %}{{ show.duration_minutes }} min
           </span>
@@ -38,7 +38,7 @@
       <tbody>
         {% for show in object_list %}
           <tr>
-            <td><a href="{% url 'catalog:show-detail' show.pk %}" class="cell-main">{{ show.title }}</a></td>
+            <td><a href="{% url 'catalog:show-detail' show.pk %}" class="cell-main">{% include "components/_show_dot.html" %}{{ show.title }}</a></td>
             <td>{{ show.group_name }}</td>
             <td class="data whitespace-nowrap text-right">{{ show.duration_minutes }} min</td>
             <td class="data whitespace-nowrap text-right">{{ show.default_price|floatformat:"-2g" }} €</td>

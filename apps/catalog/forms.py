@@ -10,7 +10,10 @@ from .validators import ObjectNumberMixin
 
 class ShowForm(ObjectNumberMixin, SectionedFormMixin, forms.ModelForm):
     layout = [
-        (_("Le spectacle"), ["title", "group_name", "cast", "duration_minutes", "default_price"]),
+        (
+            _("Le spectacle"),
+            ["title", "color", "group_name", "cast", "duration_minutes", "default_price"],
+        ),
         (
             _("En tournée"),
             [
@@ -54,6 +57,7 @@ class ShowForm(ObjectNumberMixin, SectionedFormMixin, forms.ModelForm):
         model = Show
         fields = [
             "title",
+            "color",
             "group_name",
             "cast",
             "duration_minutes",
@@ -76,6 +80,9 @@ class ShowForm(ObjectNumberMixin, SectionedFormMixin, forms.ModelForm):
             "tech_sheet_text": forms.Textarea(attrs={"rows": 5}),
         }
         help_texts = {
+            "color": _(
+                "Facultatif : une pastille de cette couleur repère le spectacle dans les listes."
+            ),
             "cast": _("Les membres de votre équipe. Il manque quelqu'un ? Ajoutez-le plus bas."),
             "artists_count": _("Calculé d'après la distribution dès qu'un membre est choisi."),
             "technicians_count": _("Calculé d'après la distribution dès qu'un membre est choisi."),
