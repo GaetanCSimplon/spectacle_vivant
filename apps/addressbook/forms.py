@@ -1,10 +1,19 @@
+import datetime
+
 from django import forms
+from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 
 from apps.core.forms import AddressModelForm, MultiSelectDropdown, SectionedFormMixin
-from apps.tenants.validators import normalize_code_ape, validate_code_ape
+from apps.tenants.models import Person
+from apps.tenants.validators import (
+    normalize_code_ape,
+    normalize_social_security_number,
+    validate_code_ape,
+    validate_social_security_number,
+)
 
-from . import services
+from . import info_requests, services
 from .models import Contact, Promoter, Venue
 
 
@@ -337,3 +346,62 @@ class ImportUploadForm(forms.Form):
         if not upload.name.lower().endswith(".csv"):
             raise forms.ValidationError(_("Seuls les fichiers .csv sont acceptés."))
         return upload
+
+
+class ContactInfoForm(forms.Form):
+    """What a contact fills in about themselves from the link they received (ORG-07).
+
+    Nothing is saved from here: the answer waits until the user has reviewed it. Every field is
+    optional, but at least one must be filled in.
+    """
+
+    name = forms.CharField(label=_("Nom"), required=False, max_length=255)
+    role = forms.CharField(label=_("Fonction"), required=False, max_length=255)
+    email = forms.EmailField(label=_("E-mail"), required=False)
+    phone = forms.CharField(label=_("Téléphone"), required=False, max_length=30)
+
+    def clean(self):
+        cleaned = super().clean()
+        if not self.errors and not any(cleaned.values()):
+            raise forms.ValidationError(_("Merci de remplir au moins un champ."))
+        return cleaned
+
+
+class PersonInfoForm(AddressModelForm):
+    """What a team member fills in about themselves from the link they received (ORG-07).
+
+    Built on a blank, unsaved Person and never saved here. It carries the private fields, the
+    same checks as the team form apply to them.
+    """
+
+    social_security_number = forms.CharField(
+        label=_("N° de sécurité sociale"),
+        required=False,
+        max_length=21,
+        validators=[validate_social_security_number],
+    )
+
+    class Meta:
+        model = Person
+        fields = [key for key, _label in info_requests.PERSON_FIELDS]
+        widgets = {
+            "birth_date": forms.DateInput(attrs={"type": "date"}, format="%Y-%m-%d"),
+            "address": forms.Textarea(attrs={"rows": 2}),
+        }
+
+    def clean_social_security_number(self):
+        return normalize_social_security_number(self.cleaned_data["social_security_number"])
+
+    def clean_birth_date(self):
+        birth_date = self.cleaned_data["birth_date"]
+        if birth_date is not None and not (
+            datetime.date(1900, 1, 1) <= birth_date <= timezone.localdate()
+        ):
+            raise forms.ValidationError(_("Cette date de naissance n'est pas plausible."))
+        return birth_date
+
+    def clean(self):
+        cleaned = super().clean()
+        if not self.errors and not any(cleaned.values()):
+            raise forms.ValidationError(_("Merci de remplir au moins un champ."))
+        return cleaned

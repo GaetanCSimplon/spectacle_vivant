@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}Réponse reçue — Bòrd Pro{% endblock %}
+
+{% block page_content %}
+  <h1 class="mb-1">{% translate "Réponse reçue" %}</h1>
+  <p class="mb-4 text-sm text-gray-600">{{ target }} · {% blocktranslate with date=invitation.completed_at|date:"d/m/Y H:i" %}reçue le {{ date }}{% endblocktranslate %}</p>
+
+  <p class="mb-4 rounded-xl card-context px-4 py-3 text-sm">
+    {% translate "Ces informations ont été saisies par la personne. Rien n'est enregistré tant que vous ne cliquez pas sur « Enregistrer ». Décochez ce que vous ne voulez pas reprendre." %}
+  </p>
+
+  <form method="post" class="space-y-4">
+    {% csrf_token %}
+    <ul class="space-y-2">
+      {% for row in rows %}
+        <li class="card text-sm">
+          <label class="flex cursor-pointer items-start gap-3 !mb-0">
+            <input type="checkbox" name="fields" value="{{ row.key }}" {% if not row.same %}checked{% endif %} class="mt-0.5">
+            <span class="min-w-0">
+              <span class="block font-semibold">{{ row.label }}</span>
+              <span class="block break-words text-green-900">{% translate "Proposé" %} : {{ row.proposed|linebreaksbr }}</span>
+              {% if row.same %}
+                <span class="block text-stone-500">{% translate "Déjà identique dans la fiche." %}</span>
+              {% elif row.current %}
+                <span class="block break-words text-stone-500">{% translate "Actuellement" %} : {{ row.current|linebreaksbr }}</span>
+              {% else %}
+                <span class="block text-stone-500">{% translate "Actuellement vide." %}</span>
+              {% endif %}
+            </span>
+          </label>
+        </li>
+      {% endfor %}
+    </ul>
+    {% if not rows %}
+      <p class="card text-sm text-stone-600">{% translate "La personne n'a rien rempli." %}</p>
+    {% endif %}
+
+    <div class="flex flex-col gap-3">
+      <button type="submit" class="btn btn-primary btn-block">{% translate "Enregistrer les informations cochées" %}</button>
+      <button type="submit" name="ignore" value="1" class="text-center text-sm text-stone-500 underline">{% translate "Ignorer cette réponse" %}</button>
+      <a href="{{ back_url }}" class="text-center text-sm text-stone-500 hover:text-stone-700">{% translate "Revenir à la fiche sans rien faire" %}</a>
+    </div>
+  </form>
+{% endblock %}

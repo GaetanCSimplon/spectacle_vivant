@@ -70,6 +70,7 @@ PUBLIC = {
     "team-expense-receipt",
     "promoter-form-public",  # the secret link is the access right
     "promoter-form-thanks",
+    "info-form-public",  # the secret link is the access right (addressbook/test_info_form.py)
     "contract-share-public",  # the secret link is the access right (gigs/test_mail.py)
     "tour-form-public",  # the secret link is the access right (roadmaps/test_tour_form.py)
     "tour-form-thanks",
@@ -86,6 +87,12 @@ ROUTES = [
     ("tenants:person-delete", {"pk": "person"}),
     ("tenants:person-access-enable", {"pk": "person"}),
     ("tenants:person-access-revoke", {"pk": "person"}),
+    ("tenants:person-info-invite", {"pk": "person"}),
+    ("tenants:person-info-revoke", {"pk": "person"}),
+    ("tenants:person-info-answer", {"pk": "person"}),
+    ("addressbook:contact-info-invite", {"pk": "contact"}),
+    ("addressbook:contact-info-revoke", {"pk": "contact"}),
+    ("addressbook:contact-info-answer", {"pk": "contact"}),
     ("addressbook:promoter-invite", {"pk": "promoter"}),
     ("addressbook:promoter-invite-revoke", {"pk": "promoter"}),
     ("addressbook:promoter-answer", {"pk": "promoter"}),

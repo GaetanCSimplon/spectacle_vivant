@@ -24,6 +24,7 @@ from django.views.generic import (
 )
 
 from apps.accounts.services import is_tenant_owner
+from apps.addressbook import info_views
 from apps.core.views import SearchListMixin, TenantScopedMixin, wants_fragment
 from apps.documents.models import Invoice
 from apps.finance import bord
@@ -315,6 +316,7 @@ class PersonDetailView(TenantScopedMixin, DetailView):
             total=Sum("amount")
         )["total"]
         if context["is_owner"]:
+            context.update(info_views.form_block(self.request, self.object))
             context["social_rows"] = social.social_rows(
                 self.request.tenant, person=self.object, newest_first=True
             )

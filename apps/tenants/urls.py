@@ -1,5 +1,7 @@
 from django.urls import path
 
+from apps.addressbook import info_views
+
 from . import views
 
 app_name = "tenants"
@@ -13,6 +15,21 @@ urlpatterns = [
     path("quitter/", views.LeaveTenantView.as_view(), name="leave"),
     path("equipe/", views.PersonListView.as_view(), name="person-list"),
     path("equipe/nouveau/", views.PersonCreateView.as_view(), name="person-create"),
+    path(
+        "equipe/<int:pk>/formulaire/",
+        info_views.InfoInviteView.as_view(kind="person"),
+        name="person-info-invite",
+    ),
+    path(
+        "equipe/<int:pk>/formulaire/annuler/",
+        info_views.InfoRevokeView.as_view(kind="person"),
+        name="person-info-revoke",
+    ),
+    path(
+        "equipe/<int:pk>/reponse/",
+        info_views.InfoAnswerView.as_view(kind="person"),
+        name="person-info-answer",
+    ),
     path("equipe/<int:pk>/", views.PersonDetailView.as_view(), name="person-detail"),
     path("equipe/<int:pk>/modifier/", views.PersonUpdateView.as_view(), name="person-update"),
     path("equipe/<int:pk>/supprimer/", views.PersonDeleteView.as_view(), name="person-delete"),

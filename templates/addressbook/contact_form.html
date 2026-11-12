@@ -46,6 +46,7 @@
   </form>
 
   {% if object %}
+    <div class="mt-6">{% include "addressbook/_info_form_block.html" %}</div>
     <a
       href="{% url 'addressbook:contact-delete' object.pk %}"
       class="mt-6 inline-block text-sm text-red-600 hover:text-red-700"

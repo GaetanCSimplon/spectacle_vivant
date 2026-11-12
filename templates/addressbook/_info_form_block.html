@@ -1,0 +1,27 @@
+{% load i18n %}{% comment %}"Envoyer un formulaire en ligne" on the fiche of a contact or a team member (ORG-07).
+Needs the keys of `info_views.form_block`.{% endcomment %}
+<section class="card mb-6 space-y-3 text-sm" aria-labelledby="info-form-title">
+  <h2 id="info-form-title" class="stat-label !text-xs !font-semibold">{% translate "Informations à faire compléter" %}</h2>
+  {% if info_invitation and info_invitation.status == 'answered' %}
+    <p class="font-medium text-blue-900">{% blocktranslate with date=info_invitation.completed_at|date:"d/m/Y" %}La personne a répondu le {{ date }}.{% endblocktranslate %}</p>
+    <a href="{{ info_answer_url }}" class="btn btn-primary btn-block">{% translate "Vérifier les informations reçues" %}</a>
+  {% elif info_invitation and info_invitation.status == 'active' %}
+    <p>{% blocktranslate with date=info_invitation.expires_at|date:"d/m/Y" %}Un lien est actif jusqu'au {{ date }}. Envoyez-le à la personne : elle remplira ses informations sans compte, une seule fois, et vous vérifierez avant de les enregistrer.{% endblocktranslate %}</p>
+    {% include "components/_mail_actions.html" %}
+    <form method="post" action="{{ info_revoke_url }}">
+      {% csrf_token %}
+      <button type="submit" class="text-red-700 underline">{% translate "Annuler ce lien" %}</button>
+    </form>
+  {% else %}
+    <p>
+      {% if info_invitation and info_invitation.status == 'expired' %}{% translate "Le dernier lien a expiré." %}
+      {% elif info_invitation and info_invitation.status == 'revoked' %}{% translate "Le dernier lien a été annulé." %}
+      {% elif info_invitation and info_invitation.status == 'reviewed' %}{% translate "La dernière réponse a été traitée." %}{% endif %}
+      {% translate "Plutôt que de tout saisir vous-même, envoyez un lien : la personne remplit ses informations et vous vérifiez avant de les enregistrer." %}
+    </p>
+    <form method="post" action="{{ info_create_url }}">
+      {% csrf_token %}
+      <button type="submit" class="btn btn-secondary btn-block">{% translate "Envoyer un formulaire en ligne" %}</button>
+    </form>
+  {% endif %}
+</section>
