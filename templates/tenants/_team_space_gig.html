@@ -8,7 +8,7 @@
     <span class="min-w-0">
       <span class="block font-medium">{{ gig.show.title }}</span>
       <span class="block text-sm text-gray-600"><span class="sr-only">{{ gig.date|date:"l j F Y" }} · </span>{{ gig.venue.name }}{% if gig.venue.city %} · {{ gig.venue.city }}{% endif %}</span>
-      <span class="block text-sm text-blue-700 underline">{% translate "Voir la feuille de route" %}</span>
+      <span class="btn btn-secondary btn-sm mt-1">{% translate "Voir la feuille de route" %}</span>
     </span>
   </a>
 </li>

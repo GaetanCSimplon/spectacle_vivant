@@ -68,7 +68,7 @@
           <h2 id="shows-title" class="stat-label !text-xs !font-semibold">{% translate "Spectacles actifs" %}</h2>
           <p class="stat-value !text-3xl">{{ active_shows }}</p>
           <p class="mt-1 text-sm text-stone-500">{% translate "avec au moins une date à venir" %}</p>
-          <a href="{% url 'catalog:show-list' %}" class="mt-2 inline-flex min-h-11 items-center text-sm font-bold text-blue-700 hover:text-blue-900">{% translate "Voir mes spectacles" %} →</a>
+          <a href="{% url 'catalog:show-list' %}" class="btn btn-secondary btn-sm mt-2">{% translate "Voir mes spectacles" %} →</a>
         </section>
 
         <section class="card card-accent" aria-labelledby="balance-title">

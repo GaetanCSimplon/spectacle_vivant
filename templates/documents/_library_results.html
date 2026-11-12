@@ -27,8 +27,8 @@
         <span class="mt-1 flex items-center justify-between gap-2 text-sm">
           <span>{{ doc.status }}{% if doc.amount_incl_tax is not None %} · <span class="data">{{ doc.amount_incl_tax|floatformat:"2g" }} €</span>{% endif %}</span>
           <span class="flex gap-3">
-            <a href="{{ doc.detail_url }}" class="underline">{% translate "Voir" %}<span class="sr-only"> {{ doc.type_label }} {{ doc.number }}</span></a>
-            <a href="{{ doc.download_url }}" class="underline">{% translate "Télécharger" %}<span class="sr-only"> {{ doc.type_label }} {{ doc.number }}</span></a>
+            <a href="{{ doc.detail_url }}" class="btn btn-secondary btn-sm">{% translate "Voir" %}<span class="sr-only"> {{ doc.type_label }} {{ doc.number }}</span></a>
+            <a href="{{ doc.download_url }}" class="btn btn-secondary btn-sm btn-download">{% translate "Télécharger" %}<span class="sr-only"> {{ doc.type_label }} {{ doc.number }}</span></a>
           </span>
         </span>
       </li>
