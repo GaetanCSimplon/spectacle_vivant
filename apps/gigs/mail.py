@@ -131,3 +131,38 @@ def form_mail(gig, link):
 
 def contract_mail(gig, link):
     return build(gig, link, _("Contrat de cession"), contract_body)
+
+
+def reminder_body(gig, sent_on, contact):
+    return _(
+        "%(greeting)s\n\nSauf erreur de ma part, nous n'avons pas encore reçu le contrat signé "
+        "pour %(show)s le %(date)s, envoyé le %(sent)s. Pourriez-vous nous le retourner dès que "
+        "possible ?\n\n%(signature)s"
+    ) % {
+        "greeting": _greeting(contact),
+        "show": gig.show.title,
+        "date": gig.date.strftime("%d/%m/%Y"),
+        "sent": sent_on.strftime("%d/%m/%Y"),
+        "signature": _signature(gig),
+    }
+
+
+def reminder_mail(gig, sent_on):
+    """The reminder for a contract sent and not signed (B3). No link: the contract is already
+    with the organiser. The subject has no status, as in the model."""
+    contact = recipient(gig)
+    subject_line = " – ".join(
+        [
+            gig.show.title,
+            gig.tenant.name,
+            gig.date.strftime("%d/%m/%Y"),
+            _("Relance contrat de cession"),
+        ]
+    )
+    body = reminder_body(gig, sent_on, contact)
+    return {
+        "subject": subject_line,
+        "body": body,
+        "to": contact.email if contact else "",
+        "mailto": _mailto(contact.email, subject_line, body) if contact else "",
+    }
