@@ -1,3 +1,5 @@
+import datetime
+import secrets
 from decimal import ROUND_HALF_UP, Decimal
 
 from django.core.files.base import ContentFile
@@ -11,7 +13,13 @@ from apps.gigs.models import Gig
 from apps.tenants.models import Tenant
 
 from .invoicing import legal_mentions, money
-from .models import Contract, ContractSequence, ContractTemplate, ContractVersion
+from .models import (
+    Contract,
+    ContractSequence,
+    ContractShareLink,
+    ContractTemplate,
+    ContractVersion,
+)
 
 TWO_PLACES = Decimal("0.01")
 
@@ -242,3 +250,42 @@ def attach_signed_pdf(gig, signed_pdf):
         contract.signed_pdf = signed_pdf
         contract.save(update_fields=["signed_pdf"])
     return contract
+
+
+SHARE_LINK_DAYS = 7
+
+
+def create_share_link(contract, user):
+    """A link to the latest version, valid for a week. The previous active links are cancelled."""
+    version = contract.latest_version
+    if version is None:
+        raise ContractSigningError(_("Générez d'abord le contrat avant de l'envoyer."))
+    now = timezone.now()
+    with transaction.atomic():
+        contract.share_links.filter(revoked_at=None).update(revoked_at=now)
+        return ContractShareLink.objects.create(
+            tenant=contract.tenant,
+            contract=contract,
+            version=version,
+            token=secrets.token_urlsafe(32),
+            created_by=user,
+            expires_at=now + datetime.timedelta(days=SHARE_LINK_DAYS),
+        )
+
+
+def active_share_link(contract):
+    """The link the user can still send for the latest version, if any."""
+    if contract is None or contract.pk is None:
+        return None
+    link = contract.share_links.select_related("version").first()
+    if link and link.is_active and link.version_id == getattr(contract.latest_version, "pk", None):
+        return link
+    return None
+
+
+def find_share_link(token):
+    return (
+        ContractShareLink.objects.select_related("version", "contract", "tenant")
+        .filter(token=token)
+        .first()
+    )

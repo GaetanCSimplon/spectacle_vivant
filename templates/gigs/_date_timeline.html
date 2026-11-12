@@ -15,14 +15,9 @@
     {% endfor %}
   </ol>
   {% if invitation and invitation.status == 'active' %}
-    <div x-data="{ copied: false }" class="mt-4 space-y-2 border-t border-page-line pt-3 text-sm">
+    <div class="mt-4 space-y-2 border-t border-page-line pt-3 text-sm">
       <p>{% blocktranslate with date=invitation.expires_at|date:"d/m/Y" %}Le formulaire de l'organisateur est actif jusqu'au {{ date }}.{% endblocktranslate %}</p>
-      <input type="text" readonly aria-label="{% translate 'Adresse du formulaire' %}" value="{{ invitation_url }}" class="w-full" onfocus="this.select()">
-      <button type="button" class="btn btn-secondary"
-              @click="navigator.clipboard.writeText('{{ invitation_url|escapejs }}').then(() => copied = true)">
-        <span x-show="!copied">{% translate "Copier le lien" %}</span>
-        <span x-show="copied" x-cloak>{% translate "Lien copié" %}</span>
-      </button>
+      {% include "components/_mail_actions.html" %}
     </div>
   {% elif invitation and invitation.status == 'answered' %}
     <p class="mt-4 border-t border-page-line pt-3 text-sm">

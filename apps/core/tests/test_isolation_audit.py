@@ -70,6 +70,7 @@ PUBLIC = {
     "team-expense-receipt",
     "promoter-form-public",  # the secret link is the access right
     "promoter-form-thanks",
+    "contract-share-public",  # the secret link is the access right (gigs/test_mail.py)
     "tour-form-public",  # the secret link is the access right (roadmaps/test_tour_form.py)
     "tour-form-thanks",
     "team-space-document",  # the personal link is the access right (roadmaps/test_documents.py)
@@ -168,6 +169,7 @@ ROUTES = [
     ("documents:contract-sign", {"gig_id": "gig"}),
     ("documents:contract-signed-pdf", {"gig_id": "gig"}),
     ("documents:contract-generate", {"gig_id": "gig"}),
+    ("documents:contract-share", {"gig_id": "gig"}),
     ("documents:contract-sent", {"gig_id": "gig", "action": "=envoye"}),
     ("documents:contract-sent", {"gig_id": "gig", "action": "=non-envoye"}),
     ("documents:contract-download", {"gig_id": "gig"}),
