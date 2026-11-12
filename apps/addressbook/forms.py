@@ -13,7 +13,7 @@ from apps.tenants.validators import (
     validate_social_security_number,
 )
 
-from . import info_requests, services
+from . import date_ranges, info_requests, services
 from .models import Contact, Promoter, Venue
 
 
@@ -70,6 +70,7 @@ class PromoterForm(SectionedFormMixin, PromoterIdentifiersMixin, AddressModelFor
                 "formats",
                 "indicative_capacity",
                 "usual_periods",
+                *[f"usual_range_{n}" for n in range(1, date_ranges.MAX_RANGES + 1)],
                 "event_roles",
                 "qualification_other",
             ],
@@ -124,6 +125,38 @@ class PromoterForm(SectionedFormMixin, PromoterIdentifiersMixin, AddressModelFor
             "follow_up": _("Un repère pour vous : à vous de le changer au fil des échanges."),
             "qualification_other": _("Pour tout ce qui ne figure pas dans les listes ci-dessus."),
         }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Dates that come back every year (ORG-03): up to MAX_RANGES, one text field each.
+        ranges = self.instance.usual_date_ranges if self.instance.pk else []
+        for number in range(1, date_ranges.MAX_RANGES + 1):
+            known = ranges[number - 1] if number <= len(ranges) else None
+            self.fields[f"usual_range_{number}"] = forms.CharField(
+                label=_("Plage de dates %(n)s") % {"n": number},
+                required=False,
+                max_length=40,
+                initial=date_ranges.input_text(known) if known else "",
+                help_text=_("Chaque année, par exemple : 10/07 au 25/07 (jour/mois).")
+                if number == 1
+                else "",
+            )
+
+    def clean(self):
+        cleaned = super().clean()
+        parsed = []
+        for number in range(1, date_ranges.MAX_RANGES + 1):
+            name = f"usual_range_{number}"
+            try:
+                found = date_ranges.parse_range(cleaned.get(name))
+            except forms.ValidationError as error:
+                self.add_error(name, error)
+                continue
+            if found:
+                parsed.append(found)
+        # Saved with the rest of the organiser (the model form saves the whole instance).
+        self.instance.usual_date_ranges = parsed
+        return cleaned
 
 
 class PromoterFilterForm(forms.Form):

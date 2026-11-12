@@ -63,12 +63,13 @@ def test_every_contact_keeps_its_organiser_or_its_venue(old_world):
 
 def test_the_reverse_gives_each_contact_its_first_link_back(old_world):
     promoter_pk, venue_pk = _data(old_world)
-    _migrate(LINKED)
-    from apps.addressbook.models import Contact as LiveContact
-    from apps.addressbook.models import Promoter
+    linked = _migrate(LINKED)
+    # The historical models of that migration: the live Promoter has columns added since.
+    Promoter = linked.get_model("addressbook", "Promoter")
+    LiveContact = linked.get_model("addressbook", "Contact")
 
     two = LiveContact.objects.get(name="De l'organisateur")
-    two.promoters.add(Promoter.objects.create(tenant=two.tenant, name="Second organisateur"))
+    two.promoters.add(Promoter.objects.create(tenant_id=two.tenant_id, name="Second organisateur"))
 
     old = _migrate(BEFORE)
     Contact = old.get_model("addressbook", "Contact")
