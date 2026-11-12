@@ -21,7 +21,7 @@ from apps.finance.models import Expense, ExpenseClaim
 from apps.gigs import checklist as gig_checklist
 from apps.gigs.models import Gig, GigChecklist
 
-from .models import Person
+from .models import MessageTemplate, Person
 
 # Wide enough to cover every invoice, payment and expense.
 FIRST_DAY, LAST_DAY = date(2000, 1, 1), date(2100, 12, 31)
@@ -315,6 +315,15 @@ def team_rows(tenant, include_private=False):
     return header, rows
 
 
+def message_templates_rows(tenant):
+    header = ["Message", "Objet", "Texte"]
+    rows = [
+        [text(t.get_kind_display()), text(t.subject), text(t.body)]
+        for t in MessageTemplate.objects.filter(tenant=tenant).order_by("kind")
+    ]
+    return header, rows
+
+
 def _finance(builder):
     return lambda tenant: builder(tenant, FIRST_DAY, LAST_DAY)
 
@@ -328,6 +337,7 @@ TABLES = {
     "lieux": venues_rows,
     "contacts": contacts_rows,
     "equipe": team_rows,
+    "modeles-de-messages": message_templates_rows,
     "factures-et-avoirs": _finance(finance_exports.invoices_rows),
     "recettes": _finance(finance_exports.payments_rows),
     "depenses": _finance(finance_exports.expenses_rows),
@@ -382,7 +392,7 @@ Généré le {today}.
 Ce dossier contient :
 - les fichiers .csv (à ouvrir avec Excel ou LibreOffice, séparateur « ; », encodage UTF-8) :
   dates, checklists de contractualisation, spectacles, organisateurs, lieux, contacts, équipe,
-  factures et avoirs, recettes, dépenses ;
+  modèles de messages, factures et avoirs, recettes, dépenses ;
 - le dossier « fichiers » : vos contrats (toutes les versions et le PDF signé), devis,
   factures, justificatifs de dépenses, ainsi que les fiches techniques et riders.
 

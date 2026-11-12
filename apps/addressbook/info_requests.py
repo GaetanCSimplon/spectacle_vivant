@@ -14,10 +14,10 @@ from urllib.parse import quote
 from django.db import transaction
 from django.urls import reverse
 from django.utils import timezone
-from django.utils.translation import gettext as _
 from django.utils.translation import gettext_lazy
 
 from apps.core.addresses import DEPARTMENT_CHOICES
+from apps.tenants import message_templates
 from apps.tenants.models import Person
 from apps.tenants.validators import normalize_social_security_number
 
@@ -209,12 +209,13 @@ def ignore_response(invitation):
 def mail(target, link):
     """The message to send from the user's own mail software (nothing is sent by the app)."""
     tenant = target.tenant
-    name = target.name if isinstance(target, Contact) else target.first_name
-    subject = _("Vos informations – %(tenant)s") % {"tenant": tenant.name}
-    body = _(
-        "Bonjour %(name)s,\n\nMerci de compléter vos informations en ligne :\n\n%(link)s\n\n"
-        "(Ce lien est valable 7 jours.)\n\nBien cordialement,\n%(tenant)s"
-    ) % {"name": name, "link": link, "tenant": tenant.name}
+    data = {
+        "Contact": target.name if isinstance(target, Contact) else target.first_name,
+        "Nom du groupe": tenant.name,
+        "Lien": link,
+        "Signature": tenant.name,
+    }
+    subject, body = message_templates.render(tenant, message_templates.INFO, data)
     email = target.email
     mailto = (
         f"mailto:{quote(email, safe='@')}?subject={quote(subject, safe='')}"

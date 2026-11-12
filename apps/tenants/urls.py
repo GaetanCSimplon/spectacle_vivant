@@ -10,6 +10,7 @@ urlpatterns = [
     path("", views.BordView.as_view(), name="profile"),
     path("dates/<int:pk>/statut/", views.BordStatusView.as_view(), name="bord-status"),
     path("informations/", views.TenantSettingsView.as_view(), name="settings"),
+    path("informations/messages/", views.MessageTemplatesView.as_view(), name="message-templates"),
     path("supprimer/", views.DeleteTenantView.as_view(), name="delete"),
     path("annuler-suppression/", views.CancelDeletionView.as_view(), name="cancel-deletion"),
     path("quitter/", views.LeaveTenantView.as_view(), name="leave"),

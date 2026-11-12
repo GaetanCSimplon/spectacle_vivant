@@ -167,3 +167,32 @@ class Person(AddressMixin, TenantOwnedModel):
 
     def get_absolute_url(self):
         return reverse("tenants:person-detail", args=[self.pk])
+
+
+class MessageTemplate(TenantOwnedModel):
+    """The subject and text a structure wrote for one of its e-mails, in place of the default.
+
+    The `[Variables]` allowed are listed in `message_templates`; no row means the default text.
+    """
+
+    class Kind(models.TextChoices):
+        FORM = "form", _("Formulaire de l'organisateur")
+        CONTRACT = "contract", _("Envoi du contrat")
+        REMINDER = "reminder", _("Relance d'un contrat non signé")
+        INFO = "info", _("Formulaire d'un contact ou d'un membre")
+
+    kind = models.CharField(_("message"), max_length=20, choices=Kind.choices)
+    subject = models.CharField(_("objet"), max_length=200)
+    body = models.TextField(_("texte"), max_length=2000)
+
+    class Meta:
+        verbose_name = _("modèle de message")
+        verbose_name_plural = _("modèles de messages")
+        constraints = [
+            models.UniqueConstraint(
+                fields=["tenant", "kind"], name="one_message_template_per_kind"
+            ),
+        ]
+
+    def __str__(self):
+        return self.get_kind_display()

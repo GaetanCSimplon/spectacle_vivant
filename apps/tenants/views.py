@@ -32,16 +32,17 @@ from apps.finance.models import Expense
 from apps.gigs import services as gig_services
 from apps.gigs.models import Gig
 
-from . import social
+from . import message_templates, social
 from .data_export import build_export_zip
 from .forms import (
     BordFilterForm,
     DeleteTenantForm,
+    MessageTemplateForm,
     OnboardingForm,
     PersonForm,
     TenantProfileForm,
 )
-from .models import Person
+from .models import MessageTemplate, Person
 from .services import (
     CannotLeave,
     cancel_deletion,
@@ -427,3 +428,57 @@ class SocialExportView(OwnerRequiredMixin, View):
         first = social.parse_month(request.GET.get("mois"), timezone.localdate())
         start, end = social.month_bounds(first)
         return social.csv_response(request.tenant, start, end)
+
+
+class MessageTemplatesView(LoginRequiredMixin, TemplateView):
+    """The e-mails the user sends to organisers and contacts: read by all, written by the owner.
+
+    One form per message, all posted here with the message kind; "reset" goes back to the
+    default text. The structure is always `request.tenant`.
+    """
+
+    template_name = "tenants/message_templates.html"
+
+    def dispatch(self, request, *args, **kwargs):
+        if request.user.is_authenticated:
+            if request.tenant is None:
+                raise Http404
+            self.is_owner = is_tenant_owner(request.user, request.tenant)
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_context_data(self, bound=None, **kwargs):
+        context = super().get_context_data(**kwargs)
+        sections = message_templates.sections(self.request.tenant)
+        for section in sections:
+            form = bound if bound is not None and bound.kind == section["kind"] else None
+            section["form"] = form or MessageTemplateForm(
+                initial=section["texts"], kind=section["kind"]
+            )
+            subject, body = message_templates.preview(
+                section["form"]["subject"].value() or "", section["form"]["body"].value() or ""
+            )
+            section["preview"] = {"subject": subject, "body": body}
+        context.update(sections=sections, is_owner=self.is_owner)
+        return context
+
+    def post(self, request, *args, **kwargs):
+        if not self.is_owner:
+            raise PermissionDenied
+        kind = request.POST.get("kind")
+        if kind not in MessageTemplate.Kind.values:
+            raise Http404
+        tenant = request.tenant
+        if request.POST.get("action") == "reset":
+            MessageTemplate.objects.filter(tenant=tenant, kind=kind).delete()
+            messages.success(request, _("Le texte d'origine est rétabli."))
+            return redirect("tenants:message-templates")
+        form = MessageTemplateForm(request.POST, kind=kind)
+        if not form.is_valid():
+            return self.render_to_response(self.get_context_data(bound=form))
+        MessageTemplate.objects.update_or_create(
+            tenant=tenant,
+            kind=kind,
+            defaults={"subject": form.cleaned_data["subject"], "body": form.cleaned_data["body"]},
+        )
+        messages.success(request, _("Votre texte est enregistré."))
+        return redirect("tenants:message-templates")

@@ -10,6 +10,7 @@ from urllib.parse import quote
 from django.utils.translation import gettext as _
 
 from apps.addressbook.models import Contact
+from apps.tenants import message_templates
 
 # Some mail software cuts a link longer than this; the short body is used beyond it.
 MAILTO_LIMIT = 1900
@@ -34,69 +35,30 @@ def status_label(gig):
     return _("Confirmé")
 
 
-def subject(gig, topic):
-    parts = [
-        gig.show.title,
-        gig.tenant.name,
-        gig.date.strftime("%d/%m/%Y"),
-        status_label(gig),
-        topic,
-    ]
-    return " – ".join(parts)
-
-
-def _greeting(contact):
-    return _("Bonjour %(name)s,") % {"name": contact.name} if contact else _("Bonjour,")
-
-
-def _signature(gig):
-    return _("Bien cordialement,\n%(name)s") % {"name": gig.tenant.name}
-
-
-def _where(gig):
-    return _(" à %(city)s") % {"city": gig.venue.city} if gig.venue.city else ""
-
-
-def form_body(gig, link, contact, short=False):
+def values(gig, contact, link="", sent_on=None):
+    """What each `[Variable]` of the message texts stands for, as plain text."""
     when = gig.date.strftime("%d/%m/%Y")
-    if short:
-        middle = _("Merci de compléter ce formulaire en ligne :\n\n%(link)s") % {"link": link}
-    else:
-        middle = _(
-            "Suite à nos échanges au sujet de %(show)s (%(group)s) le %(date)s%(where)s, "
-            "je vous remercie de compléter ce formulaire en ligne :\n\n%(link)s\n\n"
-            "Il nous permettra d'établir le contrat de cession et la feuille de route. "
-            "Comptez environ 5 minutes. Seront demandés : coordonnées légales de votre "
-            "structure (SIRET, adresse, représentant légal, licence d'entrepreneur de "
-            "spectacles) et vos contacts (administration, technique, accueil).\n\n"
-            "Je reste à votre disposition pour toute question."
-        ) % {
-            "show": gig.show.title,
-            "group": gig.tenant.name,
-            "date": when,
-            "where": _where(gig),
-            "link": link,
-        }
-    return f"{_greeting(contact)}\n\n{middle}\n\n{_signature(gig)}"
-
-
-def contract_body(gig, link, contact, short=False):
-    when = gig.date.strftime("%d/%m/%Y")
-    intro = _(
-        "Vous trouverez ci-dessous le lien pour télécharger le contrat de cession pour "
-        "%(show)s le %(date)s%(where)s :\n\n%(link)s\n\n(Ce lien est valable 7 jours.)"
-    ) % {"show": gig.show.title, "date": when, "where": _where(gig), "link": link}
-    if short:
-        return f"{_greeting(contact)}\n\n{intro}\n\n{_signature(gig)}"
-    asks = _("Merci de nous le retourner signé dès que possible.")
+    city = gig.venue.city
     deposit = ""
     phrase = gig.deposit_due_phrase
     if gig.deposit_percent and phrase:
-        deposit = " " + _("L'acompte de %(percent)s %% est à régler %(when)s.") % {
+        deposit = _("L'acompte de %(percent)s %% est à régler %(when)s.") % {
             "percent": f"{gig.deposit_percent:g}",
             "when": phrase,
         }
-    return f"{_greeting(contact)}\n\n{intro}\n\n{asks}{deposit}\n\n{_signature(gig)}"
+    return {
+        "Contact": contact.name if contact else "",
+        "Titre du spectacle": gig.show.title,
+        "Nom du groupe": gig.tenant.name,
+        "Date": when,
+        "Ville": city,
+        "Date et ville": _("%(date)s à %(city)s") % {"date": when, "city": city} if city else when,
+        "Statut": status_label(gig),
+        "Lien": link,
+        "Acompte": deposit,
+        "Date d'envoi": sent_on.strftime("%d/%m/%Y") if sent_on else "",
+        "Signature": gig.tenant.name,
+    }
 
 
 def _mailto(to, subject_line, body):
@@ -104,12 +66,12 @@ def _mailto(to, subject_line, body):
     return f"mailto:{quote(to, safe='@')}?subject={subject_part}&body={body_part}"
 
 
-def build(gig, link, topic, body_builder):
+def build(gig, link, kind):
     """What the page needs: the link to open the mail software, the text to copy, and what is
     missing (no contact with an e-mail address: the button is replaced by an explanation)."""
     contact = recipient(gig)
-    subject_line = subject(gig, topic)
-    body = body_builder(gig, link, contact)
+    data = values(gig, contact, link)
+    subject_line, body = message_templates.render(gig.tenant, kind, data)
     result = {
         "subject": subject_line,
         "body": body,
@@ -120,46 +82,26 @@ def build(gig, link, topic, body_builder):
     if contact:
         url = _mailto(contact.email, subject_line, body)
         if len(url) > MAILTO_LIMIT:
-            url = _mailto(contact.email, subject_line, body_builder(gig, link, contact, short=True))
+            short = message_templates.render(gig.tenant, kind, data, short=True)[1]
+            url = _mailto(contact.email, subject_line, short)
         result["mailto"] = url
     return result
 
 
 def form_mail(gig, link):
-    return build(gig, link, _("Informations organisateur"), form_body)
+    return build(gig, link, message_templates.FORM)
 
 
 def contract_mail(gig, link):
-    return build(gig, link, _("Contrat de cession"), contract_body)
-
-
-def reminder_body(gig, sent_on, contact):
-    return _(
-        "%(greeting)s\n\nSauf erreur de ma part, nous n'avons pas encore reçu le contrat signé "
-        "pour %(show)s le %(date)s, envoyé le %(sent)s. Pourriez-vous nous le retourner dès que "
-        "possible ?\n\n%(signature)s"
-    ) % {
-        "greeting": _greeting(contact),
-        "show": gig.show.title,
-        "date": gig.date.strftime("%d/%m/%Y"),
-        "sent": sent_on.strftime("%d/%m/%Y"),
-        "signature": _signature(gig),
-    }
+    return build(gig, link, message_templates.CONTRACT)
 
 
 def reminder_mail(gig, sent_on):
     """The reminder for a contract sent and not signed (B3). No link: the contract is already
-    with the organiser. The subject has no status, as in the model."""
+    with the organiser."""
     contact = recipient(gig)
-    subject_line = " – ".join(
-        [
-            gig.show.title,
-            gig.tenant.name,
-            gig.date.strftime("%d/%m/%Y"),
-            _("Relance contrat de cession"),
-        ]
-    )
-    body = reminder_body(gig, sent_on, contact)
+    data = values(gig, contact, sent_on=sent_on)
+    subject_line, body = message_templates.render(gig.tenant, message_templates.REMINDER, data)
     return {
         "subject": subject_line,
         "body": body,

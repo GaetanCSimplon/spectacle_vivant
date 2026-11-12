@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}Modèles de messages — Bòrd Pro{% endblock %}
+{% block main_width %}max-w-5xl{% endblock %}
+
+{% block page_content %}
+  <h1 class="mb-2">{% translate "Bòrd" %}</h1>
+  {% include "tenants/_tabs.html" with active="settings" %}
+  <p class="mb-2 text-sm"><a href="{% url 'tenants:settings' %}" class="underline">{% translate "← Informations de la structure" %}</a></p>
+  <h2 class="mb-2 text-lg font-semibold">{% translate "Modèles de messages" %}</h2>
+  <p class="mb-4 text-sm text-gray-600">
+    {% translate "Ces textes préparent les e-mails que vous envoyez depuis votre messagerie. Les mots entre crochets, comme [Contact], sont remplacés par les informations de la date. Tant que vous ne modifiez rien, le texte d'origine est utilisé." %}
+  </p>
+  {% if not is_owner %}
+    <p class="mb-4 rounded-md bg-gray-100 px-4 py-2 text-sm text-gray-700">
+      {% translate "Seul le propriétaire du compte peut modifier ces textes." %}
+    </p>
+  {% endif %}
+
+  <div class="space-y-6">
+    {% for section in sections %}
+      <section class="rounded-md border border-gray-200 p-4" id="message-{{ section.kind }}">
+        <h3 class="mb-1 font-semibold">
+          {{ section.label }}
+          {% if section.custom %}<span class="ml-2 text-xs font-normal text-gray-600">{% translate "(texte modifié)" %}</span>{% endif %}
+        </h3>
+        <form method="post" class="space-y-3">
+          {% csrf_token %}
+          <input type="hidden" name="kind" value="{{ section.kind }}">
+          {% for field in section.form %}
+            <div>
+              <label for="{{ field.id_for_label }}" class="mb-1 block text-sm font-medium">{{ field.label }}</label>
+              {% if is_owner %}{{ field }}{% else %}<div class="whitespace-pre-line rounded-md bg-gray-50 p-2 text-sm">{{ field.value }}</div>{% endif %}
+              {% for error in field.errors %}<p class="mt-1 text-sm text-red-700">{{ error }}</p>{% endfor %}
+            </div>
+          {% endfor %}
+          <p class="text-xs text-gray-600">
+            {% translate "Variables :" %}
+            {% for name, meaning in section.variables %}<span title="{{ meaning }}">[{{ name }}]</span>{% if not forloop.last %}, {% endif %}{% endfor %}
+          </p>
+          <details class="text-sm">
+            <summary class="cursor-pointer text-gray-700">{% translate "Aperçu avec des exemples" %}</summary>
+            <p class="mt-2 font-medium">{{ section.preview.subject }}</p>
+            <p class="mt-1 whitespace-pre-line text-gray-700">{{ section.preview.body }}</p>
+          </details>
+          {% if is_owner %}
+            <div class="flex justify-end gap-2">
+              {% if section.custom %}
+                <button type="submit" name="action" value="reset" class="btn btn-secondary btn-sm" formnovalidate>{% translate "Rétablir le texte d'origine" %}</button>
+              {% endif %}
+              <button type="submit" name="action" value="save" class="btn btn-secondary btn-sm">{% translate "Enregistrer" %}</button>
+            </div>
+          {% endif %}
+        </form>
+      </section>
+    {% endfor %}
+  </div>
+{% endblock %}
