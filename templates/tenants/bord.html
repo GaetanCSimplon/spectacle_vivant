@@ -12,8 +12,8 @@
   <nav class="mb-4 flex flex-wrap gap-2" aria-label="{% translate 'Lecture du Bord' %}">
     {% for key, label in views.items %}
       <a href="?{% for name, value in query_pairs %}{% if name != 'view' and name != 'figure' %}{{ name }}={{ value|urlencode }}&amp;{% endif %}{% endfor %}view={{ key }}"
-         class="btn {% if filters.view == key %}btn-primary{% else %}btn-secondary{% endif %}"
-         {% if filters.view == key %}aria-current="page"{% endif %}>{{ label }}</a>
+         class="btn btn-secondary {% if filters.view == key %}font-extrabold underline{% endif %}"
+         aria-pressed="{% if filters.view == key %}true{% else %}false{% endif %}">{{ label }}</a>
     {% endfor %}
   </nav>
 
