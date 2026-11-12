@@ -6,6 +6,7 @@ from django.utils.translation import gettext_lazy as _
 from apps.addressbook.forms import PromoterIdentifiersMixin
 from apps.addressbook.models import Promoter, Venue
 from apps.catalog.models import Show
+from apps.catalog.validators import ObjectNumberMixin
 from apps.core.forms import MultiSelectDropdown
 from apps.gigs import hospitality
 from apps.gigs.forms import PaymentTermsMixin
@@ -193,7 +194,7 @@ class GigCompletionForm(PaymentTermsMixin, forms.ModelForm):
         return self.clean_terms(cleaned_data)
 
 
-class ShowCompletionForm(forms.ModelForm):
+class ShowCompletionForm(ObjectNumberMixin, forms.ModelForm):
     class Meta:
         model = Show
         fields = [

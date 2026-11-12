@@ -38,7 +38,7 @@ def _payload(**overrides):
         "gig-deposit_percent": "30",
         "show-group_name": "Les Nocturnes",
         "show-sacem_number": "SAC-1",
-        "show-sacem_object_number": "OBJ-2",
+        "show-sacem_object_number": "22-3-P-513447-57",
         "venue-capacity": "300",
         "promoter-siret": "98765432100011",
         "promoter-licence_number": "L-1",
@@ -104,7 +104,7 @@ def test_saving_updates_every_related_object(client):
     assert gig.ticket_price == Decimal("12.00")
     assert gig.show.group_name == "Les Nocturnes"
     assert gig.show.sacem_number == "SAC-1"
-    assert gig.show.sacem_object_number == "OBJ-2"
+    assert gig.show.sacem_object_number == "22-3-P-513447-57"
     assert gig.venue.capacity == 300
     assert gig.promoter.licence_number == "L-1"
     assert gig.promoter.representative_name == "Marc Durand"
