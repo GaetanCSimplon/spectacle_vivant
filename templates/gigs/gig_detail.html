@@ -7,7 +7,7 @@
 {% block page_content %}
   <div class="mb-4 flex items-start justify-between gap-3">
     <div class="min-w-0">
-      <h1>{{ gig.show.title }}</h1>
+      <h1>{% include "components/_show_dot.html" with show=gig.show %}{{ gig.show.title }}</h1>
       <p class="text-sm text-gray-600">{{ gig.date|date:"l j F Y" }}</p>
     </div>
     {% include "gigs/_status_badge.html" %}

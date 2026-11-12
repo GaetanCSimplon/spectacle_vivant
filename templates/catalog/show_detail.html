@@ -6,7 +6,7 @@
 {% block page_content %}
   <div class="mb-4 flex items-start justify-between gap-3">
     <div>
-      <h1>{{ show.title }}</h1>
+      <h1>{% include "components/_show_dot.html" %}{{ show.title }}</h1>
       {% if show.group_name %}<p class="text-sm text-gray-600">{{ show.group_name }}</p>{% endif %}
     </div>
     <a href="{% url 'catalog:show-update' show.pk %}" class="btn btn-secondary">

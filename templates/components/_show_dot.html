@@ -1,0 +1,3 @@
+{% comment %}The colour dot of a show (SPE-03). Decoration only: the title is always written next to it.
+Needs: show (a Show). Nothing is drawn for a show without colour.{% endcomment %}
+{% if show.color_hex %}<span class="mr-1.5 inline-block size-3 shrink-0 rounded-full align-baseline" style="background-color: {{ show.color_hex }}" aria-hidden="true"></span>{% endif %}
