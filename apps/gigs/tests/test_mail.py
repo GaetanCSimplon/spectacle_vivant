@@ -68,9 +68,9 @@ def test_without_a_contact_with_an_email_there_is_no_mailto_but_the_message_rema
 
 def test_the_status_of_the_subject_follows_the_date():
     tenant = MembershipFactory().tenant
-    assert "– Option –" in mail.subject(_gig(tenant, status=Gig.Status.OPTION), "x")
-    assert "– Annulé –" in mail.subject(_gig(tenant, status=Gig.Status.CANCELLED), "x")
-    assert "– Confirmé –" in mail.subject(_gig(tenant, status=Gig.Status.SIGNED), "x")
+    assert "– Option –" in mail.form_mail(_gig(tenant, status=Gig.Status.OPTION), "x")["subject"]
+    assert "– Annulé –" in mail.form_mail(_gig(tenant, status=Gig.Status.CANCELLED), "x")["subject"]
+    assert "– Confirmé –" in mail.form_mail(_gig(tenant, status=Gig.Status.SIGNED), "x")["subject"]
 
 
 def test_a_contact_of_another_structure_is_never_the_recipient():

@@ -10,7 +10,7 @@ from apps.catalog.models import Show
 from apps.core.forms import AddressModelForm, SectionedFormMixin
 from apps.finance import bord
 
-from . import choices, services
+from . import choices, message_templates, services
 from . import logo as logo_files
 from .models import Person, Tenant
 from .validators import (
@@ -505,3 +505,38 @@ class BordFilterForm(forms.Form):
             status=data.get("status") or "",
             spender=data.get("spender") or "",
         )
+
+
+class MessageTemplateForm(forms.Form):
+    """The subject and text of one e-mail. Only the variables of that message are allowed."""
+
+    subject = forms.CharField(
+        label=_("Objet"), max_length=message_templates.SUBJECT_MAX, strip=True
+    )
+    body = forms.CharField(
+        label=_("Texte"),
+        max_length=message_templates.BODY_MAX,
+        strip=True,
+        widget=forms.Textarea(attrs={"rows": 10}),
+    )
+
+    def __init__(self, *args, kind, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.kind = kind
+
+    def clean_subject(self):
+        subject = " ".join(self.cleaned_data["subject"].split())
+        return self._check(subject)
+
+    def clean_body(self):
+        return self._check(self.cleaned_data["body"].replace("\r\n", "\n"))
+
+    def _check(self, text):
+        unknown = message_templates.unknown_variables(self.kind, text)
+        if unknown:
+            allowed = ", ".join(f"[{name}]" for name in message_templates.VARIABLES[self.kind])
+            raise forms.ValidationError(
+                _("Variable inconnue : %(unknown)s. Variables possibles : %(allowed)s."),
+                params={"unknown": ", ".join(f"[{n}]" for n in unknown), "allowed": allowed},
+            )
+        return text

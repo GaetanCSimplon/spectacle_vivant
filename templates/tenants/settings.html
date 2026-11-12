@@ -32,6 +32,12 @@
   </form>
 
   <section class="mt-8 border-t border-gray-200 pt-4">
+    <h2 class="mb-2 text-base font-semibold">{% translate "Messages" %}</h2>
+    <a href="{% url 'tenants:message-templates' %}" class="btn btn-secondary btn-sm mb-1">{% translate "Modèles de messages" %}</a>
+    <span class="block text-sm text-gray-600">{% translate "Les e-mails préparés pour vos organisateurs et vos contacts : formulaire, contrat, relance." %}</span>
+  </section>
+
+  <section class="mt-8 border-t border-gray-200 pt-4">
     <h2 class="mb-2 text-base font-semibold">{% translate "Exports et données" %}</h2>
     <ul class="space-y-3 text-sm">
       <li>
