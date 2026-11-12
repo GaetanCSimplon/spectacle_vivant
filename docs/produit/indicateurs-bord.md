@@ -1,6 +1,6 @@
 # Bòrd — dictionnaire des indicateurs (Lot 0)
 
-Version 1 — 2026-10-16. Applique la spécification de l'associé (`specification-onglet-bord.md`, 15/10/2026) **à ce que le code gère déjà**. Rien de ce document n'est codé tant qu'il n'est pas validé (§6).
+Version 1 — 2026-10-16, révisée le 2026-11-12 (deux lectures, BRD-04). Applique la spécification de l'associé (`specification-onglet-bord.md`, 15/10/2026) **à ce que le code gère déjà**. Rien de ce document n'est codé tant qu'il n'est pas validé (§6).
 
 ## 1. Principe
 Bòrd = « Où en suis-je ? » : une synthèse qui ouvre le détail de chaque chiffre. Aucune ressaisie : tout vient des dates, factures, paiements et dépenses existants. Un seul module de calcul (`apps/finance/bord.py`), qui servira aussi à RADAR le jour où il sera défini (Q17).
@@ -20,7 +20,7 @@ Bòrd = « Où en suis-je ? » : une synthèse qui ouvre le détail de chaque ch
 - Une période est un intervalle **de dates inclusives**, en heure de Paris.
 - Chaque chiffre dit sa date de référence dans son libellé :
   - **date de la représentation** : dates, recette prévue ;
-  - **date d'émission** : facturé ;
+  - **date de la représentation** : facturé (activité) ; **date d'émission** n'est plus la référence du facturé depuis le 2026-11-12 ;
   - **date de réception** : encaissé ;
   - **date de la dépense** : dépenses ;
   - **échéance de la facture** : retards.
@@ -28,6 +28,22 @@ Bòrd = « Où en suis-je ? » : une synthèse qui ouvre le détail de chaque ch
 - Montants : **HT** pour le prévu et le facturé ; **TTC** pour l'encaissé et le restant à encaisser (un paiement règle une facture TTC). Chaque montant porte « HT » ou « TTC ». Pour une structure non assujettie à la TVA, les deux sont égaux. Jamais d'addition HT + TTC.
 - Au centime près ; l'arrondi à l'euro n'est qu'un affichage des cartes de synthèse.
 - **Valeur absente ≠ zéro** : « à renseigner » ; aucune donnée : état vide avec une action (« Créer une date »).
+
+## 3 bis. Deux lectures de la même donnée (BRD-04, 2026-11-12)
+Le Bord se lit de deux façons, au choix en haut de la page, avec la même période et le même filtre de spectacle. Libellés sans jargon comptable.
+
+| | **« Ce que rapportent mes dates »** (activité) | **« Argent reçu et à recevoir »** (argent) |
+|---|---|---|
+| Date de référence | la **date du concert** | la **date de l'argent** |
+| Chiffres | Prévisionnel (HT), Signé (HT, contrat signé), Facturé (HT) | Encaissé (TTC), À encaisser (TTC), en retard |
+| Facturé / Encaissé | les factures des dates de la période, **quelle que soit leur date d'émission** | les paiements reçus dans la période, quel que soit le concert |
+| Dépenses | celles des **dates** de la période | celles **dépensées** dans la période (date de la dépense) |
+| Solde | chiffre choisi − dépenses des dates | encaissé − dépensé |
+| Tableau | une ligne par date (« Opérations récentes ») | les paiements et les montants attendus, par date (« Mouvements de la période ») |
+
+**Date d'un montant attendu (À encaisser).** Pour chaque date confirmée ou signée : une facture émise non soldée est attendue à son échéance ; la part du prix **pas encore facturée** est attendue à l'échéance de l'acompte (si aucun acompte n'est facturé : le pourcentage d'acompte de la date) puis à l'échéance du solde ; une échéance manquante est remplacée par la date du concert. Les options et les dates annulées n'attendent rien. « Reste à encaisser » et « dont en retard » restent un état à ce jour (suit le filtre de spectacle, pas la période).
+
+**Cas de contrôle (recette n°1).** Concert le 15/03/2027, 3 000 € HT, acompte de 900 € facturé et encaissé le 10/11/2026 : activité 2027 = 3 000 € ; argent 2026 = 900 € encaissés ; argent 2027 = le restant (2 100 € HT, plus la TVA le cas échéant) à encaisser. Une facture émise sur une date annulée reste comptée (avoirs en négatif).
 
 ## 4. Indicateurs
 | Indicateur | Définition | Détail au clic |

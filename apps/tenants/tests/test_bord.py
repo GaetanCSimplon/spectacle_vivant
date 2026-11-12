@@ -99,8 +99,8 @@ def test_the_page_shows_the_blocks_to_every_member(client):
         "Budget",
         "Social",
         "Régie",
-        "Ce que les concerts doivent rapporter",
-        "Les frais déjà ajoutés",
+        "Ce que rapportent mes dates",
+        "Les frais de ces dates",
         "reste après ces frais",
         "Reste à encaisser",
         "À traiter maintenant",
@@ -122,18 +122,52 @@ def test_the_default_period_is_the_year_and_the_default_figure_is_the_planned_on
     assert context["revenue"]["planned"] == 800 or context["dates"]["confirmed"] == 0
 
 
-def test_the_page_explains_a_zero_invoiced_when_invoices_are_issued_outside_the_period(client):
+def test_a_2027_date_invoiced_in_2026_shows_its_invoices_in_2027_for_the_activity(client):
     membership = _membership(client)
     gig = _gig(membership.tenant, price="3000.00", date=datetime.date(2027, 3, 15))
     issued_invoice(gig)
 
     around = {"period": "perso", "start": "2027-01-01", "end": "2027-12-31"}
-    content = client.get(URL, around).content.decode()
-    in_period = {"period": "perso", "start": "2000-01-01", "end": "2100-12-31"}
-    other = client.get(URL, in_period).content.decode()
+    context = client.get(URL, around).context
 
-    assert "hors de la période affichée" in content
-    assert "hors de la période affichée" not in other
+    assert context["revenue"]["invoiced"] == 3000
+    assert "hors de la période affichée" not in client.get(URL, around).content.decode()
+
+
+def test_the_page_offers_the_two_readings_and_keeps_the_period_between_them(client):
+    _membership(client)
+
+    page = client.get(URL, {"period": "trimestre"}).content.decode()
+
+    assert "Ce que rapportent mes dates" in page and "Argent reçu et à recevoir" in page
+    assert "period=trimestre&amp;view=cash" in page
+
+
+def test_the_cash_reading_shows_the_money_of_the_period(client):
+    membership = _membership(client)
+    gig = _gig(membership.tenant, price="1000.00", date=TODAY + datetime.timedelta(days=30))
+    invoice = issued_invoice(gig)
+    finance_services.record_payment(invoice, "250.00", TODAY, "transfer")
+
+    response = client.get(URL, {"view": "cash"})
+    page = response.content.decode()
+
+    assert response.context["filters"].view == "cash"
+    assert response.context["filters"].figure == "received"
+    assert "Argent reçu et à recevoir" in page and "Mouvements de la période" in page
+    assert "Opérations récentes" not in page
+    assert [row["kind"] for row in response.context["movements"]][0] == "received"
+
+
+def test_a_figure_of_the_other_reading_falls_back_to_the_default_of_the_reading(client):
+    _membership(client)
+
+    activity = client.get(URL, {"view": "activity", "figure": "received"}).context["filters"]
+    cash = client.get(URL, {"view": "cash", "figure": "planned"}).context["filters"]
+    unknown = client.get(URL, {"view": "magic"}).context["filters"]
+
+    assert activity.figure == "planned" and cash.figure == "received"
+    assert unknown.view == "activity"
 
 
 def test_nothing_to_report_is_said_with_care(client):
@@ -226,8 +260,12 @@ def test_the_figure_choice_changes_the_amounts_of_the_table(client):
     finance_services.record_payment(invoice, "250.00", TODAY, "transfer")
 
     rows = {
-        figure: client.get(URL, {"figure": figure}).context["operations"][0]["amount"]
-        for figure in ("planned", "invoiced", "received")
+        figure: client.get(URL, {"view": view, "figure": figure}).context["operations"][0]["amount"]
+        for view, figure in (
+            ("activity", "planned"),
+            ("activity", "invoiced"),
+            ("cash", "received"),
+        )
     }
 
     assert rows == {"planned": 1000, "invoiced": 1000, "received": 250}

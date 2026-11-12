@@ -141,14 +141,14 @@ def test_planned_revenue_leaves_out_options_and_cancelled_gigs(tenant):
     assert totals["options_planned"] == D("300.00")
 
 
-def test_invoiced_follows_the_issue_date_and_counts_credit_notes_negative(tenant):
+def test_invoiced_follows_the_date_of_the_show_and_counts_credit_notes_negative(tenant):
     gig = _gig(tenant, price="1000.00")
     invoice = issued_invoice(gig)
     note = invoicing.create_credit_note(invoice)
     invoicing.issue_invoice(note)
 
     assert bord.revenue(tenant, _filters())["invoiced"] == D("0.00")
-    elsewhere = bord.Filters(
+    elsewhere = bord.Filters(  # a period without any show: nothing is invoiced there
         start=TODAY + datetime.timedelta(days=1), end=TODAY + datetime.timedelta(days=30)
     )
     assert bord.revenue(tenant, elsewhere)["invoiced"] == D("0.00")
@@ -176,15 +176,121 @@ def _year_2027(**kwargs):
     return bord.Filters(start=datetime.date(2027, 1, 1), end=datetime.date(2027, 12, 31), **kwargs)
 
 
-def test_a_confirmed_2027_date_invoiced_in_2026_is_planned_in_2027_and_not_invoiced_there(tenant):
+def test_a_confirmed_2027_date_invoiced_in_2026_is_all_in_2027_for_the_activity(tenant):
     _associate_case(tenant, Gig.Status.CONFIRMED)
 
     totals = bord.revenue(tenant, _year_2027())
 
     assert totals["planned"] == D("3000.00")
-    assert totals["invoiced"] == D("0.00")
-    assert totals["received"] == D("0.00")
+    assert totals["invoiced"] == D("3000.00")  # BRD-02: the invoices follow the date of the show
+    assert totals["received"] == D("0.00")  # the money came in 2026
     assert bord.receivables(tenant, TODAY)["remaining"] > 0
+
+
+def _doc_case(tenant, status=Gig.Status.CONFIRMED):
+    """The associate's case: 15/03/2027, 3 000 € excl. tax, deposit of 900 € invoiced and paid on
+    10/11/2026, nothing else invoiced yet."""
+    gig = make_gig(
+        tenant=tenant,
+        price="3000.00",
+        gig_fields={"status": status, "date": datetime.date(2027, 3, 15)},
+    )
+    deposit = issued_invoice(gig, Invoice.Kind.DEPOSIT)
+    services.record_payment(
+        deposit, deposit.total_incl_tax, datetime.date(2026, 11, 10), "transfer"
+    )
+    return gig, deposit
+
+
+def _year(year, **kwargs):
+    return bord.Filters(start=datetime.date(year, 1, 1), end=datetime.date(year, 12, 31), **kwargs)
+
+
+def test_the_associate_case_reads_differently_by_activity_and_by_cash(tenant):
+    _gig_, deposit = _doc_case(tenant)
+    paid = deposit.total_incl_tax
+    planned_incl = bord._planned_incl_tax(_gig_)
+
+    activity_2027 = bord.revenue(tenant, _year(2027))
+    cash_2026 = bord.revenue(tenant, _year(2026, view="cash", figure="received"))
+    cash_2027 = bord.revenue(tenant, _year(2027, view="cash", figure="received"))
+
+    assert activity_2027["planned"] == D("3000.00")
+    assert cash_2026["received"] == paid and cash_2026["expected"] == D("0.00")
+    assert cash_2027["received"] == D("0.00")
+    assert cash_2027["expected"] == planned_incl - paid
+
+
+def test_what_is_expected_is_dated_by_the_due_date_or_the_date_of_the_show(tenant):
+    gig, _deposit = _doc_case(tenant)
+    gig.balance_due_on = datetime.date(2027, 4, 10)
+    gig.save()
+
+    items = bord.expected_items(tenant)
+
+    assert [(item["date"], item["label"]) for item in items] == [
+        (datetime.date(2027, 4, 10), "Solde à facturer")
+    ]
+    assert bord.revenue(tenant, _year(2027))["expected"] > 0
+    only_march = bord.Filters(start=datetime.date(2027, 3, 1), end=datetime.date(2027, 3, 31))
+    assert bord.expected_items(tenant, only_march) == []
+
+
+def test_an_unpaid_issued_invoice_is_expected_on_its_due_date(tenant):
+    invoice = issued_invoice(_gig(tenant, price="1000.00"))
+    Invoice.objects.filter(pk=invoice.pk).update(due_date=TODAY + datetime.timedelta(days=5))
+    invoice.refresh_from_db()
+
+    items = bord.expected_items(tenant)
+
+    assert [(item["date"], item["amount"]) for item in items] == [
+        (TODAY + datetime.timedelta(days=5), invoice.total_incl_tax)
+    ]
+
+
+def test_a_deposit_not_invoiced_yet_is_expected_apart_from_the_balance(tenant):
+    gig = _gig(tenant, price="1000.00")
+    gig.deposit_due_on = TODAY + datetime.timedelta(days=2)
+    gig.balance_due_on = TODAY + datetime.timedelta(days=9)
+    gig.save()
+
+    items = bord.expected_items(tenant)
+
+    assert [(item["date"], item["label"]) for item in items] == [
+        (gig.deposit_due_on, "Acompte à facturer"),
+        (gig.balance_due_on, "Solde à facturer"),
+    ]
+    assert sum(item["amount"] for item in items) == bord._planned_incl_tax(gig)
+
+
+def test_a_fully_paid_date_expects_nothing_and_options_and_cancelled_dates_neither(tenant):
+    paid = issued_invoice(_gig(tenant, price="500.00"))
+    _pay(paid, paid.total_incl_tax)
+    _gig(tenant, status=Gig.Status.OPTION)
+    _gig(tenant, status=Gig.Status.CANCELLED)
+
+    assert bord.expected_items(tenant) == []
+
+
+def test_expected_follows_the_show_and_never_mixes_tenants(tenant):
+    kept = _gig(tenant, price="1000.00")
+    _gig(tenant, price="700.00")
+    _gig(TenantFactory(**TENANT_FIELDS), price="5000.00")
+
+    items = bord.expected_items(tenant, show=kept.show)
+
+    assert sum(item["amount"] for item in items) == bord._planned_incl_tax(kept)
+
+
+def test_the_cash_movements_list_payments_and_expected_amounts_in_date_order(tenant):
+    _gig_, deposit = _doc_case(tenant)
+
+    rows_2026 = bord.cash_movements(tenant, _year(2026, view="cash"), TODAY)
+    rows_2027 = bord.cash_movements(tenant, _year(2027, view="cash"), TODAY)
+
+    assert [(r["kind"], r["amount"]) for r in rows_2026] == [("received", deposit.total_incl_tax)]
+    assert [r["kind"] for r in rows_2027] == ["expected"]
+    assert rows_2027[0]["late"] == (rows_2027[0]["date"] < TODAY)
 
 
 def test_the_same_date_still_an_option_is_not_planned_but_kept_apart(tenant):
@@ -194,27 +300,6 @@ def test_the_same_date_still_an_option_is_not_planned_but_kept_apart(tenant):
 
     assert totals["planned"] == D("0.00")
     assert totals["options_planned"] == D("3000.00")
-
-
-def test_invoices_issued_outside_the_period_are_counted_for_the_note(tenant):
-    _associate_case(tenant, Gig.Status.CONFIRMED)
-
-    assert bord.invoices_outside_period(tenant, _year_2027()) == 2
-    assert bord.summary(tenant, _year_2027(), TODAY)["invoices_outside_period"] == 2
-
-
-def test_no_note_when_the_invoices_are_in_the_period(tenant):
-    issued_invoice(_gig(tenant, price="1000.00"))
-
-    assert bord.invoices_outside_period(tenant, _filters()) == 0
-
-
-def test_the_note_ignores_cancelled_dates_and_other_shows_and_tenants(tenant):
-    other = TenantFactory(**TENANT_FIELDS)
-    _associate_case(other, Gig.Status.CONFIRMED)
-    _associate_case(tenant, Gig.Status.CANCELLED)
-
-    assert bord.invoices_outside_period(tenant, _year_2027()) == 0
 
 
 def test_received_follows_the_payment_date(tenant):
@@ -250,8 +335,10 @@ def test_invoiced_is_excl_tax_and_received_is_incl_tax():
 def test_the_show_filter_narrows_every_figure(tenant):
     kept = _gig(tenant, price="1000.00")
     other = _gig(tenant, price="700.00")
+    kept_invoice = None
     for gig in (kept, other):
         invoice = issued_invoice(gig)
+        kept_invoice = invoice if gig is kept else kept_invoice
         _pay(invoice, "100.00")
         ExpenseFactory(gig=gig, amount="10.00", date=TODAY)
 
@@ -259,9 +346,11 @@ def test_the_show_filter_narrows_every_figure(tenant):
 
     assert bord.revenue(tenant, filters) == {
         "planned": D("1000.00"),
+        "signed": D("0"),
         "options_planned": D("0"),
         "invoiced": D("1000.00"),
         "received": D("100.00"),
+        "expected": kept_invoice.total_incl_tax - D("100.00"),
     }
     assert bord.expenses(tenant, filters)["total"] == D("10.00")
     assert bord.date_counts(tenant, filters)["confirmed"] == 1
@@ -275,9 +364,8 @@ def test_expenses_are_totalled_by_category_inside_the_period(tenant):
     ExpenseFactory(gig=gig, category=Expense.Category.TRANSPORT, amount="40.00", date=TODAY)
     ExpenseFactory(gig=gig, category=Expense.Category.TRANSPORT, amount="10.50", date=TODAY)
     ExpenseFactory(gig=gig, category=Expense.Category.LODGING, amount="80.00", date=TODAY)
-    ExpenseFactory(
-        gig=gig, amount="999.00", date=TODAY - datetime.timedelta(days=400)
-    )  # outside the period
+    far = _gig(tenant, days=400)  # a date outside the period: its expenses are not counted
+    ExpenseFactory(gig=far, amount="999.00", date=TODAY)
 
     result = bord.expenses(tenant, _filters())
 
@@ -419,7 +507,9 @@ def test_operations_amount_follows_the_chosen_figure(tenant):
         for figure in bord.FIGURES
     }
 
-    assert amounts == {"planned": D("1000.00"), "invoiced": D("1000.00"), "received": D("250.00")}
+    assert amounts["planned"] == D("1000.00") and amounts["invoiced"] == D("1000.00")
+    assert amounts["received"] == D("250.00") and amounts["signed"] == D("0")
+    assert amounts["expected"] == invoice.total_incl_tax - D("250.00")
 
 
 def test_operations_can_be_filtered_by_status_and_limited(tenant):
@@ -596,9 +686,12 @@ def test_each_figure_is_put_in_the_month_of_its_own_date(tenant):
         return {row["month"]: row["revenue"] for row in rows}
 
     assert by_month("planned") == {_month(-1): D("1000.00"), _month(0): D("0")}
-    assert by_month("invoiced") == {_month(-1): D("0"), _month(0): D("1000.00")}
+    assert by_month("invoiced") == {_month(-1): D("1000.00"), _month(0): D("0")}  # the show's month
     assert by_month("received") == {_month(-1): D("300.00"), _month(0): D("0")}
-    assert bord.monthly_series(tenant, filters)[1]["expenses"] == D("40.00")
+    # Activity: the expense sits in the month of its date. Cash: in the month it was spent.
+    assert bord.monthly_series(tenant, filters)[0]["expenses"] == D("40.00")
+    cash = bord.Filters(**{**filters.__dict__, "view": "cash", "figure": "received"})
+    assert bord.monthly_series(tenant, cash)[1]["expenses"] == D("40.00")
 
 
 def test_the_series_follows_the_show_and_never_mixes_tenants(tenant):
