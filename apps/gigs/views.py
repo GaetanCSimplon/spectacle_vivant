@@ -377,6 +377,9 @@ class GigCalendarView(TenantScopedMixin, TemplateView):
             .select_related("show", "venue", "promoter")
             .order_by("date", "pk")
         )
+        figures = bord.figures_for_gigs(self.request.tenant, gigs)
+        # The same cards as the list ("Liste"): progress, payments, roadmap shortcut, price.
+        gigs = services.attach_progress(services.with_roadmap_sharing(services.with_locks(gigs)))
         previous_month = (month_start - datetime.timedelta(days=1)).replace(day=1)
         next_month = (month_start + datetime.timedelta(days=32)).replace(day=1)
         monday = datetime.date(2024, 1, 1)  # a Monday: gives the localized weekday names
@@ -384,6 +387,9 @@ class GigCalendarView(TenantScopedMixin, TemplateView):
             month_start=month_start,
             weeks=services.build_month_grid(month_start, gigs),
             gigs=gigs,
+            figures=figures,
+            editable_price=True,
+            roadmap_shortcut=True,
             weekdays=[date_format(monday + datetime.timedelta(days=i), "D") for i in range(7)],
             previous_month=previous_month
             if previous_month.year in services.CALENDAR_YEARS

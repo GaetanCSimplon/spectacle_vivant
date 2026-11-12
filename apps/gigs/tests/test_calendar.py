@@ -302,3 +302,25 @@ def test_main_navigation_keeps_mes_dates_active_on_the_calendar(client):
 
     assert content.count('aria-current="page"') == 2  # top bar + bottom bar
     assert re.search(r'aria-current="page"\s*>(?:(?!</a>).)*?Mes dates</a>', content, re.S)
+
+
+# --- the dates of the month use the cards of the list -------------------------------------
+
+
+def test_the_month_shows_the_same_cards_and_the_figures_as_the_list(client):
+    tenant = _login(client)
+    GigFactory(tenant=tenant, date=D(2031, 10, 12), status=S.CONFIRMED, price="1500.00")
+
+    page = _calendar(client, mois="2031-10").content.decode()
+
+    assert "Avancement" in page  # the progress bar of the list card
+    assert "Ce que rapportent ces dates" in page and "card-navy" in page
+    assert "1 500" in page.replace(" ", " ").replace("\xa0", " ")
+
+
+def test_a_month_without_dates_has_no_figures_block(client):
+    _login(client)
+
+    page = _calendar(client, mois="2031-10").content.decode()
+
+    assert "Ce que rapportent ces dates" not in page
