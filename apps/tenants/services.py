@@ -1,6 +1,7 @@
 import secrets
 from datetime import timedelta
 
+from django.core.files.storage import default_storage
 from django.db import transaction
 from django.utils import timezone
 
@@ -132,6 +133,13 @@ def purge_tenant(tenant):
     other tenant are deleted too (staff accounts are kept).
     """
     files = [(field.storage, field.name) for _path, field in stored_files(tenant)]
+    # The copies of the logo kept by the issued quotes and invoices.
+    snapshots = [*Quote.objects.filter(tenant=tenant), *Invoice.objects.filter(tenant=tenant)]
+    files += [
+        (default_storage, doc.issuer_snapshot["logo"])
+        for doc in snapshots
+        if doc.issuer_snapshot.get("logo")
+    ]
     with transaction.atomic():
         user_ids = list(tenant.memberships.values_list("user_id", flat=True))
         # A signed contract and its frozen version protect each other: break the loop first.

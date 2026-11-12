@@ -349,6 +349,8 @@ def _safe(name):
 
 def stored_files(tenant):
     """Yield (zip path, FieldFile) for every file the tenant stored."""
+    if tenant.logo:
+        yield f"logo/{_safe(PurePosixPath(tenant.logo.name).name)}", tenant.logo
     for show in Show.objects.filter(tenant=tenant):
         for field in (show.rider_file, show.tech_sheet_file):
             if field:

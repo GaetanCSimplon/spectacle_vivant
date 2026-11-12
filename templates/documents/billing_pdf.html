@@ -53,6 +53,7 @@
 
     <div class="head">
       <div>
+        {% if logo_uri %}<img src="{{ logo_uri }}" alt="" style="display: block; max-height: 18mm; max-width: 55mm; margin-bottom: 8px;">{% endif %}
         <h1>{% if is_credit_note %}AVOIR{% elif is_invoice %}FACTURE{% else %}DEVIS{% endif %}{% if document.number %} {{ document.number }}{% endif %}</h1>
         <p>
           {{ gig.show.title }} — {{ gig.date|date:"d/m/Y" }}
