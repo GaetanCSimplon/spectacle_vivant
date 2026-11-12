@@ -10,6 +10,7 @@ from django.utils.translation import gettext_lazy as _
 from apps.core.services import render_pdf
 from apps.gigs import services as gig_services
 from apps.gigs.models import Gig
+from apps.tenants import logo as logo_files
 from apps.tenants.models import Tenant
 
 from .invoicing import legal_mentions, money
@@ -109,6 +110,7 @@ def build_contract_context(gig, contract=None):
         "total_with_vat": total_with_vat,
         "gig": gig,
         "tenant": gig.tenant,
+        "logo_uri": logo_files.data_uri(gig.tenant.logo.name),
         "promoter": gig.promoter,
         "venue": gig.venue,
         "show": gig.show,

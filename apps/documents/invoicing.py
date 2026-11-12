@@ -14,6 +14,7 @@ from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 
 from apps.core.services import render_pdf
+from apps.tenants import logo as logo_files
 from apps.tenants.models import Tenant
 
 from .models import DocumentLine, DocumentSequence, Invoice, Quote
@@ -368,6 +369,8 @@ def build_issuer_snapshot(tenant):
         "licence_number": tenant.licence_number,
         "representative_name": tenant.representative_name,
         "representative_role": tenant.representative_role,
+        # The stored file of the logo: the live one for a draft, a private copy once issued.
+        "logo": tenant.logo.name,
     }
 
 
@@ -397,6 +400,8 @@ def _issue(document):
         )
     refresh_totals(document)
     document.issuer_snapshot = build_issuer_snapshot(document.tenant)
+    # The issued document keeps the logo it was issued with, even if the structure changes it.
+    document.issuer_snapshot["logo"] = logo_files.snapshot_copy(document.issuer_snapshot["logo"])
     document.customer_snapshot = build_customer_snapshot(document.gig.promoter)
     document.issue_date = timezone.localdate()
 
@@ -531,6 +536,7 @@ def build_pdf_context(document):
         "is_draft": is_draft,
         "provisional": PDF_PROVISIONAL and not is_draft,
         "issuer": issuer,
+        "logo_uri": logo_files.data_uri(issuer.get("logo", "")),
         "customer": customer,
         "show_vat": issuer["vat_regime"] == Tenant.VatRegime.TAXABLE,
         "rows": [{"line": line, "total": line_total(line)} for line in lines],

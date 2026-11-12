@@ -1,3 +1,5 @@
+import uuid
+
 from django.db import models
 from django.urls import reverse
 from django.utils import timezone
@@ -11,6 +13,12 @@ from .validators import (
     validate_iban,
     validate_social_security_number,
 )
+
+
+def logo_upload_to(instance, filename):
+    # An unguessable folder per file, and the uploader's own file name is not kept.
+    extension = "png" if filename.lower().endswith("png") else "jpg"
+    return f"logos/{uuid.uuid4().hex}/logo.{extension}"
 
 
 class Tenant(AddressMixin, models.Model):
@@ -45,6 +53,7 @@ class Tenant(AddressMixin, models.Model):
             "à la main sur le contrat."
         ),
     )
+    logo = models.FileField(_("logo"), upload_to=logo_upload_to, blank=True)
     vat_number = models.CharField(
         _("n° de TVA intracommunautaire"),
         max_length=20,

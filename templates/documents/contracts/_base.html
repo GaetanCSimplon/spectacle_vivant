@@ -109,6 +109,7 @@
     </style>
   </head>
   <body>
+    {% if logo_uri %}<img src="{{ logo_uri }}" alt="" style="display: block; max-height: 18mm; max-width: 55mm; margin-bottom: 8px;">{% endif %}
     {% block content %}{% endblock %}
   </body>
 </html>

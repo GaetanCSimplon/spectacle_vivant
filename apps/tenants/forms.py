@@ -1,6 +1,8 @@
 from datetime import date
 
 from django import forms
+from django.db import transaction
+from django.db.models.fields.files import FieldFile
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 
@@ -9,6 +11,7 @@ from apps.core.forms import AddressModelForm, SectionedFormMixin
 from apps.finance import bord
 
 from . import choices, services
+from . import logo as logo_files
 from .models import Person, Tenant
 from .validators import (
     format_siret,
@@ -128,6 +131,7 @@ class TenantProfileForm(ChoiceOrOtherMixin, SectionedFormMixin, AddressModelForm
                 "licence_number",
             ],
         ),
+        (_("Logo"), ["logo"]),
         (_("Adresse"), ["address", "postal_code", "city", "department"]),
         (_("Contact"), ["phone", "email"]),
         (_("TVA"), ["vat_regime", "vat_rate", "vat_number"]),
@@ -191,6 +195,7 @@ class TenantProfileForm(ChoiceOrOtherMixin, SectionedFormMixin, AddressModelForm
             "legal_form",
             "siret",
             "code_ape",
+            "logo",
             "address",
             "postal_code",
             "city",
@@ -215,10 +220,16 @@ class TenantProfileForm(ChoiceOrOtherMixin, SectionedFormMixin, AddressModelForm
                 "Numéro de licence d'entrepreneur de spectacles, si vous en avez un."
             ),
             "jurisdiction_city": _("Ville dont les tribunaux sont compétents en cas de litige."),
+            "logo": _(
+                "Facultatif. Image PNG ou JPEG de 2 Mo au maximum, imprimée en haut de vos "
+                "devis, factures et contrats. Un devis ou une facture déjà émis garde le logo "
+                "de son émission."
+            ),
         }
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        self._old_logo = self.instance.logo.name if self.instance.pk else ""
         self._show_current_choices()
         self.initial["siret"] = format_siret(self.instance.siret)
         instance = self.instance
@@ -230,6 +241,23 @@ class TenantProfileForm(ChoiceOrOtherMixin, SectionedFormMixin, AddressModelForm
             self.fields["representative_last_name"].help_text = _(
                 "Ce nom était saisi en un seul champ : répartissez-le entre prénom et nom."
             )
+
+    def clean_logo(self):
+        logo = self.cleaned_data["logo"]
+        if logo and hasattr(logo, "size") and not isinstance(logo, FieldFile):
+            try:
+                logo_files.check_upload(logo)  # a new file: judged by its content
+            except ValueError as error:
+                raise forms.ValidationError(error.args[0]) from None
+        return logo
+
+    def save(self, commit=True):
+        tenant = super().save(commit=commit)
+        # The previous file is removed once the new one (or the removal) is saved.
+        if commit and self._old_logo and self._old_logo != tenant.logo.name:
+            storage, name = tenant.logo.storage, self._old_logo
+            transaction.on_commit(lambda: storage.delete(name))
+        return tenant
 
     def clean_siret(self):
         siret = normalize_siret(self.cleaned_data["siret"])
