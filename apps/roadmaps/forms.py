@@ -23,24 +23,64 @@ class NotesForm(forms.ModelForm):
         widgets = {"notes": forms.Textarea(attrs={"rows": 4})}
 
 
-class SlotForm(forms.ModelForm):
+MAX_DAYS_AROUND = 14
+
+
+class DayMixin:
+    """A "Jour" field for what hangs from a roadmap (slot, meal, lodging arrival).
+
+    Empty means the day of the concert. A day far from it is almost always a typing mistake, so
+    it is limited to two weeks around the concert. The form needs the gig to check that.
+    """
+
+    def __init__(self, *args, gig=None, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.gig = gig
+        field = self.fields["day"]
+        field.required = False
+        field.widget = forms.DateInput(attrs={"type": "date"}, format="%Y-%m-%d")
+        field.label = _("Jour")
+        field.help_text = _("Laissez vide pour le jour du concert.")
+
+    def clean_day(self):
+        day = self.cleaned_data["day"]
+        if day and self.gig is not None:
+            gap = abs((day - self.gig.date).days)
+            if gap > MAX_DAYS_AROUND:
+                raise forms.ValidationError(
+                    _("Choisissez un jour à %(n)s jours au plus du concert.")
+                    % {"n": MAX_DAYS_AROUND}
+                )
+        return day
+
+
+class SlotForm(DayMixin, forms.ModelForm):
     class Meta:
         model = RoadmapSlot
-        fields = ["kind", "time", "label", "note"]
+        fields = ["kind", "day", "time", "label", "note"]
         widgets = {"time": _time_widget(), "note": forms.Textarea(attrs={"rows": 2})}
 
 
-class LodgingForm(AddressModelForm):
+class LodgingForm(DayMixin, AddressModelForm):
     class Meta:
         model = Lodging
-        fields = ["name", "address", "postal_code", "city", "department", "arrival_time", "notes"]
+        fields = [
+            "name",
+            "address",
+            "postal_code",
+            "city",
+            "department",
+            "day",
+            "arrival_time",
+            "notes",
+        ]
         widgets = {"arrival_time": _time_widget(), "notes": forms.Textarea(attrs={"rows": 2})}
 
 
-class MealForm(forms.ModelForm):
+class MealForm(DayMixin, forms.ModelForm):
     class Meta:
         model = Meal
-        fields = ["place", "time", "notes"]
+        fields = ["place", "day", "time", "notes"]
         widgets = {"time": _time_widget(), "notes": forms.Textarea(attrs={"rows": 2})}
 
 
@@ -141,8 +181,21 @@ class RoadmapDocumentForm(forms.Form):
         empty_label=_("Toute l'équipe de la date"),
     )
 
+    slot = forms.ModelChoiceField(
+        label=_("Créneau du programme (facultatif)"),
+        queryset=None,
+        required=False,
+        empty_label=_("Aucun : un document pour la date"),
+    )
+
     def __init__(self, *args, gig=None, **kwargs):
         super().__init__(*args, **kwargs)
+        # Only the slots of this date's own roadmap.
+        self.fields["slot"].queryset = (
+            RoadmapSlot.objects.filter(roadmap__gig=gig, tenant=gig.tenant)
+            if gig
+            else RoadmapSlot.objects.none()
+        )
         ids = [person.pk for person in documents.audience_choices(gig)] if gig else []
         # Only people who are on this date: the form cannot reach anybody else.
         self.fields["person"].queryset = (

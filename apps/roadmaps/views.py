@@ -19,6 +19,7 @@ from apps.tenants.models import Person
 
 from . import documents, services, tour_requests
 from .forms import (
+    DayMixin,
     LodgingForm,
     MealForm,
     MemberForm,
@@ -97,6 +98,12 @@ class RoadmapMixin(TenantScopedMixin):
     def parent_of(self, section):
         return self.gig if section.parent == "gig" else self.roadmap
 
+    def section_form(self, section, *args, **kwargs):
+        """A form of a section; those with a "Jour" field also need the gig to check the day."""
+        if issubclass(section.form, DayMixin):
+            kwargs["gig"] = self.gig
+        return section.form(*args, **kwargs)
+
     def get_item(self, pk):
         return get_object_or_404(
             self.section.model,
@@ -116,6 +123,8 @@ class RoadmapMixin(TenantScopedMixin):
             )
             if section.with_contacts:
                 items = items.prefetch_related("contacts")
+            if hasattr(section.model, "day"):
+                items = services.chronological(items, self.gig)
             editing_pk = editing[1] if editing and editing[0] == key else None
             sections.append(
                 {
@@ -126,7 +135,9 @@ class RoadmapMixin(TenantScopedMixin):
                     "items": items,
                     "editing_pk": editing_pk,
                     "edit_form": forms.get(key) if editing_pk else None,
-                    "add_form": None if editing_pk else forms.get(key) or section.form(),
+                    "add_form": None
+                    if editing_pk
+                    else forms.get(key) or self.section_form(section),
                     "with_contacts": section.with_contacts,
                 }
             )
@@ -210,7 +221,7 @@ class ItemAddView(RoadmapMixin, View):
 
     def post(self, request, gig_id, section):
         self.load(gig_id, section)
-        form = self.section.form(request.POST)
+        form = self.section_form(self.section, request.POST)
         if not form.is_valid():
             return self.render_body_or_page(forms={section: form})
         item = form.save(commit=False)
@@ -246,13 +257,13 @@ class ItemEditView(RoadmapMixin, View):
     def get(self, request, gig_id, section, pk):
         self.load(gig_id, section)
         item = self.get_item(pk)
-        form = self.section.form(instance=item)
+        form = self.section_form(self.section, instance=item)
         return self.render_body_or_page(forms={section: form}, editing=(section, item.pk))
 
     def post(self, request, gig_id, section, pk):
         self.load(gig_id, section)
         item = self.get_item(pk)
-        form = self.section.form(request.POST, instance=item)
+        form = self.section_form(self.section, request.POST, instance=item)
         if not form.is_valid():
             return self.render_body_or_page(forms={section: form}, editing=(section, item.pk))
         form.save()
@@ -449,6 +460,7 @@ class DocumentAddView(RoadmapMixin, View):
                 kind=form.kind,
                 person=form.cleaned_data["person"],
                 user=request.user,
+                slot=form.cleaned_data["slot"],
             )
         except documents.TooManyDocuments:
             messages.error(

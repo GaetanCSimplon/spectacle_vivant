@@ -51,6 +51,8 @@ class RoadmapSlot(TenantOwnedModel):
 
     roadmap = models.ForeignKey(Roadmap, on_delete=models.CASCADE, related_name="slots")
     kind = models.CharField(_("type"), max_length=20, choices=Kind.choices, default=Kind.OTHER)
+    # The day of this item. Empty: the day of the concert (a roadmap can span several days).
+    day = models.DateField(_("jour"), null=True, blank=True)
     time = models.TimeField(_("heure"))
     label = models.CharField(_("intitulé"), max_length=255, blank=True)
     note = models.TextField(_("note"), blank=True)
@@ -66,6 +68,8 @@ class Lodging(GeoPointMixin, TenantOwnedModel):
     roadmap = models.ForeignKey(Roadmap, on_delete=models.CASCADE, related_name="lodgings")
     name = models.CharField(_("nom"), max_length=255)
     address = models.CharField(_("adresse"), max_length=255, blank=True)
+    # The day of the arrival. Empty: the day of the concert (a roadmap can span several days).
+    day = models.DateField(_("jour"), null=True, blank=True)
     arrival_time = models.TimeField(_("heure d'arrivée"), null=True, blank=True)
     notes = models.TextField(_("notes"), blank=True)
 
@@ -117,6 +121,8 @@ class PlaceContact(TenantOwnedModel):
 class Meal(TenantOwnedModel):
     roadmap = models.ForeignKey(Roadmap, on_delete=models.CASCADE, related_name="meals")
     place = models.CharField(_("lieu"), max_length=255)
+    # The day of this item. Empty: the day of the concert (a roadmap can span several days).
+    day = models.DateField(_("jour"), null=True, blank=True)
     time = models.TimeField(_("heure"), null=True, blank=True)
     notes = models.TextField(_("notes"), blank=True)
 
@@ -198,6 +204,16 @@ class RoadmapDocument(TenantOwnedModel):
     title = models.CharField(_("titre"), max_length=150)
     file = models.FileField(_("fichier"), upload_to=document_upload_to)
     content_type = models.CharField(max_length=20, choices=Kind.choices)
+    # Set: the file belongs to this slot of the program (a ticket for the train, a plan...). It goes
+    # with the slot, and is shown under it in the personal space only (FDR-03).
+    slot = models.ForeignKey(
+        RoadmapSlot,
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        related_name="documents",
+        verbose_name=_("créneau"),
+    )
     # Empty: every person of the date who has a personal space. Set: this person only. If the
     # person is deleted the document goes with them (it was theirs), it never becomes public.
     person = models.ForeignKey(

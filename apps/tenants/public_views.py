@@ -59,7 +59,16 @@ class TeamSpaceGigView(TeamSpaceMixin, View):
                 {"person": person, "gig": gig, "back_url": back_url},
             )
             return protect_secret_page(response)
-        context = roadmap_services.public_context(roadmap)
+
+        def file_link(document):
+            return {
+                "title": document.title,
+                "kind": document.get_content_type_display(),
+                "url": reverse("team-space-document", args=[token, gig.pk, document.pk]),
+            }
+
+        # The files of a slot are listed under it (personal space only, never the shared link).
+        context = roadmap_services.public_context(roadmap, file_link=file_link, person=person)
         context["back_url"] = back_url
         context["pdf_url"] = reverse("team-space-pdf", args=[token, gig.pk])
         # Documents are only ever added here, never to the shared public context.
@@ -78,7 +87,7 @@ class TeamSpaceGigView(TeamSpaceMixin, View):
                 "kind": document.get_content_type_display(),
                 "url": reverse("team-space-document", args=[token, gig.pk, document.pk]),
             }
-            for document in roadmap_documents.visible_to(roadmap, person)
+            for document in roadmap_documents.visible_to(roadmap, person).filter(slot=None)
         ]
         return protect_secret_page(render(request, "roadmaps/public.html", context))
 

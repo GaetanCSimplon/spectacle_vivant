@@ -44,22 +44,25 @@
     {% endif %}
 
     {% if program %}
-      <h2>Programme de la journée</h2>
-      <table>
-        {% for slot in program %}
-          <tr>
-            <td class="time">{{ slot.time|time:"H:i" }}</td>
-            <td>{{ slot.label }}{% if slot.note %}<br><span class="muted">{{ slot.note|linebreaksbr }}</span>{% endif %}</td>
-          </tr>
-        {% endfor %}
-      </table>
+      <h2>{% if program_days|length > 1 %}Programme{% else %}Programme de la journée{% endif %}</h2>
+      {% for program_day in program_days %}
+        {% if program_days|length > 1 %}<h3>{{ program_day.day|date:"l j F" }}{% if program_day.is_concert_day %} — jour du concert{% endif %}</h3>{% endif %}
+        <table>
+          {% for slot in program_day.items %}
+            <tr>
+              <td class="time">{{ slot.time|time:"H:i" }}</td>
+              <td>{{ slot.label }}{% if slot.note %}<br><span class="muted">{{ slot.note|linebreaksbr }}</span>{% endif %}{% if slot.files %}<br><span class="muted">Pièce jointe : {% for file in slot.files %}{{ file.title }}{% if not forloop.last %}, {% endif %}{% endfor %}</span>{% elif slot.has_files %}<br><span class="muted">Pièce jointe dans votre espace personnel.</span>{% endif %}</td>
+            </tr>
+          {% endfor %}
+        </table>
+      {% endfor %}
     {% endif %}
 
     {% if lodgings or lodging_cover %}
       <h2>Hébergement</h2>
       {% if lodging_cover %}<p>{{ lodging_cover|capfirst }}</p>{% endif %}
       {% for lodging in lodgings %}
-        <p><strong>{{ lodging.name }}</strong>{% if lodging.arrival_time %} — arrivée {{ lodging.arrival_time|time:"H:i" }}{% endif %}</p>
+        <p><strong>{{ lodging.name }}</strong>{% if lodging.arrival_time or lodging.day %} — arrivée{% if lodging.day and lodging.day != date %} le {{ lodging.day|date:"l j F" }}{% endif %}{% if lodging.arrival_time %} à {{ lodging.arrival_time|time:"H:i" }}{% endif %}{% endif %}</p>
         {% if lodging.full_address %}<p>{{ lodging.full_address|linebreaksbr }}</p>{% endif %}
         {% if lodging.notes %}<p class="muted">{{ lodging.notes|linebreaksbr }}</p>{% endif %}
         {% for contact in lodging.contacts.all %}<p class="muted">Contact : {{ contact.name }}{% if contact.role %} ({{ contact.role }}){% endif %}{% if contact.phone %} — {{ contact.phone }}{% endif %}</p>{% endfor %}
@@ -71,7 +74,7 @@
       {% if meals_cover %}<p>{{ meals_cover|capfirst }}</p>{% endif %}
       {% if crew_headcount %}<p>{{ crew_headcount }} personne{{ crew_headcount|pluralize }}</p>{% endif %}
       {% for meal in meals %}
-        <p><strong>{{ meal.place }}</strong>{% if meal.time %} — {{ meal.time|time:"H:i" }}{% endif %}</p>
+        <p><strong>{{ meal.place }}</strong>{% if meal.day and meal.day != date %} — {{ meal.day|date:"l j F" }}{% endif %}{% if meal.time %} — {{ meal.time|time:"H:i" }}{% endif %}</p>
         {% if meal.notes %}<p class="muted">{{ meal.notes|linebreaksbr }}</p>{% endif %}
         {% for contact in meal.contacts.all %}<p class="muted">Contact : {{ contact.name }}{% if contact.role %} ({{ contact.role }}){% endif %}{% if contact.phone %} — {{ contact.phone }}{% endif %}</p>{% endfor %}
       {% endfor %}

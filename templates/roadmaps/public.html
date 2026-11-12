@@ -74,22 +74,34 @@
       {% endif %}
 
       {% if program %}
-        <h2 class="mb-2 text-sm font-semibold uppercase text-gray-500">{% translate "Programme de la journée" %}</h2>
-        {# Timeline: the time in mono, a dot on the rail; the concert has a bigger filled dot AND the word "Concert". #}
-        <ol class="mb-6 ml-2 border-l-2 border-blue-200">
-          {% for slot in program %}
-            <li class="relative pb-5 pl-6 last:pb-0">
-              {% if slot.kind == 'performance' %}
-                <span class="absolute top-0.5 -left-[9px] size-4 rounded-full border-2 border-blue-700 bg-blue-700" aria-hidden="true"></span>
-              {% else %}
-                <span class="absolute top-1 -left-[7px] size-3 rounded-full border-2 border-blue-700 bg-white" aria-hidden="true"></span>
-              {% endif %}
-              <p class="data text-sm text-gray-600">{{ slot.time|time:"H:i" }}</p>
-              <p class="{% if slot.kind == 'performance' %}text-lg font-bold{% else %}font-medium{% endif %}">{{ slot.label }}{% if slot.kind == 'performance' %} <span class="pill pill-neutral">{% translate "Concert" %}</span>{% endif %}</p>
-              {% if slot.note %}<p class="text-sm text-gray-600">{{ slot.note|linebreaksbr }}</p>{% endif %}
-            </li>
-          {% endfor %}
-        </ol>
+        <h2 class="mb-2 text-sm font-semibold uppercase text-gray-500">{% if program_days|length > 1 %}{% translate "Programme" %}{% else %}{% translate "Programme de la journée" %}{% endif %}</h2>
+        {% for program_day in program_days %}
+          {% if program_days|length > 1 %}
+            <h3 class="mb-2 mt-4 text-sm font-semibold">{{ program_day.day|date:"l j F" }}{% if program_day.is_concert_day %} <span class="pill pill-neutral">{% translate "Jour du concert" %}</span>{% endif %}</h3>
+          {% endif %}
+          {# Timeline: the time in mono, a dot on the rail; the concert has a bigger filled dot AND the word "Concert". #}
+          <ol class="mb-6 ml-2 border-l-2 border-blue-200">
+            {% for slot in program_day.items %}
+              <li class="relative pb-5 pl-6 last:pb-0">
+                {% if slot.kind == 'performance' %}
+                  <span class="absolute top-0.5 -left-[9px] size-4 rounded-full border-2 border-blue-700 bg-blue-700" aria-hidden="true"></span>
+                {% else %}
+                  <span class="absolute top-1 -left-[7px] size-3 rounded-full border-2 border-blue-700 bg-white" aria-hidden="true"></span>
+                {% endif %}
+                <p class="data text-sm text-gray-600">{{ slot.time|time:"H:i" }}</p>
+                <p class="{% if slot.kind == 'performance' %}text-lg font-bold{% else %}font-medium{% endif %}">{{ slot.label }}{% if slot.kind == 'performance' %} <span class="pill pill-neutral">{% translate "Concert" %}</span>{% endif %}</p>
+                {% if slot.note %}<p class="text-sm text-gray-600">{{ slot.note|linebreaksbr }}</p>{% endif %}
+                {% if slot.files %}
+                  <ul class="mt-1 space-y-1 text-sm">
+                    {% for file in slot.files %}<li><a href="{{ file.url }}" class="text-blue-700 underline">{{ file.title }}</a> <span class="text-gray-600">({{ file.kind }})</span></li>{% endfor %}
+                  </ul>
+                {% elif slot.has_files %}
+                  <p class="text-sm text-gray-600">{% translate "Pièce jointe dans votre espace personnel." %}</p>
+                {% endif %}
+              </li>
+            {% endfor %}
+          </ol>
+        {% endfor %}
       {% endif %}
 
       {% if lodgings or lodging_cover %}
@@ -98,7 +110,7 @@
           {% if lodging_cover %}<li class="card text-sm">{{ lodging_cover|capfirst }}</li>{% endif %}
           {% for lodging in lodgings %}
             <li class="card space-y-2 text-sm">
-              <p class="font-medium">{{ lodging.name }}{% if lodging.arrival_time %} · {% translate "arrivée" %} <span class="data">{{ lodging.arrival_time|time:"H:i" }}</span>{% endif %}</p>
+              <p class="font-medium">{{ lodging.name }}{% if lodging.arrival_time or lodging.day %} · {% translate "arrivée" %}{% if lodging.day and lodging.day != date %} {{ lodging.day|date:"l j F" }}{% endif %}{% if lodging.arrival_time %} <span class="data">{{ lodging.arrival_time|time:"H:i" }}</span>{% endif %}{% endif %}</p>
               {% if lodging.full_address %}
                 <p class="text-gray-600">{{ lodging.full_address|linebreaksbr }}</p>
                 {% if lodging.has_point %}{% include "roadmaps/_map_preview.html" with map_url=lodging.map_embed_url %}{% endif %}
@@ -119,7 +131,7 @@
           {% if crew_headcount %}<li class="card text-sm">{% blocktranslate count n=crew_headcount %}{{ n }} personne{% plural %}{{ n }} personnes{% endblocktranslate %}</li>{% endif %}
           {% for meal in meals %}
             <li class="card text-sm">
-              <p class="font-medium">{{ meal.place }}{% if meal.time %} · <span class="data">{{ meal.time|time:"H:i" }}</span>{% endif %}</p>
+              <p class="font-medium">{{ meal.place }}{% if meal.day and meal.day != date %} · {{ meal.day|date:"l j F" }}{% endif %}{% if meal.time %} · <span class="data">{{ meal.time|time:"H:i" }}</span>{% endif %}</p>
               {% if meal.notes %}<p class="text-gray-600">{{ meal.notes|linebreaksbr }}</p>{% endif %}
               {% if meal.contacts.all %}{% include "roadmaps/_public_place_contacts.html" with contacts=meal.contacts.all %}{% endif %}
             </li>
