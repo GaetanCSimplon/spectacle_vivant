@@ -42,6 +42,12 @@
       <dt class="text-gray-500">{% translate "Prix HT" %}</dt>
       <dd>{{ price }} €</dd>
     </div>
+    {% if event_name %}
+      <div class="flex items-center justify-between">
+        <dt class="text-gray-500">{% translate "Évènement" %}</dt>
+        <dd>{{ event_name }}</dd>
+      </div>
+    {% endif %}
     {% if conditions %}
       <div>
         <dt class="text-gray-500">{% translate "Conditions particulières" %}</dt>

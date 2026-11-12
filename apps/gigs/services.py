@@ -40,6 +40,7 @@ def create_gig_from_wizard_data(tenant, data, user=None):
             option_expires_on=data.get("option_expires_on") or None,
             price=data["price"],
             conditions=data.get("conditions", ""),
+            event_name=data.get("event_name", ""),
         )
         PriceChange.objects.create(
             tenant=tenant, gig=gig, old_price=None, new_price=gig.price, changed_by=user
@@ -507,62 +508,148 @@ def next_step(gig, progress):
     return None
 
 
-def gig_history(gig, limit=8):
-    """The latest things done on a date, rebuilt from the dates already stored (no journal).
-
-    Only what carries a date appears: price set or changed, contract generated, sent and signed,
-    quotes and invoices issued, payments, expenses, roadmap updated. Newest first.
+def gig_documents(gig):
+    """Everything produced for a date, as one list of {label, detail, url}: quotes, contract
+    versions, invoices and credit notes, roadmap. Drafts are listed too (they can be finished).
     """
-    from apps.finance.models import Payment  # noqa: PLC0415 (finance imports gigs)
-
-    events = []
-
-    def add(day, text, url, rank=0):
-        if isinstance(day, datetime.datetime):
-            day = timezone.localtime(day).date() if timezone.is_aware(day) else day.date()
-        events.append((day, rank, text, url))
-
-    detail_url = reverse("gigs:detail", args=[gig.pk])
-    contract_url = reverse("documents:contract-history", args=[gig.pk])
-    billing_url = reverse("documents:billing", args=[gig.pk])
-    finance_url = reverse("finance:page", args=[gig.pk])
     tenant = gig.tenant
-
-    for change in PriceChange.objects.filter(gig=gig, tenant=tenant):
-        if change.old_price is None:
-            add(change.changed_at, _("Date créée"), detail_url)
-        else:
-            add(change.changed_at, _("Prix modifié"), detail_url)
+    rows = []
+    for quote in Quote.objects.filter(gig=gig, tenant=tenant).order_by("-created_at"):
+        rows.append(
+            {
+                "kind": _("Devis"),
+                "label": quote.number or _("Brouillon"),
+                "day": quote.issue_date,
+                "url": reverse("documents:document-detail", args=[gig.pk, "devis", quote.pk]),
+            }
+        )
     contract = Contract.objects.filter(gig=gig, tenant=tenant).first()
     if contract:
         for version in contract.versions.all():
-            text = _("Contrat généré (version %(n)s)") % {"n": version.number}
-            add(version.created_at, text, contract_url)
-        if contract.sent_at:
-            add(contract.sent_at, _("Contrat envoyé à l'organisateur"), contract_url, rank=1)
-        if contract.signed_at:
-            add(contract.signed_at, _("Contrat signé"), contract_url, rank=2)
-    for quote in Quote.objects.filter(gig=gig, tenant=tenant, issue_date__isnull=False):
-        add(quote.issue_date, _("Devis %(n)s émis") % {"n": quote.number}, billing_url)
-    for invoice in Invoice.objects.filter(gig=gig, tenant=tenant, issue_date__isnull=False):
+            rows.append(
+                {
+                    "kind": _("Contrat"),
+                    "label": _("Version %(n)s") % {"n": version.number},
+                    "day": _day(version.created_at),
+                    "url": reverse(
+                        "documents:contract-version-download", args=[gig.pk, version.number]
+                    ),
+                }
+            )
+    for invoice in Invoice.objects.filter(gig=gig, tenant=tenant).order_by("-created_at"):
         kind = _("Avoir") if invoice.kind == Invoice.Kind.CREDIT_NOTE else _("Facture")
-        add(
-            invoice.issue_date,
-            _("%(kind)s %(n)s émis(e)") % {"kind": kind, "n": invoice.number},
-            billing_url,
+        rows.append(
+            {
+                "kind": kind,
+                "label": invoice.number or _("Brouillon"),
+                "day": invoice.issue_date,
+                "url": reverse("documents:document-detail", args=[gig.pk, "factures", invoice.pk]),
+            }
         )
-    for payment in Payment.objects.filter(invoice__gig=gig, tenant=tenant):
-        amount = f"{payment.amount:.2f}".replace(".", ",")
-        add(payment.date, _("Paiement reçu : %(amount)s €") % {"amount": amount}, finance_url)
-    for expense in Expense.objects.filter(gig=gig, tenant=tenant):
-        add(expense.date, _("Dépense ajoutée : %(label)s") % {"label": expense.label}, finance_url)
     roadmap = Roadmap.objects.filter(gig=gig, tenant=tenant).first()
-    if roadmap and roadmap.updated_at:
-        add(
-            roadmap.updated_at,
-            _("Feuille de route mise à jour"),
-            reverse("roadmaps:editor", args=[gig.pk]),
+    if roadmap:
+        rows.append(
+            {
+                "kind": _("Feuille de route"),
+                "label": _("Partagée") if roadmap.is_published else _("Non partagée"),
+                "day": _day(roadmap.updated_at),
+                "url": reverse("roadmaps:editor", args=[gig.pk]),
+            }
         )
+    return rows
 
-    events.sort(key=lambda event: (event[0], event[1]), reverse=True)
-    return [{"day": day, "text": text, "url": url} for day, _rank, text, url in events[:limit]]
+
+def gig_contacts(gig):
+    """The contacts of the date's organiser, then those of its venue (read only, no duplicate).
+
+    Both sides are limited to the date's tenant, so a contact of another structure never shows.
+    """
+    from apps.addressbook.models import Contact  # noqa: PLC0415 (same-level import)
+
+    tenant = gig.tenant
+    groups = []
+    seen = set()
+    for label, entity, filters in (
+        (_("Organisateur"), gig.promoter, {"promoters": gig.promoter}),
+        (_("Lieu"), gig.venue, {"venues": gig.venue}),
+    ):
+        contacts = [
+            contact
+            for contact in Contact.objects.filter(tenant=tenant, **filters).order_by("name")
+            if contact.pk not in seen
+        ]
+        seen.update(contact.pk for contact in contacts)
+        groups.append({"label": label, "entity": entity, "contacts": contacts})
+    return groups
+
+
+def _day(value):
+    if value is None:
+        return None
+    if isinstance(value, datetime.datetime):
+        return timezone.localtime(value).date() if timezone.is_aware(value) else value.date()
+    return value
+
+
+def gig_timeline(gig):
+    """The milestones of a date, in the order they usually happen, each with its stored date.
+
+    A step without a date is still to come. Nothing is recorded in a journal: every date is read
+    from what the other screens already store (no model, no migration).
+    """
+    from apps.addressbook.models import PromoterInvitation  # noqa: PLC0415 (same-level import)
+    from apps.finance.models import Payment  # noqa: PLC0415 (finance imports gigs)
+
+    tenant = gig.tenant
+    detail_url = reverse("gigs:detail", args=[gig.pk])
+    contract_url = reverse("documents:contract-history", args=[gig.pk])
+    billing_url = reverse("documents:billing", args=[gig.pk])
+    steps = []
+
+    def step(label, day, url):
+        steps.append({"label": label, "day": _day(day), "url": url})
+
+    created = PriceChange.objects.filter(gig=gig, tenant=tenant, old_price__isnull=True).first()
+    step(_("Date créée"), created.changed_at if created else None, detail_url)
+
+    invitation = PromoterInvitation.objects.filter(promoter=gig.promoter, tenant=tenant).first()
+    promoter_url = reverse("addressbook:promoter-detail", args=[gig.promoter_id])
+    step(_("Formulaire envoyé"), invitation.created_at if invitation else None, promoter_url)
+    step(
+        _("Formulaire reçu"),
+        invitation.completed_at if invitation else None,
+        promoter_url,
+    )
+
+    quote = (
+        Quote.objects.filter(gig=gig, tenant=tenant, issue_date__isnull=False)
+        .order_by("-issue_date", "-pk")
+        .first()
+    )
+    step(_("Devis émis"), quote.issue_date if quote else None, billing_url)
+
+    contract = Contract.objects.filter(gig=gig, tenant=tenant).first()
+    first_version = contract.versions.order_by("created_at").first() if contract else None
+    step(_("Contrat généré"), first_version.created_at if first_version else None, contract_url)
+    step(_("Contrat envoyé"), contract.sent_at if contract else None, contract_url)
+    step(_("Contrat signé"), contract.signed_at if contract else None, contract_url)
+
+    invoices = Invoice.objects.filter(gig=gig, tenant=tenant, issue_date__isnull=False).exclude(
+        kind=Invoice.Kind.CREDIT_NOTE
+    )
+    for kinds, issued_label, paid_label in (
+        ((Invoice.Kind.DEPOSIT,), _("Facture d'acompte émise"), _("Acompte payé")),
+        (
+            (Invoice.Kind.BALANCE, Invoice.Kind.FULL),
+            _("Facture de solde émise"),
+            _("Solde payé"),
+        ),
+    ):
+        invoice = invoices.filter(kind__in=kinds).order_by("issue_date", "pk").first()
+        step(issued_label, invoice.issue_date if invoice else None, billing_url)
+        paid_on = None
+        if invoice and invoice.status == Invoice.Status.PAID:
+            last = Payment.objects.filter(invoice=invoice, tenant=tenant).order_by("-date").first()
+            paid_on = last.date if last else None
+        step(paid_label, paid_on, reverse("finance:page", args=[gig.pk]))
+    return steps
