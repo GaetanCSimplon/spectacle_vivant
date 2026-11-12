@@ -5,9 +5,10 @@ from apps.core.forms import MultiSelectDropdown, SectionedFormMixin
 from apps.tenants.models import Person
 
 from .models import Show
+from .validators import ObjectNumberMixin
 
 
-class ShowForm(SectionedFormMixin, forms.ModelForm):
+class ShowForm(ObjectNumberMixin, SectionedFormMixin, forms.ModelForm):
     layout = [
         (_("Le spectacle"), ["title", "group_name", "cast", "duration_minutes", "default_price"]),
         (
