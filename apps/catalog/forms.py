@@ -34,10 +34,21 @@ class ShowForm(ObjectNumberMixin, SectionedFormMixin, forms.ModelForm):
     # Someone who is not in the team yet: created and added to the team when the form is saved.
     new_first_name = forms.CharField(label=_("Prénom"), max_length=100, required=False)
     new_last_name = forms.CharField(label=_("Nom"), max_length=100, required=False)
+    new_role = forms.CharField(label=_("Fonction"), max_length=100, required=False)
+    new_phone = forms.CharField(label=_("Téléphone"), max_length=30, required=False)
+    new_email = forms.EmailField(label=_("E-mail"), required=False)
     new_is_artist = forms.BooleanField(label=_("Artiste"), required=False)
     new_is_technician = forms.BooleanField(label=_("Technicien"), required=False)
 
-    NEW_MEMBER_FIELDS = ["new_first_name", "new_last_name", "new_is_artist", "new_is_technician"]
+    NEW_MEMBER_FIELDS = [
+        "new_first_name",
+        "new_last_name",
+        "new_role",
+        "new_phone",
+        "new_email",
+        "new_is_artist",
+        "new_is_technician",
+    ]
 
     class Meta:
         model = Show
@@ -95,6 +106,8 @@ class ShowForm(ObjectNumberMixin, SectionedFormMixin, forms.ModelForm):
         first = " ".join((cleaned.get("new_first_name") or "").split())
         last = " ".join((cleaned.get("new_last_name") or "").split())
         cleaned["new_first_name"], cleaned["new_last_name"] = first, last
+        cleaned["new_role"] = " ".join((cleaned.get("new_role") or "").split())
+        cleaned["new_phone"] = (cleaned.get("new_phone") or "").strip()
         if bool(first) != bool(last):
             missing = "new_last_name" if first else "new_first_name"
             self.add_error(missing, _("Indiquez le prénom et le nom du nouveau membre."))
@@ -110,6 +123,9 @@ class ShowForm(ObjectNumberMixin, SectionedFormMixin, forms.ModelForm):
                 tenant=self.tenant,
                 first_name=self.cleaned_data["new_first_name"],
                 last_name=self.cleaned_data["new_last_name"],
+                role=self.cleaned_data["new_role"],
+                phone=self.cleaned_data["new_phone"],
+                email=self.cleaned_data["new_email"],
                 is_artist=self.cleaned_data["new_is_artist"],
                 is_technician=self.cleaned_data["new_is_technician"],
             )

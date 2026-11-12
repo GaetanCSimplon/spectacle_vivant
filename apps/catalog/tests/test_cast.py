@@ -71,6 +71,38 @@ def test_a_new_member_joins_the_team_and_the_cast(client):
     assert list(Show.objects.get(tenant=tenant).cast.all()) == [person]
 
 
+def test_a_new_member_keeps_the_role_and_the_contact_given_with_it(client):
+    tenant = _login(client)
+
+    client.post(
+        reverse("catalog:show-create"),
+        _payload(
+            new_first_name="Jo",
+            new_last_name="Martin",
+            new_role="  Régisseur   son ",
+            new_phone=" 06 11 22 33 44 ",
+            new_email="jo@example.org",
+            new_is_technician="on",
+        ),
+    )
+
+    person = Person.objects.get(tenant=tenant)
+    assert person.role == "Régisseur son"
+    assert person.phone == "06 11 22 33 44" and person.email == "jo@example.org"
+
+
+def test_a_wrong_email_for_the_new_member_is_refused(client):
+    tenant = _login(client)
+
+    response = client.post(
+        reverse("catalog:show-create"),
+        _payload(new_first_name="Jo", new_last_name="Martin", new_email="pas-un-email"),
+    )
+
+    assert response.status_code == 200
+    assert not Person.objects.filter(tenant=tenant).exists()
+
+
 def test_a_new_member_needs_both_names(client):
     tenant = _login(client)
 
