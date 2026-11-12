@@ -13,6 +13,20 @@
   </div>
 {% endif %}
 
+{% if object_list %}
+  {# The money of the dates shown below (they follow the filters); the same figures as the Bord. #}
+  <section class="card mb-6" aria-labelledby="gig-figures">
+    <h2 id="gig-figures" class="stat-label !text-xs !font-semibold">{% translate "Ce que rapportent ces dates" %}</h2>
+    <dl class="mt-2 grid grid-cols-2 gap-x-4 gap-y-2 text-sm lg:grid-cols-4">
+      <div><dt class="text-stone-600">{% translate "Prévisionnel" %} (HT)</dt><dd class="data text-lg font-bold">{{ figures.planned|floatformat:"0g" }} €</dd></div>
+      <div><dt class="text-stone-600">{% translate "Signé" %} (HT)</dt><dd class="data text-lg font-bold">{{ figures.signed|floatformat:"0g" }} €</dd></div>
+      <div><dt class="text-stone-600">{% translate "Facturé" %} (HT)</dt><dd class="data text-lg font-bold">{{ figures.invoiced|floatformat:"0g" }} €</dd></div>
+      <div><dt class="text-stone-600">{% translate "Encaissé" %} (TTC)</dt><dd class="data text-lg font-bold">{{ figures.received|floatformat:"0g" }} €</dd></div>
+    </dl>
+    <p class="mt-2 text-sm"><a href="{% url 'tenants:profile' %}" class="font-bold text-blue-700 underline">{% translate "Voir le Bord pour le détail" %} →</a></p>
+  </section>
+{% endif %}
+
 {% if upcoming_gigs %}
   <h2 class="mb-2 text-sm font-semibold uppercase text-gray-500">{% translate "À venir" %}</h2>
   <ul class="mb-6 grid grid-cols-1 items-start gap-2 xl:grid-cols-2 2xl:grid-cols-3">

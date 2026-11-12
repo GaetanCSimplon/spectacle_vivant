@@ -16,6 +16,7 @@ from apps.addressbook import services as addressbook_services
 from apps.addressbook.models import Promoter
 from apps.core.views import TenantScopedMixin, wants_fragment
 from apps.documents.models import Invoice
+from apps.finance import bord
 from apps.finance import services as finance_services
 from apps.roadmaps import services as roadmap_services
 from apps.roadmaps import tour_requests as roadmap_tour_requests
@@ -350,6 +351,7 @@ class GigListView(TenantScopedMixin, ListView):
         )
         context["cancelled_gigs"] = cancelled.order_by("-date")
         context["filter_form"] = self.get_filter_form()
+        context["figures"] = bord.figures_for_gigs(self.request.tenant, gigs)
         context["editable_price"] = True
         context["roadmap_shortcut"] = True
         context["has_any_gig"] = Gig.objects.filter(tenant=self.request.tenant).exists()

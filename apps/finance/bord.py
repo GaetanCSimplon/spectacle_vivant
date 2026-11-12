@@ -89,6 +89,24 @@ def period_bounds(preset, today):
     return start, end
 
 
+def figures_for_gigs(tenant, gigs):
+    """Planned, signed, invoiced (excl. tax) and received (incl. tax) for exactly these dates.
+
+    The same figures as the "activity" reading of the Bord, for a list of dates instead of a
+    period: everything hangs from the dates (all their invoices and payments, whenever issued).
+    """
+    gigs = Gig.objects.filter(tenant=tenant, pk__in=gigs.values("pk"))
+    invoices = Invoice.objects.filter(tenant=tenant, status__in=INVOICED, gig__in=gigs)
+    payments = Payment.objects.filter(tenant=tenant, invoice__gig__in=gigs)
+    return {
+        "planned": gigs.filter(status__in=CONFIRMED).aggregate(total=Sum("price"))["total"] or ZERO,
+        "signed": gigs.filter(status=Gig.Status.SIGNED).aggregate(total=Sum("price"))["total"]
+        or ZERO,
+        "invoiced": invoices.aggregate(total=Sum("total_excl_tax"))["total"] or ZERO,
+        "received": payments.aggregate(total=Sum("amount"))["total"] or ZERO,
+    }
+
+
 def _gigs(tenant, filters):
     gigs = Gig.objects.filter(tenant=tenant, date__range=(filters.start, filters.end))
     return gigs.filter(show=filters.show) if filters.show else gigs
