@@ -6,6 +6,8 @@ from django.utils.translation import gettext_lazy as _
 
 from apps.core.models import AddressMixin, GeoPointMixin, TenantOwnedModel
 
+from . import date_ranges
+
 
 class Promoter(AddressMixin, TenantOwnedModel):
     """The client (Organisateur) who buys the show and gets invoiced."""
@@ -104,6 +106,8 @@ class Promoter(AddressMixin, TenantOwnedModel):
     aesthetics = models.JSONField(_("esthétique / discipline"), default=list, blank=True)
     formats = models.JSONField(_("format / jauge"), default=list, blank=True)
     usual_periods = models.JSONField(_("période habituelle"), default=list, blank=True)
+    # Dates that come back every year, without a year: [{"start": "07-10", "end": "07-25"}].
+    usual_date_ranges = models.JSONField(_("plages de dates habituelles"), default=list, blank=True)
     event_roles = models.JSONField(_("rôle dans l'évènement"), default=list, blank=True)
     indicative_capacity = models.PositiveIntegerField(_("jauge indicative"), null=True, blank=True)
     qualification_other = models.CharField(_("autres précisions"), max_length=255, blank=True)
@@ -129,11 +133,19 @@ class Promoter(AddressMixin, TenantOwnedModel):
         return self.labels_for("aesthetics")
 
     @property
+    def usual_date_range_labels(self):
+        """ "du 10 juillet au 25 juillet", one per range."""
+        return [date_ranges.label(date_range) for date_range in self.usual_date_ranges]
+
+    @property
     def qualification_tags(self):
-        """(title, labels) of every criterion that has a value, in display order."""
+        """(title, labels) of every criterion that has a value, in display order. The usual
+        periods also list the yearly date ranges."""
         tags = []
         for field, (_choices, title) in self.QUALIFICATION.items():
             labels = self.labels_for(field)
+            if field == "usual_periods":
+                labels = labels + self.usual_date_range_labels
             if labels:
                 tags.append((title, labels))
         return tags
