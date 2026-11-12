@@ -740,6 +740,7 @@ def summary(tenant, filters, today):
         "volets": volet_figures(tenant, filters),
         "attention": attention_items,
         "attention_total": attention_total,
+        "attention_urgent": any(item["rank"] == 0 for item in attention_items),
         "operations": operations(tenant, filters),
         "upcoming": upcoming(tenant, filters, today),
         "monthly": monthly,
