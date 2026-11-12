@@ -146,3 +146,10 @@ def test_the_navy_scale_is_the_brand_navy_at_700():
 def test_the_solid_green_pill_keeps_its_white_text_readable():
     """`pill-good-strong` (a signed date): white on the dark success green."""
     assert contrast("#ffffff", _color("success-text")) >= 4.5
+
+
+def test_a_button_in_a_colour_block_keeps_its_own_colours():
+    """A white button inside a navy card must not inherit the card's white text."""
+    rules = CSS.split("Outside any layer on purpose", 1)[1]
+    assert "a:not(.btn)" in rules
+    assert not re.search(r"\.card-regie\)\s+a\s*\{", rules)
