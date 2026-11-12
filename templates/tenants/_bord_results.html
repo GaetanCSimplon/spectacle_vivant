@@ -76,10 +76,15 @@
 {# From xl (1280 px) the page has two columns: the figures on the left, what needs doing on the right (the right column comes first on a phone). #}
 <div class="grid grid-cols-1 gap-x-6 xl:grid-cols-[minmax(0,1fr)_22rem]">
   <aside class="min-w-0 xl:col-start-2 xl:row-start-1" aria-label="{% translate 'À faire' %}">
-<section class="card mb-6" aria-labelledby="bord-attention">
-  <h2 id="bord-attention" class="stat-label !text-xs !font-semibold">{% translate "À traiter maintenant" %}</h2>
+{# Same header as « Alertes et rappels » on the home page: red = something late, amber = to do, green = nothing. The title and the count say it too. #}
+<section class="mb-6 overflow-hidden rounded-xl border border-page-line bg-white" aria-labelledby="bord-attention">
+  <div class="flex flex-wrap items-center justify-between gap-2 px-4 py-3 {% if attention_urgent %}bg-red-700 text-white{% elif attention %}bg-amber-100 text-amber-900{% else %}bg-green-50 text-green-900{% endif %}">
+    <h2 id="bord-attention" class="!m-0 !text-base font-bold !text-inherit"><span aria-hidden="true">{% if attention_urgent %}!{% elif attention %}◷{% else %}✓{% endif %}</span> {% translate "À traiter maintenant" %}</h2>
+    <p class="text-sm font-semibold !text-inherit">{% if attention_total %}{% blocktranslate count n=attention_total %}{{ n }} point{% plural %}{{ n }} points{% endblocktranslate %}{% else %}{% translate "Rien à signaler" %}{% endif %}</p>
+  </div>
+  <div class="px-4 pb-3">
   {% if attention %}
-    <ul class="mt-2 divide-y divide-page-line">
+    <ul class="divide-y divide-page-line">
       {% for item in attention %}
         <li class="flex flex-wrap items-start justify-between gap-3 py-2 text-sm">
           <span class="min-w-0">
@@ -98,8 +103,9 @@
       <p class="mt-2 text-sm text-stone-600">{% blocktranslate with n=attention_total|add:"-5" %}Et {{ n }} autre(s) point(s) à traiter après ceux-ci.{% endblocktranslate %}</p>
     {% endif %}
   {% else %}
-    <p class="mt-2 text-sm text-stone-600">{% translate "Rien à signaler sur les points contrôlés : factures en retard, contrats, échéances de paiement, options." %}</p>
+    <p class="mt-3 text-sm text-stone-600">{% translate "Rien à signaler sur les points contrôlés : factures en retard, contrats, échéances de paiement, options." %}</p>
   {% endif %}
+  </div>
 </section>
 
 {% if claims.rows %}
@@ -138,8 +144,8 @@
   </aside>
 
   <div class="min-w-0 xl:col-start-1 xl:row-start-1">
-<section class="card mb-6" aria-labelledby="bord-chart">
-  <h2 id="bord-chart" class="stat-label !text-xs !font-semibold">{% translate "Évolution mensuelle" %}</h2>
+<details class="card fold mb-6" open>
+  <summary><h2 id="bord-chart" class="stat-label !text-xs !font-semibold">{% translate "Évolution mensuelle" %}</h2></summary>
   <p class="mt-1 text-sm text-stone-600">{% blocktranslate with figure=figure_label %}{{ figure }} et dépenses enregistrées, mois par mois.{% endblocktranslate %}</p>
   {% if chart.has_data %}
     <p class="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-sm">
@@ -180,11 +186,11 @@
   {% else %}
     <p class="mt-2 text-sm text-stone-600">{% translate "Pas encore de chiffres sur cette période : le graphique apparaîtra avec les premières dates, factures ou dépenses." %}</p>
   {% endif %}
-</section>
+</details>
 
-<div class="mb-6 grid grid-cols-1 gap-4 lg:grid-cols-2">
-  <section class="card" id="depenses" aria-labelledby="bord-expenses-detail">
-    <h2 id="bord-expenses-detail" class="stat-label !text-xs !font-semibold">{% translate "Dépenses par catégorie" %}</h2>
+<div class="mb-6 grid grid-cols-1 items-start gap-4 lg:grid-cols-2">
+  <details class="card fold" id="depenses">
+    <summary><h2 id="bord-expenses-detail" class="stat-label !text-xs !font-semibold">{% translate "Dépenses par catégorie" %}</h2></summary>
     {% if expenses.by_category %}
       <ul class="mt-2 space-y-1 text-sm">
         {% for row in expenses.by_category %}
@@ -204,10 +210,10 @@
     {% else %}
       <p class="mt-2 text-sm text-stone-600">{% translate "Aucune dépense enregistrée sur cette période." %}</p>
     {% endif %}
-  </section>
+  </details>
 
-  <section class="card" id="a-encaisser" aria-labelledby="bord-receivables-detail">
-    <h2 id="bord-receivables-detail" class="stat-label !text-xs !font-semibold">{% translate "Factures à encaisser" %}</h2>
+  <details class="card fold" id="a-encaisser">
+    <summary><h2 id="bord-receivables-detail" class="stat-label !text-xs !font-semibold">{% translate "Factures à encaisser" %}</h2></summary>
     {% if receivables.rows %}
       <ul class="mt-2 divide-y divide-page-line text-sm">
         {% for row in receivables.rows|slice:":10" %}
@@ -223,11 +229,11 @@
     {% else %}
       <p class="mt-2 text-sm text-stone-600">{% translate "Aucune facture en attente de paiement." %}</p>
     {% endif %}
-  </section>
+  </details>
 </div>
 
-<section class="card mb-6" aria-labelledby="bord-upcoming">
-  <h2 id="bord-upcoming" class="stat-label !text-xs !font-semibold">{% translate "Prochaines dates" %}</h2>
+<details class="card fold mb-6">
+  <summary><h2 id="bord-upcoming" class="stat-label !text-xs !font-semibold">{% translate "Prochaines dates" %}</h2></summary>
   {% if upcoming %}
     <ul class="mt-2 divide-y divide-page-line text-sm">
       {% for gig in upcoming %}
@@ -241,11 +247,11 @@
   {% else %}
     <p class="mt-2 text-sm text-stone-600">{% translate "Aucune date à venir." %} <a href="{% url 'gigs:wizard-show' %}" class="font-bold text-blue-700 underline">{% translate "Créer une date" %}</a></p>
   {% endif %}
-</section>
+</details>
 
 {% if filters.view == 'cash' %}
-<section class="card mb-6" id="operations" aria-labelledby="bord-operations">
-  <h2 id="bord-operations" class="stat-label !text-xs !font-semibold">{% translate "Mouvements de la période" %}</h2>
+<details class="card fold mb-6" id="operations" open>
+  <summary><h2 id="bord-operations" class="stat-label !text-xs !font-semibold">{% translate "Mouvements de la période" %}</h2></summary>
   <p class="mt-1 text-sm text-stone-600">{% translate "Les paiements reçus et les montants attendus, par date, tous concerts confondus. Montants TTC." %}</p>
   {% if movements %}
     <ul class="mt-3 divide-y divide-page-line text-sm">
@@ -263,10 +269,10 @@
   {% else %}
     <p class="mt-3 text-sm text-stone-600">{% translate "Aucun paiement reçu ni montant attendu sur cette période." %}</p>
   {% endif %}
-</section>
+</details>
 {% else %}
-<section class="card mb-6" id="operations" aria-labelledby="bord-operations">
-  <h2 id="bord-operations" class="stat-label !text-xs !font-semibold">{% translate "Opérations récentes" %}</h2>
+<details class="card fold mb-6" id="operations" open>
+  <summary><h2 id="bord-operations" class="stat-label !text-xs !font-semibold">{% translate "Opérations récentes" %}</h2></summary>
   <p class="mt-1 text-sm text-stone-600">{% blocktranslate with figure=figure_label %}Une ligne par date de la période. Crédit : {{ figure }}, toutes factures et paiements de la date. Débit : toutes les dépenses de la date.{% endblocktranslate %}</p>
   {% if operations %}
     {# From md up: a table. On a phone the same rows are stacked cards (a 5-column table is unreadable at 375 px). #}
@@ -316,7 +322,7 @@
   {% else %}
     <p class="mt-3 text-sm text-stone-600">{% translate "Aucune date ne correspond à ces filtres." %}</p>
   {% endif %}
-</section>
+</details>
 {% endif %}
 
   </div>
