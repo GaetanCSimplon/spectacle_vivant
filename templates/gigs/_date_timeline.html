@@ -25,4 +25,10 @@
       <a href="{% url 'addressbook:promoter-answer' gig.promoter.pk %}" class="text-blue-700 underline">{% translate "Vérifier les informations reçues" %}</a>
     </p>
   {% endif %}
+  {% if tour_request and tour_request.status == 'answered' %}
+    <p class="mt-4 border-t border-page-line pt-3 text-sm">
+      {% translate "L'organisateur a répondu pour la journée du concert (régie de tournée)." %}
+      <a href="{% url 'roadmaps:tour-request-review' gig.pk %}" class="text-blue-700 underline">{% translate "Vérifier" %}</a>
+    </p>
+  {% endif %}
 </section>

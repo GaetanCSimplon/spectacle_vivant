@@ -5,6 +5,7 @@
 
 {% block content %}
   <h1>{% translate "Régie de tournée" %}</h1>
+  {% if step == "2" %}<p class="mb-2 text-sm font-semibold">{% translate "Étape 2 sur 2 : la journée du concert. Merci pour la première partie !" %}</p>{% endif %}
   <p class="mb-2">
     {% blocktranslate with tenant=tenant.name %}<strong>{{ tenant }}</strong> vous demande les informations pratiques de la journée, pour préparer la feuille de route de l'équipe.{% endblocktranslate %}
   </p>
@@ -20,6 +21,7 @@
       {% elif field.name == "access_notes" %}<h2 class="!mt-6 pt-2">{% translate "Accueil" %}</h2>
       {% elif field.name == "meal_place" %}<h2 class="!mt-6 pt-2">{% translate "Repas" %}</h2>
       {% elif field.name == "lodging_name" %}<h2 class="!mt-6 pt-2">{% translate "Hébergement" %}</h2>
+      {% elif field.name == "venue_capacity" %}<h2 class="!mt-6 pt-2">{% translate "La salle" %}</h2>
       {% elif field.name == "contact_name" %}
         <h2 class="!mt-6 pt-2">{% translate "Contact sur place" %}</h2>
         <p class="mb-3 text-sm">{% translate "La personne à joindre le jour J (régisseur, accueil…)." %}</p>

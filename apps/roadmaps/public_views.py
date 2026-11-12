@@ -36,7 +36,12 @@ class PublicTourFormView(View):
         return protect_secret_page(response, referrer=SAME_ORIGIN)
 
     def page(self, request, tour_request, form):
-        context = {"form": form, "tenant": tour_request.tenant, "gig": tour_request.gig}
+        context = {
+            "form": form,
+            "tenant": tour_request.tenant,
+            "gig": tour_request.gig,
+            "step": request.GET.get("etape"),
+        }
         return protect_secret_page(render(request, self.template_name, context), SAME_ORIGIN)
 
     def get(self, request, token):

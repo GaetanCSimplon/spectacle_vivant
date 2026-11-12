@@ -5,6 +5,7 @@
 
 {% block content %}
   <h1>{% translate "Compléter vos informations" %}</h1>
+  {% if step %}<p class="mb-2 text-sm font-semibold">{% translate "Étape 1 sur 2 : votre structure. L'étape 2 porte sur la journée du concert." %}</p>{% endif %}
   <p class="mb-2">
     {% blocktranslate with tenant=tenant.name %}<strong>{{ tenant }}</strong> vous demande de compléter les informations de votre structure, pour préparer le contrat et les factures.{% endblocktranslate %}
   </p>
@@ -16,9 +17,12 @@
     {% csrf_token %}
     {{ form.non_field_errors }}
     {% for field in form %}
-      {% if field.name == "contact_name" %}
-        <h2 class="!mt-6 pt-2">{% translate "Un autre contact (facultatif)" %}</h2>
-        <p class="mb-3 text-sm">{% translate "Par exemple la personne à joindre pour la logistique ou la facturation." %}</p>
+      {% if field.name == "contact1_role" %}
+        <h2 class="!mt-6 pt-2">{% translate "Vos contacts (facultatif)" %}</h2>
+        <p class="mb-3 text-sm">{% translate "Direction, programmation, administration, comptabilité, régie technique, accueil… Ajoutez les personnes à qui nous pourrons nous adresser, avec leur rôle." %}</p>
+      {% endif %}
+      {% if field.name|slice:":7" == "contact" and field.name|slice:"-5:" == "_role" %}
+        <h3 class="!mt-4 text-sm font-semibold">{% blocktranslate with n=field.name|slice:"7:8" %}Contact {{ n }}{% endblocktranslate %}</h3>
       {% endif %}
       <p>
         {{ field.label_tag }}
@@ -29,6 +33,9 @@
     {% endfor %}
     <button type="submit" class="btn btn-primary btn-block">{% translate "Envoyer mes informations" %}</button>
   </form>
+  <datalist id="contact-roles">
+    {% for role in contact_roles %}<option value="{{ role }}">{% endfor %}
+  </datalist>
 
   <p class="mt-4 text-xs text-stone-500">
     {% blocktranslate with tenant=tenant.name %}Les informations saisies sont transmises à {{ tenant }}, qui les utilise pour établir le contrat de cession et les factures de cette date. Pour les consulter, les corriger ou les faire supprimer, contactez directement {{ tenant }}. Bòrd Pro héberge ce formulaire en France et n'utilise pas ces données pour autre chose.{% endblocktranslate %}

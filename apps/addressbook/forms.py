@@ -265,10 +265,6 @@ class PromoterPublicForm(PromoterIdentifiersMixin, AddressModelForm):
 
     # Declared here so that "213 400 000 000 19" is accepted and cleaned to 14 digits.
     siret = forms.CharField(label=_("SIRET"), required=False, max_length=20)
-    contact_name = forms.CharField(label=_("Nom"), required=False, max_length=255)
-    contact_role = forms.CharField(label=_("Fonction"), required=False, max_length=255)
-    contact_email = forms.EmailField(label=_("E-mail"), required=False)
-    contact_phone = forms.CharField(label=_("Téléphone"), required=False, max_length=30)
 
     class Meta:
         model = Promoter
@@ -285,6 +281,25 @@ class PromoterPublicForm(PromoterIdentifiersMixin, AddressModelForm):
             "licence_number": _("Si votre structure en a une."),
         }
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Several contacts, each with a role (ORG-04): the role is free text with suggestions.
+        for slot in range(1, services.CONTACT_SLOTS + 1):
+            prefix = f"contact{slot}_"
+            self.fields[prefix + "role"] = forms.CharField(
+                label=_("Rôle"),
+                required=False,
+                max_length=255,
+                widget=forms.TextInput(attrs={"list": "contact-roles"}),
+            )
+            self.fields[prefix + "name"] = forms.CharField(
+                label=_("Nom"), required=False, max_length=255
+            )
+            self.fields[prefix + "email"] = forms.EmailField(label=_("E-mail"), required=False)
+            self.fields[prefix + "phone"] = forms.CharField(
+                label=_("Téléphone"), required=False, max_length=30
+            )
+
     def clean_siret(self):
         siret = "".join(self.cleaned_data["siret"].split())
         if siret and not (siret.isdigit() and len(siret) == 14):
@@ -293,9 +308,12 @@ class PromoterPublicForm(PromoterIdentifiersMixin, AddressModelForm):
 
     def clean(self):
         cleaned = super().clean()
-        contact = [cleaned.get(f"contact_{key}") for key in services.CONTACT_KEYS]
-        if any(contact) and not cleaned.get("contact_name"):
-            self.add_error("contact_name", _("Indiquez le nom de ce contact."))
+        contact = []
+        for slot in range(1, services.CONTACT_SLOTS + 1):
+            values = [cleaned.get(f"contact{slot}_{key}") for key in services.CONTACT_KEYS]
+            if any(values) and not cleaned.get(f"contact{slot}_name"):
+                self.add_error(f"contact{slot}_name", _("Indiquez le nom de ce contact."))
+            contact += values
         answered = [cleaned.get(key) for key, _label in services.PROMOTER_FIELDS] + contact
         if not self.errors and not any(answered):
             raise forms.ValidationError(_("Merci de remplir au moins un champ."))

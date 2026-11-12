@@ -9,10 +9,13 @@ from django.utils import timezone
 
 from apps.core.tests.isolation_registry import mark_isolation_tested
 from apps.finance import dashboard
+from apps.gigs.factories import GigFactory
+from apps.roadmaps import tour_requests
+from apps.roadmaps.models import RoadmapRequest
 from apps.tenants.factories import MembershipFactory
 
 from .. import services
-from ..factories import PromoterFactory
+from ..factories import ContactFactory, PromoterFactory
 from ..models import Contact, PromoterInvitation
 
 mark_isolation_tested(PromoterInvitation)
@@ -208,7 +211,7 @@ def test_the_answer_is_stored_for_review_and_the_card_is_untouched():
 
     response = Client().post(
         _public(invitation),
-        {**ANSWER, "contact_name": "Julien Blanc", "contact_email": "julien@example.org"},
+        {**ANSWER, "contact1_name": "Julien Blanc", "contact1_email": "julien@example.org"},
     )
 
     assert response.url == reverse("promoter-form-thanks")
@@ -217,7 +220,9 @@ def test_the_answer_is_stored_for_review_and_the_card_is_untouched():
     assert invitation.response["fields"]["postal_code"] == "34200"
     assert invitation.response["fields"]["siret"] == "21340000000019"
     assert invitation.response["fields"]["department"] == "34"  # deduced from the postal code
-    assert invitation.response["contact"] == {"name": "Julien Blanc", "email": "julien@example.org"}
+    assert invitation.response["contacts"] == [
+        {"name": "Julien Blanc", "email": "julien@example.org"}
+    ]
     promoter.refresh_from_db()
     assert (promoter.city, promoter.siret) == ("Ancienne ville", "")
     assert Contact.objects.count() == 0
@@ -261,7 +266,7 @@ def test_an_expired_or_cancelled_link_is_closed(state):
         {"siret": "abcdefghijklmn"},
         {"postal_code": "3400"},
         {"email": "pas-un-mail"},
-        {"contact_email": "x@example.org"},  # contact without a name
+        {"contact1_email": "x@example.org"},  # contact without a name
     ],
 )
 def test_bad_answers_are_refused_and_nothing_is_stored(bad):
@@ -310,13 +315,13 @@ def test_the_review_screen_compares_and_the_user_applies_the_checked_fields(clie
     promoter = PromoterFactory(
         tenant=membership.tenant, city="Montpellier", siret="", representative_name="Ancien"
     )
-    _answered(promoter, contact_name="Julien Blanc", contact_role="Accueil")
+    _answered(promoter, contact1_name="Julien Blanc", contact1_role="Accueil")
     url = reverse("addressbook:promoter-answer", args=[promoter.pk])
 
     page = client.get(url).content.decode()
     assert "Montpellier" in page and "Sète" in page and "Actuellement vide" in page
 
-    response = client.post(url, {"fields": ["city", "siret", "postal_code"], "contact": "1"})
+    response = client.post(url, {"fields": ["city", "siret", "postal_code"], "contacts": "0"})
 
     assert response.url == reverse("addressbook:promoter-detail", args=[promoter.pk])
     promoter.refresh_from_db()
@@ -336,7 +341,7 @@ def test_the_review_screen_compares_and_the_user_applies_the_checked_fields(clie
 def test_unchecked_everything_changes_nothing(client):
     membership = _login(client)
     promoter = PromoterFactory(tenant=membership.tenant, city="Montpellier")
-    _answered(promoter, contact_name="Julien Blanc")
+    _answered(promoter, contact1_name="Julien Blanc")
 
     client.post(reverse("addressbook:promoter-answer", args=[promoter.pk]), {})
 
@@ -379,7 +384,7 @@ def test_an_answer_cannot_be_applied_twice(client):
     promoter = PromoterFactory(tenant=membership.tenant)
     _answered(promoter)
     url = reverse("addressbook:promoter-answer", args=[promoter.pk])
-    client.post(url, {"fields": ["city"], "contact": "1"})
+    client.post(url, {"fields": ["city"], "contacts": "0"})
     promoter.city = "Modifié après"
     promoter.save()
 
@@ -444,3 +449,110 @@ def test_every_page_of_the_organiser_flow_keeps_the_token_out_of_the_referer():
     ):
         assert response["Referrer-Policy"] in ("same-origin", "no-referrer")
         assert response["Cache-Control"] == "no-store"
+
+
+# --- several contacts with a role (ORG-04), chain to the date form (ORG-05) ------------
+
+
+def test_the_form_keeps_several_contacts_with_their_role(client):
+    invitation = _invitation(PromoterFactory())
+    response = client.post(
+        reverse("promoter-form-public", args=[invitation.token]),
+        {
+            "city": "Lyon",
+            "contact1_name": "Anne Direction",
+            "contact1_role": "Direction",
+            "contact2_name": "Paul Régie",
+            "contact2_role": "Régie technique",
+            "contact2_phone": "0611223344",
+        },
+    )
+
+    invitation.refresh_from_db()
+    assert response.status_code == 302
+    assert invitation.response["contacts"] == [
+        {"name": "Anne Direction", "role": "Direction"},
+        {"name": "Paul Régie", "role": "Régie technique", "phone": "0611223344"},
+    ]
+
+
+def test_an_answer_stored_with_a_single_contact_is_still_read():
+    invitation = _invitation(PromoterFactory())
+    invitation.response = {"fields": {}, "contact": {"name": "Ancien", "role": "Accueil"}}
+
+    assert services.answer_contacts(invitation) == [{"name": "Ancien", "role": "Accueil"}]
+
+
+def test_each_contact_is_applied_on_its_own_and_not_duplicated():
+    promoter = PromoterFactory()
+    existing = ContactFactory(
+        tenant=promoter.tenant, promoter=None, name="anne direction", email="a@x.org"
+    )
+    invitation = _answered(
+        promoter,
+        contact1_name="Anne Direction",
+        contact1_email="a@x.org",
+        contact2_name="Paul Régie",
+        contact2_role="Régie technique",
+        contact3_name="Pas coché",
+    )
+
+    services.apply_response(invitation, [], [0, 1])
+
+    assert Contact.objects.filter(tenant=promoter.tenant).count() == 2
+    assert list(existing.promoters.all()) == [promoter]
+    paul = Contact.objects.get(name="Paul Régie")
+    assert paul.role == "Régie technique" and list(paul.promoters.all()) == [promoter]
+    assert not Contact.objects.filter(name="Pas coché").exists()
+
+
+def test_a_form_sent_from_a_date_goes_on_to_the_date_form(client):
+    gig = GigFactory()
+    invitation = services.create_invitation(gig.promoter, None, gig=gig)
+
+    response = client.post(
+        reverse("promoter-form-public", args=[invitation.token]), {"city": "Lyon"}
+    )
+
+    tour = RoadmapRequest.objects.get(gig=gig)
+    assert response.url == reverse("tour-form-public", args=[tour.token]) + "?etape=2"
+    page = client.get(response.url).content.decode()
+    assert "Étape 2 sur 2" in page
+
+
+def test_the_chain_reuses_the_date_form_already_waiting():
+    gig = GigFactory()
+    waiting = tour_requests.create_request(gig, None)
+    invitation = services.create_invitation(gig.promoter, None, gig=gig)
+
+    assert tour_requests.request_for_chain(invitation) == waiting
+
+
+def test_a_form_sent_from_the_organiser_card_ends_with_the_thanks_page(client):
+    invitation = _invitation(PromoterFactory())
+
+    response = client.post(
+        reverse("promoter-form-public", args=[invitation.token]), {"city": "Lyon"}
+    )
+
+    assert response.url == reverse("promoter-form-thanks")
+    assert not RoadmapRequest.objects.exists()
+
+
+def test_a_date_of_another_structure_never_starts_the_chain():
+    gig = GigFactory()
+    invitation = services.create_invitation(gig.promoter, None, gig=gig)
+    invitation.gig = GigFactory()  # a date of another structure
+    invitation.save()
+
+    assert tour_requests.request_for_chain(invitation) is None
+
+
+def test_sending_the_form_from_a_date_remembers_the_date(client):
+    membership = MembershipFactory()
+    client.force_login(membership.user)
+    gig = GigFactory(tenant=membership.tenant)
+
+    client.post(reverse("addressbook:promoter-invite", args=[gig.promoter.pk]), {"gig": gig.pk})
+
+    assert services.latest_invitation(gig.promoter).gig == gig
