@@ -44,11 +44,13 @@
           {% if alerts.items %}
             <ul class="grid grid-cols-1 gap-x-4 px-2 py-2 lg:grid-cols-2">
               {% for alert in alerts.items %}
-                <li>
-                  <a href="{{ alert.url }}" class="flex min-h-11 items-start gap-3 rounded-xl px-2 py-2 hover:bg-blue-50">
+                <li class="flex items-start gap-2">
+                  <a href="{{ alert.url }}" class="flex min-h-11 min-w-0 flex-1 items-start gap-3 rounded-xl px-2 py-2 hover:bg-blue-50">
                     <span class="pill shrink-0 {% if alert.level == 'red' %}pill-bad{% else %}pill-warn{% endif %}">{% if alert.level == 'red' %}{% translate "Urgent" %}{% else %}{% translate "À traiter" %}{% endif %}</span>
                     <span class="text-sm text-stone-800">{{ alert.text }}</span>
                   </a>
+                  {# A reminder to send from the user's own mail software (nothing is sent by the app). #}
+                  {% if alert.action.mailto %}<a href="{{ alert.action.mailto }}" class="btn btn-secondary mt-1 shrink-0">{{ alert.action.label }}</a>{% endif %}
                 </li>
               {% endfor %}
             </ul>

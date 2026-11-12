@@ -9,12 +9,14 @@ from decimal import Decimal
 from django.db.models import Count, DecimalField, OuterRef, Subquery, Sum, Value
 from django.db.models.functions import Coalesce
 from django.urls import reverse
+from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 
 from apps.addressbook.services import pending_answers
 from apps.catalog.models import Show
 from apps.documents import invoicing
-from apps.documents.models import Invoice
+from apps.documents.models import Contract, Invoice
+from apps.gigs import mail as gig_mail
 from apps.gigs.models import OPTION_WARNING_DAYS, Gig
 from apps.roadmaps.tour_requests import pending_requests
 
@@ -158,6 +160,10 @@ def active_shows_count(tenant, today):
 
 ALERT_LIMIT = 8
 UNSIGNED_CONTRACT_DAYS = 14
+# A contract sent and still not signed after this many days is worth a reminder (DAT-07); after
+# the second delay it is shown as urgent. Product choices, not legal deadlines.
+CHASE_AFTER_DAYS = 7
+CHASE_URGENT_DAYS = 14
 # Three or more reminders of the same kind (contracts to write, to sign, receipts missing) become
 # one line with a count: the list stays readable on a busy structure. Money and options stay
 # one by one, they are urgent and few.
@@ -166,6 +172,43 @@ GROUP_FROM = 3
 
 def _gig_label(gig):
     return f"{gig.date:%d/%m}"
+
+
+def contracts_to_chase(tenant, today):
+    """Contracts sent to the organiser a week ago or more and still not signed, oldest first.
+
+    Cancelled dates and dates already played are left out. The mark "sent" is set by hand by the
+    user (the app sends nothing), so this is the date they recorded.
+    """
+    cutoff = today - datetime.timedelta(days=CHASE_AFTER_DAYS)
+    return list(
+        Contract.objects.filter(
+            tenant=tenant,
+            status=Contract.Status.DRAFT,
+            sent_at__isnull=False,
+            sent_at__date__lte=cutoff,
+            gig__status__in=(Gig.Status.OPTION, Gig.Status.CONFIRMED),
+            gig__date__gte=today,
+        )
+        .select_related("gig__show", "gig__venue", "gig__promoter", "gig__tenant")
+        .order_by("sent_at")
+    )
+
+
+def _chase_alert(contract, today):
+    gig = contract.gig
+    sent_on = timezone.localtime(contract.sent_at).date()
+    waiting = (today - sent_on).days
+    return {
+        "level": "red" if waiting >= CHASE_URGENT_DAYS else "amber",
+        "text": _("Date du %(date)s : contrat envoyé il y a %(n)s jours, pas encore signé")
+        % {"date": _gig_label(gig), "n": waiting},
+        "url": reverse("documents:contract-history", args=[gig.pk]),
+        "action": {
+            "label": _("Relancer"),
+            "mailto": gig_mail.reminder_mail(gig, sent_on)["mailto"],
+        },
+    }
 
 
 def alerts(tenant, today, awaiting=None):
@@ -267,6 +310,20 @@ def alerts(tenant, today, awaiting=None):
                     "url": reverse("documents:contract-history", args=[gig.pk]),
                 }
             )
+
+    to_chase = contracts_to_chase(tenant, today)
+    if len(to_chase) >= GROUP_FROM:
+        oldest = to_chase[0]
+        found.append(
+            {
+                "level": "amber",
+                "text": _("%(n)s contrats envoyés depuis plus de %(days)s jours, pas signés")
+                % {"n": len(to_chase), "days": CHASE_AFTER_DAYS},
+                "url": reverse("documents:contract-history", args=[oldest.gig_id]),
+            }
+        )
+    else:
+        found += [_chase_alert(contract, today) for contract in to_chase]
 
     no_receipt = (
         Expense.objects.filter(tenant=tenant, receipt_file="")
