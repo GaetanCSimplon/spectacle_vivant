@@ -52,14 +52,7 @@
           <p class="text-gray-600">{% translate "Enregistrez d'abord vos modifications de cette page : l'aller-retour ne les garde pas." %}</p>
         {% elif invitation and invitation.status == 'active' %}
           <p>{% blocktranslate with date=invitation.expires_at|date:"d/m/Y" %}Un lien est actif jusqu'au {{ date }}. Envoyez-le à l'organisateur : il remplira ses informations sans compte, une seule fois, et vous vérifierez avant de les enregistrer.{% endblocktranslate %}</p>
-          <div x-data="{ copied: false }" class="space-y-2">
-            <input type="text" readonly aria-label="{% translate 'Adresse du formulaire' %}" value="{{ invitation_url }}" class="w-full" onfocus="this.select()">
-            <button type="button" class="btn btn-secondary"
-                    @click="navigator.clipboard.writeText('{{ invitation_url|escapejs }}').then(() => copied = true)">
-              <span x-show="!copied">{% translate "Copier le lien" %}</span>
-              <span x-show="copied" x-cloak>{% translate "Lien copié" %}</span>
-            </button>
-          </div>
+          {% include "components/_mail_actions.html" %}
         {% else %}
           <p>{% translate "Plutôt que de tout saisir vous-même, envoyez un lien à l'organisateur : il remplit ses informations (SIRET, adresse, représentant…) et vous vérifiez avant de les enregistrer." %}</p>
           <button type="submit" form="promoter-invite-form" class="btn btn-secondary">{% translate "Envoyer un formulaire à l'organisateur" %}</button>

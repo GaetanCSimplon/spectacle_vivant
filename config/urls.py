@@ -31,6 +31,7 @@ from apps.core.views import (
     home,
     robots_txt,
 )
+from apps.documents import public_views as documents_public_views
 from apps.documents.views import DocumentLibraryView
 from apps.finance import team_views as finance_team_views
 from apps.finance import views as finance_views
@@ -125,6 +126,11 @@ urlpatterns = [
         "formulaire-organisateur/<str:token>/",
         addressbook_public_views.PublicPromoterFormView.as_view(),
         name="promoter-form-public",
+    ),
+    path(
+        "contrat-partage/<str:token>/",
+        documents_public_views.PublicContractDownloadView.as_view(),
+        name="contract-share-public",
     ),
     path(
         "regie-de-tournee/merci/",

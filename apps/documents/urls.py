@@ -43,6 +43,7 @@ urlpatterns = [
         views.ContractSentView.as_view(),
         name="contract-sent",
     ),
+    path("contrat/partager/", views.ContractShareView.as_view(), name="contract-share"),
     path("contrat/generer/", views.ContractGenerateView.as_view(), name="contract-generate"),
     path("contrat/telecharger/", views.ContractDownloadView.as_view(), name="contract-download"),
     path(

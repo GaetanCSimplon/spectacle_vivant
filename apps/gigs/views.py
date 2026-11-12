@@ -20,7 +20,7 @@ from apps.finance import services as finance_services
 from apps.roadmaps import services as roadmap_services
 from apps.tenants.models import Person
 
-from . import checklist, ical, services
+from . import checklist, ical, mail, services
 from .forms import (
     GigDetailsStepForm,
     GigFilterForm,
@@ -441,6 +441,7 @@ class GigDetailView(TenantScopedMixin, DetailView):
             context["invitation_url"] = self.request.build_absolute_uri(
                 addressbook_services.invitation_path(invitation.token)
             )
+            context["mail"] = mail.form_mail(self.object, context["invitation_url"])
         # Offered once, right after the date is created, and only if the organiser has not
         # already answered.
         offered = self.request.session.pop(OFFER_FORM_SESSION_KEY, None)

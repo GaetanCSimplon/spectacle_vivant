@@ -2,6 +2,7 @@ import uuid
 
 from django.conf import settings
 from django.db import models
+from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 
 from apps.core.models import TenantOwnedModel
@@ -105,6 +106,34 @@ class ContractVersion(TenantOwnedModel):
 
     def __str__(self):
         return f"{self.contract} — v{self.number}"
+
+
+class ContractShareLink(TenantOwnedModel):
+    """A temporary secret link to download one version of a contract (CTR-08).
+
+    Put in the e-mail the user sends to the organiser, because a `mailto:` cannot attach a file.
+    Valid for a week, revocable. It gives access to that single PDF and to nothing else.
+    """
+
+    contract = models.ForeignKey(Contract, on_delete=models.CASCADE, related_name="share_links")
+    version = models.ForeignKey(ContractVersion, on_delete=models.CASCADE, related_name="+")
+    token = models.CharField(max_length=64, unique=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    created_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, related_name="+"
+    )
+    expires_at = models.DateTimeField()
+    revoked_at = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        ordering = ["-created_at"]
+
+    def __str__(self):
+        return f"Lien de téléchargement — {self.contract}"
+
+    @property
+    def is_active(self):
+        return self.revoked_at is None and self.expires_at > timezone.now()
 
 
 class ContractSequence(TenantOwnedModel):

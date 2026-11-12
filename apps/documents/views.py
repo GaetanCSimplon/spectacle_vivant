@@ -2,11 +2,13 @@ from django.contrib import messages
 from django.db import transaction
 from django.http import FileResponse, Http404, HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
+from django.urls import reverse
 from django.utils.translation import gettext_lazy as _
 from django.views import View
 
 from apps.addressbook import services as addressbook_services
 from apps.core.views import TenantScopedMixin, wants_fragment
+from apps.gigs import mail as gig_mail
 from apps.gigs.models import Gig
 
 from . import services
@@ -57,6 +59,13 @@ class ContractHistoryView(TenantScopedMixin, View):
 
     template_name = "documents/contract_history.html"
 
+    def contract_mail(self, gig, contract):
+        link = services.active_share_link(contract)
+        if link is None:
+            return None
+        url = self.request.build_absolute_uri(reverse("contract-share-public", args=[link.token]))
+        return gig_mail.contract_mail(gig, url)
+
     def get(self, request, gig_id):
         gig = get_object_or_404(Gig, pk=gig_id, tenant=request.tenant)
         contract = Contract.objects.filter(gig=gig, tenant=request.tenant).first()
@@ -71,6 +80,7 @@ class ContractHistoryView(TenantScopedMixin, View):
             and bool(contract and contract.latest_version)
             and not signed,
             "can_mark_sent": bool(contract and contract.latest_version) and not signed,
+            "mail": self.contract_mail(gig, contract),
             "can_add_signed_pdf": signed and not contract.signed_pdf,
             "signed_pdf_form": SignedPdfForm(),
             "template_choices": services.available_contract_templates(),
@@ -79,6 +89,26 @@ class ContractHistoryView(TenantScopedMixin, View):
             else services.DEFAULT_CONTRACT_TEMPLATE,
         }
         return render(request, self.template_name, context)
+
+
+class ContractShareView(TenantScopedMixin, View):
+    """POST only: make the download link the e-mail carries (`mailto:` attaches nothing)."""
+
+    http_method_names = ["post"]
+
+    def post(self, request, gig_id):
+        gig = get_object_or_404(Gig, pk=gig_id, tenant=request.tenant)
+        contract = Contract.objects.filter(gig=gig, tenant=request.tenant).first()
+        try:
+            if contract is None or contract.status == Contract.Status.SIGNED:
+                raise services.ContractSigningError(
+                    _("Générez d'abord le contrat avant de l'envoyer.")
+                )
+            services.create_share_link(contract, request.user)
+            messages.success(request, _("Le message est prêt : ouvrez votre messagerie."))
+        except services.ContractSigningError as error:
+            messages.error(request, error.args[0])
+        return redirect("documents:contract-history", gig_id=gig.pk)
 
 
 class ContractSignView(TenantScopedMixin, View):
@@ -261,6 +291,7 @@ class ContractCompleteView(TenantScopedMixin, View):
             context["invitation_url"] = self.request.build_absolute_uri(
                 addressbook_services.invitation_path(invitation.token)
             )
+            context["mail"] = gig_mail.form_mail(self.gig, context["invitation_url"])
         return render(self.request, self.template_name, context)
 
     def frozen_response(self):

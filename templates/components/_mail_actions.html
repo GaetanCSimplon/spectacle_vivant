@@ -1,0 +1,24 @@
+{% load i18n %}{% comment %}Send a prepared message from the user's own mail software. Needs: mail (see apps/gigs/mail.py).
+The app sends nothing itself; "Copier le message" is the fallback when no mail software opens.{% endcomment %}
+<div x-data="{ copiedMessage: false, copiedLink: false }" class="space-y-2">
+  <div class="flex flex-wrap gap-2">
+    {% if mail.mailto %}
+      <a href="{{ mail.mailto }}" class="btn btn-primary">{% translate "Envoyer par e-mail" %}</a>
+    {% endif %}
+    <button type="button" class="btn btn-secondary"
+            @click="navigator.clipboard.writeText('{{ mail.body|escapejs }}').then(() => copiedMessage = true)">
+      <span x-show="!copiedMessage">{% translate "Copier le message" %}</span>
+      <span x-show="copiedMessage" x-cloak>{% translate "Message copié" %}</span>
+    </button>
+    <button type="button" class="btn btn-secondary"
+            @click="navigator.clipboard.writeText('{{ mail.link|escapejs }}').then(() => copiedLink = true)">
+      <span x-show="!copiedLink">{% translate "Copier le lien" %}</span>
+      <span x-show="copiedLink" x-cloak>{% translate "Lien copié" %}</span>
+    </button>
+  </div>
+  {% if mail.mailto %}
+    <p class="text-sm text-stone-600">{% blocktranslate with to=mail.to %}Le message s'ouvre dans votre messagerie, adressé à {{ to }} : relisez-le avant de l'envoyer.{% endblocktranslate %}</p>
+  {% else %}
+    <p class="text-sm text-stone-600">{% translate "Aucun contact de l'organisateur n'a d'adresse e-mail : ajoutez-en un dans l'annuaire pour que le message s'adresse tout seul, ou copiez le message ci-dessus." %}</p>
+  {% endif %}
+</div>
