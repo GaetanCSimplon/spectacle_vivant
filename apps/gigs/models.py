@@ -10,6 +10,9 @@ from django.utils.translation import gettext_lazy as _
 
 from apps.core.models import TenantOwnedModel
 
+from . import payment_terms
+from .payment_terms import BalanceTerm, DepositTerm
+
 # An option is highlighted as "soon" when it expires within this many days.
 OPTION_WARNING_DAYS = 7
 
@@ -70,6 +73,21 @@ class Gig(TenantOwnedModel):
     )
     deposit_due_on = models.DateField(_("acompte à régler le"), null=True, blank=True)
     balance_due_on = models.DateField(_("solde à régler le"), null=True, blank=True)
+    # The terms are rules; `deposit_due_on` and `balance_due_on` hold the date a rule gives (empty
+    # until the contract is signed for the rules that start from the signature), or the date typed
+    # for "Date précise" (CTR-05).
+    deposit_term = models.CharField(
+        _("échéance de l'acompte"),
+        max_length=30,
+        choices=DepositTerm,
+        default=DepositTerm.SPECIFIC,
+    )
+    deposit_term_days = models.PositiveSmallIntegerField(
+        _("jours avant la prestation"), null=True, blank=True
+    )
+    balance_term = models.CharField(
+        _("échéance du solde"), max_length=30, choices=BalanceTerm, default=BalanceTerm.SPECIFIC
+    )
     payment_method = models.CharField(
         _("mode de paiement"), max_length=20, choices=PaymentMethod, blank=True
     )
@@ -106,6 +124,38 @@ class Gig(TenantOwnedModel):
         """What names the date on a card or in a breadcrumb: "Lieu, Ville, Spectacle" (DAT-02)."""
         parts = (self.venue.name, self.venue.city, self.show.title)
         return ", ".join(part for part in parts if part)
+
+    @property
+    def deposit_due_phrase(self):
+        """How the contract states the deposit date: a rule, a date or both; "" when not set."""
+        return payment_terms.deposit_phrase(
+            self.deposit_term, self.deposit_term_days, self.deposit_due_on
+        )
+
+    @property
+    def balance_due_phrase(self):
+        return payment_terms.balance_phrase(self.balance_term, self.balance_due_on)
+
+    @property
+    def deposit_due_display(self):
+        """The deposit date for a screen, or the rule while it has no date ("" if nothing)."""
+        return payment_terms.deposit_short(
+            self.deposit_term, self.deposit_term_days, self.deposit_due_on
+        )
+
+    @property
+    def balance_due_display(self):
+        return payment_terms.balance_short(self.balance_term, self.balance_due_on)
+
+    @property
+    def has_payment_terms(self):
+        """Some term is chosen: a date, or a rule whose date is still to come."""
+        return bool(
+            self.deposit_due_on
+            or self.balance_due_on
+            or self.deposit_term != DepositTerm.SPECIFIC
+            or self.balance_term != BalanceTerm.SPECIFIC
+        )
 
     def save(self, *args, **kwargs):
         # RG-12: a free gig always has a ticket price of 0.

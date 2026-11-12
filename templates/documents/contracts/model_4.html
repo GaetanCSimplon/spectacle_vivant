@@ -119,7 +119,7 @@
 
     <section>
       <h2>Article 9 - Paiement du prix</h2>
-      <p>Le règlement des sommes dues au Producteur sera effectué au plus tard le {{ gig.balance_due_on|date:"d/m/Y"|default:"……" }}</p>
+      <p>Le règlement des sommes dues au Producteur sera effectué au plus tard {{ gig.balance_due_phrase|default:"le ……" }}</p>
       {% if gig.payment_method == "cheque" %}
         <p>par chèque établi à l’ordre de {{ tenant.name }}</p>
       {% elif gig.payment_method == "transfer" %}

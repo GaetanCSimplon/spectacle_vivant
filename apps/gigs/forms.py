@@ -6,7 +6,9 @@ from apps.addressbook.models import Promoter, Venue
 from apps.catalog.models import Show
 from apps.core.forms import AddressModelForm
 
+from . import services
 from .models import Gig, GigMember
+from .payment_terms import BalanceTerm, DepositTerm
 
 
 class GigShowStepForm(forms.Form):
@@ -151,16 +153,70 @@ class PriceForm(forms.Form):
     )
 
 
-class TermsForm(forms.ModelForm):
+class PaymentTermsMixin:
+    """The rule of the deposit and of the balance, and the date each one gives (CTR-05).
+
+    A rule other than "Date précise" gives the date: it replaces what was typed. The rules that
+    start from the signature have no date until the contract is signed.
+    """
+
+    term_fields = (
+        "deposit_term",
+        "deposit_term_days",
+        "deposit_due_on",
+        "balance_term",
+        "balance_due_on",
+    )
+
+    @staticmethod
+    def term_widgets():
+        return {
+            "deposit_due_on": forms.DateInput(attrs={"type": "date"}, format="%Y-%m-%d"),
+            "balance_due_on": forms.DateInput(attrs={"type": "date"}, format="%Y-%m-%d"),
+            "deposit_term_days": forms.NumberInput(attrs={"min": 0, "max": 365}),
+        }
+
+    def _prepare_terms(self):
+        # A rule left out of a request keeps its current value (see `clean_terms`).
+        self.fields["deposit_term"].required = False
+        self.fields["balance_term"].required = False
+        self.fields["deposit_term_days"].help_text = _(
+            "Seulement pour « Un nombre de jours avant la prestation »."
+        )
+        self.fields["deposit_due_on"].help_text = _("Seulement pour « Date précise ».")
+        self.fields["balance_due_on"].help_text = _("Seulement pour « Date précise ».")
+
+    def clean_terms(self, cleaned):
+        gig = self.instance
+        deposit_term = cleaned["deposit_term"] = cleaned.get("deposit_term") or gig.deposit_term
+        balance_term = cleaned["balance_term"] = cleaned.get("balance_term") or gig.balance_term
+        days = cleaned.get("deposit_term_days")
+        if deposit_term == DepositTerm.DAYS_BEFORE and days is None:
+            self.add_error("deposit_term_days", _("Indiquez le nombre de jours."))
+        if deposit_term != DepositTerm.DAYS_BEFORE:
+            days = cleaned["deposit_term_days"] = None
+        deposit, balance = services.due_dates(gig, deposit_term, days, balance_term)
+        if deposit_term != DepositTerm.SPECIFIC:
+            cleaned["deposit_due_on"] = deposit
+        if balance_term != BalanceTerm.SPECIFIC:
+            cleaned["balance_due_on"] = balance
+        return cleaned
+
+
+class TermsForm(PaymentTermsMixin, forms.ModelForm):
     """The payment terms of the future contract (quick edit from the card)."""
 
     class Meta:
         model = Gig
-        fields = ["deposit_due_on", "balance_due_on", "payment_method"]
-        widgets = {
-            "deposit_due_on": forms.DateInput(attrs={"type": "date"}, format="%Y-%m-%d"),
-            "balance_due_on": forms.DateInput(attrs={"type": "date"}, format="%Y-%m-%d"),
-        }
+        fields = [*PaymentTermsMixin.term_fields, "payment_method"]
+        widgets = PaymentTermsMixin.term_widgets()
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self._prepare_terms()
+
+    def clean(self):
+        return self.clean_terms(super().clean())
 
 
 class MemberCachetForm(forms.ModelForm):

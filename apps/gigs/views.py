@@ -609,7 +609,15 @@ class GigTermsView(TenantScopedMixin, View):
 
     def post(self, request, pk):
         gig = self._gig(request, pk)
-        form = TermsForm(request.POST, instance=Gig(pk=gig.pk, tenant=gig.tenant))
+        # A copy, not the gig itself: the rules need its date and its current terms.
+        probe = Gig(
+            pk=gig.pk,
+            tenant=gig.tenant,
+            date=gig.date,
+            deposit_term=gig.deposit_term,
+            balance_term=gig.balance_term,
+        )
+        form = TermsForm(request.POST, instance=probe)
         if form.is_valid():
             try:
                 services.update_terms(gig, **form.cleaned_data)

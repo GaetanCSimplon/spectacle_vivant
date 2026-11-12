@@ -491,7 +491,7 @@ def attention(tenant, today):
                     % {"n": SOON_DAYS},
                 }
             )
-        if gig.deposit_due_on is None and gig.balance_due_on is None:
+        if not gig.has_payment_terms:
             items.append(
                 {
                     "rank": 1,
@@ -536,12 +536,7 @@ def attention(tenant, today):
 def incomplete_dates(tenant, filters):
     """Confirmed gigs of the period that still lack a signed contract or any payment term."""
     gigs = _gigs(tenant, filters).filter(status__in=CONFIRMED)
-    return sum(
-        1
-        for gig in gigs
-        if gig.status == Gig.Status.CONFIRMED
-        or (gig.deposit_due_on is None and gig.balance_due_on is None)
-    )
+    return sum(1 for gig in gigs if gig.status == Gig.Status.CONFIRMED or not gig.has_payment_terms)
 
 
 def volet_figures(tenant, filters):

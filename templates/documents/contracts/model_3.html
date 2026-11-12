@@ -109,8 +109,8 @@
       <p>Le montant est ferme et définitivement établi. Le Producteur n’aura pas à justifier a posteriori de son détail. L’Organisateur ne pourra s’opposer à son paiement, notamment au motif d’une insuffisance des recettes.</p>
       <p>Le règlement sera effectué par {{ gig.get_payment_method_display|lower|default:"……" }} sur présentation de la facture correspondante, selon les échéances suivantes :</p>
       <ul>
-        <li><strong>Acompte :</strong> {% if payment.deposit_ttc is not None %}{{ payment.deposit_ttc }} €{% else %}……{% endif %} à régler le {{ gig.deposit_due_on|date:"d/m/Y"|default:"……" }}.</li>
-        <li><strong>Solde :</strong> {% if payment.balance_ttc is not None %}{{ payment.balance_ttc }} €{% else %}……{% endif %} à régler le {{ gig.balance_due_on|date:"d/m/Y"|default:"……" }}.</li>
+        <li><strong>Acompte :</strong> {% if payment.deposit_ttc is not None %}{{ payment.deposit_ttc }} €{% else %}……{% endif %} à régler {{ gig.deposit_due_phrase|default:"le ……" }}.</li>
+        <li><strong>Solde :</strong> {% if payment.balance_ttc is not None %}{{ payment.balance_ttc }} €{% else %}……{% endif %} à régler {{ gig.balance_due_phrase|default:"le ……" }}.</li>
         <li><strong>Coordonnées de règlement / IBAN :</strong> {{ tenant.iban|default:"……" }}</li>
         <li><strong>BIC :</strong> {{ tenant.bic|default:"……" }}</li>
       </ul>

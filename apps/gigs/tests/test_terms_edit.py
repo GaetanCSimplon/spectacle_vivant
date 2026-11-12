@@ -165,7 +165,15 @@ def test_service_refuses_a_signed_contract(tenant):
     gig = _signed_gig(tenant)
 
     with pytest.raises(services.CannotChangeTerms):
-        services.update_terms(gig, None, None, "cheque")
+        services.update_terms(
+            gig,
+            payment_method="cheque",
+            deposit_term="specific",
+            deposit_term_days=None,
+            deposit_due_on=None,
+            balance_term="specific",
+            balance_due_on=None,
+        )
 
 
 def test_page_without_javascript_saves_and_goes_back_to_the_date(client, tenant):

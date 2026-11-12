@@ -37,8 +37,8 @@
           · <a href="{% url 'gigs:price' gig.pk %}" class="text-blue-700 underline">{% translate "Modifier le prix" %}</a>
         </p>
         <p>
-          {% translate "Acompte" %} : {{ gig.deposit_due_on|date:"d/m/Y"|default:"—" }}
-          · {% translate "Solde" %} : {{ gig.balance_due_on|date:"d/m/Y"|default:"—" }}
+          {% translate "Acompte" %} : {{ gig.deposit_due_display|default:"—" }}
+          · {% translate "Solde" %} : {{ gig.balance_due_display|default:"—" }}
           · {{ gig.get_payment_method_display|default:"—" }}
           · <a href="{% url 'gigs:terms' gig.pk %}" class="text-blue-700 underline">{% translate "Modifier les échéances" %}</a>
         </p>
