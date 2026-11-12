@@ -7,6 +7,7 @@ from apps.addressbook.forms import PromoterIdentifiersMixin
 from apps.addressbook.models import Promoter, Venue
 from apps.catalog.models import Show
 from apps.core.forms import MultiSelectDropdown
+from apps.gigs import hospitality
 from apps.gigs.forms import PaymentTermsMixin
 from apps.gigs.models import Gig
 
@@ -42,8 +43,12 @@ class GigCompletionForm(PaymentTermsMixin, forms.ModelForm):
             "deposit_due_on",
             "balance_term",
             "balance_due_on",
-            "meals",
-            "lodging",
+            "meals_covered_by",
+            "meals_count",
+            "meals_notes",
+            "lodging_covered_by",
+            "lodging_nights",
+            "lodging_notes",
             "local_transport",
             "other_hospitality",
             "conditions",
@@ -70,6 +75,7 @@ class GigCompletionForm(PaymentTermsMixin, forms.ModelForm):
         self.fields["performances_count"].required = False
         self.fields["copies_count"].required = False
         self._prepare_terms()
+        self._keep_old_sentences()
         # An option's validity only matters while the gig is still an option.
         if self.instance.status != Gig.Status.OPTION:
             del self.fields["option_expires_on"]
@@ -95,8 +101,12 @@ class GigCompletionForm(PaymentTermsMixin, forms.ModelForm):
         "deposit_due_on",
         "balance_term",
         "balance_due_on",
-        "meals",
-        "lodging",
+        "meals_covered_by",
+        "meals_count",
+        "meals_notes",
+        "lodging_covered_by",
+        "lodging_nights",
+        "lodging_notes",
     )
     ROADMAP_FIELDS = (
         "get_in_time",
@@ -121,6 +131,35 @@ class GigCompletionForm(PaymentTermsMixin, forms.ModelForm):
     @property
     def roadmap_fields(self):
         return self._block(self.ROADMAP_FIELDS)
+
+    def _keep_old_sentences(self):
+        """A sentence typed before the choices existed becomes the "précisions", not lost."""
+        gig = self.instance
+        for sentence, covered_by, count, notes in (
+            ("meals", "meals_covered_by", "meals_count", "meals_notes"),
+            ("lodging", "lodging_covered_by", "lodging_nights", "lodging_notes"),
+        ):
+            old = getattr(gig, sentence)
+            if old and not (getattr(gig, covered_by) or getattr(gig, count) or getattr(gig, notes)):
+                self.initial[notes] = old[: self.fields[notes].max_length]
+
+    def _compose_sentences(self, cleaned):
+        """Write what the contract prints from the answers (it reads `meals` and `lodging`)."""
+        for sentence, covered_by, count, notes, unit in (
+            ("meals", "meals_covered_by", "meals_count", "meals_notes", hospitality.MEAL_UNIT),
+            (
+                "lodging",
+                "lodging_covered_by",
+                "lodging_nights",
+                "lodging_notes",
+                hospitality.NIGHT_UNIT,
+            ),
+        ):
+            text = hospitality.compose(
+                cleaned.get(covered_by), cleaned.get(count), unit, cleaned.get(notes)
+            )
+            # At most 150 characters of notes and a short phrase: always fits the 255 of the field.
+            setattr(self.instance, sentence, text)
 
     def clean_deposit_percent(self):
         # Left empty: keep the current value (30 % for a new gig).
@@ -150,6 +189,7 @@ class GigCompletionForm(PaymentTermsMixin, forms.ModelForm):
             )
         if cleaned_data.get("is_free") or cleaned_data.get("ticket_price") is None:
             cleaned_data["ticket_price"] = 0
+        self._compose_sentences(cleaned_data)
         return self.clean_terms(cleaned_data)
 
 

@@ -1,4 +1,6 @@
+import datetime
 import secrets
+from dataclasses import dataclass
 
 from django.db.models import F
 from django.urls import reverse
@@ -6,6 +8,7 @@ from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 
 from apps.core.services import render_pdf
+from apps.gigs import hospitality
 from apps.gigs.models import GigMember
 from apps.tenants.models import Person
 
@@ -115,6 +118,43 @@ def _people(people):
     ]
 
 
+@dataclass(frozen=True)
+class ProgramItem:
+    """One line of the "Programme de la journée": a slot, a meal or an arrival at the lodging."""
+
+    time: datetime.time
+    kind: str
+    label: str
+    note: str = ""
+
+
+def build_program(roadmap):
+    """The day in order: the slots, plus the meals and the lodging arrivals that have a time.
+
+    A meal at the very time of a "Repas" slot is not repeated (FDR-04). The details of a meal or
+    of a lodging (address, map, contacts) stay in their own sections.
+    """
+    slots = list(roadmap.slots.all())
+    meal_times = {slot.time for slot in slots if slot.kind == RoadmapSlot.Kind.MEAL}
+    items = [
+        ProgramItem(slot.time, slot.kind, slot.label or slot.get_kind_display(), slot.note)
+        for slot in slots
+    ]
+    items += [
+        ProgramItem(meal.time, "meal", f"{_('Repas')} — {meal.place}")
+        for meal in roadmap.meals.all()
+        if meal.time and meal.time not in meal_times
+    ]
+    items += [
+        ProgramItem(
+            lodging.arrival_time, "lodging", f"{_('Arrivée à l’hébergement')} — {lodging.name}"
+        )
+        for lodging in roadmap.lodgings.all()
+        if lodging.arrival_time
+    ]
+    return sorted(items, key=lambda item: item.time)  # stable: the slots stay first at a tie
+
+
 def public_context(roadmap):
     """Everything a roadmap may show to someone who only has the link.
 
@@ -146,7 +186,14 @@ def public_context(roadmap):
             "map_url": venue.map_embed_url,
         },
         "crew_headcount": gig.crew_headcount,
-        "slots": list(roadmap.slots.all()),
+        "program": build_program(roadmap),
+        # Only who takes it in charge and how many: never the free text, which may speak of money.
+        "meals_cover": hospitality.roadmap_line(
+            gig.meals_covered_by, gig.meals_count, hospitality.MEAL_UNIT
+        ),
+        "lodging_cover": hospitality.roadmap_line(
+            gig.lodging_covered_by, gig.lodging_nights, hospitality.NIGHT_UNIT
+        ),
         "lodgings": list(roadmap.lodgings.prefetch_related("contacts")),
         "meals": list(roadmap.meals.prefetch_related("contacts")),
         "notes": roadmap.notes,
