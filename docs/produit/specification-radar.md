@@ -55,6 +55,21 @@ Distance entre deux dates supérieure à un seuil paramétrable par l’utilisat
 Dates rapprochées avec temps de trajet estimé potentiellement contraint : présenter comme point à vérifier, jamais comme validation de sécurité ou de faisabilité.
 Chaque alerte indique sa cause, la date concernée et une action possible. L’utilisateur peut ignorer ou marquer l’alerte comme traitée.
 
+**4.2 bis Cohérence des horaires de la feuille de route (FDR-01, recette n°1 du 2026-11-05)**
+*Ajout du 2026-11-12, à confirmer. À coder avec le Radar, pas avant.*
+Besoin exprimé par l'associé : « on peut programmer un repas avant l'heure d'arrivée sans alerte ». Le Radar contrôle donc l'ordre des événements de la feuille de route d'une date.
+
+Ce que la feuille de route fournit déjà (livré en novembre 2026) : chaque créneau, repas et arrivée à l'hébergement porte **son propre jour** (vide = jour du concert) et son heure ; le programme est lu en ordre chronologique sur plusieurs jours (FDR-02). Une règle compare donc des **moments** (jour + heure), jamais des heures seules.
+
+Règle demandée :
+- **R1 : aucun élément du programme ne commence avant l'arrivée.** Un créneau, un repas ou une arrivée à l'hébergement qui tombe avant le créneau « Arrivée » (ou, à défaut, avant l'heure d'arrivée de l'équipe de la date, `get_in_time`) est signalé. S'il n'y a ni créneau d'arrivée ni heure d'arrivée, la règle ne dit rien (rien à comparer, pas d'alerte inventée).
+
+Règles proposées à confirmer par l'associé (non demandées, à ne pas coder sans accord) : R2 les balances ne sont pas après le concert ; R3 le départ n'est pas avant le concert ; R4 deux créneaux ne sont pas exactement au même moment.
+
+Comportement (décision du 2026-11-11) : **avertissement d'abord, jamais de blocage**. L'enregistrement n'est pas refusé : un horaire inhabituel est parfois voulu (repas la veille, arrivée tardive). Le message dit la cause, l'élément concerné et l'action possible (« corriger l'horaire » ou « ignorer »), comme les autres alertes du §4.2. Un caractère bloquant pourra être étudié pendant le développement du Radar, à partir des retours des utilisateurs.
+Visibilité : l'alerte apparaît dans le Radar et dans l'éditeur de la feuille de route de l'utilisateur, **jamais** sur le lien public ni sur le PDF partagés avec l'équipe (c'est un contrôle pour la personne qui prépare, pas une information logistique).
+Hors périmètre, comme pour les autres alertes : aucune validation de conformité au droit du travail ni de temps de repos.
+
 **4.3 Budget prévisionnel**
 Par date, permettre de saisir ou reprendre :
 Recettes prévues (cession, coréalisation ou autres lignes configurables).
@@ -174,6 +189,7 @@ Une panne cartographique n’empêche ni l’accès aux dates ni la saisie du bu
 L’utilisateur peut exporter une synthèse sans divulguer les montants internes par défaut.
 Les droits d’accès empêchent un autre compte/structure de consulter les données.
 Les calculs et transitions de statut sont couverts par des tests automatisés.
+Un élément de feuille de route programmé avant l'arrivée de l'équipe est signalé par un avertissement qui ne bloque pas l'enregistrement (§4.2 bis, R1).
 
 **12. Découpage recommandé**
 Lot 1 — utile sans dépendance externe
@@ -206,4 +222,5 @@ Quel fournisseur cartographique respecte le budget, les conditions d’usage et 
 Le partage de feuille de route est-il déjà prévu dans le produit ?
 Quelles permissions s’appliquent aux artistes, administrateurs et collaborateurs ?
 Quels champs sont obligatoires selon les types de contrat et les modes de production ?
+Les règles R2 à R4 du §4.2 bis (balances, départ, doublons d'horaire) sont-elles utiles, et l'incohérence d'horaire doit-elle un jour pouvoir bloquer l'enregistrement ?
 Note de cadrage : cette note décrit une proposition fonctionnelle et technique à valider avec l’architecture, les coûts d’intégration et des tests avec des artistes. Elle ne constitue ni une validation juridique, ni un calcul comptable, social ou carbone certifié.
