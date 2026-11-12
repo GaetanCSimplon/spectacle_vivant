@@ -23,7 +23,7 @@
       <div><dt class="text-stone-600">{% translate "Facturé" %} (HT)</dt><dd class="data text-lg font-bold">{{ figures.invoiced|floatformat:"0g" }} €</dd></div>
       <div><dt class="text-stone-600">{% translate "Encaissé" %} (TTC)</dt><dd class="data text-lg font-bold">{{ figures.received|floatformat:"0g" }} €</dd></div>
     </dl>
-    <p class="mt-2 text-sm"><a href="{% url 'tenants:profile' %}" class="font-bold text-blue-700 underline">{% translate "Voir le Bord pour le détail" %} →</a></p>
+    <p class="mt-2 text-sm"><a href="{% url 'tenants:profile' %}" class="btn btn-secondary btn-sm">{% translate "Voir le Bord pour le détail" %} →</a></p>
   </section>
 {% endif %}
 

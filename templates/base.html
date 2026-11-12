@@ -31,7 +31,7 @@
         </div>
       {% endif %}
 
-      <main id="contenu" class="mx-auto {% block main_width %}max-w-3xl{% endblock %} px-4 py-6">
+      <main id="contenu" class="mx-auto {% block main_width %}max-w-[90rem]{% endblock %} px-4 py-6">
         {% block back_button %}{% if user.is_authenticated %}{% include "components/_back_button.html" %}{% endif %}{% endblock %}
         {% block breadcrumb %}{% endblock %}
         {% for message in messages %}
