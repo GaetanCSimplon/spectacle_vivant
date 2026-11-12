@@ -12,6 +12,7 @@ from django.views import View
 from django.views.generic import DetailView, ListView, TemplateView
 
 from apps.accounts.services import is_tenant_owner
+from apps.addressbook import services as addressbook_services
 from apps.addressbook.models import Promoter
 from apps.core.views import TenantScopedMixin, wants_fragment
 from apps.documents.models import Invoice
@@ -36,6 +37,7 @@ from .forms import (
 from .models import Gig, GigMember
 
 WIZARD_SESSION_KEY = "gig_wizard"
+OFFER_FORM_SESSION_KEY = "offer_promoter_form"
 
 WIZARD_STEP_LABELS = [
     _("Spectacle"),
@@ -238,6 +240,7 @@ class GigWizardDetailsStepView(GigWizardMixin, View):
                 "date": data.get("date"),
                 "option_expires_on": data.get("option_expires_on"),
                 "price": data.get("price"),
+                "event_name": data.get("event_name", ""),
                 "conditions": data.get("conditions", ""),
             }
         )
@@ -256,6 +259,7 @@ class GigWizardDetailsStepView(GigWizardMixin, View):
                 option_expires_on=expires_on.isoformat() if expires_on else "",
                 price=str(form.cleaned_data["price"]),
                 conditions=form.cleaned_data["conditions"],
+                event_name=form.cleaned_data["event_name"],
             )
             return redirect("gigs:wizard-recap")
 
@@ -287,6 +291,7 @@ class GigWizardRecapView(GigWizardMixin, View):
             ),
             price=data["price"],
             conditions=data.get("conditions", ""),
+            event_name=data.get("event_name", ""),
         )
         return render(request, self.template_name, context)
 
@@ -300,6 +305,8 @@ class GigWizardRecapView(GigWizardMixin, View):
         data = self.get_wizard_data()
         gig = services.create_gig_from_wizard_data(request.tenant, data, user=request.user)
         del request.session[WIZARD_SESSION_KEY]
+        # The date page then offers to send the organiser's form, once (DAT-03).
+        request.session[OFFER_FORM_SESSION_KEY] = gig.pk
         messages.success(request, _("La date a bien été créée."))
         return redirect("gigs:detail", pk=gig.pk)
 
@@ -425,7 +432,21 @@ class GigDetailView(TenantScopedMixin, DetailView):
         context["progress"] = services.date_progress(self.object)
         context["overall_percent"] = services.overall_progress(context["progress"])
         context["next_step"] = services.next_step(self.object, context["progress"])
-        context["history"] = services.gig_history(self.object)
+        context["timeline"] = services.gig_timeline(self.object)
+        context["contacts"] = services.gig_contacts(self.object)
+        context["documents"] = services.gig_documents(self.object)
+        invitation = addressbook_services.latest_invitation(self.object.promoter)
+        context["invitation"] = invitation
+        if invitation and invitation.status == invitation.Status.ACTIVE:
+            context["invitation_url"] = self.request.build_absolute_uri(
+                addressbook_services.invitation_path(invitation.token)
+            )
+        # Offered once, right after the date is created, and only if the organiser has not
+        # already answered.
+        offered = self.request.session.pop(OFFER_FORM_SESSION_KEY, None)
+        context["offer_form"] = offered == self.object.pk and (
+            invitation is None or invitation.status != invitation.Status.ANSWERED
+        )
         context["price_changes"] = list(self.object.price_changes.all())
         context["crew"] = list(self.object.members.all())
         context["team_total"] = Person.objects.filter(tenant=self.request.tenant).count()

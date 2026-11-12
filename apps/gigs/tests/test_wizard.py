@@ -236,3 +236,93 @@ def test_going_back_keeps_the_previous_answers(client):
     assert gig_date.isoformat() in details
     assert "800" in details
     assert f'value="{venue.pk}" selected' in venue_page
+
+
+def _create_gig_through_the_wizard(client, tenant, event_name=""):
+    show = ShowFactory(tenant=tenant)
+    promoter = PromoterFactory(tenant=tenant)
+    venue = VenueFactory(tenant=tenant)
+    client.post(reverse("gigs:wizard-show"), {"mode": "existing", "show": show.pk})
+    client.post(reverse("gigs:wizard-promoter"), {"mode": "existing", "promoter": promoter.pk})
+    client.post(reverse("gigs:wizard-venue"), {"mode": "existing", "venue": venue.pk})
+    client.post(
+        reverse("gigs:wizard-details"),
+        {
+            "date": (datetime.date.today() + datetime.timedelta(days=10)).isoformat(),
+            "price": "800.00",
+            "event_name": event_name,
+        },
+    )
+    return client.post(reverse("gigs:wizard-recap")), promoter
+
+
+def test_the_wizard_keeps_the_optional_event_name(client):
+    tenant = _login(client)
+
+    _create_gig_through_the_wizard(client, tenant, event_name="Festival d'été")
+
+    assert Gig.objects.get(tenant=tenant).event_name == "Festival d'été"
+
+
+def test_the_event_name_is_optional_in_the_wizard(client):
+    tenant = _login(client)
+
+    _create_gig_through_the_wizard(client, tenant)
+
+    assert Gig.objects.get(tenant=tenant).event_name == ""
+
+
+def test_the_organiser_form_is_offered_once_after_the_creation(client):
+    tenant = _login(client)
+    response, _promoter = _create_gig_through_the_wizard(client, tenant)
+
+    first = client.get(response.url).content.decode()
+    second = client.get(response.url).content.decode()
+
+    assert "Envoyer le formulaire à l&#x27;organisateur ?" in first or (
+        "Envoyer le formulaire à l'organisateur ?" in first
+    )
+    assert "Plus tard" in first
+    assert "Plus tard" not in second
+
+
+def test_the_offer_is_not_made_when_the_organiser_already_answered(client):
+    from django.utils import timezone
+
+    from apps.addressbook import services as addressbook_services
+
+    tenant = _login(client)
+    show = ShowFactory(tenant=tenant)
+    promoter = PromoterFactory(tenant=tenant)
+    venue = VenueFactory(tenant=tenant)
+    invitation = addressbook_services.create_invitation(promoter, None)
+    invitation.completed_at = timezone.now()
+    invitation.save()
+    client.post(reverse("gigs:wizard-show"), {"mode": "existing", "show": show.pk})
+    client.post(reverse("gigs:wizard-promoter"), {"mode": "existing", "promoter": promoter.pk})
+    client.post(reverse("gigs:wizard-venue"), {"mode": "existing", "venue": venue.pk})
+    client.post(
+        reverse("gigs:wizard-details"),
+        {
+            "date": (datetime.date.today() + datetime.timedelta(days=10)).isoformat(),
+            "price": "800.00",
+        },
+    )
+    response = client.post(reverse("gigs:wizard-recap"))
+
+    assert "Plus tard" not in client.get(response.url).content.decode()
+
+
+def test_sending_the_form_from_the_date_page_comes_back_to_the_date(client):
+    tenant = _login(client)
+    response, promoter = _create_gig_through_the_wizard(client, tenant)
+    gig = Gig.objects.get(tenant=tenant)
+
+    sent = client.post(
+        reverse("addressbook:promoter-invite", args=[promoter.pk]),
+        {"gig": gig.pk, "back": "detail"},
+    )
+
+    assert sent.url == reverse("gigs:detail", args=[gig.pk])
+    page = client.get(sent.url).content.decode()
+    assert "Le formulaire de l&#x27;organisateur est actif" in page or "est actif jusqu" in page

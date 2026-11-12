@@ -94,6 +94,8 @@ class PromoterInviteView(TenantScopedMixin, View):
             else None
         )
         if gig is not None:
+            if request.POST.get("back") == "detail":
+                return redirect("gigs:detail", pk=gig.pk)
             return redirect("documents:contract-complete", gig_id=gig.pk)
         return redirect("addressbook:promoter-detail", pk=promoter.pk)
 

@@ -1,0 +1,16 @@
+{% load i18n %}{% comment %}All the documents of a date in one place. Needs: documents.{% endcomment %}
+<section class="card" aria-labelledby="gig-documents">
+  <h2 id="gig-documents" class="stat-label !text-xs !font-semibold">{% translate "Documents" %}</h2>
+  {% if documents %}
+    <ul class="mt-2 divide-y divide-page-line text-sm">
+      {% for doc in documents %}
+        <li class="flex items-baseline justify-between gap-3 py-1.5">
+          <span><span class="text-stone-600">{{ doc.kind }}</span> · <a href="{{ doc.url }}" class="text-blue-700 underline">{{ doc.label }}</a></span>
+          {% if doc.day %}<span class="data whitespace-nowrap text-stone-600">{{ doc.day|date:"d/m/Y" }}</span>{% endif %}
+        </li>
+      {% endfor %}
+    </ul>
+  {% else %}
+    <p class="mt-2 text-sm text-stone-600">{% translate "Aucun document pour l'instant : devis, contrat et factures apparaîtront ici." %}</p>
+  {% endif %}
+</section>

@@ -1,0 +1,15 @@
+{% load i18n %}{% comment %}Offered once, right after a date is created (DAT-03). Needs: gig.{% endcomment %}
+<dialog x-data x-init="$el.showModal()" aria-labelledby="offer-form-title"
+        class="m-auto w-[calc(100%-2rem)] max-w-md rounded-2xl border border-page-line bg-white p-0 backdrop:bg-black/50">
+  <div class="space-y-3 p-5">
+    <h2 id="offer-form-title" class="!text-lg">{% translate "Envoyer le formulaire à l'organisateur ?" %}</h2>
+    <p class="text-sm text-stone-600">{% translate "Il remplit lui-même ses informations (SIRET, adresse, représentant, contacts) et vous vérifiez avant de les enregistrer. Vous pourrez le faire plus tard depuis cette page." %}</p>
+    <form method="post" action="{% url 'addressbook:promoter-invite' gig.promoter.pk %}">
+      {% csrf_token %}
+      <input type="hidden" name="gig" value="{{ gig.pk }}">
+      <input type="hidden" name="back" value="detail">
+      <button type="submit" class="btn btn-primary btn-block">{% translate "Envoyer" %}</button>
+    </form>
+    <button type="button" class="btn btn-secondary btn-block" onclick="this.closest('dialog').close()">{% translate "Plus tard" %}</button>
+  </div>
+</dialog>

@@ -4,9 +4,13 @@ import datetime
 
 import pytest
 from django.urls import reverse
+from django.utils import timezone
 
+from apps.addressbook import services as addressbook_services
+from apps.addressbook.factories import ContactFactory
+from apps.documents.models import Invoice
 from apps.documents.services import generate_contract_pdf, mark_contract_sent, mark_contract_signed
-from apps.finance.factories import ExpenseFactory
+from apps.finance.models import Payment
 from apps.gigs import services
 from apps.gigs.factories import GigFactory
 from apps.gigs.models import Gig
@@ -30,14 +34,14 @@ def _login(client):
     return membership.tenant
 
 
-def test_the_page_is_ordered_summary_then_history_then_the_four_volets(client):
+def test_the_page_is_ordered_summary_then_timeline_then_the_four_volets(client):
     gig = GigFactory(tenant=_login(client), status=Gig.Status.CONFIRMED)
 
     content = _page(client, gig)
 
     positions = [
         content.index("gig-summary"),
-        content.index("gig-history"),
+        content.index("gig-timeline"),
         content.index('id="volet-contrats"'),
         content.index('id="volet-budget"'),
         content.index('id="volet-social"'),
@@ -95,41 +99,89 @@ def test_no_next_step_for_an_option_or_a_cancelled_date():
         assert services.next_step(gig, services.date_progress(gig)) is None
 
 
-def test_the_history_lists_the_latest_actions_newest_first_and_is_capped():
+def test_the_timeline_gives_each_milestone_its_stored_date_and_leaves_the_rest_to_come():
     gig = GigFactory(status=Gig.Status.CONFIRMED)
     generate_contract_pdf(gig)
     mark_contract_sent(gig)
-    ExpenseFactory(gig=gig, tenant=gig.tenant, label="Péage", date=datetime.date(2030, 1, 1))
 
-    history = services.gig_history(gig)
-    texts = [event["text"] for event in history]
+    steps = {step["label"]: step["day"] for step in services.gig_timeline(gig)}
 
-    assert texts[0] == "Dépense ajoutée : Péage"
-    assert "Contrat envoyé à l'organisateur" in texts and "Contrat généré (version 1)" in texts
-    assert texts.index("Contrat envoyé à l'organisateur") < texts.index(
-        "Contrat généré (version 1)"
-    )
-    for _ in range(10):
-        ExpenseFactory(gig=gig, tenant=gig.tenant)
-    assert len(services.gig_history(gig)) == 8
+    assert steps["Contrat généré"] is not None and steps["Contrat envoyé"] is not None
+    assert steps["Contrat signé"] is None and steps["Solde payé"] is None
+    labels = [step["label"] for step in services.gig_timeline(gig)]
+    assert labels.index("Contrat généré") < labels.index("Contrat signé")
+    assert labels.index("Facture d'acompte émise") < labels.index("Solde payé")
 
 
-def test_the_history_never_shows_another_tenants_actions():
+def test_the_timeline_follows_the_form_sent_to_the_organiser():
     gig = GigFactory(status=Gig.Status.CONFIRMED)
-    other = GigFactory(status=Gig.Status.CONFIRMED)
-    ExpenseFactory(gig=other, tenant=other.tenant, label="Secret")
+    invitation = addressbook_services.create_invitation(gig.promoter, None)
 
-    assert all("Secret" not in event["text"] for event in services.gig_history(gig))
+    steps = {step["label"]: step["day"] for step in services.gig_timeline(gig)}
+    assert steps["Formulaire envoyé"] is not None and steps["Formulaire reçu"] is None
+
+    invitation.completed_at = timezone.now()
+    invitation.save()
+    steps = {step["label"]: step["day"] for step in services.gig_timeline(gig)}
+    assert steps["Formulaire reçu"] is not None
 
 
-def test_the_page_says_so_when_nothing_was_done_and_shows_the_table_otherwise(client):
+def test_the_timeline_shows_an_invoice_paid_on_the_payment_date():
+    gig = GigFactory(status=Gig.Status.CONFIRMED)
+    invoice = Invoice.objects.create(
+        gig=gig,
+        tenant=gig.tenant,
+        kind=Invoice.Kind.DEPOSIT,
+        status=Invoice.Status.PAID,
+        issue_date=datetime.date(2030, 1, 2),
+    )
+    Payment.objects.create(
+        invoice=invoice,
+        tenant=gig.tenant,
+        date=datetime.date(2030, 1, 9),
+        amount=100,
+        method="transfer",
+    )
+
+    steps = {step["label"]: step["day"] for step in services.gig_timeline(gig)}
+
+    assert steps["Facture d'acompte émise"] == datetime.date(2030, 1, 2)
+    assert steps["Acompte payé"] == datetime.date(2030, 1, 9)
+
+
+def test_the_page_shows_the_timeline_the_documents_and_the_contacts(client):
     tenant = _login(client)
     gig = GigFactory(tenant=tenant, status=Gig.Status.CONFIRMED)
+    ContactFactory(tenant=tenant, name="Alice Régie", email="a@example.org", promoter=gig.promoter)
+    ContactFactory(
+        tenant=tenant, name="Bob Salle", phone="0102030405", promoter=None, venue=gig.venue
+    )
     generate_contract_pdf(gig)
 
     content = _page(client, gig)
 
-    assert "Dernières actions" in content and "Contrat généré (version 1)" in content
+    assert "Suivi de la date" in content and "Dernières actions" not in content
+    assert "Version 1" in content
+    assert "Alice Régie" in content and "mailto:a@example.org" in content
+    assert "Bob Salle" in content and "tel:0102030405" in content
+
+
+def test_a_contact_of_another_structure_never_shows_on_the_date(client):
+    tenant = _login(client)
+    gig = GigFactory(tenant=tenant, status=Gig.Status.CONFIRMED)
+    other = GigFactory(status=Gig.Status.CONFIRMED)
+    ContactFactory(tenant=other.tenant, name="Secret Autre", promoter=gig.promoter)
+    Invoice.objects.create(
+        gig=other,
+        tenant=other.tenant,
+        kind="full",
+        number="F-SECRET",
+        issue_date=datetime.date(2030, 1, 1),
+    )
+
+    content = _page(client, gig)
+
+    assert "Secret Autre" not in content and "F-SECRET" not in content
 
 
 def test_each_volet_card_gives_access_to_its_actions(client):

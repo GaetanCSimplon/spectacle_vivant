@@ -99,8 +99,13 @@
     </details>
   </section>
 
-  {# b. Latest actions #}
-  {% include "gigs/_date_history.html" %}
+  {# b. Milestones, then every document and the contacts of the date #}
+  {% include "gigs/_date_timeline.html" %}
+  <div class="mb-6 grid grid-cols-1 gap-4 lg:grid-cols-2 lg:items-start">
+    {% include "gigs/_date_documents.html" %}
+    {% include "gigs/_date_contacts.html" %}
+  </div>
+  {% if offer_form %}{% include "gigs/_offer_form_dialog.html" %}{% endif %}
 
   {# c. The four volets, as cards #}
   <div class="grid grid-cols-1 gap-4 lg:grid-cols-2 lg:items-start">
