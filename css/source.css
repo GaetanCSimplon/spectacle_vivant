@@ -892,9 +892,9 @@
 }
 
 /*
- * A button (`.btn`) keeps its own colours inside a block: white with navy text, not the block's text.
  * Outside any layer on purpose: Tailwind's utilities (`text-stone-600`...) come after the
  * `components` layer and would win, leaving grey text on the colour blocks.
+ * A button (`.btn`) keeps its own colours inside a block: white with navy text, not the block's text.
  */
 :is(.card-navy, .card-accent, .card-info, .card-cream, .card-context, .card-ocean, .card-regie)
   :is(h1, h2, p, li, a:not(.btn), .stat-label, .stat-value, .text-stone-500, .text-stone-600, .text-blue-700) {
