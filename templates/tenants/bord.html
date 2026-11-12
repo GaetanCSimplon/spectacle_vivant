@@ -20,7 +20,7 @@
   <form
     method="get"
     action="{% url 'tenants:profile' %}"
-    class="card mb-6"
+    class="mb-6"
     x-data="{ period: '{{ form.period.value|default:'annee' }}' }"
     hx-get="{% url 'tenants:profile' %}"
     hx-trigger="change"
@@ -28,8 +28,9 @@
     hx-swap="innerHTML"
     hx-push-url="true"
   >
-    <h2 class="stat-label !text-xs !font-semibold">{% translate "Filtres" %}</h2>
-    <div class="mt-2 grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-5">
+    <details class="filters">
+    <summary class="btn btn-secondary btn-sm cursor-pointer">{% translate "Filtres" %}</summary>
+    <div class="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-5">
       <div>{{ form.period.label_tag }} <select name="period" id="{{ form.period.id_for_label }}" x-model="period">
         {% for value, label in form.fields.period.choices %}<option value="{{ value }}" {% if form.period.value == value %}selected{% endif %}>{{ label }}</option>{% endfor %}
       </select></div>
@@ -44,6 +45,7 @@
       <div>{{ form.status.label_tag }} {{ form.status }}</div>
       <div>{{ form.spender.label_tag }} {{ form.spender }}</div>
     </div>
+    </details>
     <noscript><button type="submit" class="btn btn-secondary mt-3">{% translate "Filtrer" %}</button></noscript>
   </form>
 

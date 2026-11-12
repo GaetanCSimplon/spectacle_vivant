@@ -21,7 +21,7 @@
   <form
     method="get"
     action="{{ list_url }}"
-    class="mb-4 grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-4"
+    class="mb-4 space-y-3"
     role="search"
     hx-get="{{ list_url }}"
     hx-trigger="input changed delay:300ms from:find input[type=search], change from:find select"
@@ -36,8 +36,11 @@
       placeholder="{{ search_placeholder }}"
       aria-label="{{ search_placeholder }}"
       autocomplete="off"
-      class="col-span-2 w-full rounded-md border border-gray-300 px-3 py-2 text-sm sm:col-span-3 lg:col-span-4"
+      class="w-full rounded-md border border-gray-300 px-3 py-2 text-sm"
     >
+    <details class="filters">
+      <summary class="btn btn-secondary btn-sm cursor-pointer">{% translate "Filtres" %}</summary>
+      <div class="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-4">
     <div>{{ filter_form.follow_up.label_tag }} {{ filter_form.follow_up }}</div>
     <div>{{ filter_form.kind.label_tag }} {{ filter_form.kind }}</div>
     <div>{{ filter_form.event_type.label_tag }} {{ filter_form.event_type }}</div>
@@ -45,6 +48,8 @@
     <div>{{ filter_form.format.label_tag }} {{ filter_form.format }}</div>
     <div>{{ filter_form.period.label_tag }} {{ filter_form.period }}</div>
     <div>{{ filter_form.role.label_tag }} {{ filter_form.role }}</div>
+      </div>
+    </details>
     <noscript><button type="submit" class="btn btn-secondary">{% translate "Filtrer" %}</button></noscript>
   </form>
 
