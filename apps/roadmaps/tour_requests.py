@@ -46,6 +46,7 @@ GROUPS = {
             "lodging_notes": _("Détails"),
         },
     ),
+    "venue": (_("Salle"), {"venue_capacity": _("Jauge (places)")}),
     "contact": (
         _("Contact sur place"),
         {"contact_name": _("Nom"), "contact_role": _("Fonction"), "contact_phone": _("Téléphone")},
@@ -88,6 +89,21 @@ def create_request(gig, user):
             created_by=user,
             expires_at=now + timedelta(days=REQUEST_DAYS),
         )
+
+
+def request_for_chain(invitation):
+    """The form to take an organiser on to after the form of their card (ORG-05).
+
+    Only when the card's form was sent from a date. A link still waiting for an answer is
+    reused (the owner may already have sent it); otherwise a new one is made.
+    """
+    gig = invitation.gig
+    if gig is None or gig.tenant_id != invitation.tenant_id:
+        return None
+    current = latest_request(gig)
+    if current is not None and current.status == RoadmapRequest.Status.ACTIVE:
+        return current
+    return create_request(gig, None)
 
 
 def revoke_request(gig):
@@ -243,6 +259,9 @@ def _apply_group(group, gig, roadmap, response):
             ),
             notes=response.get("lodging_notes", ""),
         )
+    elif group == "venue" and response.get("venue_capacity", "").isdigit():
+        gig.venue.capacity = int(response["venue_capacity"])
+        gig.venue.save(update_fields=["capacity"])
     elif group == "contact" and response.get("contact_name"):
         contact = Contact.objects.create(
             tenant=gig.tenant,

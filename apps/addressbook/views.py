@@ -83,16 +83,17 @@ class PromoterInviteView(TenantScopedMixin, View):
 
     def post(self, request, pk):
         promoter = get_object_or_404(Promoter, pk=pk, tenant=request.tenant)
-        services.create_invitation(promoter, request.user)
-        messages.success(request, _("Le lien est prêt : copiez-le et envoyez-le à l'organisateur."))
-        # Asked from the "Compléter le contrat" page of a date of this organiser: go back there.
-        # Any other value (or a date of another structure or organiser) is ignored.
+        # Asked from a date of this organiser: the form then goes on to that date's own form,
+        # and we come back to that date. Any other value (or a date of another structure or
+        # organiser) is ignored.
         gig_id = request.POST.get("gig", "")
         gig = (
             Gig.objects.filter(pk=gig_id, tenant=request.tenant, promoter=promoter).first()
             if gig_id.isdigit()
             else None
         )
+        services.create_invitation(promoter, request.user, gig=gig)
+        messages.success(request, _("Le lien est prêt : copiez-le et envoyez-le à l'organisateur."))
         if gig is not None:
             if request.POST.get("back") == "detail":
                 return redirect("gigs:detail", pk=gig.pk)
@@ -137,7 +138,7 @@ class PromoterAnswerView(TenantScopedMixin, View):
                 "promoter": self.promoter,
                 "invitation": invitation,
                 "rows": services.review_rows(invitation),
-                "contact": services.answer_contact(invitation),
+                "contacts": services.answer_contacts(invitation),
             },
         )
 
@@ -150,8 +151,11 @@ class PromoterAnswerView(TenantScopedMixin, View):
                 services.ignore_response(invitation)
                 messages.success(request, _("La réponse est ignorée : rien n'a été modifié."))
             else:
+                indexes = [
+                    int(value) for value in request.POST.getlist("contacts") if value.isdigit()
+                ]
                 chosen = services.apply_response(
-                    invitation, request.POST.getlist("fields"), "contact" in request.POST
+                    invitation, request.POST.getlist("fields"), indexes
                 )
                 messages.success(
                     request,

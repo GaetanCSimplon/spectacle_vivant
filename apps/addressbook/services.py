@@ -32,6 +32,16 @@ PROMOTER_FIELDS = [
     ("phone", _("Téléphone")),
 ]
 CONTACT_KEYS = ["name", "role", "email", "phone"]
+CONTACT_SLOTS = 4
+# Suggested roles of the contacts an organiser gives (ORG-04); the field stays free text.
+CONTACT_ROLES = [
+    _("Direction"),
+    _("Programmation"),
+    _("Administration"),
+    _("Comptabilité"),
+    _("Régie technique"),
+    _("Accueil"),
+]
 _DEPARTMENTS = dict(DEPARTMENT_CHOICES)
 
 
@@ -43,7 +53,7 @@ def invitation_path(token):
     return reverse("promoter-form-public", args=[token])
 
 
-def create_invitation(promoter, user):
+def create_invitation(promoter, user, gig=None):
     """A new link valid for a week. The link still waiting for an answer is cancelled."""
     now = timezone.now()
     with transaction.atomic():
@@ -56,6 +66,7 @@ def create_invitation(promoter, user):
         return PromoterInvitation.objects.create(
             tenant=promoter.tenant,
             promoter=promoter,
+            gig=gig,
             token=secrets.token_urlsafe(32),
             created_by=user,
             expires_at=now + timedelta(days=INVITATION_DAYS),
@@ -86,10 +97,16 @@ def find_invitation(token):
 def build_response(cleaned):
     """What the organiser sent, as plain text, keeping only the fields they filled in."""
     fields = {key: cleaned[key] for key, _label in PROMOTER_FIELDS if cleaned.get(key)}
-    contact = {
-        key: cleaned[f"contact_{key}"] for key in CONTACT_KEYS if cleaned.get(f"contact_{key}")
-    }
-    return {"fields": fields, "contact": contact}
+    contacts = []
+    for slot in range(1, CONTACT_SLOTS + 1):
+        contact = {
+            key: cleaned[f"contact{slot}_{key}"]
+            for key in CONTACT_KEYS
+            if cleaned.get(f"contact{slot}_{key}")
+        }
+        if contact.get("name"):
+            contacts.append(contact)
+    return {"fields": fields, "contacts": contacts}
 
 
 def submit_response(invitation, cleaned):
@@ -129,8 +146,14 @@ def review_rows(invitation):
     return rows
 
 
-def answer_contact(invitation):
-    return invitation.response.get("contact") or {}
+def answer_contacts(invitation):
+    """The contacts the organiser gave. An answer stored before several contacts were allowed
+    holds a single `contact`: it is read as a list of one."""
+    contacts = invitation.response.get("contacts")
+    if contacts is None:
+        single = invitation.response.get("contact")
+        contacts = [single] if single else []
+    return contacts
 
 
 def pending_answers(tenant):
@@ -140,7 +163,19 @@ def pending_answers(tenant):
     ).select_related("promoter")
 
 
-def apply_response(invitation, keys, with_contact):
+def _add_contact(tenant, promoter, data):
+    """Create the contact for the organiser, unless the same person (name and e-mail) is already
+    in the address book: then the existing contact is attached instead of duplicated."""
+    values = {key: data[key] for key in CONTACT_KEYS if data.get(key)}
+    existing = Contact.objects.filter(
+        tenant=tenant, name__iexact=values["name"], email=values.get("email", "")
+    ).first()
+    contact = existing or Contact.objects.create(tenant=tenant, **values)
+    contact.promoters.add(promoter)
+    return contact
+
+
+def apply_response(invitation, keys, contact_indexes):
     """Write the chosen answers into the organiser's card, then forget the stored answer."""
     allowed = {key for key, _label in PROMOTER_FIELDS}
     with transaction.atomic():
@@ -154,10 +189,10 @@ def apply_response(invitation, keys, with_contact):
             setattr(promoter, key, fields[key])
         if chosen:
             promoter.save(update_fields=chosen)
-        contact = answer_contact(locked)
-        if with_contact and contact:
-            created = Contact.objects.create(tenant=locked.tenant, **contact)
-            created.promoters.add(promoter)
+        contacts = answer_contacts(locked)
+        for index in sorted(set(contact_indexes)):
+            if 0 <= index < len(contacts) and contacts[index].get("name"):
+                _add_contact(locked.tenant, promoter, contacts[index])
         close_review(locked)
     return chosen
 

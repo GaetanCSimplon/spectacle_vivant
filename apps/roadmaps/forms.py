@@ -100,6 +100,12 @@ class TourRequestForm(forms.Form):
         max_length=1000,
         widget=forms.Textarea(attrs={"rows": 2}),
     )
+    venue_capacity = forms.IntegerField(
+        label=_("Jauge de la salle (nombre de places)"),
+        required=False,
+        min_value=1,
+        max_value=200000,
+    )
     contact_name = forms.CharField(label=_("Nom"), required=False, max_length=255)
     contact_role = forms.CharField(label=_("Fonction"), required=False, max_length=255)
     contact_phone = forms.CharField(label=_("Téléphone"), required=False, max_length=30)

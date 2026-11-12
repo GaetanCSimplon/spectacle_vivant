@@ -18,6 +18,7 @@ from apps.core.views import TenantScopedMixin, wants_fragment
 from apps.documents.models import Invoice
 from apps.finance import services as finance_services
 from apps.roadmaps import services as roadmap_services
+from apps.roadmaps import tour_requests as roadmap_tour_requests
 from apps.tenants.models import Person
 
 from . import checklist, ical, mail, services
@@ -437,6 +438,7 @@ class GigDetailView(TenantScopedMixin, DetailView):
         context["documents"] = services.gig_documents(self.object)
         invitation = addressbook_services.latest_invitation(self.object.promoter)
         context["invitation"] = invitation
+        context["tour_request"] = roadmap_tour_requests.latest_request(self.object)
         if invitation and invitation.status == invitation.Status.ACTIVE:
             context["invitation_url"] = self.request.build_absolute_uri(
                 addressbook_services.invitation_path(invitation.token)

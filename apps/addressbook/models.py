@@ -228,6 +228,11 @@ class PromoterInvitation(TenantOwnedModel):
         REVOKED = "revoked", _("Lien annulé")
 
     promoter = models.ForeignKey(Promoter, on_delete=models.CASCADE, related_name="invitations")
+    # The date this form was sent for, if any: once answered, the organiser is taken on to the
+    # "Régie de tournée" form of that date (ORG-05).
+    gig = models.ForeignKey(
+        "gigs.Gig", on_delete=models.SET_NULL, null=True, blank=True, related_name="+"
+    )
     token = models.CharField(max_length=64, unique=True)
     created_at = models.DateTimeField(auto_now_add=True)
     created_by = models.ForeignKey(

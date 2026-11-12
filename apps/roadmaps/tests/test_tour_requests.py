@@ -28,6 +28,7 @@ FULL = {
     "lodging_address": "3 quai du Lac, 69000 Lyon",
     "lodging_arrival_time": "23:00",
     "lodging_notes": "Petit-déjeuner à 9 h",
+    "venue_capacity": "450",
     "contact_name": "Régisseur Rémi",
     "contact_role": "Technique",
     "contact_phone": "06 11 22 33 44",
@@ -222,6 +223,7 @@ def test_applying_everything_fills_the_date_and_its_roadmap():
     assert applied == list(tr.GROUPS)
     gig.refresh_from_db()
     roadmap.refresh_from_db()
+    assert gig.venue.capacity == 450
     assert (gig.get_in_time, gig.soundcheck_time, gig.performance_time) == (
         datetime.time(14, 30),
         datetime.time(17, 0),

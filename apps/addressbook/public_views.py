@@ -7,9 +7,11 @@ out of caches and search engines, like the shared roadmap.
 
 from django.http import Http404
 from django.shortcuts import redirect, render
+from django.urls import reverse
 from django.views import View
 
 from apps.core.views import protect_secret_page
+from apps.roadmaps import tour_requests
 
 from . import services
 from .forms import PromoterPublicForm
@@ -35,7 +37,13 @@ class PublicPromoterFormView(View):
         return protect_secret_page(response, referrer=SAME_ORIGIN)
 
     def page(self, request, invitation, form):
-        context = {"form": form, "tenant": invitation.tenant, "promoter": invitation.promoter}
+        context = {
+            "form": form,
+            "tenant": invitation.tenant,
+            "promoter": invitation.promoter,
+            "contact_roles": services.CONTACT_ROLES,
+            "step": 1 if invitation.gig_id else None,
+        }
         return protect_secret_page(render(request, self.template_name, context), SAME_ORIGIN)
 
     def get(self, request, token):
@@ -55,6 +63,11 @@ class PublicPromoterFormView(View):
             services.submit_response(invitation, form.cleaned_data)
         except services.InvitationClosed:
             return self.closed(request, invitation)
+        # Sent from a date: go on to that date's own form (ORG-05), with the same life cycle.
+        tour_request = tour_requests.request_for_chain(invitation)
+        if tour_request is not None:
+            target = reverse("tour-form-public", args=[tour_request.token]) + "?etape=2"
+            return protect_secret_page(redirect(target), SAME_ORIGIN)
         return protect_secret_page(redirect("promoter-form-thanks"), SAME_ORIGIN)
 
 
