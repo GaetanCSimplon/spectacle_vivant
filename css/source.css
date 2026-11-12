@@ -427,6 +427,15 @@
     @apply border-2 border-blue-700 bg-white text-blue-700 hover:bg-blue-50;
   }
 
+  /* The filters of a list: a "Filtres" button (class btn btn-secondary btn-sm on the <summary>) that opens the panel (native <details>, no script). */
+  .filters > summary {
+    list-style: none;
+    width: fit-content;
+  }
+  .filters > summary::-webkit-details-marker {
+    display: none;
+  }
+
   .btn-block {
     @apply w-full;
   }
