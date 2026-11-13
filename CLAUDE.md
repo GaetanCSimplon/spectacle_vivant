@@ -72,6 +72,7 @@ Une app = un domaine métier. Ne pas créer d'app supplémentaire sans en parler
 | `Quote` / `Invoice` | Devis / Facture | Documents liés à un `Gig` |
 | `Roadmap` | Feuille de route | Document logistique de la date (horaires, contacts, hébergement, repas) |
 | `Payment` / `Expense` | Paiement / Dépense | Argent reçu / argent dépensé pour une date |
+| `radar` (app) | Radar — « Ce qui coince » | Le copilote : observe les faits (documents, logistique, échéances, obligations) et prévient ; ne modifie rien. Paratge (l'agent économique : « Mon modèle », « Et si… ») vient après ; nom occitan, jamais « Partatge ». Specs : `docs/marque/sources-associe/RADAR-PARATGE/` (02 et 03 font foi) |
 
 **Le mot « Structure »**, utilisé par le métier pour désigner l'organisateur/le lieu (le partenaire externe), **ne doit jamais être utilisé dans le code** pour éviter la confusion avec `Tenant` (la structure de l'utilisateur). Dans les échanges avec le métier, traduire mentalement : leur « Structure » = notre `Promoter`/`Venue` ; leur « Producteur » = notre `Tenant`. Ne jamais utiliser `Client` dans le code. Vocabulaire UI : « cachet », « cession », « feuille de route », « organisateur ». **Pas** de « entité », « tiers », « écriture comptable ».
 
@@ -89,6 +90,8 @@ Une app = un domaine métier. Ne pas créer d'app supplémentaire sans en parler
 - Les montants sont en `DecimalField` (jamais `float`), stockés et calculés **au centime près** ; l'arrondi à l'euro entier est un choix d'affichage réservé aux vues de synthèse (tableau de bord, listes), jamais au stockage (F-58).
 - Recette **prévue** (prix du contrat), **facturée** (montant émis) et **encaissée** (paiements reçus) sont trois montants distincts à garder consultables séparément, jamais fusionnés (F-57).
 - Une facture **émise** est **immuable** : correction par avoir, jamais par modification.
+- Une seule fonction de calcul du solde d'une date et des prix plancher / conseillé (`apps/finance/services.py`, Paratge) : tout écran l'utilise, personne ne la recopie. Un montant issu d'un taux de charges est toujours marqué « estimation » ; aucun calcul de charges sociales réelles (§10).
+- Radar = ce qui est (faits saisis) ; Paratge = ce que vaut une date et ce qui pourrait être. Aucun des deux n'envoie ni ne modifie un prix ou un document sans validation explicite de l'artiste ; aucune alerte ne bloque (les cas graves demandent une confirmation).
 - Numérotation des factures : séquentielle, **sans trou**, par tenant et par année, calculée dans une transaction avec verrou (`select_for_update`).
 - Les infos légales (nom, SIRET, TVA, adresse…) sont **copiées dans le document au moment de l'émission** (snapshot), pas lues dynamiquement.
 - Un contrat passé au statut « signé » conserve un PDF figé.
