@@ -8,6 +8,7 @@ from django.views import View
 
 from apps.core.views import TenantScopedMixin, wants_fragment
 from apps.gigs.models import Gig
+from apps.radar import rules as radar_rules
 from apps.tenants.models import Tenant
 
 from . import invoicing
@@ -230,6 +231,8 @@ class DocumentIssueView(DocumentMixin, View):
         context = self.context(invoice_on_option=self._invoice_on_option())
         if context["missing"] or not context["rows"]:
             return self.refuse(_("Ce document n'est pas prêt à être émis."))
+        action = "invoice_issue" if doc_type == "factures" else "quote_issue"
+        context["alerts"] = radar_rules.for_action(action, self.gig)
         return render(request, "documents/document_issue.html", context)
 
     def _invoice_on_option(self):

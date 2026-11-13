@@ -21,9 +21,10 @@
   <p class="mb-6 text-sm">
     {% translate "Un numéro lui sera attribué et ses informations seront figées. Une fois émis, il ne pourra plus être modifié ni supprimé : une erreur se corrige par un avoir." %}
   </p>
+  {% if alerts %}{% include "radar/_action_alerts.html" %}{% endif %}
   <form method="post" class="flex flex-col gap-3">
     {% csrf_token %}
-    <button type="submit" class="btn btn-primary btn-block">{% translate "Émettre définitivement" %}</button>
+    <button type="submit" class="btn btn-primary btn-block">{% if alerts %}{% translate "Continuer quand même : émettre définitivement" %}{% else %}{% translate "Émettre définitivement" %}{% endif %}</button>
     <a href="{% url 'documents:document-detail' gig.pk doc_type document.pk %}" class="text-center text-sm text-gray-500 hover:text-gray-700">
       {% translate "Retour au brouillon" %}
     </a>

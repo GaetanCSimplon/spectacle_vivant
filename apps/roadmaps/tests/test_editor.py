@@ -202,8 +202,11 @@ def test_reactivating_gives_a_new_link(client, gig):
     assert Roadmap.objects.get(gig=gig).token != first
 
 
-def test_share_requires_post(client, gig):
-    assert client.get(_url("share", gig, "activer")).status_code == 405
+def test_sharing_is_only_switched_on_by_post(client, gig):
+    # The GET page is only Radar's confirmation: it changes nothing.
+    assert client.get(_url("share", gig, "activer")).status_code == 200
+    gig.roadmap.refresh_from_db()
+    assert not gig.roadmap.is_published
 
 
 def test_unknown_section_or_action_is_404(client, gig):
