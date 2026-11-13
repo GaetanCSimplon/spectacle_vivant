@@ -14,6 +14,7 @@ from django.db.models import Sum
 from django.urls import reverse
 from django.utils.translation import gettext_lazy as _
 
+from apps.finance.models import Expense
 from apps.gigs.models import Gig
 
 IMPORTANT, FIX, KNOW = "important", "fix", "know"
@@ -222,3 +223,27 @@ def all_findings(tenant, today=None):
         found.extend(gig_findings(gig, today, gig.expenses_total or Decimal("0")))
     # sorted() is stable: dates stay in order inside one severity.
     return sorted(found, key=lambda f: ORDER[f.severity])
+
+
+def for_gig(gig, today=None):
+    """What Radar sees on one date (the fiche of a date)."""
+    today = today or datetime.date.today()
+    total = gig.expenses.aggregate(total=Sum("amount"))["total"] or Decimal("0")
+    return sorted(gig_findings(gig, today, total), key=lambda f: ORDER[f.severity])
+
+
+def attach_findings(gigs, today=None):
+    """Set `gig.radar` (list of findings) on every date of a list, with one query for the
+    expenses (the cards of "Mes dates")."""
+    today = today or datetime.date.today()
+    gigs = list(gigs)
+    totals = dict(
+        Expense.objects.filter(gig__in=gigs)
+        .values_list("gig_id")
+        .annotate(total=Sum("amount"))
+        .values_list("gig_id", "total")
+    )
+    for gig in gigs:
+        found = gig_findings(gig, today, totals.get(gig.pk) or Decimal("0"))
+        gig.radar = sorted(found, key=lambda f: ORDER[f.severity])
+    return gigs

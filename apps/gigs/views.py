@@ -18,6 +18,7 @@ from apps.core.views import TenantScopedMixin, wants_fragment
 from apps.documents.models import Invoice
 from apps.finance import bord
 from apps.finance import services as finance_services
+from apps.radar import rules as radar_rules
 from apps.roadmaps import services as roadmap_services
 from apps.roadmaps import tour_requests as roadmap_tour_requests
 from apps.tenants.models import Person
@@ -343,8 +344,10 @@ class GigListView(TenantScopedMixin, ListView):
             gigs.exclude(status=Gig.Status.CANCELLED),
             gigs.filter(status=Gig.Status.CANCELLED),
         )
-        context["upcoming_gigs"] = services.attach_progress(
-            live.filter(date__gte=today).order_by("date")
+        context["upcoming_gigs"] = radar_rules.attach_findings(
+            services.attach_progress(
+                live.filter(date__gte=today).select_related("promoter", "venue").order_by("date")
+            )
         )
         context["past_gigs"] = services.attach_progress(
             live.filter(date__lt=today).order_by("-date")
@@ -438,6 +441,8 @@ class GigDetailView(TenantScopedMixin, DetailView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context["balance"] = finance_services.gig_balance(self.object)
+        if self.object.status != Gig.Status.CANCELLED and self.object.date >= timezone.localdate():
+            context["radar"] = radar_rules.for_gig(self.object)
         context["progress"] = services.date_progress(self.object)
         context["overall_percent"] = services.overall_progress(context["progress"])
         context["next_step"] = services.next_step(self.object, context["progress"])
