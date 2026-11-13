@@ -100,3 +100,42 @@ def test_another_structure_gets_a_404_on_the_send_page(client):
     response = client.get(reverse("documents:contract-sent", args=[gig.pk, "envoye"]))
 
     assert response.status_code == 404
+
+
+def test_each_engaging_action_has_its_own_alerts():
+    membership = MembershipFactory(tenant__siret="12345678901234", tenant__city="Pau")
+    gig = _confirmed_gig(membership.tenant)
+
+    invoice = [f.code for f in rules.for_action("invoice_issue", gig)]
+    share = [f.code for f in rules.for_action("roadmap_share", gig)]
+
+    assert invoice == ["RAD-02"]
+    # Far from the concert, the missing times still count at the moment of sharing.
+    assert share == ["RAD-26", "RAD-20"] or sorted(share) == ["RAD-20", "RAD-26"]
+
+
+def test_sharing_the_roadmap_shows_the_alerts_and_still_shares(client):
+    membership = MembershipFactory()
+    client.force_login(membership.user)
+    gig = _confirmed_gig(membership.tenant)
+    url = reverse("roadmaps:share", args=[gig.pk, "activer"])
+
+    page = client.get(url).content.decode()
+    editor = client.get(reverse("roadmaps:editor", args=[gig.pk])).content.decode()
+    response = client.post(url)
+
+    assert "Radar : avant de continuer" in page and "Continuer quand même" in page
+    assert f'href="{url}"' in editor  # a link to the page, not a one-click form
+    assert response.status_code == 302
+    gig.roadmap.refresh_from_db()
+    assert gig.roadmap.is_published
+
+
+def test_stopping_the_share_by_get_just_goes_back_to_the_editor(client):
+    membership = MembershipFactory()
+    client.force_login(membership.user)
+    gig = _confirmed_gig(membership.tenant)
+
+    response = client.get(reverse("roadmaps:share", args=[gig.pk, "arreter"]))
+
+    assert response.status_code == 302

@@ -15,6 +15,7 @@ from django.views.decorators.clickjacking import xframe_options_sameorigin
 from apps.accounts.services import is_tenant_owner
 from apps.core.views import TenantScopedMixin, protect_secret_page, wants_fragment
 from apps.gigs.models import Gig, GigMember
+from apps.radar import rules as radar_rules
 from apps.tenants.models import Person
 
 from . import documents, services, tour_requests
@@ -155,6 +156,9 @@ class RoadmapMixin(TenantScopedMixin):
             "is_owner": is_tenant_owner(self.request.user, self.request.tenant),
             "document_form": forms.get("document") or RoadmapDocumentForm(gig=self.gig),
             "share_url": self.request.build_absolute_uri(public_path) if public_path else "",
+            "share_alerts": []
+            if self.roadmap.is_published
+            else radar_rules.for_action("roadmap_share", self.gig),
         }
 
     def tour_request_context(self):
@@ -201,9 +205,20 @@ class NotesView(RoadmapMixin, View):
 
 
 class ShareView(RoadmapMixin, View):
-    """POST only: turn sharing on (new secret link) or off (link dead for good)."""
+    """Turn sharing on (new secret link) or off (link dead for good), by POST. The GET page is
+    Radar's pop-up before sharing: it lists what is missing and lets the user go on anyway."""
 
-    http_method_names = ["post"]
+    http_method_names = ["get", "post"]
+
+    def get(self, request, gig_id, action):
+        self.load(gig_id)
+        if action != "activer":  # stopping is a POST; nothing to confirm
+            return redirect("roadmaps:editor", gig_id=self.gig.pk)
+        context = {
+            "gig": self.gig,
+            "alerts": radar_rules.for_action("roadmap_share", self.gig),
+        }
+        return render(request, "roadmaps/share_confirm.html", context)
 
     def post(self, request, gig_id, action):
         self.load(gig_id)

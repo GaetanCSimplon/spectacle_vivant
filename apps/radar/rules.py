@@ -150,8 +150,10 @@ def rad_10_contract_gaps(gig):
     return Finding("RAD-10", IMPORTANT, message, url, gig)
 
 
-def rad_20_roadmap_times(gig, today):
-    if gig.date < today or (gig.date - today).days > ROADMAP_DAYS:
+def rad_20_roadmap_times(gig, today, horizon=ROADMAP_DAYS):
+    """`horizon`: how many days before the concert the times are expected (None: always, as when
+    the route sheet is about to be shared)."""
+    if gig.date < today or (horizon is not None and (gig.date - today).days > horizon):
         return None
     missing = [
         label
@@ -285,6 +287,9 @@ def attach_findings(gigs, today=None):
 ACTIONS = {
     "contract_send": {"RAD-01", "RAD-10"},
     "contract_sign": {"RAD-01", "RAD-10", "RAD-29"},
+    "quote_issue": {"RAD-01"},
+    "invoice_issue": {"RAD-01", "RAD-02"},
+    "roadmap_share": {"RAD-20", "RAD-22", "RAD-26"},
 }
 
 
@@ -294,4 +299,8 @@ def for_action(action, gig, today=None):
     today = today or datetime.date.today()
     codes = ACTIONS[action]
     found = [f for f in tenant_findings(gig.tenant) + for_gig(gig, today) if f.code in codes]
+    if action == "roadmap_share" and not any(f.code == "RAD-20" for f in found):
+        # Whatever the distance to the concert, a route sheet about to be shared needs its times.
+        times = rad_20_roadmap_times(gig, today, horizon=None)
+        found += [times] if times else []
     return sorted(found, key=lambda f: ORDER[f.severity])
