@@ -1,0 +1,932 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Paratge · l'équilibre de chaque date</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Nunito+Sans:opsz,wght@6..12,400;6..12,600;6..12,700&display=swap" rel="stylesheet">
+<style>
+/* Charte HopHopHop : violet + jaune du logo, titres Bebas Neue, texte Avenir Next. La barre « où va l'argent » reprend la palette. */
+:root{
+  --bg:#F4F1F6;
+  --panel:#FFFFFF;
+  --ink:#2A1631;
+  --muted:#6B5E72;
+  --line:#DCD3E1;
+  --accent:#622773;      /* violet logo */
+  --yellow:#F2BC1B;      /* jaune logo */
+  --good:#1E7A4C; --warn:#A86400; --bad:#B3261E;
+  --s1:#622773; --s2:#B08BC0; --s3:#C2569B; --s4:#1F8A8A; --s5:#A39AA8; --s6:#F2BC1B; --s7:#2A1631; --s8:#3FA66E; --s9:#D9822B; --s10:#4F6BC4;
+  --display:"Bebas Neue", Impact, "Arial Narrow", sans-serif;
+  --body:"Avenir Next", Avenir, "Nunito Sans", "Segoe UI", system-ui, sans-serif;
+  --mono:var(--body);
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#16101A; --panel:#211827; --ink:#F1ECF4; --muted:#A99DB0; --line:#3A2F41;
+    --accent:#C99BDA; --yellow:#F2BC1B; --good:#4CC38A; --warn:#E8A33A; --bad:#FF7A70;
+    --s1:#A45CBA; --s2:#D3B4E0; --s3:#E37BBE; --s4:#3CC2C2; --s5:#8A8090; --s6:#F2BC1B; --s7:#F1ECF4; --s8:#4CC38A; --s9:#F0A55A; --s10:#8EA2EC;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#16101A; --panel:#211827; --ink:#F1ECF4; --muted:#A99DB0; --line:#3A2F41;
+  --accent:#C99BDA; --yellow:#F2BC1B; --good:#4CC38A; --warn:#E8A33A; --bad:#FF7A70;
+  --s1:#A45CBA; --s2:#D3B4E0; --s3:#E37BBE; --s4:#3CC2C2; --s5:#8A8090; --s6:#F2BC1B; --s7:#F1ECF4; --s8:#4CC38A; --s9:#F0A55A; --s10:#8EA2EC;
+  color-scheme: dark;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font:16px/1.5 var(--body);}
+.wrap{max-width:1180px;margin:0 auto;padding:20px 20px 60px}
+.id{display:flex;align-items:flex-end;gap:18px}.logo{height:96px;width:auto;display:block}
+header.case{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:12px 24px;border-bottom:4px solid var(--accent);padding-bottom:12px}
+.brand{font-family:var(--display);font-weight:400;font-size:clamp(44px,7vw,76px);line-height:.85;letter-spacing:.02em;text-transform:uppercase;margin:0;color:var(--accent)}
+.brand small{display:block;font-size:.32em;letter-spacing:.12em;color:var(--muted);margin-top:8px}
+.tag{font-family:var(--mono);font-size:12px;color:var(--muted);text-align:right;line-height:1.6}
+.tag b{color:var(--ink)}
+nav.tabs{display:flex;gap:8px;flex-wrap:wrap;margin:18px 0 22px}
+nav.tabs a{font-family:var(--display);font-weight:400;font-size:22px;letter-spacing:.04em;text-transform:uppercase;text-decoration:none;color:var(--ink);padding:6px 16px 4px;border:2px solid var(--ink);border-radius:3px;background:transparent}
+nav.tabs a[aria-current="page"]{background:var(--accent);border-color:var(--accent);color:#fff}
+nav.tabs a:focus-visible, button:focus-visible, input:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.lede{max-width:68ch;color:var(--muted);margin:0 0 20px;text-wrap:pretty}
+.grid{display:grid;grid-template-columns:minmax(0,5fr) minmax(0,7fr);gap:24px;align-items:start}
+.grid.even{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
+@media (max-width:880px){.grid,.grid.even{grid-template-columns:1fr}}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:4px;padding:18px}
+.sticky{position:sticky;top:12px}
+@media (max-width:880px){.sticky{position:static}}
+fieldset{border:0;padding:0;margin:0 0 18px}
+legend{font-family:var(--display);font-weight:400;font-size:20px;letter-spacing:.06em;text-transform:uppercase;padding:0;margin-bottom:8px;display:flex;align-items:center;gap:8px}
+legend .n{font-family:var(--body);font-weight:700;font-size:12px;background:var(--yellow);color:#2A1631;border:0;border-radius:2px;padding:0 5px;letter-spacing:0}
+.field{display:grid;grid-template-columns:1fr 132px;gap:2px 12px;align-items:center;padding:7px 0;border-top:1px dashed var(--line)}
+.field label{font-weight:700;font-size:15px}
+.field .hint{grid-column:1 / -1;font-size:13px;color:var(--muted);line-height:1.35}
+.inp{display:flex;align-items:center;border:1.5px solid var(--line);border-radius:3px;background:var(--bg)}
+.inp input{width:100%;min-width:0;border:0;background:transparent;color:var(--ink);font:600 15px var(--mono);padding:6px 8px;text-align:right;font-variant-numeric:tabular-nums}
+.inp span{font:13px var(--mono);color:var(--muted);padding-right:8px}
+details.settings{margin-top:6px;border-top:2px solid var(--ink);padding-top:10px}
+details.settings summary{cursor:pointer;font-family:var(--display);font-weight:400;font-size:18px;letter-spacing:.06em;text-transform:uppercase}
+.mono{font-family:var(--mono);font-variant-numeric:tabular-nums}
+h2.big{font-family:var(--display);font-weight:400;font-size:clamp(30px,4vw,44px);line-height:.95;text-transform:uppercase;margin:0 0 4px;letter-spacing:.02em;text-wrap:balance}
+.sub{color:var(--muted);margin:0 0 14px;font-size:14px}
+/* barre */
+.bar{position:relative;display:flex;height:64px;border:2px solid var(--ink);border-radius:3px;overflow:hidden;background:var(--bg)}
+.seg{height:100%;transition:flex-basis .35s ease;min-width:0}
+.deficit{position:absolute;top:0;bottom:0;right:0;background:repeating-linear-gradient(135deg,transparent 0 6px,color-mix(in srgb,var(--bad) 55%,transparent) 6px 9px);border-left:3px solid var(--bad)}
+.scale{display:flex;justify-content:space-between;font:12px var(--mono);color:var(--muted);margin-top:4px}
+.legend{display:grid;grid-template-columns:repeat(auto-fill,minmax(205px,1fr));gap:6px 18px;margin:14px 0 4px;padding:0;list-style:none}
+.legend li{display:grid;grid-template-columns:12px 1fr auto;gap:8px;align-items:center;font-size:14px;border-bottom:1px dotted var(--line);padding:3px 0}
+.legend i{width:12px;height:12px;border-radius:2px;display:block}
+.legend .v{font-family:var(--mono);font-variant-numeric:tabular-nums;font-size:13px}
+.legend .p{color:var(--muted);font-size:12px;font-family:var(--mono);margin-left:4px}
+.read{margin:14px 0 0;padding:12px 14px;border-left:5px solid var(--accent);background:var(--bg);font-size:15px;text-wrap:pretty}
+.read.good{border-color:var(--good)} .read.warn{border-color:var(--warn)} .read.bad{border-color:var(--bad)}
+.keys{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-top:16px}
+@media (max-width:520px){.keys{grid-template-columns:1fr}}
+.key{border:1.5px solid var(--ink);border-radius:3px;padding:10px 12px;background:var(--panel)}
+.key .l{font-size:13px;color:var(--muted);line-height:1.3;min-height:2.6em}
+.key .v{font:600 24px var(--mono);font-variant-numeric:tabular-nums;margin-top:2px}
+.key .d{font-size:12px;color:var(--muted);margin-top:2px}
+.key.hl{background:var(--yellow);border-color:var(--yellow);color:#2A1631} .key.hl .l,.key.hl .d{color:#5A3F14}
+.meter{height:10px;border:1.5px solid var(--ink);border-radius:2px;overflow:hidden;background:var(--bg);margin:6px 0 4px}
+.meter b{display:block;height:100%;background:var(--accent);transition:width .35s}
+.block{margin-top:18px;padding-top:14px;border-top:2px solid var(--ink)}
+.block h3{font-family:var(--display);font-weight:400;font-size:20px;letter-spacing:.06em;text-transform:uppercase;margin:0 0 6px}
+button,label.btn{font:700 14px var(--body);cursor:pointer;border-radius:3px}
+.btn{background:var(--accent);color:var(--panel);border:2px solid var(--accent);padding:8px 14px}
+.btn.ghost{background:transparent;color:var(--ink);border-color:var(--ink)}
+.btn.small{padding:4px 8px;font-size:13px}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.row .inp{flex:1 1 150px}
+.row .inp input{text-align:left}
+/* tables */
+.tbl{width:100%;border-collapse:collapse;font-size:14px}
+.tbl th{text-align:left;font-weight:700;font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);border-bottom:2px solid var(--ink);padding:6px 6px}
+.tbl td{border-bottom:1px dashed var(--line);padding:4px 6px;vertical-align:middle}
+.tbl td.num, .tbl th.num{text-align:right}
+.tbl input{width:100%;min-width:0;border:1.5px solid transparent;border-radius:3px;background:transparent;color:var(--ink);font:15px var(--body);padding:5px 6px}
+.tbl input:hover{border-color:var(--line)}
+.tbl input[type=number]{font-family:var(--mono);text-align:right;font-variant-numeric:tabular-nums}
+.tbl tfoot td{border-top:2px solid var(--ink);border-bottom:0;font-weight:700;padding-top:8px}
+.x{background:transparent;border:0;color:var(--muted);font-size:18px;line-height:1;padding:4px 6px}
+.x:hover{color:var(--bad)}
+.scroll{overflow-x:auto}
+.lever{display:grid;grid-template-columns:1fr 132px;gap:4px 12px;align-items:center;padding:8px 0;border-top:1px dashed var(--line)}
+.lever label{font-weight:700}
+.lever input[type=range]{grid-column:1 / -1;width:100%;accent-color:var(--accent)}
+.lever .hint{grid-column:1 / -1;font-size:13px;color:var(--muted)}
+.vs{display:grid;gap:8px;margin:6px 0 4px}
+.vs .r{display:grid;grid-template-columns:110px 1fr 110px;gap:10px;align-items:center;font-size:14px}
+.vs .t{height:26px;border:2px solid var(--ink);border-radius:3px;overflow:hidden;display:flex;background:var(--bg)}
+.vs .t span{height:100%;transition:width .35s}
+.solve{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+@media (max-width:620px){.solve{grid-template-columns:1fr}}
+.solve .key .v{font-size:22px}
+.or{font-family:var(--display);font-size:18px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em}
+.chips{display:flex;gap:6px;flex-wrap:wrap}
+.chip{font:600 12px var(--mono);padding:3px 8px;border-radius:20px;border:1.5px solid currentColor}
+.chip.good{color:var(--good)} .chip.warn{color:var(--warn)} .chip.bad{color:var(--bad)}
+.light{display:grid;grid-template-columns:auto 1fr;gap:6px 16px;align-items:start;padding:14px 0;border-top:1px dashed var(--line)}
+.light:first-of-type{border-top:0}
+.dot{width:22px;height:22px;border-radius:50%;border:2px solid var(--ink);margin-top:3px}
+.dot.good{background:var(--good)} .dot.warn{background:var(--warn)} .dot.bad{background:var(--bad)}
+.light h4{margin:0;font-size:17px}
+.light p{margin:2px 0 0;color:var(--muted);text-wrap:pretty;max-width:70ch}
+.checklist{margin:0;padding:0;list-style:none;display:grid;gap:8px}
+.checklist li{display:grid;grid-template-columns:20px 1fr;gap:8px;font-size:14px}
+.checklist li::before{content:"";width:14px;height:14px;border:2px solid var(--ink);border-radius:2px;margin-top:3px}
+.toast{font-size:13px;color:var(--good);min-height:1.2em}
+.foot{margin-top:40px;font-size:12px;color:var(--muted);border-top:1px solid var(--line);padding-top:10px;display:flex;flex-wrap:wrap;gap:6px 18px;justify-content:space-between}
+[hidden]{display:none !important}
+.fin{padding:8px 0 4px;border-top:1px dashed var(--line)}
+.fin-h{display:grid;gap:2px;margin-bottom:6px}.fin-h .hint{font-size:13px;color:var(--muted)}
+.fin-t td{padding:3px 3px;border-bottom:0}.fin-t tr.fin-b td{border-bottom:1px dashed var(--line);padding-bottom:8px}.fin-t tr.fin-a td{padding-top:8px}.fin-t .inp input{text-align:right}.fin-t select{width:100%;min-width:0;border:1.5px solid var(--line);border-radius:3px;background:var(--bg);color:var(--ink);font:13px var(--body);padding:4px 2px}
+.fin-t .inp input{border:0;background:transparent}
+.fin-t tr.off td{opacity:.6}
+.surplus{margin-top:10px;padding:10px 12px;border-left:4px solid var(--yellow);background:color-mix(in srgb,var(--yellow) 14%,var(--panel));font-size:14px}
+.surplus p{margin:0 0 6px}
+.seg3{display:flex;flex-wrap:wrap;gap:6px 14px}.seg3 label{display:flex;gap:6px;align-items:center;font-size:14px}
+/* guide */
+.g-spot{position:fixed;z-index:40;border-radius:6px;box-shadow:0 0 0 3px var(--yellow),0 0 0 9999px rgba(22,10,28,.48);pointer-events:none;transition:all .25s ease}
+.g-spot.center{box-shadow:0 0 0 9999px rgba(22,10,28,.48);width:0;height:0}
+.g-box{position:fixed;z-index:41;width:min(380px,calc(100vw - 32px));background:var(--panel);color:var(--ink);border:2px solid var(--accent);border-radius:6px;box-shadow:0 18px 40px rgba(22,10,28,.35);padding:0;overflow:hidden}
+.g-head{background:var(--accent);color:#fff;display:flex;justify-content:space-between;align-items:center;padding:8px 14px}
+.g-head h2{font-family:var(--display);font-weight:400;font-size:26px;letter-spacing:.03em;margin:0;line-height:1}
+.g-head span{font:700 12px var(--body);background:var(--yellow);color:#2A1631;border-radius:2px;padding:1px 6px}
+.g-body{padding:12px 14px 4px;font-size:15px;line-height:1.5}
+.g-body p{margin:0 0 8px;text-wrap:pretty}
+.g-body .tip{font-size:13px;color:var(--muted);border-left:3px solid var(--yellow);padding-left:8px}
+.g-foot{display:flex;gap:8px;align-items:center;justify-content:space-between;padding:10px 14px 12px;flex-wrap:wrap}
+.g-dots{display:flex;gap:4px}.g-dots i{width:7px;height:7px;border-radius:50%;background:var(--line)}.g-dots i.on{background:var(--accent)}
+.g-skip{background:transparent;border:0;color:var(--muted);text-decoration:underline;font-size:13px;padding:4px}
+@media (max-width:700px){.g-box{left:16px !important;right:16px;bottom:16px !important;top:auto !important;width:auto}}
+@media (prefers-reduced-motion:reduce){.g-spot{transition:none}}
+.notice{display:flex;gap:10px;align-items:flex-start;font-size:13px;line-height:1.45;color:var(--ink);background:color-mix(in srgb,var(--yellow) 22%,var(--panel));border:1px solid color-mix(in srgb,var(--yellow) 60%,var(--line));border-radius:3px;padding:8px 12px;margin:0 0 14px}
+.notice b{white-space:nowrap}
+.notice .ic{flex:0 0 auto;font-weight:700;background:var(--yellow);color:#2A1631;border-radius:2px;padding:0 6px;font-size:12px;margin-top:1px}
+.sheets{display:flex;flex-wrap:wrap;gap:6px;margin:4px 0 10px}
+.sheet{font:600 13px var(--body);border:1.5px solid var(--line);background:var(--bg);color:var(--ink);padding:4px 10px;border-radius:20px;display:flex;gap:6px;align-items:center}
+.sheet:hover{border-color:var(--accent)}
+.sheet[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:var(--panel)}
+.sheet i{width:8px;height:8px;border-radius:50%;display:block}
+.editing{font-size:14px;margin:0 0 8px;padding:6px 10px;border-left:4px solid var(--accent);background:var(--bg)}
+.pill{font:700 11px var(--body);padding:2px 7px;border-radius:20px;border:1.5px solid currentColor;white-space:nowrap}
+.pill.good{color:var(--good)} .pill.warn{color:var(--warn)} .pill.bad{color:var(--bad)}
+.edit{background:transparent;border:1.5px solid var(--line);color:var(--accent);font-size:12px;padding:3px 8px}
+.edit:hover{border-color:var(--accent)}
+.data{display:grid;gap:10px}
+.data textarea{width:100%;min-height:90px;font:12px ui-monospace,Menlo,monospace;border:1.5px solid var(--line);border-radius:3px;background:var(--bg);color:var(--ink);padding:8px}
+.foot .row{gap:8px}
+@media (prefers-reduced-motion:reduce){*{transition:none !important}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="case">
+    <div class="id"><img class="logo" alt="HopHopHop" src="data:image/png;base64,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">
+    <h1 class="brand">Paratge<small>L'équilibre de chaque date</small></h1></div>
+    <div class="tag"><button class="btn small" id="g-open" type="button" style="margin-bottom:8px">Guide pas à pas</button><br>OUTIL MODÈLE ÉCONOMIQUE · <b>TOUR SUPPORT</b><br>HOPHOPHOP CONSULTING · Montpellier<br>Montants HT, structure non assujettie à la TVA</div>
+  </header>
+
+  <p class="notice" id="notice"><span class="ic">À LIRE</span><span><b>Télécharge ce fichier et enregistre-le sur ton ordinateur</b>, puis ouvre-le d'un double-clic depuis ton dossier (l'aperçu de Google Drive ne le fait pas fonctionner). Tes chiffres restent dans ce navigateur, sur cet ordinateur. Pour les garder en sécurité, changer d'appareil ou les envoyer à ton accompagnateur : bouton <b>Enregistrer ma simulation</b> en bas de page.</span></p>
+
+  <nav class="tabs" aria-label="Étapes">
+    <a href="#date" id="tab-date">1 · Une date</a>
+    <a href="#structure" id="tab-structure">2 · La structure</a>
+    <a href="#verdict" id="tab-verdict">3 · Le verdict</a>
+  </nav>
+
+  <!-- ===================== 1. UNE DATE ===================== -->
+  <section id="view-date" aria-labelledby="tab-date">
+    <p class="lede">Un lieu achète un concert : c'est le <b>contrat de cession</b>. Cet argent doit payer les artistes, la route, la technique, et faire vivre la structure qui porte le projet. Remplis les cases à gauche, la barre à droite montre où va chaque euro.</p>
+    <div class="grid">
+      <form class="panel" id="f-date" autocomplete="off" onsubmit="return false">
+        <fieldset>
+          <legend><span class="n">A</span> Ce que paie le lieu</legend>
+          <div class="field"><label for="d-price">Prix de cession</label><div class="inp"><input id="d-price" type="number" min="0" step="50"><span>€</span></div><span class="hint">Montant facturé à l'organisateur pour une date.</span></div>
+          <div class="field"><label for="d-dates">Dates prévues</label><div class="inp"><input id="d-dates" type="number" min="0" step="1"><span>dates</span></div><span class="hint">Sur la saison, pour ce spectacle.</span></div>
+        </fieldset>
+        <fieldset>
+          <legend><span class="n">B</span> Ce que coûte le plateau</legend>
+          <div class="field"><label for="d-n">Artistes sur scène</label><div class="inp"><input id="d-n" type="number" min="1" step="1"><span>pers.</span></div></div>
+          <div class="field"><label for="d-cachet">Cachet brut par artiste</label><div class="inp"><input id="d-cachet" type="number" min="0" step="10"><span>€</span></div><span class="hint">Le salaire avant cotisations, celui inscrit au contrat (CDDU).</span></div>
+          <div class="field"><label for="d-tech">Technique</label><div class="inp"><input id="d-tech" type="number" min="0" step="10"><span>€</span></div><span class="hint">Son, lumière, backline, régie si non fournis par le lieu.</span></div>
+          <div class="field"><label for="d-road">Route</label><div class="inp"><input id="d-road" type="number" min="0" step="10"><span>€</span></div><span class="hint">Transport, hébergement, repas, péages.</span></div>
+          <div class="field"><label for="d-admin">Administratif / paie</label><div class="inp"><input id="d-admin" type="number" min="0" step="5"><span>€</span></div><span class="hint">Coût de gestion de la date : établissement des paies et des contrats, DPAE, prestataire ou logiciel de paie. Laisse vide si c'est fait en interne sans coût.</span></div>
+          <div class="field"><label for="d-other">Autres frais de la date</label><div class="inp"><input id="d-other" type="number" min="0" step="5"><span>€</span></div><span class="hint">Assurance spécifique, petit matériel, location ponctuelle.</span></div>
+        </fieldset>
+        <fieldset>
+          <legend><span class="n">C</span> La création et ses financements</legend>
+          <div class="field"><label for="d-prod">Coût de création / production</label><div class="inp"><input id="d-prod" type="number" min="0" step="100"><span>€</span></div><span class="hint">Tout ce qui a été dépensé avant la première date : résidences et répétitions salariées, mise en scène, décor, costumes, création lumière, teaser, enregistrement.</span></div>
+          <div class="fin">
+            <div class="fin-h"><b>Financements du spectacle</b><span class="hint">Aide à la création ou à la tournée, mécénat, apport en coproduction, fonds propres… Seuls les financements <b>acquis</b> (notifiés par écrit) entrent dans le calcul.</span></div>
+            <div class="scroll"><table class="tbl fin-t" id="t-fin">
+              
+              <tbody></tbody>
+            </table></div>
+            <button class="btn ghost small" id="fin-add" type="button" style="margin-top:6px">+ Ajouter un financement</button>
+            <div class="surplus" id="d-surplus" hidden>
+              <p id="d-surplus-txt"></p>
+              <div class="seg3" role="radiogroup" aria-label="Que faire du surplus d'aide à la création ?">
+                <label><input type="radio" name="surplus" value="reporter"> Reporter sur les dates</label>
+                <label><input type="radio" name="surplus" value="cote"> Garder de côté</label>
+                <label><input type="radio" name="surplus" value="decider"> Décider plus tard</label>
+              </div>
+            </div>
+          </div>
+          <div class="field" style="border-top:2px solid var(--ink)"><label>Création à porter par chaque date</label><div class="mono" id="d-amort-v" style="text-align:right;font-weight:700;font-size:17px"></div><span class="hint" id="d-amort-h"></span></div>
+          <div class="field" id="d-sout-row" hidden><label>Soutien des aides par date</label><div class="mono" id="d-sout-v" style="text-align:right;font-weight:700;font-size:17px;color:var(--good)"></div><span class="hint" id="d-sout-h"></span></div>
+        </fieldset>
+        <fieldset>
+          <legend><span class="n">D</span> Ce que garde la structure</legend>
+          <div class="field"><label for="d-comm">Commission tour support</label><div class="inp"><input id="d-comm" type="number" min="0" max="40" step="0.5"><span>%</span></div><span class="hint">Pourcentage du prix de cession conservé par l'association pour son travail (contrats, paie, booking, suivi). Même réglage dans l'onglet 2.</span></div>
+        </fieldset>
+        <details class="settings">
+          <summary>Réglages fins</summary>
+          <div class="field"><label for="p-soc">Charges patronales</label><div class="inp"><input id="p-soc" type="number" min="0" max="100" step="1"><span>%</span></div><span class="hint">Appliquées au cachet brut. Repère courant autour de 45 % : à vérifier selon la convention et la caisse (GUSO ou paie directe).</span></div>
+          <div class="field"><label for="p-risk">Provision imprévus</label><div class="inp"><input id="p-risk" type="number" min="0" max="30" step="0.5"><span>%</span></div><span class="hint">Mise de côté sur chaque cession pour annulations, surcoûts, retards de paiement.</span></div>
+          <div class="field"><label for="p-safe">Marge de sécurité visée</label><div class="inp"><input id="p-safe" type="number" min="0" max="40" step="1"><span>%</span></div><span class="hint">Sert à calculer le prix conseillé (au-dessus du prix plancher).</span></div>
+        </details>
+      </form>
+
+      <div class="sticky">
+        <div class="panel">
+          <h2 class="big" id="d-title">Où vont 2 500 €</h2>
+          <p class="sub" id="d-sub">Une date, découpée poste par poste.</p>
+          <div class="bar" id="d-bar" role="img" aria-label="Répartition du prix de cession"></div>
+          <div class="scale"><span>0 €</span><span id="d-scale-end"></span></div>
+          <ul class="legend" id="d-legend"></ul>
+          <p class="read" id="d-read"></p>
+          <div class="keys">
+            <div class="key"><div class="l">Prix plancher<br>(la date ne perd rien)</div><div class="v" id="k-floor"></div><div class="d" id="k-floor-d"></div></div>
+            <div class="key hl"><div class="l">Prix conseillé<br>(avec marge de sécurité)</div><div class="v" id="k-target"></div><div class="d" id="k-target-d"></div></div>
+            <div class="key"><div class="l">Cachet brut max<br>possible à ce prix</div><div class="v" id="k-cmax"></div><div class="d" id="k-cmax-d"></div></div>
+          </div>
+          <div class="block">
+            <h3>Amortir la création</h3>
+            <p class="sub" id="d-am-txt" style="margin-bottom:4px"></p>
+            <div class="meter"><b id="d-am-bar" style="background:var(--s9)"></b></div>
+            <p class="sub" id="d-am-note" style="font-size:12px;margin:0"></p>
+          </div>
+          <div class="block">
+            <h3>Côté artistes : vers les 507 h</h3>
+            <p class="sub" id="d-int-txt" style="margin-bottom:4px"></p>
+            <div class="meter"><b id="d-int-bar"></b></div>
+            <p class="sub" style="font-size:12px;margin:0">Repère France Travail : 1 cachet artiste = 12 h. Ouverture des droits intermittents à 507 h sur 12 mois, toutes activités spectacle confondues.</p>
+          </div>
+          <div class="block">
+            <h3>Mes fiches spectacle</h3>
+            <p class="sub" style="margin-bottom:4px">Clique sur une fiche pour la rouvrir et la corriger.</p>
+            <div class="sheets" id="d-sheets"></div>
+            <p class="editing" id="d-editing" hidden></p>
+            <div class="row">
+              <div class="inp"><input id="d-name" type="text" placeholder="Nom du spectacle ou de l'artiste" aria-label="Nom du spectacle"></div>
+              <button class="btn ghost" id="d-save" type="button" hidden>Dupliquer en nouvelle fiche</button>
+              <button class="btn" id="d-add" type="button">Ajouter à la saison</button>
+              <button class="btn ghost" id="d-close" type="button" hidden>Fermer la fiche</button>
+            </div>
+            <div class="toast" id="d-toast" role="status"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== 2. LA STRUCTURE ===================== -->
+  <section id="view-structure" aria-labelledby="tab-structure" hidden>
+    <p class="lede">La structure vit de sa commission sur les cessions, d'un éventuel forfait payé par les projets accompagnés et des aides. En face, ses charges fixes tombent chaque mois, qu'il y ait des concerts ou pas. Cet écran répond à une question : <b>la structure tient-elle debout ?</b></p>
+    <div class="grid even">
+      <div class="panel">
+        <fieldset>
+          <legend><span class="n">E</span> Les projets de la saison</legend>
+          <div class="scroll">
+            <table class="tbl" id="t-roster">
+              <thead><tr><th>Spectacle / artiste</th><th class="num">Dates</th><th class="num">Prix €</th><th class="num">Cessions €</th><th>Date type</th><th></th></tr></thead>
+              <tbody></tbody>
+              <tfoot><tr><td>Total</td><td class="num mono" id="r-dates"></td><td class="num mono" id="r-avg"></td><td class="num mono" id="r-ca"></td><td></td><td></td></tr></tfoot>
+            </table>
+          </div>
+          <button class="btn ghost small" id="r-add" type="button" style="margin-top:8px">+ Ajouter un projet</button>
+        </fieldset>
+        <fieldset>
+          <legend><span class="n">F</span> Les charges fixes</legend>
+          <div class="scroll">
+            <table class="tbl" id="t-fixed">
+              <thead><tr><th>Poste</th><th class="num">Par mois €</th><th class="num">Par an €</th><th></th></tr></thead>
+              <tbody></tbody>
+              <tfoot><tr><td>Total</td><td class="num mono" id="fx-m"></td><td class="num mono" id="fx-y"></td><td></td></tr></tfoot>
+            </table>
+          </div>
+          <button class="btn ghost small" id="fx-add" type="button" style="margin-top:8px">+ Ajouter une charge</button>
+        </fieldset>
+      </div>
+
+      <div class="sticky">
+        <div class="panel">
+          <h2 class="big" id="s-title"></h2>
+          <p class="sub" id="s-sub"></p>
+          <div class="vs">
+            <div class="r"><span>Ce qui rentre</span><div class="t" id="s-in"></div><span class="mono" id="s-in-v" style="text-align:right"></span></div>
+            <div class="r"><span>Ce qui sort</span><div class="t" id="s-out"></div><span class="mono" id="s-out-v" style="text-align:right"></span></div>
+          </div>
+          <ul class="legend" id="s-legend"></ul>
+
+          <div class="block">
+            <h3>Les leviers</h3>
+            <div class="lever"><label for="s-comm">Commission sur les cessions</label><div class="inp"><input id="s-comm-n" type="number" min="0" max="40" step="0.5" aria-label="Commission en pourcentage"><span>%</span></div><input id="s-comm" type="range" min="0" max="30" step="0.5"><span class="hint">Le même taux que dans l'onglet 1 : le modifier ici change aussi la barre d'une date.</span></div>
+            <div class="lever"><label for="s-fee">Forfait annuel par projet</label><div class="inp"><input id="s-fee" type="number" min="0" step="10"><span>€</span></div><span class="hint">Ce que chaque projet accompagné paie à l'année, indépendamment des dates (adhésion, abonnement d'accompagnement).</span></div>
+            <div class="lever"><label for="s-sub">Aides et subventions</label><div class="inp"><input id="s-subv" type="number" min="0" step="100"><span>€</span></div>
+              <label style="grid-column:1/-1;font-weight:400;font-size:14px;display:flex;gap:8px;align-items:center"><input type="checkbox" id="s-subon"> Les compter dans le résultat</label>
+              <span class="hint">Une subvention n'est jamais acquise : regarde d'abord le résultat sans elle.</span></div>
+          </div>
+
+          <div class="block">
+            <h3>Pour équilibrer, il faudrait</h3>
+            <div class="solve">
+              <div class="key"><div class="l">une commission de</div><div class="v" id="sv-k"></div><div class="d" id="sv-k-d"></div></div>
+              <div class="key"><div class="l">ou un forfait par projet de</div><div class="v" id="sv-f"></div><div class="d" id="sv-f-d"></div></div>
+              <div class="key"><div class="l">ou des dates en plus</div><div class="v" id="sv-d"></div><div class="d" id="sv-d-d"></div></div>
+            </div>
+          </div>
+
+          <div class="block">
+            <h3>Trois saisons possibles</h3>
+            <div class="scroll">
+              <table class="tbl" id="t-scen">
+                <thead><tr><th>Scénario</th><th class="num">Dates</th><th class="num">Cessions €</th><th class="num">Résultat €</th></tr></thead>
+                <tbody></tbody>
+              </table>
+            </div>
+            <p class="sub" style="font-size:12px;margin-top:6px">Prudent = 20 % de dates en moins, ambitieux = 20 % en plus, au même prix moyen.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== 3. LE VERDICT ===================== -->
+  <section id="view-verdict" aria-labelledby="tab-verdict" hidden>
+    <p class="lede">La lecture en clair, à partager avec le bureau de l'association ou les artistes. Les feux se mettent à jour à chaque changement dans les onglets 1 et 2.</p>
+    <div class="grid">
+      <div class="panel">
+        <h2 class="big">Le modèle tient-il ?</h2>
+        <div id="v-lights"></div>
+        <div class="row" style="margin-top:14px">
+          <button class="btn" id="v-copy" type="button">Copier la synthèse</button>
+          <span class="toast" id="v-toast" role="status"></span>
+        </div>
+      </div>
+      <div class="panel">
+        <h2 class="big" style="font-size:30px">Avant de signer</h2>
+        <p class="sub">Le cadre à vérifier pour que les chiffres restent vrais.</p>
+        <ul class="checklist">
+          <li>Licence d'entrepreneur de spectacles adaptée : catégorie 2 si la structure emploie le plateau, numéro sur les contrats.</li>
+          <li>Chaque artiste payé en CDDU avec bulletin de paie : un musicien ne facture pas sa date en micro-entreprise.</li>
+          <li>Cachets au-dessus des minima de la convention collective applicable (CCNEAC ou spectacle privé).</li>
+          <li>Paie via le GUSO seulement si le spectacle n'est pas l'activité principale de l'association ; sinon, paie en direct.</li>
+          <li>Défraiements séparés du salaire et dans les plafonds URSSAF de l'année.</li>
+          <li>Commission et forfait inscrits dans une convention écrite entre l'association et chaque projet.</li>
+          <li>Délais de paiement des lieux anticipés : la structure avance souvent les cachets avant d'encaisser la cession.</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section class="panel" id="data" style="margin-top:28px" aria-labelledby="data-h">
+    <h2 class="big" id="data-h" style="font-size:30px">Ma simulation</h2>
+    <p class="sub">Enregistre tout ce que tu as saisi (fiches, charges, leviers) dans un petit fichier .json à garder dans ton dossier ou à envoyer par mail. Rouvre-le ici pour reprendre exactement où tu en étais.</p>
+    <div class="row">
+      <button class="btn" id="x-save" type="button">Enregistrer ma simulation</button>
+      <label class="btn ghost" for="x-file" style="display:inline-block">Ouvrir une simulation</label>
+      <input type="file" id="x-file" accept=".json,application/json" hidden>
+      <button class="btn ghost" id="x-copy" type="button">Copier le code</button>
+      <button class="btn ghost" id="x-paste-open" type="button">Coller un code</button>
+    </div>
+    <div class="data" id="x-paste" hidden style="margin-top:10px">
+      <label for="x-text" class="sub" style="margin:0">Colle ici le code reçu, puis valide.</label>
+      <textarea id="x-text" spellcheck="false"></textarea>
+      <div class="row"><button class="btn" id="x-load" type="button">Charger ce code</button><button class="btn ghost" id="x-cancel" type="button">Annuler</button></div>
+    </div>
+    <div class="toast" id="x-toast" role="status"></div>
+  </section>
+
+  <div class="foot">
+    <span>Outil d'aide à la décision : les taux sont des repères à faire valider (convention, caisse sociale, expert-comptable).</span>
+    <span class="row"><button class="btn ghost small" id="example" type="button">Charger l'exemple</button><button class="btn ghost small" id="reset" type="button">Tout effacer</button></span>
+  </div>
+</div>
+
+<div class="g-spot" id="g-spot" hidden></div>
+<div class="g-box" id="g-box" role="dialog" aria-modal="false" aria-labelledby="g-title" hidden>
+  <div class="g-head"><h2 id="g-title"></h2><span id="g-count"></span></div>
+  <div class="g-body" id="g-body"></div>
+  <div class="g-foot">
+    <div class="g-dots" id="g-dots" aria-hidden="true"></div>
+    <div class="row" style="gap:6px">
+      <button class="g-skip" id="g-skip" type="button">Quitter le guide</button>
+      <button class="btn ghost small" id="g-prev" type="button">Précédent</button>
+      <button class="btn small" id="g-next" type="button">Suivant</button>
+    </div>
+  </div>
+</div>
+<script>
+(function(){
+  "use strict";
+  const EXAMPLE = {
+    price:2500, dates:12, n:2, cachet:500, tech:350, road:250, admin:40, other:45,
+    prod:3000, surplus:"decider",
+    fin:[{type:"creation",amount:1800,state:"acquis",aff:"creation"},{type:"tournee",amount:1200,state:"demande",aff:"diffusion"}],
+    comm:5, soc:45, risk:5, safe:10, name:"",
+    fee:0, subv:3000, subOn:false,
+    roster:[
+      {name:"Spectacle A",dates:12,price:1800,n:1,cachet:800,tech:0,road:250,other:90,prod:0,fin:[],surplus:"decider"},
+      {name:"Spectacle B",dates:8,price:1600,n:1,cachet:600,tech:50,road:180,other:80,prod:0,fin:[],surplus:"decider"},
+      {name:"Spectacle C",dates:6,price:3200,n:1,cachet:1600,tech:200,road:300,other:160,prod:4000,fin:[{type:"creation",amount:2000,state:"demande",aff:"creation"}],surplus:"decider"}],
+    editing:null,
+    fixed:[
+      {name:"Salaires permanents (chargés)",m:0,salary:true},
+      {name:"Local, bureau, télécom",m:0},
+      {name:"Comptabilité",m:0},
+      {name:"Assurances RC pro",m:10},
+      {name:"Outils numériques",m:20},
+      {name:"Prospection, déplacements",m:100},
+      {name:"Communication, catalogue",m:50},
+      {name:"Formation, accompagnement",m:0},
+      {name:"Provision impayés",m:50}
+    ]
+  };
+    const BLANK = {
+    price:0, dates:0, n:1, cachet:0, tech:0, road:0, admin:0, other:0,
+    prod:0, fin:[], surplus:"decider",
+    comm:0, soc:45, risk:5, safe:10, name:"",
+    fee:0, subv:0, subOn:false,
+    roster:[], editing:null,
+    fixed:[
+      {name:"Salaires permanents (chargés)",m:0,salary:true},
+      {name:"Local, bureau, télécom",m:0},
+      {name:"Comptabilité",m:0},
+      {name:"Assurances RC pro",m:0},
+      {name:"Outils numériques",m:0},
+      {name:"Prospection, déplacements",m:0},
+      {name:"Communication, catalogue",m:0},
+      {name:"Formation, accompagnement",m:0},
+      {name:"Provision impayés",m:0}
+    ]
+  };
+  const DEFAULT = BLANK;
+  const KEY="paratge-v1"; const GUIDE_KEY="paratge-guide-vu";
+  let S;
+  try{ const h = window.claude && window.claude.hot && window.claude.hot.data; S = (h && h.price!=null)?h:null; }catch(e){}
+  if(!S){ try{ const raw=localStorage.getItem(KEY); S = raw?JSON.parse(raw):null; }catch(e){ S=null; } }
+  if(!S) S = JSON.parse(JSON.stringify(DEFAULT));
+  const SHEET=["name","dates","price","n","cachet","tech","road","admin","other","prod","fin","surplus"];
+  const FIN_TYPES=[["creation","Aide à la création"],["tournee","Aide à la tournée / diffusion"],["mecenat","Mécénat"],["copro","Apport en coproduction"],["fonds","Fonds propres de la structure (réserves, report à nouveau)"],["autre","Autre"]];
+  const FIN_STATES=[["envisage","Envisagé"],["demande","Demandé"],["acquis","Acquis"]];
+  const FIN_AFF=[["creation","Sert à la création"],["diffusion","Sert aux dates"]];
+  const clone=o=>JSON.parse(JSON.stringify(o));
+  function copySheet(from,to){ SHEET.forEach(k=>to[k]= k==="fin" ? clone(from.fin||[]) : from[k]); return to; }
+  function normFin(r){
+    let f=Array.isArray(r.fin)? r.fin : [];
+    if(!f.length && n(r.aid)>0) f=[{type:"creation",amount:n(r.aid),state:r.aidOk?"acquis":"demande",aff:"creation"}]; // ancienne version : une seule aide
+    return f.map(x=>({type:FIN_TYPES.some(t=>t[0]===x.type)?x.type:"autre",amount:n(x.amount),state:FIN_STATES.some(t=>t[0]===x.state)?x.state:"envisage",aff:x.aff==="diffusion"?"diffusion":"creation"}));
+  }
+  const normSur=v=>["reporter","cote","decider"].includes(v)?v:"decider";
+  function normalize(o){
+    const d=JSON.parse(JSON.stringify(DEFAULT));
+    const out=Object.assign(d,o||{});
+    if(!Array.isArray(out.roster)) out.roster=[];
+    out.roster=out.roster.map(r=>({name:String(r.name||"Projet"),dates:n(r.dates),price:n(r.price),n:Math.max(1,Math.round(n(r.n)||1)),cachet:n(r.cachet),tech:n(r.tech),road:n(r.road),admin:n(r.admin),other:n(r.other),prod:n(r.prod),fin:normFin(r),surplus:normSur(r.surplus)}));
+    if(!Array.isArray(out.fixed)) out.fixed=JSON.parse(JSON.stringify(DEFAULT.fixed));
+    out.fixed=out.fixed.map(f=>({name:String(f.name||"Charge"),m:n(f.m),salary:!!f.salary}));
+    if(!(Number.isInteger(out.editing) && out.editing>=0 && out.editing<out.roster.length)) out.editing=null;
+    out.fin=normFin(out); out.surplus=normSur(out.surplus);
+    ["price","dates","n","cachet","tech","road","admin","other","prod","comm","soc","risk","safe","fee","subv"].forEach(k=>out[k]=n(out[k]));
+    out.n=Math.max(1,Math.round(out.n)); out.subOn=!!out.subOn; out.name=String(out.name||"");
+    return out;
+  }
+  try{ window.claude && window.claude.hot && window.claude.hot.snapshot && window.claude.hot.snapshot(()=>S); }catch(e){}
+  function save(){ try{ localStorage.setItem(KEY, JSON.stringify(S)); }catch(e){} }
+
+  const $ = id => document.getElementById(id);
+  const eur0 = new Intl.NumberFormat("fr-FR",{style:"currency",currency:"EUR",maximumFractionDigits:0});
+  const num0 = new Intl.NumberFormat("fr-FR",{maximumFractionDigits:0});
+  const pct1 = v => (Math.round(v*1000)/10).toLocaleString("fr-FR")+" %";
+  const e = v => eur0.format(Math.round(v));
+  const n = v => { const x = parseFloat(v); return isFinite(x)?x:0; };
+  const esc = s => String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+
+  /* ---------- calculs ---------- */
+  function calcDate(sh){
+    sh=sh||S;
+    const P=sh.price, k=S.comm/100, r=S.risk/100, t=S.soc/100, m=S.safe/100;
+    const brut=sh.n*sh.cachet, soc=brut*t, plateau=brut+soc;
+    return finish(sh,P,k,r,t,m,brut,soc,plateau,false);
+  }
+  // Formules de la spécification Radar / Paratge §5.2. allFin=true : « et si » tous les financements étaient acquis.
+  function finish(sh,P,k,r,t,m,brut,soc,plateau,allFin){
+    const nd=Math.max(1,sh.dates||0);
+    const fin=(sh.fin||[]).filter(f=>allFin || f.state==="acquis");
+    const aidCrea=fin.filter(f=>f.aff==="creation").reduce((a,f)=>a+n(f.amount),0);
+    const aidDiff=fin.filter(f=>f.aff==="diffusion").reduce((a,f)=>a+n(f.amount),0);
+    const prod=sh.prod||0;
+    const toAmort=Math.max(0,prod-aidCrea);
+    const surplus=Math.max(0,aidCrea-prod);
+    const amort=toAmort/nd;
+    const surplusUsed = sh.surplus==="reporter" ? surplus : 0;
+    const soutien=(aidDiff+surplusUsed)/nd;
+    const run=plateau+sh.tech+sh.road+(sh.admin||0)+sh.other;      // coûts_date
+    const direct=Math.max(0,run+amort-soutien);
+    const risk=r*P, comm=k*P;
+    const reste0=P-run-risk-comm;                                   // reste_avant_création
+    const reste=reste0-amort+soutien;                               // solde_date
+    const datesToAmort = toAmort<=0 ? 0 : (reste0>0 ? Math.ceil(toAmort/reste0) : Infinity);
+    const denom=1-k-r;
+    const floor = denom>0 ? direct/denom : Infinity;
+    const target = (denom-m)>0 ? direct/(denom-m) : Infinity;
+    const cmax = sh.n>0 ? (P*denom - sh.tech - sh.road - (sh.admin||0) - sh.other - amort + soutien)/(sh.n*(1+t)) : 0;
+    const status = reste<0 ? "bad" : (P<target ? "warn" : "good");
+    const pending=(sh.fin||[]).filter(f=>f.state!=="acquis" && n(f.amount)>0);
+    return {P,brut,soc,plateau,run,direct,risk,comm,reste0,reste,floor,target,cmax,status,amort,soutien,toAmort,aidCrea,aidDiff,surplus,surplusUsed,datesToAmort,pending,partArt: P>0?plateau/P:0};
+  }
+  function whatIf(sh){ sh=sh||S; const t=S.soc/100, brut=sh.n*sh.cachet; return finish(sh,sh.price,S.comm/100,S.risk/100,t,S.safe/100,brut,brut*t,brut*(1+t),true); }
+  const STAT={good:"Saine",warn:"Juste",bad:"Perte"};
+  function calcStruct(){
+    const k=S.comm/100;
+    const ca=S.roster.reduce((a,r)=>a+n(r.dates)*n(r.price),0);
+    const dates=S.roster.reduce((a,r)=>a+n(r.dates),0);
+    const N=S.roster.length;
+    const avg= dates>0? ca/dates : 0;
+    const fx = S.fixed.reduce((a,f)=>a+n(f.m),0)*12;
+    const revC=k*ca, revF=S.fee*N, subv=S.subOn?S.subv:0;
+    const rev=revC+revF+subv;
+    const res=rev-fx;
+    const resNoSub=revC+revF-fx;
+    const needK = ca>0 ? (fx-revF-subv)/ca : NaN;
+    const needF = N>0 ? (fx-revC-subv)/N : NaN;
+    const perDate = k*avg;
+    const needD = res>=0 ? 0 : (perDate>0 ? Math.ceil(-res/perDate) : Infinity);
+    const salary = S.fixed.some(f=>f.salary && n(f.m)>0);
+    const scen=[["Prudent",.8],["Réaliste",1],["Ambitieux",1.2]].map(([l,s])=>({l,d:dates*s,ca:ca*s,res:k*ca*s+revF+subv-fx}));
+    return {ca,dates,N,avg,fx,revC,revF,subv,rev,res,resNoSub,needK,needF,needD,salary,scen,perDate};
+  }
+
+  /* ---------- rendu : une date ---------- */
+  const SEGS=[["brut","Cachets bruts","--s1"],["soc","Charges patronales","--s2"],["tech","Technique","--s3"],["road","Route","--s4"],["admin","Administratif / paie","--s10"],["other","Autres frais","--s5"],["amort","Amortissement création","--s9"],["risk","Provision imprévus","--s6"],["comm","Structure (commission)","--s7"]];
+  function renderDate(){
+    const c=calcDate();
+    const vals={brut:c.brut,soc:c.soc,tech:S.tech,road:S.road,admin:S.admin,other:S.other,amort:c.amort,risk:c.risk,comm:c.comm};
+    const costs=Object.values(vals).reduce((a,b)=>a+b,0);
+    const base=Math.max(c.P+c.soutien,costs,1);
+    let html="";
+    SEGS.forEach(([k,,v])=>{ html+=`<div class="seg" style="flex:0 0 ${vals[k]/base*100}%;background:var(${v})"></div>`; });
+    if(c.reste>0) html+=`<div class="seg" style="flex:0 0 ${c.reste/base*100}%;background:var(--s8)"></div>`;
+    if(c.reste<0) html+=`<div class="deficit" style="left:${(c.P+c.soutien)/base*100}%"></div>`;
+    $("d-bar").innerHTML=html;
+    $("d-scale-end").textContent = (c.soutien>0 ? `prix ${e(c.P)} + aides ${e(c.soutien)}` : (c.reste<0 ? `prix payé ${e(c.P)}` : e(c.P))) + (c.reste<0 ? ` · coûts ${e(costs)}` : "");
+    $("d-title").textContent= c.P>0 ? `Où vont ${e(c.P)}` : "Où va l'argent ?";
+    $("d-sub").textContent = c.P>0 ? `${S.n} artiste${S.n>1?"s":""} sur scène · ${pct1(c.partArt)} du prix va au plateau artistique (cachets + charges).` : "Indique un prix de cession.";
+    let lg="";
+    SEGS.forEach(([k,l,v])=>{ lg+=`<li><i style="background:var(${v})"></i><span>${l}</span><span class="v">${e(vals[k])}<span class="p">${c.P>0?Math.round(vals[k]/c.P*100):0}%</span></span></li>`; });
+    if(c.soutien>0) lg+=`<li><i style="background:transparent;border:2px dashed var(--good)"></i><span>Aides réparties sur la date</span><span class="v">+${e(c.soutien)}</span></li>`;
+    lg+=`<li><i style="background:${c.reste>=0?"var(--s8)":"var(--bad)"}"></i><span>${c.reste>=0?"Reste pour le projet":"Il manque"}</span><span class="v">${e(Math.abs(c.reste))}</span></li>`;
+    $("d-legend").innerHTML=lg;
+
+    const rd=$("d-read");
+    if(c.P<=0){ rd.className="read"; rd.innerHTML="<b>Commence par le prix de cession</b> (case A), puis le coût du plateau (case B). La barre se remplit au fur et à mesure."; }
+    else
+    if(c.reste<0){ rd.className="read bad"; rd.innerHTML=`<b>Cette date perd ${e(-c.reste)}.</b> À ce prix, il faudrait baisser le cachet à ${e(Math.max(0,c.cmax))} brut par artiste, ou vendre au moins ${isFinite(c.floor)?e(c.floor):"—"}.`; }
+    else if(c.P < c.target){ rd.className="read warn"; rd.innerHTML=`<b>La date tient, de justesse.</b> Il reste ${e(c.reste)}, soit ${pct1(c.P?c.reste/c.P:0)} du prix : un retard de paiement ou un surcoût suffit à passer dans le rouge. Vise ${e(c.target)}.`; }
+    else { rd.className="read good"; rd.innerHTML=`<b>La date est saine.</b> Il reste ${e(c.reste)} : de quoi monter chaque cachet de ${e(Math.max(0,c.cmax-S.cachet))} brut, ou constituer une réserve pour le projet (création, clip, résidence).`; }
+
+    $("k-floor").textContent = isFinite(c.floor)?e(c.floor):"—";
+    $("k-floor-d").textContent = isFinite(c.floor)? (c.P>=c.floor?`tu es ${e(c.P-c.floor)} au-dessus`:`il manque ${e(c.floor-c.P)}`) : "commission + imprévus ≥ 100 %";
+    $("k-target").textContent = isFinite(c.target)?e(c.target):"—";
+    $("k-target-d").textContent = `marge de sécurité ${S.safe} %`;
+    $("k-cmax").textContent = e(Math.max(0,c.cmax));
+    $("k-cmax-d").textContent = c.cmax>=S.cachet ? `+${e(c.cmax-S.cachet)} vs cachet actuel` : `${e(c.cmax-S.cachet)} vs cachet actuel`;
+
+    const h=S.dates*12, p=Math.min(1,h/507);
+    $("d-int-txt").innerHTML = `Avec <b>${num0.format(S.dates)} date${S.dates>1?"s":""}</b>, chaque artiste cumule <b>${num0.format(h)} h</b> sur ce seul spectacle, soit ${Math.round(h/507*100)} % des 507 h. Il en faudrait ${Math.ceil(507/12)} sur 12 mois pour y arriver seul.`;
+    $("d-int-bar").style.width=(p*100)+"%";
+    $("d-amort-v").textContent = e(c.amort)+" / date";
+    $("d-amort-h").textContent = S.prod>0 ? `${e(c.toAmort)} à amortir${c.aidCrea?` (création ${e(S.prod)} − aides acquises ${e(Math.min(c.aidCrea,S.prod))})`:""}, réparti sur ${num0.format(Math.max(1,S.dates))} date${S.dates>1?"s":""}.` : "Pas de coût de création saisi : la date ne porte que ses propres frais.";
+    $("d-sout-row").hidden = !(c.soutien>0);
+    $("d-sout-v").textContent = "+"+e(c.soutien)+" / date";
+    $("d-sout-h").textContent = [c.aidDiff?`${e(c.aidDiff)} d'aides acquises pour les dates`:"", c.surplusUsed?`${e(c.surplusUsed)} de surplus de création reporté`:""].filter(Boolean).join(" + ")+`, réparti sur ${num0.format(Math.max(1,S.dates))} date${S.dates>1?"s":""}.`;
+    // surplus (D21)
+    $("d-surplus").hidden = !(c.surplus>0);
+    if(c.surplus>0){
+      $("d-surplus-txt").innerHTML=`<b>Les aides à la création acquises dépassent son coût de ${e(c.surplus)}.</b> Que veux-tu faire de ce surplus ? Tant que ce n'est pas décidé, il n'entre pas dans le calcul.`;
+      document.querySelectorAll('input[name="surplus"]').forEach(x=>x.checked = x.value===S.surplus);
+    }
+    const wi=whatIf();
+    const pendTxt = c.pending.length ? `Et si les financements en attente (${c.pending.map(f=>e(f.amount)).join(", ")}) étaient acquis ? Chaque date ${wi.reste>=0?"dégagerait":"perdrait"} ${e(Math.abs(wi.reste))} au lieu de ${c.reste>=0?"":"−"}${e(Math.abs(c.reste))}.` : "";
+    if(S.prod<=0 && !(S.fin||[]).length){ $("d-am-txt").textContent="Aucune création à amortir pour ce spectacle (production externe ou déjà remboursée)."; $("d-am-bar").style.width="0%"; $("d-am-note").textContent=""; }
+    else if(c.toAmort<=0){ $("d-am-txt").innerHTML= S.prod>0 ? `<b>Les aides acquises couvrent toute la création.</b>` : "Pas de coût de création : les financements saisis servent aux dates."; $("d-am-bar").style.width= S.prod>0?"100%":"0%"; $("d-am-note").textContent=pendTxt; }
+    else if(!isFinite(c.datesToAmort)){ $("d-am-txt").innerHTML=`<b>La création ne pourra pas être remboursée à ce prix</b> : chaque date perd déjà de l'argent avant même de compter les ${e(c.toAmort)} de création.`; $("d-am-bar").style.width="0%"; $("d-am-note").textContent=pendTxt; }
+    else {
+      const ok=c.datesToAmort<=S.dates;
+      $("d-am-txt").innerHTML=`Chaque date dégage ${e(c.reste0)} avant création. Il faut <b>${num0.format(c.datesToAmort)} date${c.datesToAmort>1?"s":""}</b> pour rembourser les ${e(c.toAmort)} de création : ${ok?`c'est fait à la date ${c.datesToAmort} sur ${S.dates} prévues.`:`il en manque ${num0.format(c.datesToAmort-S.dates)} par rapport aux ${S.dates} prévues.`}`;
+      $("d-am-bar").style.width=Math.min(100,S.dates/c.datesToAmort*100)+"%";
+      $("d-am-note").textContent = pendTxt;
+    }
+    finRows();
+    renderSheets();
+    return c;
+  }
+
+  function renderSheets(){
+    $("d-sheets").innerHTML = S.roster.length ? S.roster.map((r,i)=>{ const st=calcDate(r).status; return `<button type="button" class="sheet" data-open="${i}" aria-pressed="${S.editing===i}"><i style="background:var(--${st})"></i>${esc(r.name)}</button>`; }).join("") : `<span class="sub">Aucune fiche pour l'instant.</span>`;
+    const ed=S.editing!=null;
+    $("d-editing").hidden=!ed;
+    if(ed) $("d-editing").innerHTML=`Tu modifies la fiche <b>« ${esc(S.roster[S.editing].name)} »</b>. Chaque changement est enregistré dans la fiche et dans la saison.`;
+    $("d-add").hidden=ed; $("d-save").hidden=!ed; $("d-close").hidden=!ed;
+  }
+  const opt=(list,v)=>list.map(([k,l])=>`<option value="${k}"${k===v?" selected":""}>${l}</option>`).join("");
+  function finRows(){
+    const tb=$("t-fin").tBodies[0];
+    if(document.activeElement && tb.contains(document.activeElement)) return; // ne pas casser la saisie en cours
+    const f=S.fin||[];
+    tb.innerHTML = f.length ? f.map((x,i)=>`<tr class="fin-a ${x.state==="acquis"?"":"off"}"><td colspan="3"><select data-fi="${i}" data-ff="type" aria-label="Type du financement ${i+1}">${opt(FIN_TYPES,x.type)}</select></td>
+      <td style="width:28px"><button class="x" type="button" data-fdel="${i}" aria-label="Retirer le financement ${i+1}">×</button></td></tr>
+      <tr class="fin-b ${x.state==="acquis"?"":"off"}"><td style="width:34%"><div class="inp"><input type="number" min="0" step="100" data-fi="${i}" data-ff="amount" value="${x.amount||""}" placeholder="0" aria-label="Montant du financement ${i+1}"><span>€</span></div></td>
+      <td><select data-fi="${i}" data-ff="state" aria-label="État du financement ${i+1}">${opt(FIN_STATES,x.state)}</select></td>
+      <td colspan="2"><select data-fi="${i}" data-ff="aff" aria-label="Affectation du financement ${i+1}">${opt(FIN_AFF,x.aff)}</select></td></tr>`).join("")
+      : `<tr><td colspan="5" class="sub" style="padding:8px 4px">Aucun financement pour ce spectacle.</td></tr>`;
+  }
+  function openSheet(i){
+    const r=S.roster[i]; if(!r) return;
+    copySheet(r,S); S.editing=i; fillInputs(); renderAll();
+    $("d-toast").textContent="";
+  }
+  function syncSheet(){ if(S.editing==null) return; copySheet(S,S.roster[S.editing]); }
+
+  /* ---------- rendu : la structure ---------- */
+  function rosterRows(){
+    $("t-roster").tBodies[0].innerHTML = S.roster.map((r,i)=>`<tr>
+      <td><input type="text" id="ro-n-${i}" data-r="${i}" data-f="name" value="${esc(r.name)}" aria-label="Nom du projet ${i+1}"></td>
+      <td class="num" style="width:76px"><input type="number" min="0" id="ro-d-${i}" data-r="${i}" data-f="dates" value="${r.dates}" aria-label="Dates projet ${i+1}"></td>
+      <td class="num" style="width:110px"><input type="number" min="0" step="50" id="ro-p-${i}" data-r="${i}" data-f="price" value="${r.price}" aria-label="Prix moyen projet ${i+1}"></td>
+      <td class="num mono" id="ro-ca-${i}"></td>
+      <td id="ro-st-${i}"></td>
+      <td style="white-space:nowrap;width:110px"><button class="edit" type="button" data-redit="${i}">Modifier</button><button class="x" type="button" data-rdel="${i}" aria-label="Retirer ${esc(r.name)}">×</button></td></tr>`).join("");
+  }
+  function fixedRows(){
+    $("t-fixed").tBodies[0].innerHTML = S.fixed.map((f,i)=>`<tr>
+      <td><input type="text" id="fx-n-${i}" data-x="${i}" data-f="name" value="${esc(f.name)}" aria-label="Poste ${i+1}"></td>
+      <td class="num" style="width:88px"><input type="number" min="0" step="10" id="fx-v-${i}" data-x="${i}" data-f="m" value="${f.m||""}" placeholder="0" aria-label="Montant mensuel ${esc(f.name)}"></td>
+      <td class="num mono" id="fx-y-${i}"></td>
+      <td style="width:30px"><button class="x" type="button" data-xdel="${i}" aria-label="Retirer ${esc(f.name)}">×</button></td></tr>`).join("");
+  }
+  function renderStruct(){
+    const s=calcStruct();
+    S.roster.forEach((r,i)=>{ const el=$("ro-ca-"+i); if(el) el.textContent=num0.format(n(r.dates)*n(r.price)); const st=$("ro-st-"+i); if(st){ const c=calcDate(r); st.innerHTML=`<span class="pill ${c.status}" title="Reste par date : ${e(c.reste)}">${STAT[c.status]} · ${c.reste>=0?"+":""}${num0.format(c.reste)} €</span>`; } });
+    S.fixed.forEach((f,i)=>{ const el=$("fx-y-"+i); if(el) el.textContent=num0.format(n(f.m)*12); });
+    $("r-dates").textContent=num0.format(s.dates); $("r-avg").textContent=num0.format(s.avg); $("r-ca").textContent=num0.format(s.ca);
+    $("fx-m").textContent=num0.format(s.fx/12); $("fx-y").textContent=num0.format(s.fx);
+
+    $("s-title").textContent = (s.ca<=0 && s.fx<=0) ? "À remplir" : s.res>=0 ? `+${e(s.res)} sur l'année` : `${e(s.res)} sur l'année`;
+    $("s-title").style.color = s.res>=0 ? "var(--good)" : "var(--bad)";
+    $("s-sub").textContent = `${num0.format(s.dates)} dates · ${e(s.ca)} de cessions gérées · chaque date rapporte ${e(s.perDate)} à la structure.`;
+    const max=Math.max(s.rev,s.fx,1);
+    $("s-in").innerHTML = `<span style="width:${s.revC/max*100}%;background:var(--s7)"></span><span style="width:${s.revF/max*100}%;background:var(--s1)"></span><span style="width:${s.subv/max*100}%;background:var(--s6)"></span>`;
+    $("s-out").innerHTML = `<span style="width:${s.fx/max*100}%;background:var(--bad)"></span>`;
+    $("s-in-v").textContent=e(s.rev); $("s-out-v").textContent=e(s.fx);
+    $("s-legend").innerHTML = `<li><i style="background:var(--s7)"></i><span>Commissions</span><span class="v">${e(s.revC)}</span></li><li><i style="background:var(--s1)"></i><span>Forfaits projets</span><span class="v">${e(s.revF)}</span></li><li><i style="background:var(--s6)"></i><span>Aides ${S.subOn?"":"(non comptées)"}</span><span class="v">${e(S.subOn?s.subv:0)}</span></li><li><i style="background:var(--bad)"></i><span>Charges fixes</span><span class="v">${e(s.fx)}</span></li>`;
+
+    $("sv-k").textContent = isFinite(s.needK)? pct1(Math.max(0,s.needK)) : "—";
+    $("sv-k-d").textContent = isFinite(s.needK)? (s.needK*100<=S.comm?"déjà atteint":`au lieu de ${S.comm} %`) : "aucune cession";
+    $("sv-f").textContent = isFinite(s.needF)? e(Math.max(0,s.needF)) : "—";
+    $("sv-f-d").textContent = isFinite(s.needF)? (s.needF<=S.fee?"déjà atteint":`par projet et par an, pour ${s.N} projet${s.N>1?"s":""}`) : "aucun projet";
+    $("sv-d").textContent = s.needD===0 ? "0" : (isFinite(s.needD)? "+"+num0.format(s.needD) : "—");
+    $("sv-d-d").textContent = s.needD===0 ? "le volume actuel suffit" : (isFinite(s.needD)? `à ${e(s.avg)} en moyenne` : "commission à 0 %");
+
+    $("t-scen").tBodies[0].innerHTML = s.scen.map(x=>`<tr><td>${x.l}</td><td class="num mono">${num0.format(Math.round(x.d))}</td><td class="num mono">${num0.format(x.ca)}</td><td class="num mono" style="color:${x.res>=0?"var(--good)":"var(--bad)"};font-weight:600">${x.res>=0?"+":""}${num0.format(x.res)}</td></tr>`).join("");
+    return s;
+  }
+
+  /* ---------- rendu : verdict ---------- */
+  let summaryText="";
+  function renderVerdict(c,s){
+    const L=[];
+    if(c.P<=0 && !S.roster.length){
+      $("v-lights").innerHTML=`<div class="light"><span class="dot" aria-hidden="true"></span><div><h4>Pas encore de verdict</h4><p>Renseigne au moins une date dans l'onglet 1 et tes charges dans l'onglet 2 : les feux s'allumeront ici.</p></div></div>`;
+      summaryText="Simulation Paratge vide."; return;
+    }
+    // 1 date
+    if(c.reste<0) L.push(["bad","La date type perd de l'argent",`À ${e(c.P)}, il manque ${e(-c.reste)} par date. Prix plancher : ${e(c.floor)}.`]);
+    else if(c.P<c.target) L.push(["warn","La date type tient de justesse",`Il reste ${e(c.reste)} par date. Prix conseillé : ${e(c.target)}.`]);
+    else L.push(["good","La date type est saine",`Il reste ${e(c.reste)} par date au-dessus de tous les coûts.`]);
+    // part artistique
+    const pa=c.partArt;
+    if(pa<.35) L.push(["warn",`Le plateau ne reçoit que ${pct1(pa)} du prix`,"La route et la technique pèsent lourd. Vérifie si le lieu peut fournir la technique ou loger l'équipe."]);
+    else L.push(["good",`${pct1(pa)} du prix va au plateau artistique`,"Cachets et cotisations restent le premier poste : c'est cohérent pour un projet d'artistes."]);
+    // structure
+    if(s.resNoSub>=0) L.push(["good","La structure s'autofinance",`Sans aucune aide, elle dégage ${e(s.resNoSub)} sur l'année.`]);
+    else if(s.res>=0) L.push(["warn","La structure dépend des aides",`Sans les ${e(s.subv)} d'aides, elle perdrait ${e(-s.resNoSub)}. Une aide refusée et l'année bascule.`]);
+    else L.push(["bad","La structure ne couvre pas ses charges",`Il manque ${e(-s.res)}. Leviers : commission à ${pct1(Math.max(0,s.needK))}, ou forfait de ${e(Math.max(0,s.needF))} par projet, ou ${isFinite(s.needD)?num0.format(s.needD):"—"} date${s.needD>1?"s":""} de plus.`]);
+    // prudence
+    const pr=s.scen[0];
+    if(pr.res<0) L.push(["warn","Fragile si la saison déçoit",`Avec 20 % de dates en moins, le résultat passe à ${e(pr.res)}.`]);
+    else L.push(["good","Résiste à une saison prudente",`Même avec 20 % de dates en moins : ${e(pr.res)}.`]);
+    // salaire
+    if(!s.salary) L.push(["warn","Aucun salaire permanent","Le travail d'administration et de booking n'est pas payé : il repose sur du bénévolat. Le modèle reste à consolider avant d'embaucher."]);
+    // création
+    const unc = S.roster.map(r=>({r,c:calcDate(r)})).filter(x=>x.c.toAmort>0 && x.c.datesToAmort>x.r.dates);
+    const pend = S.roster.map(r=>({r,p:(r.fin||[]).filter(f=>f.state!=="acquis" && n(f.amount)>0)})).filter(x=>x.p.length);
+    const sur = S.roster.map(r=>({r,c:calcDate(r)})).filter(x=>x.c.surplus>0 && x.r.surplus==="decider");
+    if(unc.length) L.push(["bad",`Création non amortie : ${unc.map(x=>x.r.name).join(", ")}`,unc.map(x=>`${x.r.name} : ${isFinite(x.c.datesToAmort)?`${x.c.datesToAmort} dates nécessaires pour ${x.r.dates} prévues`:"chaque date perd déjà de l'argent"}`).join(" · ")+"."]);
+    else if(S.roster.some(r=>r.prod>0)) L.push(["good","Les créations sont amorties par les tournées","Avec les dates prévues, chaque spectacle rembourse ses coûts de création."]);
+    if(pend.length) L.push(["warn",`Financements en attente sur ${pend.length} spectacle${pend.length>1?"s":""}`,pend.map(x=>`${x.r.name} : ${x.p.map(f=>e(f.amount)).join(" + ")}`).join(" · ")+". Non comptés tant qu'ils ne sont pas notifiés par écrit."]);
+    if(sur.length) L.push(["warn","Surplus d'aide à la création à décider",sur.map(x=>`${x.r.name} : ${e(x.c.surplus)}`).join(" · ")+". Ouvre la fiche pour choisir : reporter sur les dates ou garder de côté."]);
+    // intermittence
+    const h=S.dates*12;
+    if(h<507) L.push(["warn",`${num0.format(h)} h sur 507 pour chaque artiste`,"Ce spectacle seul ne suffit pas à ouvrir des droits : il faut d'autres engagements dans l'année."]);
+    else L.push(["good",`${num0.format(h)} h : le seuil des 507 h est couvert`,"Ce spectacle suffit, sur 12 mois, à atteindre le seuil d'ouverture de droits."]);
+
+    $("v-lights").innerHTML = L.map(([cl,t,p])=>`<div class="light"><span class="dot ${cl}" aria-hidden="true"></span><div><h4><span class="chip ${cl}" style="margin-right:8px">${cl==="good"?"OK":cl==="warn"?"À surveiller":"Bloquant"}</span>${t}</h4><p>${p}</p></div></div>`).join("");
+    summaryText = "SYNTHÈSE MODÈLE ÉCONOMIQUE — TOUR SUPPORT\n\n"+L.map(([cl,t,p])=>`[${cl==="good"?"OK":cl==="warn"?"À SURVEILLER":"BLOQUANT"}] ${t}\n   ${p}`).join("\n")+
+      `\n\nHypothèses : cession ${e(c.P)}, ${S.n} artiste(s) à ${e(S.cachet)} brut, commission ${S.comm} %, charges patronales ${S.soc} %, ${num0.format(s.dates)} dates sur la saison, charges fixes ${e(s.fx)}/an.`;
+  }
+
+  function renderAll(){ const c=renderDate(); const s=renderStruct(); renderVerdict(c,s); save(); }
+
+  /* ---------- liaison des champs ---------- */
+  const bind = {"d-prod":"prod","d-price":"price","d-dates":"dates","d-n":"n","d-cachet":"cachet","d-tech":"tech","d-road":"road","d-admin":"admin","d-other":"other","d-comm":"comm","p-soc":"soc","p-risk":"risk","p-safe":"safe","s-fee":"fee","s-subv":"subv"};
+  function fillInputs(){
+    const EMPTYOK=["price","dates","cachet","tech","road","admin","other","prod","comm","fee","subv"];
+    Object.entries(bind).forEach(([id,k])=>{ const el=$(id); el.value = (EMPTYOK.includes(k) && !S[k]) ? "" : S[k]; if(EMPTYOK.includes(k)) el.placeholder="0"; });
+    $("s-comm").value=S.comm; $("s-comm-n").value=S.comm; $("s-subon").checked=!!S.subOn; $("d-name").value=S.name||"";
+  }
+  Object.entries(bind).forEach(([id,k])=>{
+    $(id).addEventListener("input",ev=>{ S[k]=Math.max(0,n(ev.target.value)); if(k==="n") S.n=Math.max(1,Math.round(S.n)); if(k==="comm"){ $("s-comm").value=S.comm; $("s-comm-n").value=S.comm; } if(SHEET.includes(k)) syncSheet(); renderAll(); });
+  });
+  function setComm(v){ S.comm=Math.max(0,n(v)); $("d-comm").value=S.comm; $("s-comm").value=S.comm; $("s-comm-n").value=S.comm; renderAll(); }
+  $("s-comm").addEventListener("input",ev=>setComm(ev.target.value));
+  $("s-comm-n").addEventListener("input",ev=>setComm(ev.target.value));
+  $("s-subon").addEventListener("change",ev=>{ S.subOn=ev.target.checked; renderAll(); });
+  function finEdit(ev){ const t=ev.target, i=t.dataset.fi; if(i==null) return; const f=t.dataset.ff; S.fin[+i][f] = f==="amount" ? Math.max(0,n(t.value)) : t.value; if(f==="state"){ const b=t.closest("tr"), a=b.previousElementSibling; [a,b].forEach(r=>r&&r.classList.toggle("off",t.value!=="acquis")); } syncSheet(); renderAll(); }
+  $("t-fin").addEventListener("input",finEdit); $("t-fin").addEventListener("change",finEdit);
+  $("t-fin").addEventListener("click",ev=>{ const i=ev.target.dataset.fdel; if(i==null) return; S.fin.splice(+i,1); syncSheet(); document.activeElement && document.activeElement.blur(); renderAll(); });
+  $("fin-add").addEventListener("click",()=>{ S.fin=S.fin||[]; S.fin.push({type:"creation",amount:0,state:"demande",aff:"creation"}); syncSheet(); renderAll(); const el=document.querySelector(`#t-fin [data-fi="${S.fin.length-1}"][data-ff="amount"]`); el&&el.focus(); });
+  document.querySelectorAll('input[name="surplus"]').forEach(x=>x.addEventListener("change",()=>{ S.surplus=x.value; syncSheet(); renderAll(); }));
+  $("d-name").addEventListener("input",ev=>{ S.name=ev.target.value; if(S.editing!=null){ syncSheet(); rosterRows(); renderAll(); } else save(); });
+
+  $("t-roster").addEventListener("input",ev=>{ const t=ev.target, i=t.dataset.r; if(i==null) return; const f=t.dataset.f; S.roster[i][f]= f==="name"?t.value:Math.max(0,n(t.value)); if(S.editing===+i){ S[f]=S.roster[i][f]; fillInputs(); } renderAll(); });
+  $("t-roster").addEventListener("click",ev=>{
+    const ed=ev.target.dataset.redit; if(ed!=null){ openSheet(+ed); location.hash="#date"; window.scrollTo(0,0); return; }
+    const i=ev.target.dataset.rdel; if(i==null) return; const k=+i;
+    S.roster.splice(k,1); if(S.editing===k) S.editing=null; else if(S.editing!=null && S.editing>k) S.editing--;
+    rosterRows(); renderAll(); });
+  $("d-sheets").addEventListener("click",ev=>{ const b=ev.target.closest("[data-open]"); if(!b) return; const i=+b.dataset.open; if(S.editing===i){ S.editing=null; renderAll(); } else openSheet(i); });
+  $("d-close").addEventListener("click",()=>{ S.editing=null; S.name=""; $("d-name").value=""; renderAll(); $("d-toast").textContent="Fiche fermée. Les champs servent maintenant à préparer un nouveau spectacle."; });
+  $("d-save").addEventListener("click",()=>{ const cp=copySheet(S,{}); cp.name=(S.name||"Spectacle")+" (copie)"; S.roster.push(cp); rosterRows(); openSheet(S.roster.length-1); $("d-toast").textContent=`Copie créée : « ${cp.name} ». Tu peux la modifier sans toucher à l'original.`; });
+  $("r-add").addEventListener("click",()=>{ S.roster.push({name:"Nouveau projet",dates:4,price:1500}); rosterRows(); renderAll(); const el=$("ro-n-"+(S.roster.length-1)); el&&el.focus(); el&&el.select(); });
+  $("t-fixed").addEventListener("input",ev=>{ const t=ev.target, i=t.dataset.x; if(i==null) return; const f=t.dataset.f; S.fixed[i][f]= f==="name"?t.value:Math.max(0,n(t.value)); renderAll(); });
+  $("t-fixed").addEventListener("click",ev=>{ const i=ev.target.dataset.xdel; if(i==null) return; S.fixed.splice(+i,1); fixedRows(); renderAll(); });
+  $("fx-add").addEventListener("click",()=>{ S.fixed.push({name:"Nouvelle charge",m:0}); fixedRows(); renderAll(); const el=$("fx-n-"+(S.fixed.length-1)); el&&el.focus(); el&&el.select(); });
+
+  $("d-add").addEventListener("click",()=>{
+    const name=(S.name||"").trim()||`Spectacle ${S.roster.length+1}`;
+    const r=copySheet(S,{}); r.name=name; S.roster.push(r); S.name=name; S.editing=S.roster.length-1; $("d-name").value=name; rosterRows(); renderAll();
+    $("d-toast").textContent=`« ${name} » ajouté à la saison : ${S.dates} dates à ${e(S.price)}. La fiche reste ouverte pour la corriger.`;
+  });
+  $("v-copy").addEventListener("click",async()=>{
+    try{ await navigator.clipboard.writeText(summaryText); $("v-toast").textContent="Synthèse copiée : colle-la dans un mail ou un compte rendu."; }
+    catch(err){ $("v-toast").textContent="Copie refusée par le navigateur : sélectionne le texte des feux à la main."; }
+  });
+  function loadState(o){ S=normalize(JSON.parse(JSON.stringify(o))); fillInputs(); rosterRows(); fixedRows(); renderAll(); }
+  let armed=null;
+  function twoClick(btn,label,confirmLabel,fn){
+    btn.addEventListener("click",()=>{
+      if(armed===btn){ armed=null; btn.textContent=label; fn(); return; }
+      if(armed){ armed.textContent=armed.dataset.l; }
+      armed=btn; btn.dataset.l=label; btn.textContent=confirmLabel;
+      setTimeout(()=>{ if(armed===btn){ armed=null; btn.textContent=label; } },4000);
+    });
+  }
+  twoClick($("reset"),"Tout effacer","Clique encore pour tout effacer",()=>loadState(BLANK));
+  twoClick($("example"),"Charger l'exemple","Clique encore : tes données seront remplacées",()=>loadState(EXAMPLE));
+
+  /* ---------- enregistrer / ouvrir ---------- */
+  function pack(){ return JSON.stringify({app:"paratge",version:1,saved:new Date().toISOString(),data:S},null,1); }
+  function load(txt){
+    let o; try{ o=JSON.parse(txt); }catch(err){ throw new Error("Ce texte n'est pas une simulation Paratge lisible."); }
+    const d=o && (o.app==="paratge"||o.app==="partatge") ? o.data : o;
+    if(!d || typeof d!=="object" || !("roster" in d)) throw new Error("Ce fichier ne contient pas de simulation Paratge.");
+    S=normalize(d); fillInputs(); rosterRows(); fixedRows(); renderAll();
+    return o.saved ? new Date(o.saved).toLocaleString("fr-FR",{dateStyle:"long",timeStyle:"short"}) : null;
+  }
+  const xt=$("x-toast");
+  function slug(t){ return (t||"").normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/[^a-zA-Z0-9]+/g,"-").replace(/^-|-$/g,"").toLowerCase(); }
+  $("x-save").addEventListener("click",()=>{
+    try{
+      const blob=new Blob([pack()],{type:"application/json"});
+      const a=document.createElement("a"); a.href=URL.createObjectURL(blob);
+      const d=new Date(); const stamp=d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");
+      const who=slug(S.roster[0]&&S.roster[0].name);
+      a.download=`paratge-${who?who+"-":""}${stamp}.json`;
+      document.body.appendChild(a); a.click(); a.remove(); setTimeout(()=>URL.revokeObjectURL(a.href),2000);
+      xt.style.color="var(--good)"; xt.textContent=`Fichier « ${a.download} » enregistré dans tes Téléchargements. Si rien n'apparaît, utilise « Copier le code ».`;
+    }catch(err){ xt.style.color="var(--bad)"; xt.textContent="Le téléchargement est bloqué ici : utilise « Copier le code » et colle-le dans un mail ou un document."; }
+  });
+  $("x-file").addEventListener("change",ev=>{
+    const f=ev.target.files&&ev.target.files[0]; if(!f) return;
+    const rd=new FileReader();
+    rd.onload=()=>{ try{ const when=load(rd.result); xt.style.color="var(--good)"; xt.textContent=`Simulation « ${f.name} » ouverte${when?` (enregistrée le ${when})`:""}.`; }catch(err){ xt.style.color="var(--bad)"; xt.textContent=err.message; } ev.target.value=""; };
+    rd.readAsText(f);
+  });
+  $("x-copy").addEventListener("click",async()=>{
+    try{ await navigator.clipboard.writeText(pack()); xt.style.color="var(--good)"; xt.textContent="Code copié : colle-le dans un mail ou un document pour le garder."; }
+    catch(err){ $("x-paste").hidden=false; $("x-text").value=pack(); $("x-text").select(); xt.style.color="var(--warn)"; xt.textContent="Copie automatique refusée : le code est sélectionné ci-dessous, fais Cmd+C (ou Ctrl+C)."; }
+  });
+  $("x-paste-open").addEventListener("click",()=>{ $("x-paste").hidden=false; $("x-text").value=""; $("x-text").focus(); });
+  $("x-cancel").addEventListener("click",()=>{ $("x-paste").hidden=true; xt.textContent=""; });
+  $("x-load").addEventListener("click",()=>{ try{ const when=load($("x-text").value); $("x-paste").hidden=true; xt.style.color="var(--good)"; xt.textContent=`Simulation chargée${when?` (enregistrée le ${when})`:""}.`; }catch(err){ xt.style.color="var(--bad)"; xt.textContent=err.message; } });
+
+  /* ---------- navigation ---------- */
+  const VIEWS=["date","structure","verdict"];
+  function route(){
+    const h=(location.hash||"#date").slice(1); const v=VIEWS.includes(h)?h:"date";
+    VIEWS.forEach(x=>{ $("view-"+x).hidden = x!==v; const a=$("tab-"+x); if(x===v) a.setAttribute("aria-current","page"); else a.removeAttribute("aria-current"); });
+  }
+  window.addEventListener("hashchange",route);
+
+
+  /* ---------- guide pas à pas ---------- */
+  const STEPS=[
+    {tab:null, t:"Bienvenue", h:`<p><b>Paratge</b> t'aide à répondre à trois questions : combien vendre un concert, combien payer les artistes, et combien la structure doit garder pour vivre.</p><p>Je t'accompagne case par case, en une dizaine de minutes. Tu peux quitter à tout moment et relancer le guide avec le bouton en haut à droite.</p><p class="tip">Envie de voir d'abord un cas rempli ? Bouton « Charger l'exemple » tout en bas de la page.</p>`},
+    {tab:"date", sel:"#d-price", up:"fieldset", t:"Le prix de cession", h:`<p>C'est le montant que l'organisateur te paie pour <b>une</b> date, hors taxes.</p><p>Indique aussi le <b>nombre de dates</b> que tu vises sur la saison pour ce spectacle.</p><p class="tip">Pas encore de prix ? Mets celui que tu espères : l'outil te dira s'il tient.</p>`},
+    {tab:"date", sel:"#d-n", up:"fieldset", t:"Le plateau", h:`<p>Combien d'artistes sur scène, et quel <b>cachet brut</b> pour chacun (le salaire avant cotisations).</p><p>Puis ce que coûte la date elle-même : <b>technique</b>, <b>route</b> (transport, hébergement, repas), <b>administratif</b> (gestion de la paie, contrats) et <b>autres frais</b>.</p><p class="tip">Vérifie que le cachet respecte le minimum de la convention collective.</p>`},
+    {tab:"date", sel:"#d-prod", up:"fieldset", t:"La création", h:`<p>Si le spectacle a coûté de l'argent avant la première date (résidences, répétitions, décor, enregistrement…), indique-le ici. La tournée devra le rembourser.</p><p>Liste ensuite ses <b>financements</b> : aide à la création ou à la tournée, mécénat, coproduction, fonds propres. Pour chacun, indique son état et ce qu'il finance : la création ou les dates.</p><p class="tip">Seuls les financements « acquis » (notifiés par écrit) comptent. Les autres apparaissent en « Et si… ».</p>`},
+    {tab:"date", sel:"#d-comm", up:"fieldset", t:"La part de la structure", h:`<p>Le pourcentage de chaque cession que garde l'association pour son travail : contrats, paie, booking, suivi.</p><p class="tip">Pas d'idée ? Laisse 0 pour l'instant : l'onglet 2 calculera le taux nécessaire pour faire vivre la structure.</p>`},
+    {tab:"date", sel:"#d-bar", up:".panel", t:"Lire le résultat", h:`<p>La barre montre où va chaque euro de la cession. Le message coloré dit si la date est <b>saine</b>, <b>juste</b> ou <b>en perte</b>.</p><p>Les trois chiffres clés : le <b>prix plancher</b>, le <b>prix conseillé</b> et le <b>cachet maximum</b> possible à ce prix.</p>`},
+    {tab:"date", sel:"#d-name", up:".block", t:"Garder le spectacle", h:`<p>Donne un nom au spectacle et clique sur <b>Ajouter à la saison</b>.</p><p>Pour un autre spectacle, ferme la fiche et recommence depuis la case A. Chaque fiche apparaît ici en pastille : un clic pour la rouvrir et la corriger.</p>`},
+    {tab:"structure", sel:"#t-roster", up:"fieldset", t:"La saison", h:`<p>Tous tes spectacles sont listés ici avec leur état. Tu peux corriger les dates et le prix directement, ou cliquer sur <b>Modifier</b> pour rouvrir la fiche complète.</p>`},
+    {tab:"structure", sel:"#t-fixed", up:"fieldset", t:"Les charges fixes", h:`<p>Ce que coûte la structure <b>chaque mois</b>, qu'il y ait des concerts ou non. Remplis les montants, renomme ou ajoute des lignes.</p><p class="tip">Personne n'est salarié ? Laisse 0 aux salaires : le verdict te le signalera.</p>`},
+    {tab:"structure", sel:"#s-comm", up:".block", t:"Les leviers", h:`<p>Fais varier la <b>commission</b>, un <b>forfait annuel</b> payé par chaque projet, et les <b>aides</b> de la structure.</p><p>Juste en dessous, l'outil te dit ce qu'il faudrait pour équilibrer : un taux, un forfait ou un nombre de dates.</p>`},
+    {tab:"verdict", sel:"#v-lights", up:".panel", t:"Le verdict", h:`<p>Les feux résument tout : vert, c'est solide ; orange, à surveiller ; rouge, à corriger avant de signer.</p><p><b>Copier la synthèse</b> te donne un texte prêt à coller dans un mail ou un compte rendu de bureau.</p>`},
+    {tab:"verdict", sel:"#x-save", up:"section", t:"Enregistrer", h:`<p>Tes chiffres restent dans ce navigateur. Pour les garder en sécurité, changer d'ordinateur ou les envoyer à ton accompagnateur, clique sur <b>Enregistrer ma simulation</b>.</p><p>Le guide est terminé. Bon travail !</p>`}
+  ];
+  let gi=-1, gTarget=null;
+  const gBox=$("g-box"), gSpot=$("g-spot");
+  function gPlace(){
+    if(gi<0) return;
+    const pad=6, vw=window.innerWidth, vh=window.innerHeight;
+    if(!gTarget){
+      gSpot.className="g-spot center"; gSpot.style.left=vw/2+"px"; gSpot.style.top=vh/2+"px"; gSpot.style.width="0px"; gSpot.style.height="0px";
+      const w=gBox.offsetWidth, h=gBox.offsetHeight;
+      gBox.style.left=Math.max(16,(vw-w)/2)+"px"; gBox.style.top=Math.max(16,(vh-h)/2)+"px"; return;
+    }
+    const r=gTarget.getBoundingClientRect();
+    gSpot.className="g-spot";
+    gSpot.style.left=(r.left-pad)+"px"; gSpot.style.top=(r.top-pad)+"px"; gSpot.style.width=(r.width+pad*2)+"px"; gSpot.style.height=(r.height+pad*2)+"px";
+    const w=gBox.offsetWidth, h=gBox.offsetHeight, gap=16;
+    let x,y;
+    if(r.right+gap+w<=vw-16){ x=r.right+gap; y=Math.min(Math.max(16,r.top),vh-h-16); }
+    else if(r.left-gap-w>=16){ x=r.left-gap-w; y=Math.min(Math.max(16,r.top),vh-h-16); }
+    else if(r.bottom+gap+h<=vh-16){ y=r.bottom+gap; x=Math.min(Math.max(16,r.left),vw-w-16); }
+    else if(r.top-gap-h>=16){ y=r.top-gap-h; x=Math.min(Math.max(16,r.left),vw-w-16); }
+    else { x=vw-w-16; y=vh-h-16; }
+    gBox.style.left=x+"px"; gBox.style.top=y+"px";
+  }
+  function gShow(i){
+    gi=i; const st=STEPS[i];
+    if(st.tab && location.hash!=="#"+st.tab){ location.hash="#"+st.tab; route(); }
+    $("g-title").textContent=st.t; $("g-count").textContent=(i+1)+" / "+STEPS.length; $("g-body").innerHTML=st.h;
+    $("g-dots").innerHTML=STEPS.map((_,k)=>`<i class="${k===i?"on":""}"></i>`).join("");
+    $("g-prev").hidden=i===0; $("g-next").textContent= i===0?"C'est parti": i===STEPS.length-1?"Terminer":"Suivant";
+    gBox.hidden=false; gSpot.hidden=false;
+    gTarget=null;
+    if(st.sel){ const el=document.querySelector(st.sel); gTarget= el ? (st.up? el.closest(st.up)||el : el) : null; }
+    if(gTarget){
+      const big=gTarget.getBoundingClientRect().height > window.innerHeight*0.7;
+      gTarget.scrollIntoView({block: big?"start":"center", behavior: matchMedia("(prefers-reduced-motion: reduce)").matches?"auto":"smooth"});
+      setTimeout(()=>{ gPlace(); const inp=st.sel && document.querySelector(st.sel); if(inp && inp.matches("input") && window.innerWidth>700) inp.focus({preventScroll:true}); },380);
+    }
+    gPlace();
+  }
+  function gClose(){ gi=-1; gBox.hidden=true; gSpot.hidden=true; try{ localStorage.setItem(GUIDE_KEY,"1"); }catch(e){} }
+  $("g-next").addEventListener("click",()=>{ gi<STEPS.length-1 ? gShow(gi+1) : gClose(); });
+  $("g-prev").addEventListener("click",()=>{ if(gi>0) gShow(gi-1); });
+  $("g-skip").addEventListener("click",gClose);
+  $("g-open").addEventListener("click",()=>gShow(0));
+  document.addEventListener("keydown",ev=>{ if(ev.key==="Escape" && gi>=0) gClose(); });
+  let gRaf=0; const gRe=()=>{ cancelAnimationFrame(gRaf); gRaf=requestAnimationFrame(gPlace); };
+  window.addEventListener("scroll",gRe,{passive:true}); window.addEventListener("resize",gRe);
+  document.addEventListener("input",gRe);
+
+  function start(){ S=normalize(S); fillInputs(); rosterRows(); fixedRows(); renderAll(); route();
+    let seen=false; try{ seen=localStorage.getItem(GUIDE_KEY)==="1"; }catch(e){}
+    const empty = S.price<=0 && !S.roster.length;
+    if(!seen && empty) setTimeout(()=>gShow(0),300);
+  }
+  start();
+})();
+</script>
+</body>
+</html>

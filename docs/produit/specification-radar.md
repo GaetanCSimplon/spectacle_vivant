@@ -1,3 +1,5 @@
+> **Remplacée le 2026-11-13** par `docs/marque/sources-associe/RADAR-PARATGE/02-RADAR-copilote.md` et `03-PARATGE-agent.md`, qui font foi. Ce document reste pour l'historique (dont la règle R1 de la feuille de route, à reprendre dans le Radar).
+
 
 > **Statut (2026-10-25) : reporté après la bêta** (décision avec l'utilisateur). Document fourni par l'associé, repris tel quel (seul le nom « Scènsemble », ancien nom du produit, est corrigé en « Bòrd Pro »). Analyse et ordre d'implémentation proposé : `docs/produit/etat-du-projet.md`, section « Après le MVP ». Rien n'est codé.
 
