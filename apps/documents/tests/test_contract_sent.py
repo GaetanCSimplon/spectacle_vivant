@@ -92,13 +92,16 @@ def test_no_button_before_the_contract_is_generated(client):
     assert "Marquer comme envoyé" not in content
 
 
-def test_the_sent_view_is_post_only_and_login_only(client):
+def test_the_sent_view_is_login_only_and_the_get_page_is_only_for_sending(client):
     gig = _gig()
     url = reverse("documents:contract-sent", args=[gig.pk, "envoye"])
 
     assert client.post(url).status_code == 302  # to the login page
+    assert client.get(url).status_code == 302
     _login(client, gig.tenant)
-    assert client.get(url).status_code == 405
+    assert client.get(url).status_code == 200  # Radar's confirmation page
+    back = client.get(reverse("documents:contract-sent", args=[gig.pk, "non-envoye"]))
+    assert back.status_code == 302  # taking the mark back is a POST
 
 
 def test_another_tenants_contract_is_a_404_and_stays_untouched(client):

@@ -1,0 +1,15 @@
+{% load i18n %}
+{% comment %}Radar's pop-up content before an engaging action: the alerts that bear on it, each with a way to correct. Never blocks; the colour is never alone (the severity is written).{% endcomment %}
+<section class="card mb-6" aria-labelledby="action-alerts">
+  <h2 id="action-alerts" class="mb-2 text-base font-bold">{% translate "Radar : avant de continuer" %}</h2>
+  <ul class="divide-y divide-page-line">
+    {% for finding in alerts %}
+      <li class="flex flex-wrap items-center gap-3 py-2 text-sm">
+        <span class="pill shrink-0 {% if finding.severity == 'important' %}pill-bad{% elif finding.severity == 'fix' %}pill-warn{% else %}pill-neutral{% endif %}">{{ finding.severity_label }}</span>
+        <span class="min-w-0 flex-1 text-stone-800">{{ finding.message }}</span>
+        <a href="{{ finding.fix_url }}" class="btn btn-secondary btn-sm shrink-0">{% translate "Corriger" %}</a>
+      </li>
+    {% endfor %}
+  </ul>
+  <p class="mt-2 text-sm text-gray-600">{% translate "Rien ne vous empêche de continuer : Radar prévient, vous décidez." %}</p>
+</section>

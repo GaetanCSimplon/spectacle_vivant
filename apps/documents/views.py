@@ -10,6 +10,7 @@ from apps.addressbook import services as addressbook_services
 from apps.core.views import TenantScopedMixin, wants_fragment
 from apps.gigs import mail as gig_mail
 from apps.gigs.models import Gig
+from apps.radar import rules as radar_rules
 
 from . import services
 from .forms import (
@@ -80,6 +81,9 @@ class ContractHistoryView(TenantScopedMixin, View):
             and bool(contract and contract.latest_version)
             and not signed,
             "can_mark_sent": bool(contract and contract.latest_version) and not signed,
+            "send_alerts": radar_rules.for_action("contract_send", gig)
+            if contract and not contract.sent_at
+            else [],
             "mail": self.contract_mail(gig, contract),
             "can_add_signed_pdf": signed and not contract.signed_pdf,
             "signed_pdf_form": SignedPdfForm(),
@@ -121,7 +125,12 @@ class ContractSignView(TenantScopedMixin, View):
         self.contract = Contract.objects.filter(gig=self.gig, tenant=self.request.tenant).first()
 
     def render_page(self, form):
-        context = {"gig": self.gig, "contract": self.contract, "form": form}
+        context = {
+            "gig": self.gig,
+            "contract": self.contract,
+            "form": form,
+            "alerts": radar_rules.for_action("contract_sign", self.gig),
+        }
         return render(self.request, self.template_name, context)
 
     def refuse(self, error):
@@ -206,7 +215,15 @@ class ContractGenerateView(TenantScopedMixin, View):
 
 
 class ContractSentView(TenantScopedMixin, View):
-    """POST only: mark the contract as sent to the promoter, or take the mark back."""
+    """Mark the contract as sent to the promoter, or take the mark back (POST). The GET page
+    is Radar's pop-up: it lists what is still missing and lets the user go on anyway."""
+
+    def get(self, request, gig_id, action):
+        gig = get_object_or_404(Gig, pk=gig_id, tenant=request.tenant)
+        if action != "envoye":  # taking the mark back is a POST; nothing to confirm
+            return redirect("documents:contract-history", gig_id=gig.pk)
+        context = {"gig": gig, "alerts": radar_rules.for_action("contract_send", gig)}
+        return render(request, "documents/contract_send_confirm.html", context)
 
     def post(self, request, gig_id, action):
         gig = get_object_or_404(Gig, pk=gig_id, tenant=request.tenant)

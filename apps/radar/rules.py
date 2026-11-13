@@ -278,3 +278,20 @@ def attach_findings(gigs, today=None):
         found = gig_findings(gig, today, totals.get(gig.pk) or Decimal("0"))
         gig.radar = sorted(found, key=lambda f: ORDER[f.severity])
     return gigs
+
+
+# The alerts that matter before an action that commits the user (one pop-up per action, shared
+# with Paratge later): the rules of the structure and of the date that bear on it.
+ACTIONS = {
+    "contract_send": {"RAD-01", "RAD-10"},
+    "contract_sign": {"RAD-01", "RAD-10", "RAD-29"},
+}
+
+
+def for_action(action, gig, today=None):
+    """The alerts to show before `action` on `gig`, most serious first. Never blocks: the user
+    can always go on."""
+    today = today or datetime.date.today()
+    codes = ACTIONS[action]
+    found = [f for f in tenant_findings(gig.tenant) + for_gig(gig, today) if f.code in codes]
+    return sorted(found, key=lambda f: ORDER[f.severity])
