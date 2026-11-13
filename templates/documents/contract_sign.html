@@ -23,6 +23,8 @@
     <p>{% translate "Je confirme que ce contrat a été signé en dehors de l'application." %}</p>
   </div>
 
+  {% if alerts %}{% include "radar/_action_alerts.html" %}{% endif %}
+
   <form method="post" enctype="multipart/form-data" class="space-y-4">
     {% csrf_token %}
     {{ form.as_p }}
@@ -30,7 +32,7 @@
       {% translate "Le PDF signé est facultatif : vous pourrez l'ajouter plus tard. PDF uniquement, 10 Mo au maximum." %}
     </p>
     <div class="flex flex-col gap-3">
-      <button type="submit" class="btn btn-primary btn-block">{% translate "Confirmer : le contrat est signé" %}</button>
+      <button type="submit" class="btn btn-primary btn-block">{% if alerts %}{% translate "Continuer quand même : le contrat est signé" %}{% else %}{% translate "Confirmer : le contrat est signé" %}{% endif %}</button>
       <a href="{% url 'documents:contract-history' gig.pk %}" class="text-center text-sm text-gray-500 hover:text-gray-700">
         {% translate "Annuler" %}
       </a>

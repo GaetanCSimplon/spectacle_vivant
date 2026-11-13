@@ -53,10 +53,15 @@
           </form>
         {% endif %}
       </div>
+      {% if send_alerts %}
+        {# Radar has something to say: a page lists it first (the user can still go on). #}
+        <a href="{% url 'documents:contract-sent' gig.pk 'envoye' %}" class="btn btn-secondary btn-block">{% translate "Marquer comme envoyé" %}</a>
+      {% else %}
       <form method="post" action="{% url 'documents:contract-sent' gig.pk contract.sent_at|yesno:'non-envoye,envoye' %}">
         {% csrf_token %}
         <button type="submit" class="btn btn-secondary btn-block">{% if contract.sent_at %}{% translate "Retirer la mention « envoyé »" %}{% else %}{% translate "Marquer comme envoyé" %}{% endif %}</button>
       </form>
+      {% endif %}
     {% endif %}
     {% if can_sign %}
       <a href="{% url 'documents:contract-sign' gig.pk %}" class="btn btn-primary btn-block">
