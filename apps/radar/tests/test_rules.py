@@ -122,8 +122,34 @@ def test_findings_are_sorted_most_serious_first_then_by_date():
 
 
 def test_every_rule_has_its_explanation():
-    codes = {f"RAD-{n:02d}" for n in (1, 2, 20, 22, 26, 29, 35)}
+    codes = {f"RAD-{n:02d}" for n in (1, 2, 10, 20, 22, 26, 29, 35)}
 
     assert codes == set(rules.EXPLANATIONS)
     for explanation in rules.EXPLANATIONS.values():
         assert explanation.why and explanation.admin
+
+
+def test_rad_10_lists_what_the_contract_of_a_confirmed_date_lacks():
+    gig = _gig(status=Gig.Status.CONFIRMED)
+
+    found = rules.gig_findings(gig, TODAY)
+
+    assert _codes(found) == ["RAD-10"]
+    assert found[0].severity == rules.IMPORTANT
+    for word in ("SIRET", "représentant", "mode de paiement", "lieu de signature"):
+        assert word in found[0].message
+
+
+def test_rad_10_is_quiet_when_complete_and_for_other_statuses():
+    complete = _gig(
+        status=Gig.Status.CONFIRMED,
+        payment_method=Gig.PaymentMethod.TRANSFER,
+        signing_place="Lyon",
+    )
+    complete.promoter.siret = "12345678901234"
+    complete.promoter.representative_name = "Marie Durand"
+    complete.promoter.representative_role = "Maire"
+    option = _gig()  # an option has no contract yet
+
+    assert rules.gig_findings(complete, TODAY) == []
+    assert rules.gig_findings(option, TODAY) == []
