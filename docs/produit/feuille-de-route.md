@@ -551,7 +551,8 @@ Sources de l'associé : `docs/marque/sources-associe/RADAR-PARATGE/` (`02-RADAR-
 
 - [x] **V0, PR 1 — règles et écran** (2026-11-13, sans migration) : app `apps/radar`, page « Ce qui coince » (`radar/`, entrée « Radar » du menu), règles RAD-01 (infos légales de la structure), RAD-02 (IBAN/BIC), RAD-20 (horaires à J-7), RAD-22 (horaires dans le désordre), RAD-26 (lieu sans adresse ni ville), RAD-29 (dépenses > prix), RAD-35 (prix non renseigné), chacune avec « Pourquoi cette alerte ? ». Seules les dates à venir et non annulées sont examinées.
 - [x] **V0, PR 2 — alertes sur les dates** (2026-11-13, sans migration) : bloc « Radar : ce qui coince sur cette date » sur la fiche (dates à venir non annulées) avec « Corriger », et mention « N points à regarder » + première alerte sur les cartes de « Mes dates » (une requête pour les dépenses de toute la liste).
-- [ ] V0, PR 3 : RAD-10 et RAD-11 (contrat) ; pop-up unique aux actions engageantes (émettre, envoyer, signer, partager). RAD-04 est sans objet tant que le régime de TVA a une valeur par défaut. Fil de vie d'une date (V2).
+- [x] **V0, PR 3 — RAD-10** (2026-11-13, sans migration) : une date confirmée dont le contrat manque du SIRET, du représentant et de sa qualité (organisateur), du mode de paiement ou du lieu de signature est signalée « Important », avec un lien vers « Compléter le contrat ». **RAD-11 (contrat ≠ date) reporté** : une version du contrat ne garde pas le prix, le lieu ni la date au moment de sa génération ; il faudra les mémoriser (migration, plan à valider).
+- [ ] V0, PR 4 : pop-up unique aux actions engageantes (émettre, envoyer, signer, partager). RAD-04 est sans objet tant que le régime de TVA a une valeur par défaut. Fil de vie d'une date (V2).
 - [ ] R0 et suivants : modèle `Alert` et statuts, « Demander ce qui manque » (PI-1), `radar_daily`, règles d'échéances et d'obligations (voir §8 de la spécification). Paratge après Radar.
 
 ## Décisions à prendre (à consigner ici)

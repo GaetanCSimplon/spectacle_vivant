@@ -63,6 +63,13 @@ EXPLANATIONS = {
         _("Une facture sans IBAN ni BIC oblige l'organisateur à vous les demander pour payer."),
         _("Il ajouterait les coordonnées bancaires une fois pour toutes dans la fiche."),
     ),
+    "RAD-10": Explanation(
+        _(
+            "Un contrat envoyé avec des blancs doit être corrigé puis renvoyé : l'organisateur "
+            "signe un document à jour ou rien."
+        ),
+        _("Il compléterait les informations de l'organisateur et de la date avant d'envoyer."),
+    ),
     "RAD-20": Explanation(
         _(
             "À une semaine du concert, l'équipe et le lieu ont besoin des horaires "
@@ -118,6 +125,29 @@ def rad_02_bank_details(tenant):
         return None
     message = _("Ma structure : l'IBAN ou le BIC manque pour vos factures.")
     return Finding("RAD-02", FIX, message, reverse("tenants:settings"))
+
+
+def rad_10_contract_gaps(gig):
+    """What the contract of a confirmed date still lacks (it would print as dots)."""
+    if gig.status != Gig.Status.CONFIRMED:
+        return None
+    promoter = gig.promoter
+    checks = (
+        (_("le SIRET de l'organisateur"), promoter.siret),
+        (_("le représentant de l'organisateur"), promoter.representative_name),
+        (_("sa qualité"), promoter.representative_role),
+        (_("le mode de paiement"), gig.payment_method),
+        (_("le lieu de signature"), gig.signing_place),
+    )
+    missing = [str(label) for label, value in checks if not str(value).strip()]
+    if not missing:
+        return None
+    message = _("%(gig)s : pour le contrat, il manque %(missing)s.") % {
+        "gig": _label(gig),
+        "missing": ", ".join(missing),
+    }
+    url = reverse("documents:contract-complete", args=[gig.pk])
+    return Finding("RAD-10", IMPORTANT, message, url, gig)
 
 
 def rad_20_roadmap_times(gig, today):
@@ -198,6 +228,7 @@ def tenant_findings(tenant):
 def gig_findings(gig, today, expenses_total=Decimal("0")):
     """The rules about one date."""
     found = [
+        rad_10_contract_gaps(gig),
         rad_20_roadmap_times(gig, today),
         rad_22_times_out_of_order(gig),
         rad_26_no_place(gig),
