@@ -545,6 +545,14 @@ Source : `docs/marque/sources-associe/bord-pro-retours-recette-1.md`. Ordre des 
 
 ---
 
+## Radar (copilote « Ce qui coince »)
+
+Sources de l'associé : `docs/marque/sources-associe/RADAR-PARATGE/` (`02-RADAR-copilote.md` et `03-PARATGE-agent.md` font foi). Décisions du 2026-11-13 : une seule app `radar` ; Radar seul d'abord, Paratge ensuite (calculs dans `apps/finance/services.py`) ; ajouts à `CLAUDE.md` acceptés (faits). Alertes **calculées à l'affichage**, sans modèle ni migration en V0. Aucune alerte ne bloque.
+
+- [x] **V0, PR 1 — règles et écran** (2026-11-13, sans migration) : app `apps/radar`, page « Ce qui coince » (`radar/`, entrée « Radar » du menu), règles RAD-01 (infos légales de la structure), RAD-02 (IBAN/BIC), RAD-20 (horaires à J-7), RAD-22 (horaires dans le désordre), RAD-26 (lieu sans adresse ni ville), RAD-29 (dépenses > prix), RAD-35 (prix non renseigné), chacune avec « Pourquoi cette alerte ? ». Seules les dates à venir et non annulées sont examinées.
+- [ ] V0, PR 2 : pastille d'alertes sur la fiche et la liste des dates ; RAD-10 et RAD-11 (contrat) ; pop-up unique aux actions engageantes (émettre, envoyer, signer, partager). RAD-04 est sans objet tant que le régime de TVA a une valeur par défaut. Fil de vie d'une date (V2).
+- [ ] R0 et suivants : modèle `Alert` et statuts, « Demander ce qui manque » (PI-1), `radar_daily`, règles d'échéances et d'obligations (voir §8 de la spécification). Paratge après Radar.
+
 ## Décisions à prendre (à consigner ici)
 
 | Décision | Quand | Statut |
