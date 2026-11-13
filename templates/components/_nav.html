@@ -36,4 +36,9 @@
     class="{{ link_class }} {% if ns == 'addressbook' %}{{ active_class }}{% endif %}"
     {% if ns == 'addressbook' %}aria-current="page"{% endif %}
   >{% if icons %}{% include "components/_icon.html" with name="users" size=20 %}{% endif %}{% translate "Contacts" %}</a>
+  <a
+    href="{% url 'radar:radar' %}"
+    class="{{ link_class }} {% if ns == 'radar' %}{{ active_class }}{% endif %}"
+    {% if ns == 'radar' %}aria-current="page"{% endif %}
+  >{% if icons %}{% include "components/_icon.html" with name="alert" size=20 %}{% endif %}{% translate "Radar" %}</a>
 {% endwith %}

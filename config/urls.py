@@ -61,6 +61,7 @@ urlpatterns = [
     path("recherche/communes/", CommuneSearchView.as_view(), name="lookup-communes"),
     path("bord/", include("apps.tenants.urls")),
     path("", include("apps.addressbook.urls")),
+    path("radar/", include("apps.radar.urls")),
     path("spectacles/", include("apps.catalog.urls")),
     path("documents/", DocumentLibraryView.as_view(), name="document-library"),
     path("dates/", include("apps.gigs.urls")),
