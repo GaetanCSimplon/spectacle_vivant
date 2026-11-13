@@ -28,6 +28,12 @@ of the address book), the payments sit on a cream band, the roadmap badge is oce
         <span class="min-w-0"><span class="sr-only">{% translate "Organisateur" %} : </span>{{ gig.promoter.name }}</span>
       </span>
     </span>
+    {% if gig.radar %}
+      <span class="mt-3 flex flex-wrap items-center gap-2 text-sm">
+        <span class="pill {% if gig.radar.0.severity == 'important' %}pill-bad{% else %}pill-warn{% endif %}">{% blocktranslate count n=gig.radar|length %}{{ n }} point à regarder{% plural %}{{ n }} points à regarder{% endblocktranslate %}</span>
+        <span class="text-gray-700">{{ gig.radar.0.message }}</span>
+      </span>
+    {% endif %}
     {% if gig.progress %}
       <span class="mt-3 block">
         <span class="flex items-center justify-between gap-3">
