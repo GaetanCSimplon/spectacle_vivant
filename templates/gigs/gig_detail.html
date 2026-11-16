@@ -20,8 +20,8 @@
         {% for finding in radar %}
           <li class="flex flex-wrap items-center gap-3 px-4 py-2 text-sm">
             <span class="pill shrink-0 {% if finding.severity == 'important' %}pill-bad{% elif finding.severity == 'fix' %}pill-warn{% else %}pill-neutral{% endif %}">{{ finding.severity_label }}</span>
-            <span class="min-w-0 flex-1 text-stone-800">{{ finding.message }}</span>
-            <a href="{{ finding.fix_url }}" class="btn btn-secondary btn-sm shrink-0">{% translate "Corriger" %}</a>
+            <span class="order-2 w-full text-stone-800 sm:order-none sm:w-auto sm:min-w-0 sm:flex-1">{{ finding.message }}</span>
+            <a href="{{ finding.fix_url }}" class="btn btn-secondary btn-sm order-1 ml-auto shrink-0 sm:order-none sm:ml-0">{% translate "Corriger" %}</a>
           </li>
         {% endfor %}
       </ul>
