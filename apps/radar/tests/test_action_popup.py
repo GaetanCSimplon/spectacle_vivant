@@ -205,3 +205,26 @@ def test_another_structure_gets_a_404_in_both_modals(client):
         == 404
     )
     assert client.get(reverse("documents:contract-sign", args=[gig.pk]), **HTMX).status_code == 404
+
+
+def test_the_share_modal_is_a_dialog_and_the_editor_link_opens_it(client):
+    membership = MembershipFactory()
+    client.force_login(membership.user)
+    gig = _confirmed_gig(membership.tenant)
+    url = reverse("roadmaps:share", args=[gig.pk, "activer"])
+
+    modal = client.get(url, **HTMX).content.decode()
+    editor = client.get(reverse("roadmaps:editor", args=[gig.pk])).content.decode()
+
+    assert "<dialog" in modal and "<html" not in modal
+    assert "Radar : avant de continuer" in modal and "Continuer quand même" in modal
+    assert f'hx-get="{url}"' in editor and 'hx-target="#radar-modal"' in editor
+
+
+def test_another_structure_gets_a_404_in_the_share_modal(client):
+    gig = _confirmed_gig(MembershipFactory().tenant)
+    client.force_login(MembershipFactory().user)
+
+    response = client.get(reverse("roadmaps:share", args=[gig.pk, "activer"]), **HTMX)
+
+    assert response.status_code == 404
