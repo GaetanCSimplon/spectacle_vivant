@@ -131,11 +131,20 @@ class ContractSignView(TenantScopedMixin, View):
             "form": form,
             "alerts": radar_rules.for_action("contract_sign", self.gig),
         }
-        return render(self.request, self.template_name, context)
+        # Radar's modal, when the link was followed by htmx; the page otherwise.
+        template = (
+            "documents/_contract_sign_dialog.html"
+            if self.request.htmx and self.request.method == "GET"
+            else self.template_name
+        )
+        return render(self.request, template, context)
 
     def refuse(self, error):
         messages.error(self.request, error)
-        return redirect("documents:contract-history", gig_id=self.gig.pk)
+        url = reverse("documents:contract-history", args=[self.gig.pk])
+        if self.request.htmx:  # the modal must not receive a whole page
+            return HttpResponse(headers={"HX-Redirect": url})
+        return redirect(url)
 
     def get(self, request, gig_id):
         self.load(gig_id)
@@ -223,7 +232,12 @@ class ContractSentView(TenantScopedMixin, View):
         if action != "envoye":  # taking the mark back is a POST; nothing to confirm
             return redirect("documents:contract-history", gig_id=gig.pk)
         context = {"gig": gig, "alerts": radar_rules.for_action("contract_send", gig)}
-        return render(request, "documents/contract_send_confirm.html", context)
+        template = (
+            "documents/_contract_send_dialog.html"
+            if request.htmx
+            else "documents/contract_send_confirm.html"
+        )
+        return render(request, template, context)
 
     def post(self, request, gig_id, action):
         gig = get_object_or_404(Gig, pk=gig_id, tenant=request.tenant)
