@@ -1,5 +1,9 @@
 {% load i18n %}
 {% comment %}The content of the Radar modal. Same list as the Radar page, for one date or for everything.{% endcomment %}
+<dialog id="radar-dialog" x-data x-init="$el.showModal()" aria-labelledby="radar-title"
+        class="m-auto max-h-[90vh] w-[calc(100%-2rem)] max-w-2xl overflow-y-auto rounded-2xl border border-page-line bg-white p-0 backdrop:bg-black/50">
+  <div class="p-5">
+    <h2 id="radar-title" class="!text-lg">{% translate "Radar" %}</h2>
 <p class="mb-3 text-sm text-gray-600">
   {% if gig %}{% blocktranslate with title=gig.display_title date=gig.date|date:"d/m/Y" %}Ce qui coince sur « {{ title }} » ({{ date }}) et sur votre structure.{% endblocktranslate %}{% else %}{% translate "Ce qui coince sur votre structure et vos prochaines dates." %}{% endif %}
 </p>
@@ -24,3 +28,8 @@
   <p class="text-sm text-stone-700">{% translate "Rien ne coince : tout est en ordre pour le moment." %}</p>
 {% endif %}
 <p class="mt-3 text-sm"><a href="{% url 'radar:radar' %}" class="underline">{% translate "Voir tout ce qui coince" %}</a></p>
+    <div class="mt-4">
+      <button type="button" class="btn btn-secondary btn-block" onclick="this.closest('dialog').close()">{% translate "Fermer" %}</button>
+    </div>
+  </div>
+</dialog>

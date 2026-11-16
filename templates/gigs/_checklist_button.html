@@ -3,6 +3,7 @@
 modal (a plain link to the page without JavaScript).
 Needs `<div id="checklist-modal"></div>` somewhere on the page.{% endcomment %}
 <a
+  id="checklist-button"
   href="{% url 'gigs:checklist' gig.pk %}"
   hx-get="{% url 'gigs:checklist' gig.pk %}"
   hx-target="#checklist-modal"

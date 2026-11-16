@@ -17,7 +17,7 @@ def owner(client):
 def test_every_connected_page_carries_the_radar_widget(client, owner):
     content = client.get(reverse("gigs:list")).content.decode()
 
-    assert 'id="radar-button"' in content and 'id="radar-panel"' in content
+    assert 'id="radar-button"' in content and 'id="radar-modal"' in content
     assert reverse("radar:button") in content
     assert "htmx:afterRequest" in content  # the notification follows every action
 
@@ -86,3 +86,17 @@ def test_another_tenants_date_is_a_404_and_nothing_leaks(client, owner):
 def test_the_fragments_need_a_login(client):
     for name in ("radar:button", "radar:panel"):
         assert client.get(reverse(name)).status_code == 302
+
+
+def test_the_panel_is_a_native_dialog_opened_at_once_like_the_checklist(client, owner):
+    content = client.get(reverse("radar:panel")).content.decode()
+
+    assert "<dialog" in content and "showModal()" in content and "Fermer" in content
+
+
+def test_the_checklist_button_has_an_id_so_that_radar_can_move_aside(client, owner):
+    gig = GigFactory(tenant=owner.tenant)
+
+    content = client.get(reverse("gigs:detail", args=[gig.pk])).content.decode()
+
+    assert 'id="checklist-button"' in content
