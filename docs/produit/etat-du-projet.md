@@ -1,6 +1,6 @@
 # État du projet — Bòrd Pro
 
-**Mis à jour le 2026-11-05 (tout le code des chantiers en cours est fusionné et livré ; e-mails, stockage et domaine sont branchés ; restent Sentry, sauvegardes et le hors-code).** Page à lire en premier : ce qui est en cours, ce qui bloque, ce qui reste à faire. Le détail sprint par sprint est dans `feuille-de-route.md` ; ici, une page.
+**Mis à jour le 2026-11-16 (Radar V0 fusionné dans `main` : règles, pages et modales ; seule la partie règles et pages est en production ; il reste à livrer les modales).** Page à lire en premier : ce qui est en cours, ce qui bloque, ce qui reste à faire. Le détail sprint par sprint est dans `feuille-de-route.md` ; ici, une page.
 
 **Règle de tenue** : je mets cette page à jour à chaque PR fusionnée qui change une ligne ci-dessous (la date en tête fait foi).
 
@@ -10,6 +10,7 @@ Les neuf critères de la recette du MVP (`cahier-des-charges.md` §11) sont couv
 ## 1. En cours
 | Sujet | État | Qui agit |
 |---|---|---|
+| **Radar** (copilote « Ce qui coince ») | V0 faite et fusionnée (#363 à #376, sans migration) : 8 règles (RAD-01, 02, 10, 20, 22, 26, 29, 35), page « Ce qui coince », pastilles sur les dates, **bouton Radar avec pastille sur toutes les pages et modale** (envoi et signature du contrat, émission devis et facture, partage de la feuille de route). **Livré** (`v2026-11-13b`) : règles et pages. **Pas encore livré** : les modales (#371 à #376). Reste : RAD-11 (plan de migration à valider), confirmation d'une date, puis R0 et Paratge. Détail et reprise : `feuille-de-route.md`, section « Radar » | Utilisateur (livraison, choix de la suite) ; Claude |
 | Gestion sociale (informations d'équipe) | Faite (fiche, distribution, dépenses à rembourser) | — |
 | Feuille de route enrichie, puis espace équipe (lien personnel) | Faits et fusionnés (PR 1 à 4). La déclaration de dépense par photo ne se livre qu'avec le bucket S3 ; à tester depuis un vrai téléphone | Utilisateur |
 | Mise en page pour ordinateur (largeur 1440 px, deux colonnes, tableaux) | PR 1 à 4 faites (Bòrd, Accueil, Mes dates, fiche de date, listes, formulaires), PR 5 (éditeur de feuille de route avec aperçu) : fait, fusionné | — |
@@ -28,7 +29,7 @@ Les neuf critères de la recette du MVP (`cahier-des-charges.md` §11) sont couv
 
 
 ## 2. Déploiement (Scalingo, app `bordpro`)
-Branches : `main` (travail) et `production` (livré). **Dernière livraison : `v2026-11-10`** (2026-11-10, commit `ce7b05d`, aucune migration), après `v2026-11-09`, après `v2026-11-06b`, après `v2026-11-02`, `v2026-11-01` et `v2026-10-29` ; historique : `docs/technique/livraison.md`. Scalingo se déploie à la main depuis la branche **`production`** (jamais `main`). Aucune migration en attente (`roadmaps/0006` à `0008` s'appliquent au déploiement de `v2026-11-06b`).
+Branches : `main` (travail) et `production` (livré). **Dernière livraison : `v2026-11-13b`** (2026-11-13, commit `6b038dc`, aucune migration ; Radar : règles et pages), après `v2026-11-13` (retours de la recette n°1, 12 migrations), `v2026-11-10`, `v2026-11-09`, `v2026-11-06b`, `v2026-11-02`, `v2026-11-01` et `v2026-10-29`. **`main` a de l'avance** : les modales de Radar (#371 à #376), à livrer ; historique : `docs/technique/livraison.md`. Scalingo se déploie à la main depuis la branche **`production`** (jamais `main`). Aucune migration en attente (`roadmaps/0006` à `0008` s'appliquent au déploiement de `v2026-11-06b`).
 Guide pas à pas pour toutes les étapes ci-dessous : `docs/technique/guide-mise-en-ligne.md`. Ce que la mise en place a appris : `docs/technique/services-production.md`.
 
 Adresse de l'application : **`https://app.bordpro.fr`** (début novembre 2026). `bordpro.fr` reste libre pour le futur site vitrine. L'ancienne adresse `bordpro.osc-fr1.scalingo.io` répond encore.
@@ -69,7 +70,8 @@ Rappels de l'Accueil regroupés à partir de trois du même genre (2026-10-29).
 
 ## 5. Après le MVP (décidé : rien n'est codé)
 Choisi à partir des retours de la bêta (principe de la feuille de route, Phase 4).
-- **RADAR de tournée et carte** (spécification : `specification-radar.md`). Proposition d'implémentation, à rediscuter le moment venu :
+- **RADAR : en partie fait** (voir §1 et la section « Radar » de `feuille-de-route.md` ; les sources de l'associé sont dans `docs/marque/sources-associe/RADAR-PARATGE/`, `specification-radar.md` est remplacée). Restent la **tournée**, la **géographie** et la **carte** ci-dessous (ancienne proposition, non reprise telle quelle).
+- *Ancienne proposition* : RADAR de tournée et carte (spécification : `specification-radar.md`). Proposition d'implémentation, à rediscuter le moment venu :
   1. Un seul moteur de règles qui alimente le panneau RADAR et le bloc « À traiter maintenant » de Bòrd (alertes recalculées, non stockées) ; sans migration.
   2. « Ignorer / marquer traité », prochaine action sur la date, dépenses prévues contre réelles (indicateur sur la dépense, pas de nouvelle table de lignes de budget).
   3. Tournée (modèle dédié) et vue chronologique.
