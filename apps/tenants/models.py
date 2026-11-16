@@ -1,5 +1,6 @@
 import uuid
 
+from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 from django.urls import reverse
 from django.utils import timezone
@@ -77,6 +78,31 @@ class Tenant(AddressMixin, models.Model):
     phone = models.CharField(_("téléphone"), max_length=30, blank=True)
     email = models.EmailField(_("e-mail"), blank=True)
     licence_number = models.CharField(_("n° de licence"), max_length=50, blank=True)
+    licence_exempt = models.BooleanField(
+        _("moins de 7 représentations par an (pas de licence)"), default=False
+    )
+    share_capital = models.CharField(_("capital social"), max_length=50, blank=True)
+    rcs = models.CharField(_("immatriculation RCS"), max_length=100, blank=True)
+    vat_on_debits = models.BooleanField(_("TVA payée d'après les débits"), default=False)
+    quote_validity_days = models.PositiveSmallIntegerField(
+        _("durée de validité d'un devis (jours)"),
+        default=30,
+        validators=[MinValueValidator(1), MaxValueValidator(365)],
+    )
+    payment_term_days = models.PositiveSmallIntegerField(
+        _("délai de paiement d'une facture (jours)"),
+        default=30,
+        validators=[MinValueValidator(1), MaxValueValidator(60)],
+    )
+    mediator = models.CharField(
+        _("médiateur de la consommation"),
+        max_length=255,
+        blank=True,
+        help_text=_(
+            "Nom et site du médiateur. Obligatoire si vous facturez des particuliers : "
+            "il est imprimé sur leurs factures."
+        ),
+    )
     # The documents print `representative_name`. The form asks for the first and the last name
     # apart and writes "First Last" back into it, so no document changes (STR-05).
     representative_name = models.CharField(_("représentant légal"), max_length=255, blank=True)

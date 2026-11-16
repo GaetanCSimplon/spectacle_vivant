@@ -94,6 +94,11 @@ class Promoter(AddressMixin, TenantOwnedModel):
     code_ape = models.CharField(_("Code APE"), max_length=5, blank=True)
     vat_number = models.CharField(_("n° de TVA intracommunautaire"), max_length=20, blank=True)
     licence_number = models.CharField(_("n° de licence"), max_length=50, blank=True)
+    is_private = models.BooleanField(
+        _("particulier"),
+        default=False,
+        help_text=_("Ni entreprise, ni association, ni collectivité."),
+    )
     representative_name = models.CharField(_("représentant légal"), max_length=255, blank=True)
     representative_role = models.CharField(_("qualité du représentant"), max_length=255, blank=True)
     billing_address = models.TextField(_("adresse de facturation"), blank=True)
