@@ -139,3 +139,69 @@ def test_stopping_the_share_by_get_just_goes_back_to_the_editor(client):
     response = client.get(reverse("roadmaps:share", args=[gig.pk, "arreter"]))
 
     assert response.status_code == 302
+
+
+# --- the same pop-ups as Radar's modal (htmx) -------------------------------------------------
+
+HTMX = {"HTTP_HX_REQUEST": "true"}
+
+
+def test_the_history_links_open_radar_s_modal_through_htmx(client):
+    membership = MembershipFactory()
+    client.force_login(membership.user)
+    gig = _generated(membership.tenant)
+
+    content = client.get(reverse("documents:contract-history", args=[gig.pk])).content.decode()
+
+    for name, args in (("contract-sent", [gig.pk, "envoye"]), ("contract-sign", [gig.pk])):
+        assert f'hx-get="{reverse(f"documents:{name}", args=args)}"' in content
+    assert content.count('hx-target="#radar-modal"') >= 2
+
+
+def test_the_send_modal_is_a_dialog_with_the_alerts_and_posts_anyway(client):
+    membership = MembershipFactory()
+    client.force_login(membership.user)
+    gig = _generated(membership.tenant)
+    url = reverse("documents:contract-sent", args=[gig.pk, "envoye"])
+
+    modal = client.get(url, **HTMX).content.decode()
+
+    assert "<dialog" in modal and "<html" not in modal
+    assert "Radar : avant de continuer" in modal and "Continuer quand même" in modal
+    assert client.post(url).status_code == 302
+    gig.contract.refresh_from_db()
+    assert gig.contract.sent_at is not None
+
+
+def test_the_sign_modal_is_a_dialog_with_the_form_and_the_alerts(client):
+    membership = MembershipFactory()
+    client.force_login(membership.user)
+    gig = _generated(membership.tenant)
+
+    modal = client.get(reverse("documents:contract-sign", args=[gig.pk]), **HTMX)
+    content = modal.content.decode()
+
+    assert "<dialog" in content and "<html" not in content
+    assert "Radar : avant de continuer" in content and 'enctype="multipart/form-data"' in content
+
+
+def test_a_refusal_in_the_modal_redirects_the_whole_page(client):
+    membership = MembershipFactory()
+    client.force_login(membership.user)
+    gig = _confirmed_gig(membership.tenant)  # no contract generated yet
+
+    response = client.get(reverse("documents:contract-sign", args=[gig.pk]), **HTMX)
+
+    assert response.status_code == 200
+    assert response["HX-Redirect"] == reverse("documents:contract-history", args=[gig.pk])
+
+
+def test_another_structure_gets_a_404_in_both_modals(client):
+    gig = _generated(MembershipFactory().tenant)
+    client.force_login(MembershipFactory().user)
+
+    assert (
+        client.get(reverse("documents:contract-sent", args=[gig.pk, "envoye"]), **HTMX).status_code
+        == 404
+    )
+    assert client.get(reverse("documents:contract-sign", args=[gig.pk]), **HTMX).status_code == 404

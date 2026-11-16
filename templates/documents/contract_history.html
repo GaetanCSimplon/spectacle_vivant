@@ -53,9 +53,9 @@
           </form>
         {% endif %}
       </div>
-      {% if send_alerts %}
-        {# Radar has something to say: a page lists it first (the user can still go on). #}
-        <a href="{% url 'documents:contract-sent' gig.pk 'envoye' %}" class="btn btn-secondary btn-block">{% translate "Marquer comme envoyé" %}</a>
+      {% if send_alerts and not contract.sent_at %}
+        {# Radar has something to say: its modal lists it first (the user can still go on). The link is the page without JavaScript. #}
+        <a href="{% url 'documents:contract-sent' gig.pk 'envoye' %}" hx-get="{% url 'documents:contract-sent' gig.pk 'envoye' %}" hx-target="#radar-modal" hx-swap="innerHTML" class="btn btn-secondary btn-block">{% translate "Marquer comme envoyé" %}</a>
       {% else %}
       <form method="post" action="{% url 'documents:contract-sent' gig.pk contract.sent_at|yesno:'non-envoye,envoye' %}">
         {% csrf_token %}
@@ -64,7 +64,7 @@
       {% endif %}
     {% endif %}
     {% if can_sign %}
-      <a href="{% url 'documents:contract-sign' gig.pk %}" class="btn btn-primary btn-block">
+      <a href="{% url 'documents:contract-sign' gig.pk %}" hx-get="{% url 'documents:contract-sign' gig.pk %}" hx-target="#radar-modal" hx-swap="innerHTML" class="btn btn-primary btn-block">
         {% translate "Marquer comme signé" %}
       </a>
     {% endif %}
