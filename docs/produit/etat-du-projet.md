@@ -5,7 +5,7 @@
 **Règle de tenue** : je mets cette page à jour à chaque PR fusionnée qui change une ligne ci-dessous (la date en tête fait foi).
 
 ## Où on en est en une phrase
-Les neuf critères de la recette du MVP (`cahier-des-charges.md` §11) sont couverts par du code (1964 tests) et la refonte graphique V06 est terminée. L'application tourne sur Scalingo avec ses vrais services (e-mails Brevo, bucket Scaleway, adresse `app.bordpro.fr`). Il reste Sentry, les sauvegardes, de la validation par des professionnels et la recette, avant d'ouvrir à des testeurs.
+Les neuf critères de la recette du MVP (`cahier-des-charges.md` §11) sont couverts par du code (2635 tests) et la refonte graphique V06 est terminée. L'application tourne sur Scalingo avec ses vrais services (e-mails Brevo, bucket Scaleway, adresse `app.bordpro.fr`). Il reste Sentry, les sauvegardes, de la validation par des professionnels et la recette, avant d'ouvrir à des testeurs.
 
 ## 1. En cours
 | Sujet | État | Qui agit |
