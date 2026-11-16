@@ -1,0 +1,18 @@
+{% load i18n %}
+{% comment %}Radar on every connected page: a button bottom right and its modal. The button is read
+on load and again after every request that changes something (htmx), so its notification follows
+each step. On a date's pages (`gig` in the context) it looks at that date.{% endcomment %}
+<div x-data="{ open: false }" @keydown.escape.window="open = false" class="print:hidden">
+  <div id="radar-button" class="fixed bottom-4 right-4 z-40"
+       hx-get="{% url 'radar:button' %}{% if gig.pk %}?gig={{ gig.pk }}{% endif %}"
+       hx-trigger="load, htmx:afterRequest[detail.requestConfig.verb != 'get'] from:body"></div>
+  <div x-show="open" x-cloak class="fixed inset-0 z-50 flex items-end justify-center bg-stone-900/50 p-4 sm:items-center" @click.self="open = false">
+    <div role="dialog" aria-modal="true" aria-labelledby="radar-modal-title" class="max-h-[85vh] w-full max-w-2xl overflow-y-auto rounded-2xl bg-white p-5 border border-page-line">
+      <div class="mb-3 flex items-center justify-between gap-3">
+        <h2 id="radar-modal-title" class="!m-0 text-lg font-bold">{% translate "Radar" %}</h2>
+        <button type="button" class="btn btn-secondary btn-sm" @click="open = false">{% translate "Fermer" %}</button>
+      </div>
+      <div id="radar-panel" aria-live="polite"></div>
+    </div>
+  </div>
+</div>

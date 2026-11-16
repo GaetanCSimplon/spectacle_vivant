@@ -1,0 +1,26 @@
+{% load i18n %}
+{% comment %}The content of the Radar modal. Same list as the Radar page, for one date or for everything.{% endcomment %}
+<p class="mb-3 text-sm text-gray-600">
+  {% if gig %}{% blocktranslate with title=gig.display_title date=gig.date|date:"d/m/Y" %}Ce qui coince sur « {{ title }} » ({{ date }}) et sur votre structure.{% endblocktranslate %}{% else %}{% translate "Ce qui coince sur votre structure et vos prochaines dates." %}{% endif %}
+</p>
+{% if findings %}
+  <ul class="divide-y divide-page-line">
+    {% for finding in findings %}
+      <li class="py-3">
+        <div class="flex flex-wrap items-start gap-3">
+          <span class="pill shrink-0 {% if finding.severity == 'important' %}pill-bad{% elif finding.severity == 'fix' %}pill-warn{% else %}pill-neutral{% endif %}">{{ finding.severity_label }}</span>
+          <p class="min-w-0 flex-1 text-sm text-stone-800">{{ finding.message }}</p>
+          <a href="{{ finding.fix_url }}" class="btn btn-secondary btn-sm shrink-0">{% translate "Corriger" %}</a>
+        </div>
+        <details class="mt-2 text-sm text-stone-700">
+          <summary class="cursor-pointer">{% translate "Pourquoi cette alerte ?" %}</summary>
+          <p class="mt-1">{{ finding.explanation.why }}</p>
+          <p class="mt-1"><strong>{% translate "Ce que ferait un administrateur :" %}</strong> {{ finding.explanation.admin }}</p>
+        </details>
+      </li>
+    {% endfor %}
+  </ul>
+{% else %}
+  <p class="text-sm text-stone-700">{% translate "Rien ne coince : tout est en ordre pour le moment." %}</p>
+{% endif %}
+<p class="mt-3 text-sm"><a href="{% url 'radar:radar' %}" class="underline">{% translate "Voir tout ce qui coince" %}</a></p>

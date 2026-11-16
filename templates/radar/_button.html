@@ -1,0 +1,13 @@
+{% load i18n static %}
+{% comment %}The Radar button: its logo, and a notification (the count, written, plus the colour of the
+most serious alert) when something sticks. A click opens the modal of the page and reads its content.
+Lives inside _widget.html (Alpine scope `open`).{% endcomment %}
+<button type="button" class="relative flex size-14 items-center justify-center rounded-full border-2 border-blue-700 bg-white hover:bg-gray-50"
+        @click="open = true" aria-haspopup="dialog"
+        hx-get="{% url 'radar:panel' %}{% if gig %}?gig={{ gig.pk }}{% endif %}" hx-target="#radar-panel" hx-trigger="click">
+  <img src="{% static 'brand/radar.svg' %}" alt="" width="36" height="36" class="size-9">
+  <span class="sr-only">{% if findings %}{% blocktranslate count n=findings|length %}Radar : {{ n }} point à regarder{% plural %}Radar : {{ n }} points à regarder{% endblocktranslate %}{% else %}{% translate "Radar : rien ne coince" %}{% endif %}</span>
+  {% if findings %}
+    <span class="absolute -right-1 -top-1 flex min-w-6 items-center justify-center rounded-full px-1.5 text-xs font-bold leading-6 text-white {% if counts.important %}bg-red-700{% else %}bg-amber-700{% endif %}" aria-hidden="true">{{ findings|length }}</span>
+  {% endif %}
+</button>

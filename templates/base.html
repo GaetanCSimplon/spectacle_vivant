@@ -58,6 +58,7 @@
       </main>
       </div>
     </div>
+    {% if user.is_authenticated and request.tenant %}{% include "radar/_widget.html" %}{% endif %}
     {% block extra_body %}{% endblock %}
   </body>
 </html>
