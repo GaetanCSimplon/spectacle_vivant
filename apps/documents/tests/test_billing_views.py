@@ -664,3 +664,48 @@ def test_another_tenant_cannot_rename_a_document(client):
     assert client.post(_title_url(gig, quote), {"title": "pirate"}).status_code == 404
     quote.refresh_from_db()
     assert quote.title == ""
+
+
+# --- Radar's modal ------------------------------------------------------------
+
+
+def test_the_issue_modal_is_a_dialog_with_the_alerts_and_issues_by_post(client):
+    tenant = _login(client, iban="")
+    gig = _gig(tenant)
+    invoice = _draft(gig)
+    url = _url("document-issue", gig, "factures", invoice.pk)
+
+    modal = client.get(url, HTTP_HX_REQUEST="true").content.decode()
+    detail = client.get(_detail(gig, invoice)).content.decode()
+
+    assert "<dialog" in modal and "<html" not in modal
+    assert "ne pourra plus être modifié" in modal and "Continuer quand même" in modal
+    assert f'hx-get="{url}"' in detail and 'hx-target="#radar-modal"' in detail
+    assert client.post(url).status_code == 302
+    invoice.refresh_from_db()
+    assert invoice.status == Invoice.Status.ISSUED
+
+
+def test_a_refused_issue_in_the_modal_redirects_the_whole_page(client):
+    tenant = _login(client)
+    gig = _gig(tenant)
+    invoice = _issued(gig)
+
+    response = client.get(
+        _url("document-issue", gig, "factures", invoice.pk), HTTP_HX_REQUEST="true"
+    )
+
+    assert response.status_code == 200
+    assert response["HX-Redirect"] == _detail(gig, invoice)
+
+
+def test_another_tenants_issue_modal_is_a_404(client):
+    other_gig = _gig(MembershipFactory().tenant)
+    invoice = _draft(other_gig)
+    _login(client)
+
+    response = client.get(
+        _url("document-issue", other_gig, "factures", invoice.pk), HTTP_HX_REQUEST="true"
+    )
+
+    assert response.status_code == 404

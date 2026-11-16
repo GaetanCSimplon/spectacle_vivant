@@ -1,0 +1,17 @@
+{% load i18n %}
+{% comment %}Radar's modal before sharing the roadmap (loaded into #radar-modal by htmx, opened at once).
+Same content as share_confirm.html. Never blocks.{% endcomment %}
+<dialog id="radar-dialog" x-data x-init="$el.showModal()" aria-labelledby="radar-action-title"
+        class="m-auto max-h-[90vh] w-[calc(100%-2rem)] max-w-xl overflow-y-auto rounded-2xl border border-page-line bg-white p-0 backdrop:bg-black/50">
+  <div class="p-5">
+    <h2 id="radar-action-title" class="!text-lg">{% translate "Activer le partage de la feuille de route" %}</h2>
+    <p class="mb-4 text-sm text-gray-600">{{ gig.show.title }} — {{ gig.date|date:"d/m/Y" }}</p>
+    <p class="mb-4 text-sm">{% translate "Toute personne qui aura le lien pourra voir la feuille de route, sans compte." %}</p>
+    {% if alerts %}{% include "radar/_action_alerts.html" %}{% endif %}
+    <form method="post" action="{% url 'roadmaps:share' gig.pk 'activer' %}" class="flex flex-col gap-3">
+      {% csrf_token %}
+      <button type="submit" class="btn btn-primary btn-block">{% if alerts %}{% translate "Continuer quand même : activer le partage" %}{% else %}{% translate "Activer le partage" %}{% endif %}</button>
+      <button type="button" class="btn btn-secondary btn-block" onclick="this.closest('dialog').close()">{% translate "Annuler" %}</button>
+    </form>
+  </div>
+</dialog>

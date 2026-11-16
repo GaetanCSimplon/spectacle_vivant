@@ -26,8 +26,8 @@
     {% else %}
       <p>{% translate "Le partage est désactivé : personne ne peut voir cette feuille de route avec un lien." %}</p>
       {% if share_alerts %}
-        {# Radar has something to say: a page lists it first (the user can still go on). #}
-        <a href="{% url 'roadmaps:share' gig.pk 'activer' %}" class="btn btn-primary btn-block">{% translate "Activer le partage" %}</a>
+        {# Radar has something to say: Radar's modal lists it first (the user can still go on). #}
+        <a href="{% url 'roadmaps:share' gig.pk 'activer' %}" hx-get="{% url 'roadmaps:share' gig.pk 'activer' %}" hx-target="#radar-modal" hx-swap="innerHTML" class="btn btn-primary btn-block">{% translate "Activer le partage" %}</a>
       {% else %}
       <form method="post" action="{% url 'roadmaps:share' gig.pk 'activer' %}">
         {% csrf_token %}

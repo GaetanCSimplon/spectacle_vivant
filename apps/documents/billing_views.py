@@ -3,6 +3,7 @@
 from django.contrib import messages
 from django.http import FileResponse, Http404, HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
+from django.urls import reverse
 from django.utils.translation import gettext_lazy as _
 from django.views import View
 
@@ -134,6 +135,11 @@ class DocumentMixin(TenantScopedMixin):
 
     def refuse(self, error):
         messages.error(self.request, error)
+        if self.request.htmx and self.request.method == "GET":  # the modal must not get a page
+            url = reverse(
+                "documents:document-detail", args=[self.gig.pk, self.doc_type, self.document.pk]
+            )
+            return HttpResponse(headers={"HX-Redirect": url})
         return redirect(
             "documents:document-detail",
             gig_id=self.gig.pk,
@@ -233,7 +239,12 @@ class DocumentIssueView(DocumentMixin, View):
             return self.refuse(_("Ce document n'est pas prêt à être émis."))
         action = "invoice_issue" if doc_type == "factures" else "quote_issue"
         context["alerts"] = radar_rules.for_action(action, self.gig)
-        return render(request, "documents/document_issue.html", context)
+        template = (
+            "documents/_document_issue_dialog.html"
+            if request.htmx
+            else "documents/document_issue.html"
+        )
+        return render(request, template, context)
 
     def _invoice_on_option(self):
         """An invoice on a date still an option: it will not count in the planned revenue."""

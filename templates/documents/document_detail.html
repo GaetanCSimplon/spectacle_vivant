@@ -82,7 +82,7 @@
         {% translate "Aperçu PDF" %}
       </a>
       {% if not missing and rows %}
-        <a href="{% url 'documents:document-issue' gig.pk doc_type document.pk %}" class="btn btn-primary btn-block">
+        <a href="{% url 'documents:document-issue' gig.pk doc_type document.pk %}" hx-get="{% url 'documents:document-issue' gig.pk doc_type document.pk %}" hx-target="#radar-modal" hx-swap="innerHTML" class="btn btn-primary btn-block">
           {% translate "Émettre" %}
         </a>
       {% endif %}

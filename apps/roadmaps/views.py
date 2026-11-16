@@ -218,7 +218,8 @@ class ShareView(RoadmapMixin, View):
             "gig": self.gig,
             "alerts": radar_rules.for_action("roadmap_share", self.gig),
         }
-        return render(request, "roadmaps/share_confirm.html", context)
+        template = "roadmaps/_share_dialog.html" if request.htmx else "roadmaps/share_confirm.html"
+        return render(request, template, context)
 
     def post(self, request, gig_id, action):
         self.load(gig_id)
