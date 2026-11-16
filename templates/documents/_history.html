@@ -8,7 +8,7 @@
     <h3 id="history-title" class="text-sm font-semibold">{% translate "Rappel de la commande" %}</h3>
     <ul class="mt-1 space-y-1">
       {% if history.quote %}
-        <li>{% blocktranslate with number=history.quote.number date=history.quote.issue_date|date:"d/m/Y" %}Devis n° {{ number }} validé le {{ date }}.{% endblocktranslate %}</li>
+        <li>{% if history.quote.accepted_on %}{% blocktranslate with number=history.quote.number date=history.quote.accepted_on|date:"d/m/Y" %}Devis n° {{ number }} accepté le {{ date }}.{% endblocktranslate %}{% else %}{% blocktranslate with number=history.quote.number date=history.quote.issue_date|date:"d/m/Y" %}Devis n° {{ number }} émis le {{ date }}.{% endblocktranslate %}{% endif %}</li>
       {% endif %}
       <li>
         {% translate "Contrat" %} :

@@ -202,6 +202,9 @@ ROUTES = [
         {"gig_id": "gig", "doc_type": "=factures", "pk": "draft", "line_pk": "line"},
     ),
     ("documents:credit-note-create", {"gig_id": "gig", "pk": "invoice"}),
+    ("documents:quote-accept", {"gig_id": "gig", "pk": "quote"}),
+    ("documents:quote-scan", {"gig_id": "gig", "pk": "quote"}),
+    ("documents:invoice-details", {"gig_id": "gig", "pk": "draft"}),
 ]
 
 
@@ -397,7 +400,11 @@ def test_a_user_of_tenant_a_reaches_the_same_urls(client, world):
 
     for name, spec in ROUTES:
         view = next(v for n, _r, v in _all_routes() if n == name)
-        if "GET" not in _methods(view) or name in {"catalog:show-file", "documents:contract-sign"}:
+        if "GET" not in _methods(view) or name in {
+            "catalog:show-file",
+            "documents:contract-sign",
+            "documents:quote-scan",
+        }:
             continue
         url = reverse(name, kwargs=_kwargs(spec, dataset))
         response = client.get(url)

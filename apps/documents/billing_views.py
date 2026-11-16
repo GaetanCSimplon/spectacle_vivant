@@ -4,6 +4,7 @@ from django.contrib import messages
 from django.http import FileResponse, Http404, HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
+from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 from django.views import View
 
@@ -13,7 +14,7 @@ from apps.radar import rules as radar_rules
 from apps.tenants.models import Tenant
 
 from . import invoicing
-from .forms import DocumentLineForm
+from .forms import DocumentLineForm, InvoiceDetailsForm, QuoteAcceptForm, SignedPdfForm
 from .models import DocumentLine, Invoice, Quote
 
 DOC_TYPES = {"factures": Invoice, "devis": Quote}
@@ -113,6 +114,16 @@ class DocumentMixin(TenantScopedMixin):
         else:
             context["issuer"] = document.issuer_snapshot
             context["customer"] = document.customer_snapshot
+        if not is_invoice and not document.is_draft:
+            context["accept_form"] = QuoteAcceptForm(initial={"accepted_on": timezone.localdate()})
+            context["scan_form"] = SignedPdfForm()
+        if is_invoice and document.is_draft and not context["is_credit_note"]:
+            context["details_form"] = InvoiceDetailsForm(
+                initial={
+                    "purchase_order_number": document.purchase_order_number,
+                    "due_date": document.due_date,
+                }
+            )
         if is_invoice:
             context["credit_notes"] = document.credit_notes.all()
             context["can_credit"] = invoicing.creditable_amount(document) > 0
@@ -270,6 +281,77 @@ class DocumentIssueView(DocumentMixin, View):
         return redirect(
             "documents:document-detail", gig_id=self.gig.pk, doc_type=doc_type, pk=self.document.pk
         )
+
+
+def _first_error(form):
+    return " ".join(message for errors in form.errors.values() for message in errors)
+
+
+class QuoteAcceptView(DocumentMixin, View):
+    """ "Devis signé reçu": the quote is accepted, with its scan when there is one."""
+
+    def post(self, request, gig_id, pk):
+        self.load(gig_id, "devis", pk)
+        form = QuoteAcceptForm(request.POST, request.FILES)
+        if not form.is_valid():
+            return self.refuse(_first_error(form))
+        try:
+            invoicing.accept_quote(
+                self.document, form.cleaned_data["accepted_on"], form.cleaned_data["signed_pdf"]
+            )
+        except invoicing.InvoicingError as error:
+            return self.refuse(error.args[0])
+        messages.success(request, _("Le devis est marqué comme accepté."))
+        return redirect("documents:document-detail", self.gig.pk, "devis", self.document.pk)
+
+
+class QuoteScanView(DocumentMixin, View):
+    """The scan of the signed quote: download it (GET) or add it afterwards (POST)."""
+
+    def get(self, request, gig_id, pk):
+        self.load(gig_id, "devis", pk)
+        if not self.document.signed_file:
+            raise Http404
+        return FileResponse(
+            self.document.signed_file.open("rb"),
+            content_type="application/pdf",
+            as_attachment=True,
+            filename=f"{self.document.number}-signe.pdf",
+        )
+
+    def post(self, request, gig_id, pk):
+        self.load(gig_id, "devis", pk)
+        form = SignedPdfForm(request.POST, request.FILES)
+        if not form.is_valid():
+            return self.refuse(_first_error(form))
+        if not form.cleaned_data["signed_pdf"]:
+            return self.refuse(_("Choisissez le PDF du devis signé."))
+        try:
+            invoicing.attach_quote_scan(self.document, form.cleaned_data["signed_pdf"])
+        except invoicing.InvoicingError as error:
+            return self.refuse(error.args[0])
+        messages.success(request, _("Le devis signé est enregistré."))
+        return redirect("documents:document-detail", self.gig.pk, "devis", self.document.pk)
+
+
+class InvoiceDetailsView(DocumentMixin, View):
+    """The purchase order number and the due date of a draft invoice."""
+
+    def post(self, request, gig_id, pk):
+        self.load(gig_id, "factures", pk)
+        form = InvoiceDetailsForm(request.POST)
+        if not form.is_valid():
+            return self.refuse(_first_error(form))
+        try:
+            invoicing.set_invoice_details(
+                self.document,
+                form.cleaned_data["purchase_order_number"],
+                form.cleaned_data["due_date"],
+            )
+        except invoicing.InvoicingError as error:
+            return self.refuse(error.args[0])
+        messages.success(request, _("Les détails de la facture sont enregistrés."))
+        return redirect("documents:document-detail", self.gig.pk, "factures", self.document.pk)
 
 
 class DocumentTitleView(DocumentMixin, View):

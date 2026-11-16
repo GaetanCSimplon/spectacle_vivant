@@ -62,7 +62,11 @@ def test_a_deposit_invoice_recalls_the_quote_the_contract_and_the_balance():
     deposit = _invoice(gig, Invoice.Kind.DEPOSIT)
 
     history = deposit.history_snapshot
-    assert history["quote"] == {"number": quote.number, "issue_date": TODAY.isoformat()}
+    assert history["quote"] == {
+        "number": quote.number,
+        "issue_date": TODAY.isoformat(),
+        "accepted_on": None,
+    }
     assert history["contract"]["total_incl_tax"] == "1000.00"
     assert history["contract"]["signed_on"] is None
     assert history["deposit"]["this_invoice"] is True
@@ -191,7 +195,7 @@ def test_the_pdf_and_the_screen_show_the_recall(client):
 
     for content in (_text(balance), _screen(client, balance)):
         assert "Rappel de la commande" in content
-        assert f"Devis n° {quote.number} validé le {TODAY:%d/%m/%Y}" in content
+        assert f"Devis n° {quote.number} émis le {TODAY:%d/%m/%Y}" in content
         assert "prix de cession convenu" in content
         assert (
             f"facturé le {TODAY:%d/%m/%Y} ({deposit.number}), réglé le {TODAY:%d/%m/%Y}" in content

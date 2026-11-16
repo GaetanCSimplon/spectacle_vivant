@@ -1,6 +1,8 @@
+import datetime
 from decimal import Decimal
 
 from django import forms
+from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 
 from apps.addressbook.forms import PromoterIdentifiersMixin
@@ -13,6 +15,7 @@ from apps.gigs.forms import PaymentTermsMixin
 from apps.gigs.models import Gig
 
 from . import library
+from .invoicing import MAX_DUE_DAYS
 from .models import Contract
 
 TIME_FORMAT = "%H:%M"
@@ -253,6 +256,40 @@ class SignedPdfForm(forms.Form):
             raise forms.ValidationError(_("Le fichier doit être un PDF."))
         file.seek(0)
         return file
+
+
+class QuoteAcceptForm(SignedPdfForm):
+    """ "Devis signé reçu": the day it came back, and its scan when there is one."""
+
+    accepted_on = forms.DateField(
+        label=_("Reçu le"), widget=forms.DateInput(attrs={"type": "date"}, format="%Y-%m-%d")
+    )
+
+
+class InvoiceDetailsForm(forms.Form):
+    """The optional details of a draft invoice: the customer's purchase order, the due date."""
+
+    purchase_order_number = forms.CharField(
+        label=_("N° de bon de commande"),
+        required=False,
+        max_length=50,
+        help_text=_("Si l'organisateur vous en a donné un (souvent les collectivités)."),
+    )
+    due_date = forms.DateField(
+        label=_("Échéance"),
+        required=False,
+        widget=forms.DateInput(attrs={"type": "date"}, format="%Y-%m-%d"),
+        help_text=_("Laissez vide pour reprendre le délai de « Ma structure »."),
+    )
+
+    def clean_due_date(self):
+        due_date = self.cleaned_data["due_date"]
+        if due_date and due_date > timezone.localdate() + datetime.timedelta(days=MAX_DUE_DAYS):
+            raise forms.ValidationError(
+                _("L'échéance ne peut pas dépasser %(n)s jours après l'émission.")
+                % {"n": MAX_DUE_DAYS}
+            )
+        return due_date
 
 
 class DocumentLineForm(forms.Form):

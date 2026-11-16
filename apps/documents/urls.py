@@ -99,6 +99,21 @@ urlpatterns = [
         name="document-delete",
     ),
     path(
+        "devis/<int:pk>/accepter/",
+        billing_views.QuoteAcceptView.as_view(),
+        name="quote-accept",
+    ),
+    path(
+        "devis/<int:pk>/devis-signe/",
+        billing_views.QuoteScanView.as_view(),
+        name="quote-scan",
+    ),
+    path(
+        "factures/<int:pk>/details/",
+        billing_views.InvoiceDetailsView.as_view(),
+        name="invoice-details",
+    ),
+    path(
         "factures/<int:pk>/avoir/",
         billing_views.CreditNoteView.as_view(),
         name="credit-note-create",
