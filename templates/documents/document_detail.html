@@ -49,6 +49,7 @@
       <p>{{ customer.name }}</p>
       <p class="text-gray-600">{{ customer.billing_address|linebreaksbr }}</p>
       {% if customer.siret %}<p class="text-gray-600">SIRET {{ customer.siret|siret }}</p>{% endif %}
+      {% if customer.vat_number %}<p class="text-gray-600">{% translate "N° de TVA" %} {{ customer.vat_number }}</p>{% endif %}
     </div>
     {% if not document.is_draft %}
       <p class="text-gray-600 sm:col-span-2">

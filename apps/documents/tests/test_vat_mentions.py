@@ -14,7 +14,7 @@ from .test_billing_pdf import _gig, _issued, _text
 pytestmark = pytest.mark.django_db
 
 ARTICLE = "TVA non applicable, article 293 B du CGI."
-ASSOCIATION = "Association exonérée des impôts commerciaux."
+ASSOCIATION = "TVA non applicable, article 261-7-1° b du CGI."
 
 
 @pytest.fixture(autouse=True)
@@ -37,7 +37,7 @@ def _detail(gig, document):
 
 def test_each_regime_has_its_sentences():
     assert invoicing.vat_mentions("franchise") == [ARTICLE]
-    assert invoicing.vat_mentions("not_taxable") == ["TVA non applicable.", ASSOCIATION]
+    assert invoicing.vat_mentions("not_taxable") == [ASSOCIATION]
     assert invoicing.vat_mentions("taxable") == []
 
 
@@ -68,7 +68,7 @@ def test_the_screen_of_a_non_taxable_quote_adds_the_association_sentence(client)
 
     content = client.get(_detail(gig, quote)).content.decode()
 
-    assert "TVA non applicable." in content and ASSOCIATION in content
+    assert ASSOCIATION in content
     assert "article 293 B" not in content
 
 
@@ -101,7 +101,7 @@ def test_an_issued_invoice_keeps_the_regime_it_was_issued_with_on_screen(client)
 def test_the_pdf_of_a_non_taxable_invoice_carries_the_association_sentence():
     text = _text(_issued(_gig(vat_regime="not_taxable")))
 
-    assert "TVA non applicable." in text and ASSOCIATION in text
+    assert ASSOCIATION in text
 
 
 def test_the_pdf_of_a_non_taxable_quote_carries_it_too():

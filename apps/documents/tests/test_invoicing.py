@@ -307,7 +307,7 @@ def test_a_failure_while_issuing_gives_the_number_back():
     first = invoicing.create_invoice(gig, Invoice.Kind.FULL)
     original = invoicing.build_customer_snapshot
 
-    def boom(promoter):
+    def boom(*args):
         raise RuntimeError
 
     invoicing.build_customer_snapshot = boom

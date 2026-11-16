@@ -207,7 +207,7 @@ def test_without_vat_the_amounts_with_tax_equal_the_amounts_without():
 def test_a_structure_not_subject_to_vat_gets_the_plain_mention():
     text = _render(_gig(tenant_fields={"vat_regime": "not_taxable"}))
 
-    assert "TVA non applicable." in text
+    assert "TVA non applicable, article 261-7-1° b du CGI." in text
     assert "article 293 B" not in text
 
 
