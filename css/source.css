@@ -212,11 +212,6 @@
     display: none !important;
   }
 
-  /* Radar's button sits on the left of the checklist's when a page has both. */
-  body:has(#checklist-button) #radar-button {
-    right: 4.75rem;
-  }
-
   /* Titles: Archivo 800, wide, tight letter-spacing (V06). Page title 30-34 px, card title 20-24 px. */
   h1,
   h2,
