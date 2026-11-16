@@ -8,6 +8,6 @@ Lives inside _widget.html (Alpine scope `open`).{% endcomment %}
   <img src="{% static 'brand/radar.svg' %}" alt="" width="36" height="36" class="size-9">
   <span class="sr-only">{% if findings %}{% blocktranslate count n=findings|length %}Radar : {{ n }} point à regarder{% plural %}Radar : {{ n }} points à regarder{% endblocktranslate %}{% else %}{% translate "Radar : rien ne coince" %}{% endif %}</span>
   {% if findings %}
-    <span class="absolute -right-1 -top-1 flex min-w-6 items-center justify-center rounded-full px-1.5 text-xs font-bold leading-6 text-white {% if counts.important %}bg-red-700{% else %}bg-amber-700{% endif %}" aria-hidden="true">{{ findings|length }}</span>
+    <span class="flex items-center justify-center rounded-full px-1.5 text-xs font-bold text-white {% if counts.important %}bg-red-700{% else %}bg-amber-700{% endif %}" style="position:absolute;top:-0.5rem;right:-0.5rem;min-width:1.5rem;height:1.5rem;border:2px solid #fff" aria-hidden="true">{{ findings|length }}</span>
   {% endif %}
 </button>
