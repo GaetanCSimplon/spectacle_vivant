@@ -130,14 +130,27 @@ class TenantProfileForm(ChoiceOrOtherMixin, SectionedFormMixin, AddressModelForm
                 "code_ape_other",
                 "licence_number",
                 "licence_exempt",
+                "licence_exemption_reason",
+                "licence_categories",
+                "licence_valid_until",
                 "share_capital",
                 "rcs",
             ],
         ),
         (_("Logo"), ["logo"]),
         (_("Adresse"), ["address", "postal_code", "city", "department"]),
-        (_("Contact"), ["phone", "email"]),
-        (_("TVA"), ["vat_regime", "vat_rate", "vat_number", "vat_on_debits"]),
+        (_("Contact"), ["contact_name", "phone", "email"]),
+        (
+            _("TVA"),
+            [
+                "vat_regime",
+                "vat_exemption_note",
+                "vat_confirmed_on",
+                "vat_rate",
+                "vat_number",
+                "vat_on_debits",
+            ],
+        ),
         (_("Coordonnées bancaires"), ["iban", "bic"]),
         (_("Devis et factures"), ["quote_validity_days", "payment_term_days", "mediator"]),
         (
@@ -226,6 +239,12 @@ class TenantProfileForm(ChoiceOrOtherMixin, SectionedFormMixin, AddressModelForm
             "email",
             "licence_number",
             "licence_exempt",
+            "licence_exemption_reason",
+            "licence_categories",
+            "licence_valid_until",
+            "contact_name",
+            "vat_exemption_note",
+            "vat_confirmed_on",
             "share_capital",
             "rcs",
             "vat_on_debits",
@@ -237,7 +256,11 @@ class TenantProfileForm(ChoiceOrOtherMixin, SectionedFormMixin, AddressModelForm
             "representative_role",
             "jurisdiction_city",
         ]
-        widgets = {"address": forms.Textarea(attrs={"rows": 2})}
+        widgets = {
+            "address": forms.Textarea(attrs={"rows": 2}),
+            "licence_valid_until": forms.DateInput(attrs={"type": "date"}, format="%Y-%m-%d"),
+            "vat_confirmed_on": forms.DateInput(attrs={"type": "date"}, format="%Y-%m-%d"),
+        }
         help_texts = {
             "vat_regime": VAT_REGIME_HELP,
             "licence_number": _(
