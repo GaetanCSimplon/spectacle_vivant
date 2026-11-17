@@ -324,6 +324,44 @@ class Quote(BillingDocument):
         return f"Devis {self.number or '(brouillon)'}"
 
 
+class LineKind(models.TextChoices):
+    """What a line bills. Closed list (spec 04 §4): every kind allows only some units."""
+
+    CESSION = "cession", _("Cession du spectacle")
+    TRANSPORT = "transport", _("Transport / défraiement")
+    ACCOMMODATION = "accommodation", _("Hébergement")
+    MEAL = "meal", _("Repas")
+    TECHNICAL = "technical", _("Technique / régie")
+    COMMUNICATION = "communication", _("Communication")
+    OTHER = "other", _("Autre")
+    DISCOUNT = "discount", _("Remise")
+    DEPOSIT_DEDUCTED = "deposit_deducted", _("Acompte déjà facturé")
+
+
+class LineUnit(models.TextChoices):
+    PERFORMANCE = "performance", _("représentation(s)")
+    FLAT = "flat", _("forfait")
+    KM = "km", _("km")
+    NIGHT = "night", _("nuit(s)")
+    MEAL = "meal", _("repas")
+    DAY = "day", _("jour(s)")
+    HOUR = "hour", _("heure(s)")
+
+
+# The first unit of each list is the default one.
+KIND_UNITS = {
+    LineKind.CESSION: [LineUnit.FLAT, LineUnit.PERFORMANCE],
+    LineKind.TRANSPORT: [LineUnit.FLAT, LineUnit.KM],
+    LineKind.ACCOMMODATION: [LineUnit.NIGHT],
+    LineKind.MEAL: [LineUnit.MEAL],
+    LineKind.TECHNICAL: [LineUnit.FLAT, LineUnit.DAY, LineUnit.HOUR],
+    LineKind.COMMUNICATION: [LineUnit.FLAT],
+    LineKind.OTHER: [LineUnit.FLAT],
+    LineKind.DISCOUNT: [LineUnit.FLAT],
+    LineKind.DEPOSIT_DEDUCTED: [LineUnit.FLAT],
+}
+
+
 class DocumentLine(TenantOwnedModel):
     """One line of a quote or of an invoice (exactly one of the two)."""
 
@@ -334,6 +372,12 @@ class DocumentLine(TenantOwnedModel):
         Quote, on_delete=models.CASCADE, null=True, blank=True, related_name="lines"
     )
     position = models.PositiveIntegerField(_("position"), default=0)
+    kind = models.CharField(
+        _("type de ligne"), max_length=20, choices=LineKind.choices, default=LineKind.OTHER
+    )
+    unit = models.CharField(
+        _("unité"), max_length=20, choices=LineUnit.choices, default=LineUnit.FLAT
+    )
     label = models.CharField(_("désignation"), max_length=255)
     quantity = models.DecimalField(_("quantité"), max_digits=8, decimal_places=2, default=1)
     unit_price_excl_tax = models.DecimalField(

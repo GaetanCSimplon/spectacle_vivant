@@ -15,7 +15,7 @@ from apps.tenants.models import Tenant
 
 from . import invoicing
 from .forms import DocumentLineForm, InvoiceDetailsForm, QuoteAcceptForm, SignedPdfForm
-from .models import DocumentLine, Invoice, Quote
+from .models import DocumentLine, Invoice, LineKind, Quote
 
 DOC_TYPES = {"factures": Invoice, "devis": Quote}
 INVOICE_KINDS = {
@@ -104,7 +104,7 @@ class DocumentMixin(TenantScopedMixin):
             "show_vat": self.show_vat(),
             "vat_mentions": invoicing.vat_mentions(self.vat_regime()),
             "history": invoicing.history_for_display(getattr(document, "history_snapshot", None)),
-            "line_form": DocumentLineForm(show_vat=self.show_vat()),
+            "line_form": DocumentLineForm(show_vat=self.show_vat(), document=document),
             "editing": None,
         }
         if document.is_draft:
@@ -137,6 +137,8 @@ class DocumentMixin(TenantScopedMixin):
         """After an edit: the refreshed lines block for HTMX, the whole page otherwise."""
         if wants_fragment(self.request):
             return render(self.request, "documents/_document_lines.html", self.context(**extra))
+        if extra.get("error"):
+            messages.error(self.request, extra["error"])  # the page reloads: keep the reason
         return redirect(
             "documents:document-detail",
             gig_id=self.gig.pk,
@@ -167,10 +169,15 @@ class DocumentDetailView(DocumentMixin, View):
 
 def _line_values(form):
     data = form.cleaned_data
+    price = data["unit_price_excl_tax"]
+    if data["kind"] == LineKind.DISCOUNT:
+        price = -abs(price)  # entered as the amount to take off
     return {
+        "kind": data["kind"],
         "label": data["label"],
         "quantity": data["quantity"],
-        "unit_price_excl_tax": data["unit_price_excl_tax"],
+        "unit": data["unit"],
+        "unit_price_excl_tax": price,
         "vat_rate": data.get("vat_rate"),
     }
 
@@ -180,7 +187,7 @@ class LineAddView(DocumentMixin, View):
 
     def post(self, request, gig_id, doc_type, pk):
         self.load(gig_id, doc_type, pk)
-        form = DocumentLineForm(request.POST, show_vat=self.show_vat())
+        form = DocumentLineForm(request.POST, show_vat=self.show_vat(), document=self.document)
         if not form.is_valid():
             if wants_fragment(request):
                 return self.render_lines_or_redirect(line_form=form)
