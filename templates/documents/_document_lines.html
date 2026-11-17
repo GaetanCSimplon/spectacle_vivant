@@ -16,7 +16,8 @@
             <form method="post"
                   action="{% url 'documents:line-edit' gig.pk doc_type document.pk line.pk %}"
                   hx-post="{% url 'documents:line-edit' gig.pk doc_type document.pk line.pk %}"
-                  hx-target="#lines" hx-swap="outerHTML" class="space-y-3">
+                  hx-target="#lines" hx-swap="outerHTML" class="space-y-3"
+                  x-data="{ kind: '{{ line.kind }}' }">
               {% csrf_token %}
               {{ edit_form.as_p }}
               <div class="flex gap-3">
@@ -29,7 +30,7 @@
               <div class="min-w-0">
                 <p class="font-medium">{{ line.label }}</p>
                 <p class="text-gray-600">
-                  {{ line.quantity }} × {{ line.unit_price_excl_tax }} € HT{% if show_vat %} · TVA {{ line.vat_rate }} %{% endif %}
+                  {{ line.get_kind_display }} · {{ line.quantity }} {{ line.get_unit_display }} × {{ line.unit_price_excl_tax }} € HT{% if show_vat %} · TVA {{ line.vat_rate }} %{% endif %}
                 </p>
               </div>
               <p class="shrink-0 font-medium">{{ row.total }} €</p>
@@ -70,7 +71,8 @@
   {% if document.is_draft and editing is None %}
     <form method="post" action="{% url 'documents:line-add' gig.pk doc_type document.pk %}"
           hx-post="{% url 'documents:line-add' gig.pk doc_type document.pk %}"
-          hx-target="#lines" hx-swap="outerHTML" class="card mt-3 space-y-3">
+          hx-target="#lines" hx-swap="outerHTML" class="card mt-3 space-y-3"
+          x-data="{ kind: '{{ line_form.kind.value|default:'other' }}' }">
       {% csrf_token %}
       <h3 class="text-sm font-semibold">{% translate "Ajouter une ligne" %}</h3>
       {{ line_form.as_p }}

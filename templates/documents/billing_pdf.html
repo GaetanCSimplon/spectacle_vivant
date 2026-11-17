@@ -108,7 +108,7 @@
         {% for row in rows %}
           <tr>
             <td>{{ row.line.label }}</td>
-            <td class="num">{{ row.line.quantity }}</td>
+            <td class="num">{{ row.line.quantity }} {{ row.line.get_unit_display }}</td>
             <td class="num">{{ row.line.unit_price_excl_tax }} €</td>
             {% if show_vat %}<td class="num">{{ row.line.vat_rate }} %</td>{% endif %}
             <td class="num">{{ row.total }} €</td>

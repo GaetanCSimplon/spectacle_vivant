@@ -17,7 +17,7 @@ from apps.core.services import render_pdf
 from apps.tenants import logo as logo_files
 from apps.tenants.models import Tenant
 
-from .models import DocumentLine, DocumentSequence, Invoice, Quote
+from .models import KIND_UNITS, DocumentLine, DocumentSequence, Invoice, LineKind, LineUnit, Quote
 
 CENT = Decimal("0.01")
 ZERO = Decimal("0.00")
@@ -90,13 +90,43 @@ def _require_draft(document):
         raise InvoicingError(_("Seul un brouillon peut être modifié."))
 
 
-def add_line(document, label, unit_price_excl_tax, quantity=1, vat_rate=None):
+def default_unit(kind):
+    return KIND_UNITS[LineKind(kind)][0]
+
+
+def _check_unit(kind, unit):
+    if unit not in KIND_UNITS[LineKind(kind)]:
+        raise InvoicingError(
+            _("L'unité « %(unit)s » n'existe pas pour une ligne « %(kind)s ».")
+            % {"unit": LineUnit(unit).label, "kind": LineKind(kind).label}
+        )
+
+
+def _is_cession_of_quote(line):
+    return isinstance(line.parent, Quote) and line.kind == LineKind.CESSION
+
+
+def add_line(
+    document,
+    label,
+    unit_price_excl_tax,
+    quantity=1,
+    vat_rate=None,
+    kind=LineKind.OTHER,
+    unit=None,
+):
     _require_draft(document)
+    unit = unit or default_unit(kind)
+    _check_unit(kind, unit)
+    if isinstance(document, Quote) and kind == LineKind.CESSION and document.lines.exists():
+        raise InvoicingError(_("Un devis ne porte qu'une seule ligne de cession, en première."))
     with transaction.atomic():
         position = document.lines.count()
         line = DocumentLine(
             tenant=document.tenant,
             position=position,
+            kind=kind,
+            unit=unit,
             label=label,
             quantity=Decimal(quantity),
             unit_price_excl_tax=money(unit_price_excl_tax),
@@ -108,11 +138,20 @@ def add_line(document, label, unit_price_excl_tax, quantity=1, vat_rate=None):
     return line
 
 
-def update_line(line, label, unit_price_excl_tax, quantity=1, vat_rate=None):
+def update_line(line, label, unit_price_excl_tax, quantity=1, vat_rate=None, kind=None, unit=None):
     document = line.parent
     _require_draft(document)
+    kind = kind or line.kind
+    unit = unit or (line.unit if kind == line.kind else default_unit(kind))
+    _check_unit(kind, unit)
+    if isinstance(document, Quote) and (kind == LineKind.CESSION) != (
+        line.kind == LineKind.CESSION
+    ):
+        raise InvoicingError(_("La ligne de cession reste la première ligne du devis."))
     with transaction.atomic():
         line.label = label
+        line.kind = kind
+        line.unit = unit
         line.quantity = Decimal(quantity)
         line.unit_price_excl_tax = money(unit_price_excl_tax)
         line.vat_rate = vat_rate_for(document.tenant, vat_rate)
@@ -124,6 +163,8 @@ def update_line(line, label, unit_price_excl_tax, quantity=1, vat_rate=None):
 def remove_line(line):
     document = line.parent
     _require_draft(document)
+    if _is_cession_of_quote(line):
+        raise InvoicingError(_("La ligne de cession d'un devis ne peut pas être supprimée."))
     with transaction.atomic():
         line.delete()
         refresh_totals(document)
@@ -140,27 +181,54 @@ def invoiced_excl_tax(gig):
     return sum((invoice.total_excl_tax for invoice in issued), ZERO)
 
 
-def suggest_lines(gig, kind):
-    """Lines proposed for a new invoice: the deposit, or what is left to invoice.
+def deposits_invoiced(gig):
+    """The issued deposit invoices of a gig (credited ones no longer count)."""
+    return list(
+        Invoice.objects.filter(
+            gig=gig, tenant=gig.tenant, kind=Invoice.Kind.DEPOSIT, status__in=CREDITABLE
+        ).order_by("issue_date", "id")
+    )
 
+
+def suggest_lines(gig, kind):
+    """Lines proposed for a new invoice.
+
+    A deposit bills a share of the cession; a total invoice bills the whole cession; a balance
+    shows the whole cession, then takes off the deposits already invoiced (spec 04 §4).
     Only a suggestion: every line stays editable in the draft.
     """
     price = money(gig.price)
     percent = Decimal(str(gig.deposit_percent))
-    remaining = max(price - invoiced_excl_tax(gig), ZERO)
     title = f"« {gig.show.title} » — {gig.date:%d/%m/%Y}"
     if kind == Invoice.Kind.DEPOSIT:
+        remaining = max(price - invoiced_excl_tax(gig), ZERO)
         amount = min(money(price * percent / 100), remaining)
         label = _("Acompte de %(percent)s %% — cession du spectacle %(title)s") % {
             "percent": f"{percent:.2f}".rstrip("0").rstrip("."),
             "title": title,
         }
-    else:
-        amount = remaining
-        label = _("Cession du spectacle %(title)s") % {"title": title}
-        if kind == Invoice.Kind.BALANCE:
-            label = _("Solde — cession du spectacle %(title)s") % {"title": title}
-    return [{"label": str(label), "unit_price_excl_tax": amount, "quantity": 1}]
+        return [{"label": str(label), "unit_price_excl_tax": amount, "kind": LineKind.CESSION}]
+    lines = [
+        {
+            "label": str(_("Cession du spectacle %(title)s") % {"title": title}),
+            "unit_price_excl_tax": price,
+            "kind": LineKind.CESSION,
+        }
+    ]
+    deposits = deposits_invoiced(gig) if kind == Invoice.Kind.BALANCE else []
+    if deposits:
+        label = _("Acompte déjà facturé (%(numbers)s)") % {
+            "numbers": ", ".join(d.number for d in deposits)
+        }
+        deducted = sum((d.total_excl_tax for d in deposits), ZERO)
+        lines.append(
+            {
+                "label": str(label),
+                "unit_price_excl_tax": -deducted,
+                "kind": LineKind.DEPOSIT_DEDUCTED,
+            }
+        )
+    return lines
 
 
 def _create_with_lines(model, gig, lines, **fields):
@@ -187,6 +255,7 @@ def create_quote(gig, lines=None):
                 "label": _("Cession du spectacle « %(title)s » — %(date)s")
                 % {"title": gig.show.title, "date": f"{gig.date:%d/%m/%Y}"},
                 "unit_price_excl_tax": gig.price,
+                "kind": LineKind.CESSION,
             }
         ]
     return _create_with_lines(Quote, gig, lines)
@@ -205,6 +274,8 @@ def create_credit_note(invoice):
             "quantity": line.quantity,
             "unit_price_excl_tax": -line.unit_price_excl_tax,
             "vat_rate": line.vat_rate,
+            "kind": line.kind,
+            "unit": line.unit,
         }
         for line in invoice.lines.all()
     ]
@@ -538,6 +609,9 @@ def _check_credit_note(note, original):
 def issue_quote(quote):
     with transaction.atomic():
         locked = _lock(quote)
+        first = locked.lines.first()
+        if first is not None and first.kind != LineKind.CESSION:
+            raise InvoicingError(_("Un devis commence par une ligne « Cession du spectacle »."))
         _issue(locked)
         locked.valid_until = locked.valid_until or locked.issue_date + datetime.timedelta(
             days=locked.tenant.quote_validity_days

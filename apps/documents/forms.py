@@ -16,7 +16,7 @@ from apps.gigs.models import Gig
 
 from . import library
 from .invoicing import MAX_DUE_DAYS
-from .models import Contract
+from .models import KIND_UNITS, Contract, LineKind, LineUnit, Quote
 
 TIME_FORMAT = "%H:%M"
 
@@ -292,9 +292,39 @@ class InvoiceDetailsForm(forms.Form):
         return due_date
 
 
-class DocumentLineForm(forms.Form):
-    """A line of a draft quote or invoice. The VAT rate only matters to a taxable tenant."""
+# Alpine: show only the units the chosen kind allows, and move off a hidden one.
+HIDE_OTHER_UNITS = (
+    "(() => { for (const o of $el.options) {"
+    " const ok = o.dataset.kinds.split(' ').includes(kind); o.hidden = !ok; o.disabled = !ok }"
+    " if ($el.selectedOptions[0]?.disabled) {"
+    " $el.value = [...$el.options].find(o => !o.disabled).value } })()"
+)
 
+
+class UnitSelect(forms.Select):
+    """The unit list, each option tagged with the line kinds that allow it (the page hides the
+    others; the form checks it again on the server)."""
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.attrs["x-effect"] = HIDE_OTHER_UNITS
+
+    def create_option(self, name, value, *args, **kwargs):
+        option = super().create_option(name, value, *args, **kwargs)
+        if value:
+            kinds = [kind for kind, units in KIND_UNITS.items() if value in units]
+            option["attrs"]["data-kinds"] = " ".join(kinds)
+        return option
+
+
+class DocumentLineForm(forms.Form):
+    """A line of a draft quote or invoice. The VAT rate only matters to a taxable tenant.
+
+    `document`: the draft the line belongs to. The « acompte déjà facturé » line is added by the
+    application only, and the cession line of a quote is neither added nor changed to another kind.
+    """
+
+    kind = forms.ChoiceField(label=_("Type de ligne"), choices=LineKind.choices, required=False)
     label = forms.CharField(label=_("Désignation"), max_length=255)
     quantity = forms.DecimalField(
         label=_("Quantité"),
@@ -303,8 +333,18 @@ class DocumentLineForm(forms.Form):
         min_value=Decimal("0.01"),
         initial=1,
     )
+    unit = forms.ChoiceField(
+        label=_("Unité"),
+        choices=LineUnit.choices,
+        widget=UnitSelect,
+        required=False,
+        initial=LineUnit.FLAT,
+    )
     unit_price_excl_tax = forms.DecimalField(
-        label=_("Prix unitaire HT (€)"), max_digits=10, decimal_places=2
+        label=_("Prix unitaire HT (€)"),
+        max_digits=10,
+        decimal_places=2,
+        help_text=_("Pour une remise, saisissez le montant à retirer (positif)."),
     )
     vat_rate = forms.DecimalField(
         label=_("TVA (%)"),
@@ -314,9 +354,23 @@ class DocumentLineForm(forms.Form):
         max_value=Decimal("100"),
         required=False,
     )
+    field_order = ["kind", "label", "quantity", "unit", "unit_price_excl_tax", "vat_rate"]
 
-    def __init__(self, *args, show_vat=False, **kwargs):
+    def __init__(self, *args, show_vat=False, document=None, line=None, **kwargs):
         super().__init__(*args, **kwargs)
+        fixed = line is not None and line.kind in (
+            LineKind.DEPOSIT_DEDUCTED,
+            *([LineKind.CESSION] if isinstance(document, Quote) else []),
+        )
+        excluded = {LineKind.DEPOSIT_DEDUCTED}
+        if isinstance(document, Quote):
+            excluded.add(LineKind.CESSION)
+        if fixed:
+            excluded.discard(line.kind)
+            self.fields["kind"].disabled = True
+        self.fields["kind"].choices = [c for c in LineKind.choices if c[0] not in excluded]
+        self.fields["kind"].initial = LineKind.OTHER
+        self.fields["kind"].widget.attrs["x-model"] = "kind"
         if not show_vat:
             del self.fields["vat_rate"]
         for name in ("quantity", "unit_price_excl_tax", "vat_rate"):
@@ -324,15 +378,34 @@ class DocumentLineForm(forms.Form):
                 self.fields[name].widget.attrs["step"] = "0.01"
                 self.fields[name].widget.attrs["inputmode"] = "decimal"
 
+    def clean(self):
+        data = super().clean()
+        # Left empty (no JavaScript, or an older form): « Autre » and the first unit allowed.
+        kind = data["kind"] = data.get("kind") or LineKind.OTHER
+        unit = data["unit"] = data.get("unit") or KIND_UNITS[LineKind(kind)][0]
+        if unit not in KIND_UNITS[LineKind(kind)]:
+            self.add_error("unit", _("Cette unité ne convient pas à ce type de ligne."))
+        return data
+
     @classmethod
     def from_line(cls, line, data=None, show_vat=False):
+        price = line.unit_price_excl_tax
         initial = {
+            "kind": line.kind,
             "label": line.label,
             "quantity": line.quantity,
-            "unit_price_excl_tax": line.unit_price_excl_tax,
+            "unit": line.unit,
+            "unit_price_excl_tax": abs(price) if line.kind == LineKind.DISCOUNT else price,
             "vat_rate": line.vat_rate,
         }
-        return cls(data, initial=initial, show_vat=show_vat, prefix=f"line{line.pk}")
+        return cls(
+            data,
+            initial=initial,
+            show_vat=show_vat,
+            document=line.parent,
+            line=line,
+            prefix=f"line{line.pk}",
+        )
 
 
 class DocumentFilterForm(forms.Form):

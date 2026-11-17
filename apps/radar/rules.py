@@ -306,7 +306,7 @@ def rad_44_expired_quote(gig):
     """The quotes of the date were issued, none was accepted, and the latest has expired."""
     quotes = list(
         Quote.objects.filter(tenant=gig.tenant, gig=gig, status=Quote.Status.ISSUED).order_by(
-            "-created_at"
+            "-created_at", "-id"
         )
     )
     if not quotes or any(q.accepted_on for q in quotes) or not quotes[0].is_expired:

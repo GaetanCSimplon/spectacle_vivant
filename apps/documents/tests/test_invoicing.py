@@ -174,13 +174,15 @@ def test_a_draft_deposit_is_not_counted_as_invoiced():
     assert balance.total_excl_tax == D("1000.00")
 
 
-def test_nothing_left_to_invoice_suggests_zero():
+def test_a_balance_only_takes_off_deposits_a_total_invoice_is_left_to_radar():
+    """The balance shows the whole cession and the deposits; billing it after a total invoice
+    is not blocked, Radar warns (RAD-43) when the total goes above the price."""
     gig = _gig()
     _issued(gig)
 
     balance = invoicing.create_invoice(gig, Invoice.Kind.BALANCE)
 
-    assert balance.total_excl_tax == D("0.00")
+    assert balance.total_excl_tax == gig.price
 
 
 def test_a_credit_note_gives_the_amount_back_to_invoice():
