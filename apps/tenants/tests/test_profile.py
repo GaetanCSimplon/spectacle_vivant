@@ -278,3 +278,38 @@ def test_code_ape_field_comes_right_after_siret(client):
     _login(client)
     names = list(client.get(URL).context["form"].fields)
     assert names.index("code_ape") == names.index("siret") + 1
+
+
+def test_owner_can_set_the_contract_fields(client):
+    tenant = _login(client)
+
+    response = client.post(
+        URL,
+        _payload(
+            vat_exemption_note="TVA non applicable, art. 293 B du CGI",
+            vat_confirmed_on="2026-11-17",
+            licence_categories="2, 3",
+            licence_valid_until="2027-06-30",
+            licence_exemption_reason="Moins de 7 représentations",
+            contact_name="Julie Martin",
+        ),
+    )
+
+    assert response.status_code == 302
+    tenant.refresh_from_db()
+    assert tenant.vat_exemption_note == "TVA non applicable, art. 293 B du CGI"
+    assert str(tenant.vat_confirmed_on) == "2026-11-17"
+    assert tenant.licence_categories == "2, 3"
+    assert str(tenant.licence_valid_until) == "2027-06-30"
+    assert tenant.licence_exemption_reason == "Moins de 7 représentations"
+    assert tenant.contact_name == "Julie Martin"
+
+
+def test_an_invalid_licence_date_is_rejected(client):
+    tenant = _login(client)
+
+    response = client.post(URL, _payload(licence_valid_until="pas une date"))
+
+    assert response.status_code == 200
+    tenant.refresh_from_db()
+    assert tenant.licence_valid_until is None
