@@ -121,7 +121,7 @@ class GigFilterForm(forms.Form):
 class GigDetailsStepForm(forms.ModelForm):
     class Meta:
         model = Gig
-        fields = ["event_name", "date", "option_expires_on", "price", "conditions"]
+        fields = ["event_name", "date", "option_expires_on", "price"]
         widgets = {
             "date": forms.DateInput(attrs={"type": "date"}),
             "option_expires_on": forms.DateInput(attrs={"type": "date"}),

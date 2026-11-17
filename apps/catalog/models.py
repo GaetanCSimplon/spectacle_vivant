@@ -23,7 +23,7 @@ class Show(TenantOwnedModel):
     )
     duration_minutes = models.PositiveIntegerField(_("durée (minutes)"))
     default_price = models.DecimalField(_("prix indicatif"), max_digits=8, decimal_places=2)
-    sacem_number = models.CharField(_("n° SACEM"), max_length=50, blank=True)
+    sacem_number = models.CharField(_("n° de programme type SACEM"), max_length=50, blank=True)
     sacem_object_number = models.CharField(_("n° d'objet"), max_length=50, blank=True)
     rider_file = models.FileField(_("fiche d'exigences (rider)"), upload_to="riders/", blank=True)
     crew_size = models.PositiveIntegerField(

@@ -244,7 +244,6 @@ class GigWizardDetailsStepView(GigWizardMixin, View):
                 "option_expires_on": data.get("option_expires_on"),
                 "price": data.get("price"),
                 "event_name": data.get("event_name", ""),
-                "conditions": data.get("conditions", ""),
             }
         )
         return render(request, self.template_name, self.wizard_context(4, form=form))
@@ -261,7 +260,6 @@ class GigWizardDetailsStepView(GigWizardMixin, View):
                 date=form.cleaned_data["date"].isoformat(),
                 option_expires_on=expires_on.isoformat() if expires_on else "",
                 price=str(form.cleaned_data["price"]),
-                conditions=form.cleaned_data["conditions"],
                 event_name=form.cleaned_data["event_name"],
             )
             return redirect("gigs:wizard-recap")
@@ -293,7 +291,6 @@ class GigWizardRecapView(GigWizardMixin, View):
                 else None
             ),
             price=data["price"],
-            conditions=data.get("conditions", ""),
             event_name=data.get("event_name", ""),
         )
         return render(request, self.template_name, context)

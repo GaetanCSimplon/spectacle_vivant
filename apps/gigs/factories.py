@@ -19,6 +19,8 @@ class GigFactory(factory.django.DjangoModelFactory):
     venue = factory.SubFactory(VenueFactory, tenant=factory.SelfAttribute("..tenant"))
     date = factory.LazyFunction(lambda: datetime.date.today() + datetime.timedelta(days=30))
     price = "500.00"
+    # The model starts at 0 (no universal deposit); most tests want a deposit to work with.
+    deposit_percent = 30
 
 
 class GigMemberFactory(factory.django.DjangoModelFactory):

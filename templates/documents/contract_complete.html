@@ -19,7 +19,7 @@
   <form method="post" class="space-y-6">
     {% csrf_token %}
 
-    <div class="space-y-8" x-data="{ free: {{ forms.gig.is_free.value|yesno:'true,false' }} }">
+    <div class="space-y-8" x-data="{ free: {{ forms.gig.is_free.value|yesno:'true,false' }}, setting: '{{ forms.gig.setting.value|default:'' }}' }">
 
     {# The three blocks of the charter: Contrat, Budget, Feuille de route (CTR-06). The colour comes with the volet chip, never alone. #}
     <section class="space-y-4 border-l-4 border-page-line pl-4" aria-labelledby="block-contract">
@@ -28,6 +28,11 @@
     <fieldset class="space-y-3 rounded-md border border-gray-200 p-4">
       <legend class="px-1 text-sm font-semibold">{% translate "La date" %}</legend>
       <div class="form-grid">{% for field in forms.gig.contract_fields %}{% include "components/_field_p.html" %}{% endfor %}</div>
+    </fieldset>
+
+    <fieldset class="space-y-3 rounded-md border border-gray-200 p-4">
+      <legend class="px-1 text-sm font-semibold">{% translate "Intérieur ou plein air" %}</legend>
+      <div class="form-grid">{% for field in forms.gig.outdoor_fields %}{% if field.name == "setting" %}{% include "components/_field_p.html" %}{% else %}<div x-show="setting === 'outdoor'">{% include "components/_field_p.html" %}</div>{% endif %}{% endfor %}</div>
     </fieldset>
 
     <fieldset class="space-y-3 rounded-md border border-gray-200 p-4">

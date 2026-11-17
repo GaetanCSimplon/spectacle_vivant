@@ -39,8 +39,19 @@ class GigCompletionForm(PaymentTermsMixin, forms.ModelForm):
             "event_name",
             "performances_count",
             "copies_count",
-            "signature_deadline_days",
+            "setting",
+            "outdoor_fallback",
+            "outdoor_fallback_details",
+            "outdoor_procedure",
+            "outdoor_referents",
+            "outdoor_financial_terms",
             "payment_method",
+            "price_includes",
+            "extra_fees_description",
+            "extra_fees_amount",
+            "extra_fees_accepted",
+            "billing_notes",
+            "deposit_required",
             "deposit_percent",
             "deposit_term",
             "deposit_term_days",
@@ -53,15 +64,25 @@ class GigCompletionForm(PaymentTermsMixin, forms.ModelForm):
             "lodging_covered_by",
             "lodging_nights",
             "lodging_notes",
+            "transport_covered_by",
+            "transport_notes",
             "local_transport",
             "other_hospitality",
-            "conditions",
+            "onsite_contact_name",
+            "onsite_contact_phone",
             "is_free",
             "ticket_price",
         ]
         widgets = {
             "option_expires_on": forms.DateInput(attrs={"type": "date"}, format="%Y-%m-%d"),
-            "conditions": forms.Textarea(attrs={"rows": 4}),
+            "outdoor_fallback_details": forms.Textarea(attrs={"rows": 2}),
+            "outdoor_procedure": forms.Textarea(attrs={"rows": 2}),
+            "outdoor_referents": forms.Textarea(attrs={"rows": 2}),
+            "outdoor_financial_terms": forms.Textarea(attrs={"rows": 2}),
+            "price_includes": forms.Textarea(attrs={"rows": 2}),
+            "extra_fees_description": forms.Textarea(attrs={"rows": 2}),
+            "billing_notes": forms.Textarea(attrs={"rows": 2}),
+            "setting": forms.Select(attrs={"x-model": "setting"}),
             **PaymentTermsMixin.term_widgets(),
             "get_in_time": _time_widget(),
             "soundcheck_time": _time_widget(),
@@ -76,6 +97,8 @@ class GigCompletionForm(PaymentTermsMixin, forms.ModelForm):
         self.fields["ticket_price"].required = False
         self.fields["invitations_count"].required = False
         self.fields["deposit_percent"].required = False
+        self.fields["deposit_required"].required = False
+        self.fields["extra_fees_amount"].widget.attrs["step"] = "0.01"
         self.fields["performances_count"].required = False
         self.fields["copies_count"].required = False
         self._prepare_terms()
@@ -91,14 +114,26 @@ class GigCompletionForm(PaymentTermsMixin, forms.ModelForm):
         "performances_count",
         "copies_count",
         "signing_place",
-        "signature_deadline_days",
         "invitations_count",
         "is_free",
         "ticket_price",
-        "conditions",
+    )
+    OUTDOOR_FIELDS = (
+        "setting",
+        "outdoor_fallback",
+        "outdoor_fallback_details",
+        "outdoor_procedure",
+        "outdoor_referents",
+        "outdoor_financial_terms",
     )
     BUDGET_FIELDS = (
         "payment_method",
+        "price_includes",
+        "extra_fees_description",
+        "extra_fees_amount",
+        "extra_fees_accepted",
+        "billing_notes",
+        "deposit_required",
         "deposit_percent",
         "deposit_term",
         "deposit_term_days",
@@ -111,6 +146,8 @@ class GigCompletionForm(PaymentTermsMixin, forms.ModelForm):
         "lodging_covered_by",
         "lodging_nights",
         "lodging_notes",
+        "transport_covered_by",
+        "transport_notes",
     )
     ROADMAP_FIELDS = (
         "get_in_time",
@@ -119,6 +156,8 @@ class GigCompletionForm(PaymentTermsMixin, forms.ModelForm):
         "crew_headcount",
         "local_transport",
         "other_hospitality",
+        "onsite_contact_name",
+        "onsite_contact_phone",
     )
 
     def _block(self, names):
@@ -127,6 +166,10 @@ class GigCompletionForm(PaymentTermsMixin, forms.ModelForm):
     @property
     def contract_fields(self):
         return self._block(self.CONTRACT_FIELDS)
+
+    @property
+    def outdoor_fields(self):
+        return self._block(self.OUTDOOR_FIELDS)
 
     @property
     def budget_fields(self):
@@ -166,7 +209,7 @@ class GigCompletionForm(PaymentTermsMixin, forms.ModelForm):
             setattr(self.instance, sentence, text)
 
     def clean_deposit_percent(self):
-        # Left empty: keep the current value (30 % for a new gig).
+        # Left empty: keep the current value (0 for a new gig).
         value = self.cleaned_data["deposit_percent"]
         return self.instance.deposit_percent if value is None else value
 

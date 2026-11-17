@@ -30,6 +30,14 @@ class Gig(TenantOwnedModel):
         SIGNED = "signed", _("Signée")
         CANCELLED = "cancelled", _("Annulée")
 
+    class Setting(models.TextChoices):
+        INDOOR = "indoor", _("Intérieur")
+        OUTDOOR = "outdoor", _("Plein air")
+
+    class OutdoorFallback(models.TextChoices):
+        PROVIDED = "provided", _("Un repli est prévu")
+        NONE_ACCEPTED = "none_accepted", _("Pas de repli, accepté par les deux parties")
+
     class PaymentMethod(models.TextChoices):
         TRANSFER = "transfer", _("Virement")
         CHEQUE = "cheque", _("Chèque")
@@ -49,16 +57,18 @@ class Gig(TenantOwnedModel):
         _("acompte (%)"),
         max_digits=5,
         decimal_places=2,
-        default=30,
+        default=0,
         validators=[MinValueValidator(0), MaxValueValidator(100)],
-        help_text=_("Part du prix proposée en facture d'acompte. 30 % par défaut."),
+        help_text=_("Part du prix proposée en facture d'acompte."),
     )
+    # None = not answered yet (the checks of the contract ask for an answer).
+    deposit_required = models.BooleanField(_("acompte demandé"), null=True, blank=True)
     conditions = models.TextField(_("conditions particulières"), blank=True)
     get_in_time = models.TimeField(_("heure de get in"), null=True, blank=True)
     soundcheck_time = models.TimeField(_("heure des balances"), null=True, blank=True)
     performance_time = models.TimeField(_("heure de passage"), null=True, blank=True)
     crew_headcount = models.PositiveIntegerField(
-        _("nombre de participants (repas)"), null=True, blank=True
+        _("personnes en tournée (tous profils)"), null=True, blank=True
     )
     is_free = models.BooleanField(_("concert gratuit"), default=False)
     ticket_price = models.DecimalField(
@@ -127,6 +137,47 @@ class Gig(TenantOwnedModel):
         max_length=255,
         blank=True,
         help_text=_("Par exemple : parking, catering, petits-déjeuners, backline."),
+    )
+
+    setting = models.CharField(
+        _("lieu de la représentation"), max_length=10, choices=Setting, blank=True
+    )
+    outdoor_fallback = models.CharField(
+        _("repli en cas d'intempéries"), max_length=20, choices=OutdoorFallback, blank=True
+    )
+    outdoor_fallback_details = models.TextField(_("modalités du repli"), blank=True)
+    outdoor_procedure = models.TextField(
+        _("décision de maintien, de report ou d'arrêt"), blank=True
+    )
+    outdoor_referents = models.TextField(_("référents des deux parties"), blank=True)
+    outdoor_financial_terms = models.TextField(
+        _("conditions financières en cas d'intempéries"),
+        blank=True,
+        help_text=_("Laissez vide pour appliquer les règles d'annulation et de force majeure."),
+    )
+    transport_covered_by = models.CharField(
+        _("transport pris en charge par"), max_length=20, choices=CoveredBy, blank=True
+    )
+    transport_notes = models.CharField(_("précisions sur le transport"), max_length=150, blank=True)
+    extra_fees_description = models.TextField(_("frais supplémentaires"), blank=True)
+    extra_fees_amount = models.DecimalField(
+        _("montant des frais supplémentaires"),
+        max_digits=8,
+        decimal_places=2,
+        null=True,
+        blank=True,
+        validators=[MinValueValidator(0)],
+    )
+    extra_fees_accepted = models.BooleanField(_("frais acceptés par l'organisateur"), default=False)
+    price_includes = models.TextField(_("le prix comprend"), blank=True)
+    billing_notes = models.TextField(
+        _("modalités de facturation"),
+        blank=True,
+        help_text=_("Par exemple : n° de bon de commande, service payeur."),
+    )
+    onsite_contact_name = models.CharField(_("contact sur place"), max_length=255, blank=True)
+    onsite_contact_phone = models.CharField(
+        _("téléphone du contact sur place"), max_length=50, blank=True
     )
 
     @cached_property

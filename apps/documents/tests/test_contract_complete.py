@@ -7,6 +7,7 @@ from django.template.loader import render_to_string
 from django.urls import reverse
 
 from apps.gigs.factories import GigFactory
+from apps.gigs.models import Gig
 from apps.tenants.factories import MembershipFactory
 
 from ..factories import ContractFactory
@@ -267,21 +268,91 @@ def test_completed_values_end_up_in_the_contract(client):
     assert "Léa Roux, Trésorière" in text
 
 
-def test_complete_form_saves_the_special_conditions(client):
+def test_the_hidden_fields_are_not_edited_and_keep_their_value(client):
+    tenant = _login(client)
+    gig = GigFactory(tenant=tenant, conditions="Ancien texte", signature_deadline_days=8)
+
+    page = client.get(_url(gig)).content.decode()
+    client.post(
+        _url(gig), _payload(**{"gig-conditions": "Nouveau", "gig-signature_deadline_days": "3"})
+    )
+
+    gig.refresh_from_db()
+    assert "gig-conditions" not in page and "gig-signature_deadline_days" not in page
+    assert gig.conditions == "Ancien texte"
+    assert gig.signature_deadline_days == 8
+
+
+def test_the_contract_sheet_fields_are_saved(client):
     tenant = _login(client)
     gig = GigFactory(tenant=tenant)
 
-    response = client.post(_url(gig), _payload(**{"gig-conditions": "Repas chaud à l'arrivée"}))
+    response = client.post(
+        _url(gig),
+        _payload(
+            **{
+                "gig-setting": "outdoor",
+                "gig-outdoor_fallback": "none_accepted",
+                "gig-outdoor_procedure": "Décision commune",
+                "gig-outdoor_referents": "Léa, Marc",
+                "gig-transport_covered_by": "producer",
+                "gig-transport_notes": "Train",
+                "gig-price_includes": "Le son",
+                "gig-extra_fees_description": "Location de piano",
+                "gig-extra_fees_amount": "120.50",
+                "gig-extra_fees_accepted": "on",
+                "gig-billing_notes": "Bon de commande 42",
+                "gig-deposit_required": "true",
+                "gig-onsite_contact_name": "Sam",
+                "gig-onsite_contact_phone": "0102030405",
+            }
+        ),
+    )
 
     assert response.status_code == 302
     gig.refresh_from_db()
-    assert gig.conditions == "Repas chaud à l'arrivée"
+    assert gig.setting == "outdoor"
+    assert gig.outdoor_fallback == "none_accepted"
+    assert gig.transport_covered_by == "producer"
+    assert gig.extra_fees_amount == Decimal("120.50")
+    assert gig.extra_fees_accepted
+    assert gig.deposit_required is True
+    assert gig.onsite_contact_name == "Sam"
 
 
-def test_deposit_percent_defaults_to_30_and_can_be_changed_per_gig(client):
+def test_the_contract_sheet_answers_stay_unanswered_when_left_empty(client):
     tenant = _login(client)
     gig = GigFactory(tenant=tenant)
-    assert gig.deposit_percent == 30
+
+    client.post(_url(gig), _payload())
+
+    gig.refresh_from_db()
+    assert gig.setting == ""
+    assert gig.deposit_required is None
+
+
+def test_negative_extra_fees_are_rejected(client):
+    tenant = _login(client)
+    gig = GigFactory(tenant=tenant)
+
+    response = client.post(_url(gig), _payload(**{"gig-extra_fees_amount": "-5"}))
+
+    assert response.status_code == 200
+    gig.refresh_from_db()
+    assert gig.extra_fees_amount is None
+
+
+def test_the_show_form_names_the_sacem_programme_type(client):
+    tenant = _login(client)
+    gig = GigFactory(tenant=tenant)
+
+    assert "programme type SACEM" in client.get(_url(gig)).content.decode()
+
+
+def test_deposit_percent_defaults_to_zero_and_can_be_changed_per_gig(client):
+    tenant = _login(client)
+    gig = GigFactory(tenant=tenant)
+    assert Gig._meta.get_field("deposit_percent").default == 0
 
     client.post(_url(gig), _payload(**{"gig-deposit_percent": "40.50"}))
 

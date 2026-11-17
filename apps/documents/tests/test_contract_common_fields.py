@@ -181,7 +181,6 @@ def test_the_date_form_saves_the_contract_wording_fields(client):
             "gig-event_name": "Fête de la musique",
             "gig-performances_count": "2",
             "gig-copies_count": "3",
-            "gig-signature_deadline_days": "15",
             "gig-payment_method": "cheque",
             "gig-deposit_percent": "30",
             "gig-deposit_due_on": "2026-11-01",
@@ -200,7 +199,7 @@ def test_the_date_form_saves_the_contract_wording_fields(client):
     assert response.status_code == 302
     gig.refresh_from_db()
     assert gig.event_name == "Fête de la musique"
-    assert (gig.performances_count, gig.copies_count, gig.signature_deadline_days) == (2, 3, 15)
+    assert (gig.performances_count, gig.copies_count) == (2, 3)
     assert gig.payment_method == "cheque"
     assert gig.deposit_due_on == datetime.date(2026, 11, 1)
     assert gig.balance_due_on == datetime.date(2026, 12, 15)
@@ -227,7 +226,6 @@ def test_empty_counts_keep_their_defaults(client):
     [
         ("gig-performances_count", "0"),
         ("gig-copies_count", "0"),
-        ("gig-signature_deadline_days", "-1"),
         ("gig-payment_method", "bitcoin"),
         ("gig-deposit_due_on", "pas une date"),
     ],

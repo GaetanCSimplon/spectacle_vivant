@@ -45,7 +45,7 @@ def test_full_wizard_creates_a_gig(client):
     gig_date = datetime.date.today() + datetime.timedelta(days=10)
     response = client.post(
         reverse("gigs:wizard-details"),
-        {"date": gig_date.isoformat(), "price": "800.00", "conditions": "Loge chauffée"},
+        {"date": gig_date.isoformat(), "price": "800.00"},
     )
     assert response.status_code == 302
 
@@ -63,7 +63,6 @@ def test_full_wizard_creates_a_gig(client):
     assert gig.venue == venue
     assert gig.date == gig_date
     assert str(gig.price) == "800.00"
-    assert gig.conditions == "Loge chauffée"
     assert "gig_wizard" not in client.session
 
 
