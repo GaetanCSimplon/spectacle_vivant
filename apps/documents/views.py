@@ -39,7 +39,13 @@ class ContractPreviewView(TenantScopedMixin, View):
         if frozen or gig.status == Gig.Status.CANCELLED:
             return stored_contract_response(request, gig, contract)
         anomalies = checks.to_fix(checks.check_contract(gig, contract))
-        pdf_bytes = services.render_contract_pdf(gig, contract, draft_anomalies=anomalies or None)
+        try:
+            pdf_bytes, _annexes = services.render_contract_pdf(
+                gig, contract, draft_anomalies=anomalies or None
+            )
+        except services.ContractAnnexError as error:
+            messages.error(request, error.args[0])
+            return redirect("documents:contract-history", gig_id=gig.pk)
         return HttpResponse(pdf_bytes, content_type="application/pdf")
 
 
@@ -224,6 +230,9 @@ class ContractGenerateView(TenantScopedMixin, View):
             contract = services.generate_contract_pdf(gig, user=request.user)
         except services.ContractNotAvailable:
             return no_contract_response(request, gig)
+        except services.ContractAnnexError as error:
+            messages.error(request, error.args[0])
+            return redirect("documents:contract-history", gig_id=gig.pk)
         if contract.status == Contract.Status.SIGNED:
             messages.error(request, _("Ce contrat est signé : il ne peut plus être régénéré."))
         else:

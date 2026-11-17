@@ -112,6 +112,7 @@
             {% if forloop.first %}<span class="text-gray-500">({% translate "la plus récente" %})</span>{% if latest_is_stale %} <strong>{% translate "À actualiser" %}</strong> <span class="text-gray-600">{% translate "(des informations ont changé depuis)" %}</span>{% endif %}{% endif %}
             <br>
             <span class="text-gray-500">{{ version.created_at|date:"d/m/Y H:i" }}</span>
+            {% for annex in version.annexes_snapshot %}<br><span class="text-gray-500">{{ annex.title }} · {{ annex.pages }} p.</span>{% endfor %}
           </span>
           <a href="{% url 'documents:contract-version-download' gig.pk version.number %}" class="btn btn-secondary btn-sm btn-download shrink-0">
             {% translate "Télécharger" %}

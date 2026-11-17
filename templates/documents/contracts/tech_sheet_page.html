@@ -1,0 +1,11 @@
+{% extends "documents/contracts/_base.html" %}
+
+{% block content %}
+    <h1>Annexe 1 — Fiche technique</h1>
+    <p style="text-align: center;">{{ show.title }}{% if show.group_name %} — {{ show.group_name }}{% endif %}</p>
+    {% if missing %}
+      <p><strong>Fiche technique non jointe.</strong></p>
+    {% else %}
+      <div>{{ show.tech_sheet_text|linebreaks }}</div>
+    {% endif %}
+{% endblock %}

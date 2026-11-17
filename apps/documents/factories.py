@@ -59,7 +59,7 @@ def make_contract_ready(gig):
             ),
         ),
         (venue, dict(address="3 rue du Port", city="Toulouse", capacity=300)),
-        (show, dict(group_name="Les Nocturnes")),
+        (show, dict(group_name="Les Nocturnes", tech_sheet_text="Scène 6 x 4 m, 2 prises.")),
         (
             gig,
             dict(

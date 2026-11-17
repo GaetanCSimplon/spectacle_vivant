@@ -14,6 +14,7 @@ from apps.gigs.models import Gig
 from apps.tenants import logo as logo_files
 from apps.tenants.models import Tenant
 
+from . import annexes as annex_files
 from . import checks
 from .invoicing import money, vat_mentions
 from .models import (
@@ -35,6 +36,9 @@ def contract_variant(tenant):
     if tenant.vat_regime == Tenant.VatRegime.TAXABLE:
         return ContractVariant.WITH_VAT
     return ContractVariant.WITHOUT_VAT
+
+
+ContractAnnexError = annex_files.ContractAnnexError
 
 
 class ContractNotAvailable(Exception):
@@ -194,7 +198,9 @@ def _extra_fees_text(gig):
     return f"{gig.extra_fees_description.strip()}{amount}"
 
 
-def build_contract_context(gig, contract=None, draft_anomalies=None, snapshots=None, version=None):
+def build_contract_context(
+    gig, contract=None, draft_anomalies=None, snapshots=None, version=None, annexes=None
+):
     """Everything the contract template reads; `snapshots` = (fiscal, parties) of a version."""
     variant = contract_variant(gig.tenant)
     fiscal, parties = snapshots or (
@@ -216,6 +222,7 @@ def build_contract_context(gig, contract=None, draft_anomalies=None, snapshots=N
         "extra_fees_text": _extra_fees_text(gig),
         "reference": contract.reference if contract and contract.reference else "Brouillon",
         "version": version,
+        "annexes": annexes or {},
         "contract": contract,
         "gig": gig,
         "tenant": gig.tenant,
@@ -229,10 +236,21 @@ def build_contract_context(gig, contract=None, draft_anomalies=None, snapshots=N
     }
 
 
+def build_annexes(gig):
+    """The annexes of a date as of today: ({key: description}, [pdf bytes])."""
+    return annex_files.build_annexes(gig, timezone.localdate(), _transport_text(gig))
+
+
 def render_contract_pdf(gig, contract=None, draft_anomalies=None, snapshots=None, version=None):
-    """Render the contract PDF bytes without storing anything (used for the preview)."""
-    context = build_contract_context(gig, contract, draft_anomalies, snapshots, version)
-    return render_pdf(CONTRACT_TEMPLATE, context)
+    """The contract and its annexes as one PDF, without storing anything (used for the preview).
+
+    Raises ContractAnnexError if an annex cannot be read: never a silently incomplete file.
+    """
+    descriptions, pdfs = build_annexes(gig)
+    context = build_contract_context(
+        gig, contract, draft_anomalies, snapshots, version, annexes=descriptions
+    )
+    return annex_files.assemble(render_pdf(CONTRACT_TEMPLATE, context), pdfs), descriptions
 
 
 def next_contract_reference(tenant):
@@ -273,7 +291,9 @@ def generate_contract_pdf(gig, user=None):
         latest = contract.latest_version
         number = latest.number + 1 if latest else 1
         snapshots = (build_fiscal_snapshot(gig.tenant), build_parties_snapshot(gig, contract))
-        pdf_bytes = render_contract_pdf(gig, contract, snapshots=snapshots, version=number)
+        pdf_bytes, descriptions = render_contract_pdf(
+            gig, contract, snapshots=snapshots, version=number
+        )
         version = ContractVersion(
             tenant=gig.tenant,
             contract=contract,
@@ -282,6 +302,7 @@ def generate_contract_pdf(gig, user=None):
             variant=contract_variant(gig.tenant),
             fiscal_snapshot=snapshots[0],
             parties_snapshot=snapshots[1],
+            annexes_snapshot=list(descriptions.values()),
             facts_fingerprint=checks.facts_fingerprint(gig, contract),
         )
         version.pdf_file.save(f"{contract.reference}-v{number}.pdf", ContentFile(pdf_bytes))

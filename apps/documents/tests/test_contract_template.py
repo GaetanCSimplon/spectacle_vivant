@@ -128,7 +128,7 @@ def test_a_signed_contract_is_never_regenerated():
 
 
 def test_the_preview_renders_a_pdf():
-    assert render_contract_pdf(GigFactory()).startswith(b"%PDF")
+    assert render_contract_pdf(GigFactory())[0].startswith(b"%PDF")
 
 
 def test_the_generate_view_needs_no_model_choice(client):

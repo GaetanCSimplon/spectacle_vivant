@@ -51,6 +51,7 @@ psycopg-binary==3.3.8
 py-serializable==2.2.0
 pycparser==3.12
 pydyf==0.13.0
+pypdf==7.1.0
 Pygments==2.21.0
 pyparsing==3.3.3
 pyphen==0.18.1

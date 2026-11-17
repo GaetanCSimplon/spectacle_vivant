@@ -1,0 +1,48 @@
+{% extends "documents/contracts/_base.html" %}
+
+{% block content %}
+    <h1>Annexe 2 — Fiche d’accueil</h1>
+    <p style="text-align: center;">{{ show.title }} — {{ gig.date|date:"d F Y" }}</p>
+
+    <section>
+      <h2>Lieu</h2>
+      <p>{{ venue.name }} — {{ venue.one_line_address }}{% if venue.access_info %}<br>Accès : {{ venue.access_info|linebreaksbr }}{% endif %}</p>
+    </section>
+
+    <section>
+      <h2>Horaires</h2>
+      <table>
+        <tr><td>Arrivée de l’équipe</td><td>{% if gig.get_in_time %}{{ gig.get_in_time|time:"H\hi" }}{% else %}À préciser{% endif %}</td></tr>
+        <tr><td>Installation et balances</td><td>{% if gig.soundcheck_time %}{{ gig.soundcheck_time|time:"H\hi" }}{% else %}À préciser{% endif %}</td></tr>
+        <tr><td>Début de la représentation</td><td>{{ gig.performance_time|time:"H\hi"|default:"À préciser" }}</td></tr>
+        <tr><td>Durée</td><td>{{ show.duration_minutes }} minutes</td></tr>
+      </table>
+    </section>
+
+    <section>
+      <h2>Équipe et prises en charge</h2>
+      <table>
+        <tr><td>Effectif en tournée</td><td>{{ gig.crew_headcount|default:"À préciser" }}</td></tr>
+        <tr><td>Restauration</td><td>{{ gig.meals|default:"Aucune prise en charge convenue à ce jour" }}</td></tr>
+        <tr><td>Hébergement</td><td>{{ gig.lodging|default:"Aucune prise en charge convenue à ce jour" }}</td></tr>
+        <tr><td>Transport et déplacements</td><td>{{ transport_text|default:"Aucune prise en charge convenue à ce jour" }}</td></tr>
+        {% if gig.other_hospitality %}<tr><td>Autres éléments d’accueil</td><td>{{ gig.other_hospitality }}</td></tr>{% endif %}
+      </table>
+    </section>
+
+    {% if gig.setting == "outdoor" %}
+      <section>
+        <h2>Plein air</h2>
+        <p>{{ gig.get_outdoor_fallback_display|default:"Repli à préciser" }}{% if gig.outdoor_referents %}<br>Référents : {{ gig.outdoor_referents|linebreaksbr }}{% endif %}</p>
+      </section>
+    {% endif %}
+
+    <section>
+      <h2>Contacts</h2>
+      <p>
+        Sur place : {{ gig.onsite_contact_name|default:"À préciser" }}{% if gig.onsite_contact_phone %} — {{ gig.onsite_contact_phone }}{% endif %}<br>
+        Producteur : {{ tenant.contact_name|default:tenant.name }}{% if tenant.phone %} — {{ tenant.phone }}{% endif %}<br>
+        Organisateur : {{ promoter.admin_contact_name|default:promoter.name }}{% if promoter.admin_contact_phone %} — {{ promoter.admin_contact_phone }}{% elif promoter.phone %} — {{ promoter.phone }}{% endif %}
+      </p>
+    </section>
+{% endblock %}

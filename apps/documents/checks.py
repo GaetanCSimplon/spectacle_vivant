@@ -19,6 +19,7 @@ from apps.gigs.payment_terms import BalanceTerm, DepositTerm
 from apps.tenants.models import Tenant
 from apps.tenants.validators import validate_siret
 
+from .annexes import has_tech_sheet
 from .models import Contract, ContractConfirmation
 
 BLOCKING = "BLOCAGE"
@@ -33,6 +34,7 @@ SCREENS = {
     "structure": _("Informations de la structure"),
     "promoter": _("Organisateur"),
     "contract": _("Contrat"),
+    "show": _("Spectacle"),
 }
 
 
@@ -62,6 +64,7 @@ def check_contract(gig, contract=None, today=None):
         *_promoter(gig.promoter, gig),
         *_performance(gig, today),
         *_tour_and_price(gig),
+        *_annexes(gig),
         *_confirmations(gig, contract, today),
     ]
     # `gig.contract` and `gig.confirmations` can be loaded for a whole list beforehand
@@ -431,6 +434,19 @@ def _performance(gig, today):
             _("Le contact sur place manque : « à préciser dans la fiche d'accueil »."),
         )
     return out
+
+
+def _annexes(gig):
+    if has_tech_sheet(gig.show):
+        return []
+    return [
+        _block(
+            "ANNEXE_FICHE_TECHNIQUE_MANQUANTE",
+            _("Spectacle : déposez la fiche technique (PDF ou texte), c'est l'annexe 1."),
+            "show",
+            reverse("catalog:show-update", args=[gig.show.pk]),
+        )
+    ]
 
 
 def _tour_and_price(gig):
