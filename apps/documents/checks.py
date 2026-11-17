@@ -458,9 +458,10 @@ def _tour_and_price(gig):
 
     if gig.crew_headcount is None or gig.crew_headcount < 1:
         block("EFFECTIF_MANQUANT", _("Indiquez le nombre de personnes en tournée."))
-    for covered_by, count, code, what, unit in (
+    for covered_by, people, count, code, what, unit in (
         (
             gig.meals_covered_by,
+            gig.meals_people,
             gig.meals_count,
             "RESTAURATION",
             _("Restauration"),
@@ -468,6 +469,7 @@ def _tour_and_price(gig):
         ),
         (
             gig.lodging_covered_by,
+            gig.lodging_people,
             gig.lodging_nights,
             "HEBERGEMENT",
             _("Hébergement"),
@@ -480,11 +482,36 @@ def _tour_and_price(gig):
                 _("%(what)s : précisez qui la prend en charge, ou « non concerné ».")
                 % {"what": what},
             )
-        elif covered_by in (CoveredBy.ORGANISER, CoveredBy.SHARED) and not count:
-            block(
-                f"{code}_INCOMPLETE",
-                _("%(what)s : indiquez %(unit)s.") % {"what": what, "unit": unit},
-            )
+        elif covered_by in (CoveredBy.ORGANISER, CoveredBy.SHARED):
+            if not count or not people:
+                block(
+                    f"{code}_INCOMPLETE",
+                    _("%(what)s : indiquez le nombre de personnes et %(unit)s.")
+                    % {"what": what, "unit": unit},
+                )
+            elif gig.crew_headcount and people > gig.crew_headcount:
+                block(
+                    f"{code}_EFFECTIF_SUPERIEUR",
+                    _("%(what)s : %(people)d personnes, mais %(crew)d seulement en tournée.")
+                    % {"what": what, "people": people, "crew": gig.crew_headcount},
+                )
+            elif gig.crew_headcount and people < gig.crew_headcount:
+                out.append(
+                    Anomaly(
+                        f"{code}_EFFECTIF_INFERIEUR",
+                        CONFIRMATION,
+                        str(
+                            _(
+                                "%(what)s : %(people)d personnes sur %(crew)d en tournée. "
+                                "Confirmez que les autres ne sont pas pris en charge."
+                            )
+                            % {"what": what, "people": people, "crew": gig.crew_headcount}
+                        ),
+                        "contract",
+                        url,
+                        f"{people}/{gig.crew_headcount}",
+                    )
+                )
     if not gig.transport_covered_by:
         block(
             "TRANSPORT_NON_PRECISE",

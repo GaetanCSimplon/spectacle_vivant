@@ -119,7 +119,7 @@ Un utilisateur = une structure en MVP (modèle `Membership` prêt pour plusieurs
 - **F-42** Numéro de contrat unique par structure. Historique des versions générées.
 - **F-43** Marquage « signé » (manuel en MVP) : fige un PDF, fait passer la date à `signed`.
 - **F-44** *(2026-10-12)* Guide « Faire signer le contrat » : la signature électronique se fait **avec le compte de l'utilisateur** chez le service de son choix ; l'application explique la marche à suivre puis récupère le PDF signé (F-43). Branchement automatique par clé d'accès de l'utilisateur : seulement si demandé ; compte partagé par l'éditeur : seulement si l'application génère du revenu.
-- **F-45** *(2026-10-13)* Choix du modèle de contrat de cession parmi quatre (Modèle 1 par défaut). Le choix est libre tant que le contrat est en brouillon, chaque version générée garde son modèle, et un contrat signé ne change plus de modèle.
+- **F-45** *(2026-10-13, remplacé le 2026-11-17)* Contrat de cession : les quatre modèles au choix sont remplacés par **un seul contrat à deux variantes de l'article 5** (avec ou sans TVA), choisies par le régime de TVA de la structure (spécification `docs/metier/sources-associees/03`, décisions D1 à D9). Chaque version générée garde le régime fiscal et l'identité des parties, et est livrée en un PDF unique (contrat, fiche technique, fiche d'accueil). Un contrat signé ne change plus.
 - *CA : le PDF est lisible, paginé, contient toutes les mentions prévues par le modèle validé.*
 
 ### 4.6 Devis et factures (M5)

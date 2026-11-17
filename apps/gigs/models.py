@@ -114,6 +114,7 @@ class Gig(TenantOwnedModel):
     meals_covered_by = models.CharField(
         _("repas pris en charge par"), max_length=20, choices=CoveredBy, blank=True
     )
+    meals_people = models.PositiveSmallIntegerField(_("personnes nourries"), null=True, blank=True)
     meals_count = models.PositiveSmallIntegerField(_("nombre de repas"), null=True, blank=True)
     meals_notes = models.CharField(
         _("précisions sur les repas"),
@@ -123,6 +124,9 @@ class Gig(TenantOwnedModel):
     )
     lodging_covered_by = models.CharField(
         _("hébergement pris en charge par"), max_length=20, choices=CoveredBy, blank=True
+    )
+    lodging_people = models.PositiveSmallIntegerField(
+        _("personnes hébergées"), null=True, blank=True
     )
     lodging_nights = models.PositiveSmallIntegerField(_("nombre de nuits"), null=True, blank=True)
     lodging_notes = models.CharField(

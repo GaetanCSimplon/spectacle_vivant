@@ -5,6 +5,7 @@ from decimal import ROUND_HALF_UP, Decimal
 from django.core.files.base import ContentFile
 from django.db import transaction
 from django.utils import timezone
+from django.utils.formats import number_format
 from django.utils.translation import gettext_lazy as _
 
 from apps.core.services import render_pdf
@@ -39,6 +40,8 @@ def contract_variant(tenant):
 
 
 ContractAnnexError = annex_files.ContractAnnexError
+
+NO_ANNEXES = _("Régénérez le contrat : cette version ne contient pas ses annexes.")
 
 
 class ContractNotAvailable(Exception):
@@ -106,7 +109,10 @@ def build_fiscal_snapshot(tenant):
     mention = tenant.vat_exemption_note or " ".join(vat_mentions(regime))
     return {
         "regime": regime,
-        "rate": str(tenant.vat_rate) if taxable and tenant.vat_rate is not None else "",
+        # "20" or "5,5": the French way, without trailing zeros.
+        "rate": f"{Decimal(str(tenant.vat_rate)).normalize():f}".replace(".", ",")
+        if taxable and tenant.vat_rate is not None
+        else "",
         "mention": mention,
         "vat_number": tenant.vat_number,
         "taken_on": timezone.localdate().isoformat(),
@@ -153,8 +159,10 @@ def _payment_text(gig, payment, variant):
 
     def amount(ht, ttc):
         if with_vat and ttc is not None:
-            return f"{ttc} € TTC"
-        return f"{ht} € net de TVA" if not with_vat else f"{ht} € HT"
+            return f"{number_format(ttc, decimal_pos=2)} € TTC"
+        if with_vat:
+            return f"{number_format(ht, decimal_pos=2)} € HT"
+        return f"{number_format(ht, decimal_pos=2)} € net de TVA"
 
     balance_when = gig.balance_due_phrase
     if gig.deposit_required:
@@ -173,16 +181,14 @@ def _outdoor_clause(gig):
     if gig.setting != Gig.Setting.OUTDOOR:
         return "Sans objet : la représentation a lieu en intérieur."
     parts = [str(gig.get_outdoor_fallback_display())]
-    parts += [
-        text.strip()
-        for text in (
-            gig.outdoor_fallback_details,
-            gig.outdoor_procedure,
-            gig.outdoor_referents,
-            gig.outdoor_financial_terms,
-        )
-        if text.strip()
-    ]
+    for label, text in (
+        ("Modalités du repli", gig.outdoor_fallback_details),
+        ("Décision de maintien, de report ou d'arrêt", gig.outdoor_procedure),
+        ("Référents des deux parties", gig.outdoor_referents),
+        ("Conditions financières", gig.outdoor_financial_terms),
+    ):
+        if text.strip():
+            parts.append(f"{label} : {' '.join(text.split())}")
     return " ".join(part if part.endswith(".") else part + "." for part in parts if part)
 
 
@@ -194,7 +200,11 @@ def _transport_text(gig):
 def _extra_fees_text(gig):
     if not gig.extra_fees_description.strip():
         return "Aucun"
-    amount = f" ({gig.extra_fees_amount} €)" if gig.extra_fees_amount is not None else ""
+    amount = (
+        f" ({number_format(gig.extra_fees_amount, decimal_pos=2)} €)"
+        if gig.extra_fees_amount is not None
+        else ""
+    )
     return f"{gig.extra_fees_description.strip()}{amount}"
 
 
@@ -319,6 +329,8 @@ def mark_contract_sent(gig):
         contract = Contract.objects.select_for_update().filter(gig=gig, tenant=gig.tenant).first()
         if contract is None or contract.latest_version is None:
             raise ContractSigningError(_("Générez d'abord le contrat avant de le marquer envoyé."))
+        if not contract.latest_version.annexes_snapshot:
+            raise ContractSigningError(NO_ANNEXES)
         if contract.status == Contract.Status.SIGNED:
             raise ContractSigningError(_("Ce contrat est signé : il est déjà envoyé."))
         contract.sent_at = timezone.now()
@@ -393,6 +405,8 @@ def create_share_link(contract, user):
     version = contract.latest_version
     if version is None:
         raise ContractSigningError(_("Générez d'abord le contrat avant de l'envoyer."))
+    if not version.annexes_snapshot:
+        raise ContractSigningError(NO_ANNEXES)
     now = timezone.now()
     with transaction.atomic():
         contract.share_links.filter(revoked_at=None).update(revoked_at=now)
