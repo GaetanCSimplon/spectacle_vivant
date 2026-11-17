@@ -605,3 +605,15 @@ Sources de l'associé : `docs/marque/sources-associe/RADAR-PARATGE/` (`02-RADAR-
 ## Si tu es en retard
 
 Coupe dans cet ordre : calendrier mensuel → dashboard avancé → export PDF de la feuille de route → devis. **Ne coupe jamais** : isolation des tenants, tests, sauvegardes, numérotation des factures.
+
+## Contrat de cession — spécification du 13/11/2026 (plan du 2026-11-17)
+
+Sources : `docs/metier/sources-associees/01` et `02` (modèles avec et sans TVA), `03` (spécification, décisions D1 à D9). Accords du 2026-11-17 : D1 remplace la direction du 12/11 ; génération définitive bloquée par des contrôles (prévisualisation toujours possible) ; `pypdf` autorisé pour le PDF unique ; l'ancienne spécification devis et factures v1 est archivée. Chaque PR avec migration ou PDF passe par un plan détaillé validé avant de coder. Les quatre anciens modèles restent en place jusqu'à la PR E.
+- [ ] **PR A — Informations de la structure** (migration `tenants`) : profil fiscal complet (« autre exonération », fondement légal, date d'effet, partagés avec les factures), licence en trois états (numéro avec catégories et validité, dispense avec motif, à vérifier), habilitation du signataire, contact de production.
+- [ ] **PR B — Organisateur** (migration `addressbook`) : forme ou nature juridique, signataire, habilitation, licence ou dispense, contact administratif, bloc « particulier ».
+- [ ] **PR C — Fiche « Contrat » de la date** (migration `gigs`) : intérieur ou plein air (repli, référents, procédure), transport, frais supplémentaires, « le prix comprend », acompte oui/non sans 30 % par défaut, modalités de facturation, contact sur place ; SACEM renommé « programme type » ; D7 : champs « délai de retour », « conditions particulières » et « ville du tribunal » masqués (colonnes supprimées plus tard).
+- [ ] **PR D — Moteur de contrôles** (migration `documents`) : anomalies BLOCAGE / CONFIRMATION_REQUISE / AVERTISSEMENT au format du §19, groupées par écran avec liens ; confirmations enregistrées ; version « à actualiser » ; bandeau « BROUILLON — INFORMATIONS INCOMPLÈTES » ; RAD-10 recâblée.
+- [ ] **PR E — Contrat unique** (migration `documents`) : un gabarit, deux variantes de l'article 5 choisies par le régime de la structure ; instantané fiscal et identité par version ; retrait des quatre anciens gabarits et de leurs tests.
+- [ ] **PR F — Annexes** : fiche d'accueil générée, fiche technique jointe, PDF unique, version et empreinte de chaque annexe.
+- [ ] **PR G — Recette** : les 20 scénarios du §20, documentation, points pour le juriste (bp14).
+
