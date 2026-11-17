@@ -88,6 +88,8 @@ class ContractVersion(TenantOwnedModel):
     # What the PDF was written from, frozen with it: the fiscal regime and the two parties.
     fiscal_snapshot = models.JSONField(default=dict, blank=True)
     parties_snapshot = models.JSONField(default=dict, blank=True)
+    # The annexes joined to the PDF: title, version date, hash and page count of each.
+    annexes_snapshot = models.JSONField(default=list, blank=True)
     pdf_file = models.FileField(_("fichier PDF"), upload_to=version_upload_to)
     # Hash of the data the version was written from (empty for the versions made before it).
     facts_fingerprint = models.CharField(max_length=64, blank=True)

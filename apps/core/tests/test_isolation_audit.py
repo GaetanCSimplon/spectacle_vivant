@@ -15,6 +15,7 @@ import pytest
 from django.apps import apps as django_apps
 from django.core.files.base import ContentFile
 from django.urls import URLPattern, URLResolver, get_resolver, reverse
+from weasyprint import HTML
 
 from apps.accounts.models import Membership
 from apps.addressbook.factories import ContactFactory, VenueFactory
@@ -237,7 +238,7 @@ def _build_tenant_a():
         promoter__billing_address=f"3 place {MARKER}",
     )
     gig.show.rider_file.save("rider.pdf", ContentFile(b"%PDF rider"))
-    gig.show.tech_sheet_file.save("fiche.pdf", ContentFile(b"%PDF fiche"))
+    gig.show.tech_sheet_file.save("fiche.pdf", ContentFile(HTML(string="<p>Fiche</p>").write_pdf()))
     contact = ContactFactory(
         tenant=tenant, promoter=gig.promoter, venue=None, name=f"Contact {MARKER}"
     )

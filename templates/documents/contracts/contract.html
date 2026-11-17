@@ -152,8 +152,8 @@
       <h2>Article 10 — Annexes, modifications et litiges</h2>
       <p>La fiche technique et la fiche d’accueil identifiées ci-dessous sont annexées au présent contrat, en font partie intégrante et doivent être signées par les deux parties.</p>
       <ul>
-        <li>Annexe 1 — Fiche technique du spectacle « {{ show.title }} ».</li>
-        <li>Annexe 2 — Fiche d’accueil de la représentation du {{ gig.date|date:"d/m/Y" }}.</li>
+        <li>Annexe 1 — {{ annexes.tech_sheet.title|default:"Fiche technique" }}, version du {{ annexes.tech_sheet.date|default:"……" }}.</li>
+        <li>Annexe 2 — {{ annexes.welcome_sheet.title|default:"Fiche d’accueil" }}, version du {{ annexes.welcome_sheet.date|default:"……" }}.</li>
       </ul>
       <p>Les annexes précisent les modalités d’exécution du contrat. En cas de contradiction, les stipulations expresses du présent contrat prévalent, sauf dérogation expressément identifiée et acceptée par écrit par les deux parties. Toute modification ultérieure du contrat ou de ses annexes doit être acceptée par écrit par les deux parties.</p>
       <p>Le contrat est soumis au droit français. Les parties recherchent une solution amiable à tout différend, sans que cette démarche fasse obstacle aux mesures urgentes ou conservatoires. À défaut d’accord, le litige relève de la juridiction compétente selon les règles de droit commun.</p>

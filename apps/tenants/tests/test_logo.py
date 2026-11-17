@@ -220,7 +220,7 @@ def test_the_pdf_is_rendered_with_the_logo():
     tenant = _tenant_with_logo()
     gig = make_gig(tenant=tenant, price="1000.00")
 
-    pdf = services.render_contract_pdf(gig, None)
+    pdf, _annexes = services.render_contract_pdf(gig, None)
 
     assert pdf.startswith(b"%PDF")
 
