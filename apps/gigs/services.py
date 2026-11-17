@@ -39,7 +39,6 @@ def create_gig_from_wizard_data(tenant, data, user=None):
             date=data["date"],
             option_expires_on=data.get("option_expires_on") or None,
             price=data["price"],
-            conditions=data.get("conditions", ""),
             event_name=data.get("event_name", ""),
         )
         PriceChange.objects.create(
