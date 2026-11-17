@@ -59,6 +59,12 @@ class PromoterForm(SectionedFormMixin, PromoterIdentifiersMixin, AddressModelFor
     usual_periods = _criterion("usual_periods")
     event_roles = _criterion("event_roles")
 
+    representative_confirmed = forms.BooleanField(
+        label=_("Cette personne est habilitée à signer pour l'organisateur"),
+        required=False,
+        help_text=_("À vous de la confirmer : elle est annulée si le nom ou la qualité change."),
+    )
+
     layout = [
         (_("L'organisateur"), ["name", "follow_up", "email", "phone"]),
         (
@@ -81,11 +87,26 @@ class PromoterForm(SectionedFormMixin, PromoterIdentifiersMixin, AddressModelFor
                 "siret",
                 "code_ape",
                 "vat_number",
-                "licence_number",
-                "representative_name",
-                "representative_role",
+                "legal_form",
                 "is_private",
             ],
+        ),
+        (
+            _("Licence d'entrepreneur de spectacles"),
+            [
+                "licence_number",
+                "licence_categories",
+                "licence_exempt",
+                "licence_exemption_reason",
+            ],
+        ),
+        (
+            _("Signataire du contrat"),
+            ["representative_name", "representative_role", "representative_confirmed"],
+        ),
+        (
+            _("Contact administratif"),
+            ["admin_contact_name", "admin_contact_email", "admin_contact_phone"],
         ),
         (_("Adresse de facturation"), ["billing_address", "postal_code", "city", "department"]),
         (_("Notes"), ["notes"]),
@@ -109,10 +130,17 @@ class PromoterForm(SectionedFormMixin, PromoterIdentifiersMixin, AddressModelFor
             "siret",
             "code_ape",
             "vat_number",
+            "legal_form",
             "licence_number",
+            "licence_categories",
+            "licence_exempt",
+            "licence_exemption_reason",
             "representative_name",
             "representative_role",
             "is_private",
+            "admin_contact_name",
+            "admin_contact_email",
+            "admin_contact_phone",
             "billing_address",
             "postal_code",
             "city",
@@ -126,10 +154,18 @@ class PromoterForm(SectionedFormMixin, PromoterIdentifiersMixin, AddressModelFor
         help_texts = {
             "follow_up": _("Un repère pour vous : à vous de le changer au fil des échanges."),
             "qualification_other": _("Pour tout ce qui ne figure pas dans les listes ci-dessus."),
+            "legal_form": _(
+                "Association, société, collectivité, établissement… Pas pour un particulier."
+            ),
+            "is_private": _(
+                "Ni entreprise, ni association, ni collectivité. Le nom de la fiche est alors "
+                "son prénom et son nom ; ni SIRET ni nature juridique à indiquer."
+            ),
         }
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        self.initial["representative_confirmed"] = self.instance.representative_confirmed
         # Dates that come back every year (ORG-03): up to MAX_RANGES, one text field each.
         ranges = self.instance.usual_date_ranges if self.instance.pk else []
         for number in range(1, date_ranges.MAX_RANGES + 1):
@@ -158,7 +194,21 @@ class PromoterForm(SectionedFormMixin, PromoterIdentifiersMixin, AddressModelFor
                 parsed.append(found)
         # Saved with the rest of the organiser (the model form saves the whole instance).
         self.instance.usual_date_ranges = parsed
+        self._apply_signatory_confirmation(cleaned)
         return cleaned
+
+    def _apply_signatory_confirmation(self, cleaned):
+        instance = self.instance
+        instance.representative_name = cleaned.get("representative_name", "")
+        instance.representative_role = cleaned.get("representative_role", "")
+        if not cleaned.get("representative_confirmed"):
+            instance.representative_confirmed_as = ""
+            instance.representative_confirmed_on = None
+        elif not instance.representative_name.strip():
+            self.add_error("representative_confirmed", _("Indiquez d'abord le nom du signataire."))
+        elif not instance.representative_confirmed:
+            instance.representative_confirmed_as = instance.signatory_key
+            instance.representative_confirmed_on = timezone.localdate()
 
 
 class PromoterFilterForm(forms.Form):
