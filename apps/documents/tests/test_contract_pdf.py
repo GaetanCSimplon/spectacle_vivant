@@ -215,7 +215,7 @@ def test_contract_not_taxable_regime_says_vat_does_not_apply_without_the_article
     """Article 293 B is the franchise en base: a structure not subject to VAT does not quote it."""
     html = _render(GigFactory(tenant__vat_regime="not_taxable"))
 
-    assert "TVA 0 €" in html and "TVA non applicable." in html
+    assert "TVA 0 €" in html and "TVA non applicable, article 261-7-1° b du CGI." in html
     assert "293 B" not in html
 
 

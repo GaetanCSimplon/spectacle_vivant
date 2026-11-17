@@ -104,7 +104,7 @@ def test_a_franchise_tenant_gets_the_293b_mention_and_no_vat_columns():
 def test_a_non_taxable_tenant_gets_a_mention_without_the_article():
     text = _text(_issued(_gig(vat_regime="not_taxable")))
 
-    assert "TVA non applicable." in text
+    assert "TVA non applicable, article 261-7-1° b du CGI." in text
     assert "293" not in text
 
 
@@ -130,9 +130,55 @@ def test_payment_terms_are_on_invoices_but_not_on_quotes_or_credit_notes():
     note = invoicing.issue_invoice(invoicing.create_credit_note(invoice))
     quote = invoicing.issue_quote(invoicing.create_quote(gig))
 
-    assert "Pénalités de retard" in _text(invoice)
-    assert "Pénalités de retard" not in _text(note)
-    assert "Pénalités de retard" not in _text(quote)
+    assert "trois fois le taux d'intérêt légal" in _text(invoice)
+    assert "trois fois le taux d'intérêt légal" not in _text(note)
+    assert "trois fois le taux d'intérêt légal" not in _text(quote)
+
+
+def test_an_invoice_says_how_much_to_pay_by_when_and_how():
+    gig = _gig()
+    gig.payment_method = "transfer"
+    gig.save()
+    invoice = _issued(gig)
+
+    text = _text(invoice)
+
+    assert (
+        f"Montant à payer : 1000,00 € avant le {invoice.due_date:%d/%m/%Y}, par virement." in text
+    )
+    assert "Catégorie d'opération : prestation de services." in text
+
+
+def test_the_payment_method_is_frozen_at_issue():
+    gig = _gig()
+    gig.payment_method = "transfer"
+    gig.save()
+    invoice = _issued(gig)
+    gig.payment_method = "cheque"
+    gig.save()
+
+    assert "par virement" in _text(invoice)
+
+
+def test_without_a_payment_method_the_amount_to_pay_stays_short():
+    invoice = _issued()
+
+    assert f"1000,00 € avant le {invoice.due_date:%d/%m/%Y}." in _text(invoice)
+    assert "Montant à payer" not in _text(
+        invoicing.issue_invoice(invoicing.create_credit_note(invoice))
+    )
+
+
+def test_the_customer_vat_number_is_frozen_and_printed():
+    gig = _gig()
+    gig.promoter.vat_number = "FR98765432109"
+    gig.promoter.save()
+    invoice = _issued(gig)
+    gig.promoter.vat_number = ""
+    gig.promoter.save()
+
+    assert invoice.customer_snapshot["vat_number"] == "FR98765432109"
+    assert "N° de TVA : FR98765432109" in _text(invoice)
 
 
 def test_a_credit_note_names_its_invoice_and_shows_negative_amounts():
@@ -153,7 +199,11 @@ def test_a_quote_shows_its_validity_and_the_approval_box():
 
     assert f"DEVIS D-{YEAR}-0001" in text
     assert f"Valable jusqu'au {quote.valid_until:%d/%m/%Y}" in text
-    assert "Bon pour accord" in text
+    assert "précédé de la mention manuscrite « Bon pour accord »" in text
+    assert "Nom et qualité :" in text
+    assert "lu et approuvé" not in text
+    assert "Catégorie d'opération : prestation de services." in text
+    assert "Montant à payer" not in text
     assert "Coordonnées bancaires pour le règlement : IBAN FR1420041010050500013M02606" in text
 
 

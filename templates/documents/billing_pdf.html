@@ -41,6 +41,7 @@
       .history h3 { margin: 0 0 3px; font-size: 10.5px; }
       .history ul { margin: 0; padding-left: 14px; }
       .mentions { margin-top: 18px; font-size: 9.5px; color: #333; }
+      .to-pay { margin-top: 14px; font-weight: bold; font-size: 12px; }
       .approval { margin-top: 24px; border: 1px solid #999; padding: 8px; min-height: 70px; }
     </style>
   </head>
@@ -85,6 +86,7 @@
         <p><strong>{{ customer.name }}</strong></p>
         <p>{{ customer.billing_address|linebreaksbr }}</p>
         {% if customer.siret %}<p>SIRET : {{ customer.siret|siret }}</p>{% endif %}
+        {% if customer.vat_number %}<p>N° de TVA : {{ customer.vat_number }}</p>{% endif %}
       </div>
     </div>
 
@@ -125,7 +127,14 @@
 
     {% include "documents/_history.html" %}
 
+    {% if is_invoice and not is_credit_note %}
+      <p class="to-pay">
+        Montant à payer : {{ total_incl_tax }} €{% if document.due_date %} avant le {{ document.due_date|date:"d/m/Y" }}{% endif %}{% if customer.payment_method %}, par {{ customer.payment_method|lower }}{% endif %}.
+      </p>
+    {% endif %}
+
     <div class="mentions">
+      <p>Catégorie d'opération : prestation de services.</p>
       {% for mention in mentions %}<p>{{ mention }}</p>{% endfor %}
       {% if not is_credit_note and issuer.iban %}
         <p>
@@ -137,7 +146,11 @@
 
     {% if not is_invoice %}
       <div class="approval">
-        <p><strong>Bon pour accord</strong> — date, signature et mention « lu et approuvé » :</p>
+        <p>Pour accepter ce devis, merci de le renvoyer daté et signé, précédé de la mention manuscrite « Bon pour accord ».</p>
+        <p><strong>Pour le client</strong></p>
+        <p>Nom et qualité :</p>
+        <p>Date :</p>
+        <p>« Bon pour accord » et signature :</p>
       </div>
     {% endif %}
   </body>

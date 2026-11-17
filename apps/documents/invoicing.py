@@ -374,12 +374,15 @@ def build_issuer_snapshot(tenant):
     }
 
 
-def build_customer_snapshot(promoter):
+def build_customer_snapshot(promoter, payment_method=""):
     return {
         "name": promoter.name,
         "billing_address": promoter.full_address,
         "siret": promoter.siret,
+        "vat_number": promoter.vat_number,
         "email": promoter.email,
+        # How the customer pays, frozen with them: the PDF may be rebuilt from the snapshot.
+        "payment_method": payment_method,
     }
 
 
@@ -402,7 +405,9 @@ def _issue(document):
     document.issuer_snapshot = build_issuer_snapshot(document.tenant)
     # The issued document keeps the logo it was issued with, even if the structure changes it.
     document.issuer_snapshot["logo"] = logo_files.snapshot_copy(document.issuer_snapshot["logo"])
-    document.customer_snapshot = build_customer_snapshot(document.gig.promoter)
+    document.customer_snapshot = build_customer_snapshot(
+        document.gig.promoter, document.gig.get_payment_method_display()
+    )
     document.issue_date = timezone.localdate()
 
 
@@ -477,15 +482,15 @@ def _copy_state(target, source):
 # --- PDF -------------------------------------------------------------------
 
 PAYMENT_MENTION = (
-    "Pénalités de retard : trois fois le taux d'intérêt légal. Indemnité forfaitaire "
-    "pour frais de recouvrement en cas de retard de paiement : 40 €. "
-    "Pas d'escompte pour règlement anticipé."
+    "En cas de retard de paiement, des pénalités égales à trois fois le taux d'intérêt légal "
+    "sont exigibles, ainsi qu'une indemnité forfaitaire pour frais de recouvrement de 40 €. "
+    "Aucun escompte n'est accordé pour paiement anticipé."
 )
 
 
 VAT_MENTION_FRANCHISE = "TVA non applicable, article 293 B du CGI."
-VAT_MENTION_NOT_TAXABLE = "TVA non applicable."
-VAT_MENTION_ASSOCIATION = "Association exonérée des impôts commerciaux."
+# Wording of the not-taxable association to be checked by the lawyer (spec 04, § 9, task bp14).
+VAT_MENTION_NOT_TAXABLE = "TVA non applicable, article 261-7-1° b du CGI."
 
 
 def vat_mentions(vat_regime):
@@ -497,7 +502,7 @@ def vat_mentions(vat_regime):
     if vat_regime == Tenant.VatRegime.FRANCHISE:
         return [VAT_MENTION_FRANCHISE]
     if vat_regime == Tenant.VatRegime.NOT_TAXABLE:
-        return [VAT_MENTION_NOT_TAXABLE, VAT_MENTION_ASSOCIATION]
+        return [VAT_MENTION_NOT_TAXABLE]
     return []
 
 
@@ -521,7 +526,9 @@ def build_pdf_context(document):
     lines = list(document.lines.all())
     if is_draft:
         issuer = build_issuer_snapshot(document.tenant)
-        customer = build_customer_snapshot(document.gig.promoter)
+        customer = build_customer_snapshot(
+            document.gig.promoter, document.gig.get_payment_method_display()
+        )
         total_excl_tax, total_vat, total_incl_tax = compute_totals(lines)
     else:
         issuer, customer = document.issuer_snapshot, document.customer_snapshot
