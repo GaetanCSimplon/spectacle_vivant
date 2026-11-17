@@ -17,9 +17,10 @@ T = datetime.time
 
 def _gig(tenant=None, days=30, **kwargs):
     tenant = tenant or TenantFactory(
-        siret="12345678901234", iban="FR76", bic="ABCDEFGH", city="Pau"
+        licence_exempt=True, siret="12345678901234", iban="FR76", bic="ABCDEFGH", city="Pau"
     )
     venue = kwargs.pop("venue", None) or VenueFactory(tenant=tenant, city="Lyon")
+    kwargs.setdefault("promoter__siret", "12345678901234")
     gig = GigFactory(
         tenant=tenant, venue=venue, date=TODAY + datetime.timedelta(days=days), **kwargs
     )
@@ -38,7 +39,7 @@ def test_a_complete_structure_and_date_give_nothing():
 
 
 def test_rad_01_names_what_is_missing_in_the_legal_information():
-    tenant = TenantFactory(siret="", iban="FR76", bic="ABCDEFGH")
+    tenant = TenantFactory(licence_exempt=True, siret="", iban="FR76", bic="ABCDEFGH")
 
     (finding,) = rules.tenant_findings(tenant)
 
@@ -48,7 +49,9 @@ def test_rad_01_names_what_is_missing_in_the_legal_information():
 
 
 def test_rad_02_asks_for_iban_and_bic_together():
-    tenant = TenantFactory(siret="12345678901234", city="Pau", iban="FR76", bic="")
+    tenant = TenantFactory(
+        licence_exempt=True, siret="12345678901234", city="Pau", iban="FR76", bic=""
+    )
 
     assert _codes(rules.tenant_findings(tenant)) == ["RAD-02"]
 
@@ -103,7 +106,9 @@ def test_rad_22_flags_times_in_the_wrong_order_and_ignores_empty_ones():
 
 
 def test_cancelled_and_past_dates_are_left_alone():
-    tenant = TenantFactory(siret="12345678901234", iban="FR76", bic="ABCDEFGH", city="Pau")
+    tenant = TenantFactory(
+        licence_exempt=True, siret="12345678901234", iban="FR76", bic="ABCDEFGH", city="Pau"
+    )
     _gig(tenant, price="0.00", status=Gig.Status.CANCELLED)
     _gig(tenant, days=-1, price="0.00")
 
@@ -111,7 +116,7 @@ def test_cancelled_and_past_dates_are_left_alone():
 
 
 def test_findings_are_sorted_most_serious_first_then_by_date():
-    tenant = TenantFactory(siret="", iban="FR76", bic="ABCDEFGH", city="Pau")
+    tenant = TenantFactory(licence_exempt=True, siret="", iban="FR76", bic="ABCDEFGH", city="Pau")
     later = _gig(tenant, days=20, price="0.00")
     sooner = _gig(tenant, days=10, price="0.00")
 
@@ -122,7 +127,7 @@ def test_findings_are_sorted_most_serious_first_then_by_date():
 
 
 def test_every_rule_has_its_explanation():
-    codes = {f"RAD-{n:02d}" for n in (1, 2, 10, 20, 22, 26, 29, 35)}
+    codes = {f"RAD-{n:02d}" for n in (1, 2, 10, 20, 22, 26, 29, 35, 40, 41, 42, 43, 44)}
 
     assert codes == set(rules.EXPLANATIONS)
     for explanation in rules.EXPLANATIONS.values():
@@ -130,9 +135,9 @@ def test_every_rule_has_its_explanation():
 
 
 def test_rad_10_lists_what_the_contract_of_a_confirmed_date_lacks():
-    gig = _gig(status=Gig.Status.CONFIRMED)
+    gig = _gig(status=Gig.Status.CONFIRMED, promoter__siret="")
 
-    found = rules.gig_findings(gig, TODAY)
+    found = [f for f in rules.gig_findings(gig, TODAY) if f.code == "RAD-10"]
 
     assert _codes(found) == ["RAD-10"]
     assert found[0].severity == rules.IMPORTANT

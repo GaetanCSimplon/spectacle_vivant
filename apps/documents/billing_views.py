@@ -249,7 +249,7 @@ class DocumentIssueView(DocumentMixin, View):
         if context["missing"] or not context["rows"]:
             return self.refuse(_("Ce document n'est pas prêt à être émis."))
         action = "invoice_issue" if doc_type == "factures" else "quote_issue"
-        context["alerts"] = radar_rules.for_action(action, self.gig)
+        context["alerts"] = radar_rules.for_action(action, self.gig, document=self.document)
         template = (
             "documents/_document_issue_dialog.html"
             if request.htmx
