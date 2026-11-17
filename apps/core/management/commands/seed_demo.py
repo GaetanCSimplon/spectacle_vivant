@@ -149,6 +149,7 @@ class Command(BaseCommand):
                 soundcheck_minutes=soundcheck,
                 analytic_code=code,
                 sacem_number="123456" if i == 0 else "",
+                tech_sheet_text="Scène 6 m x 4 m, 2 retours, 8 prises 16 A, accès camionnette.",
             )
             for i, (
                 title,

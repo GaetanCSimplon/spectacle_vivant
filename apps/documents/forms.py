@@ -59,9 +59,11 @@ class GigCompletionForm(PaymentTermsMixin, forms.ModelForm):
             "balance_term",
             "balance_due_on",
             "meals_covered_by",
+            "meals_people",
             "meals_count",
             "meals_notes",
             "lodging_covered_by",
+            "lodging_people",
             "lodging_nights",
             "lodging_notes",
             "transport_covered_by",
@@ -141,9 +143,11 @@ class GigCompletionForm(PaymentTermsMixin, forms.ModelForm):
         "balance_term",
         "balance_due_on",
         "meals_covered_by",
+        "meals_people",
         "meals_count",
         "meals_notes",
         "lodging_covered_by",
+        "lodging_people",
         "lodging_nights",
         "lodging_notes",
         "transport_covered_by",
@@ -192,18 +196,30 @@ class GigCompletionForm(PaymentTermsMixin, forms.ModelForm):
 
     def _compose_sentences(self, cleaned):
         """Write what the contract prints from the answers (it reads `meals` and `lodging`)."""
-        for sentence, covered_by, count, notes, unit in (
-            ("meals", "meals_covered_by", "meals_count", "meals_notes", hospitality.MEAL_UNIT),
+        for sentence, covered_by, people, count, notes, unit in (
+            (
+                "meals",
+                "meals_covered_by",
+                "meals_people",
+                "meals_count",
+                "meals_notes",
+                hospitality.MEAL_UNIT,
+            ),
             (
                 "lodging",
                 "lodging_covered_by",
+                "lodging_people",
                 "lodging_nights",
                 "lodging_notes",
                 hospitality.NIGHT_UNIT,
             ),
         ):
             text = hospitality.compose(
-                cleaned.get(covered_by), cleaned.get(count), unit, cleaned.get(notes)
+                cleaned.get(covered_by),
+                cleaned.get(count),
+                unit,
+                cleaned.get(notes),
+                people=cleaned.get(people),
             )
             # At most 150 characters of notes and a short phrase: always fits the 255 of the field.
             setattr(self.instance, sentence, text)

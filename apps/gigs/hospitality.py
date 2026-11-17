@@ -35,11 +35,18 @@ def _plural(count, one, many):
     return f"{count} {one if count == 1 else many}"
 
 
-def compose(covered_by, count, unit, notes):
-    """The sentence of the contract: "À la charge de l'Organisateur : 8 repas. Végétarien ×2"."""
+def compose(covered_by, count, unit, notes, people=None):
+    """The sentence of the contract: "À la charge de l'Organisateur : 4 personnes, 8 repas"."""
     sentence = CONTRACT_PHRASES.get(covered_by, "")
-    if count and covered_by != CoveredBy.NONE:
-        sentence = f"{sentence} : {_plural(count, *unit)}" if sentence else _plural(count, *unit)
+    details = []
+    if covered_by != CoveredBy.NONE:
+        if people:
+            details.append(_plural(people, "personne", "personnes"))
+        if count:
+            details.append(_plural(count, *unit))
+    if details:
+        joined = ", ".join(details)
+        sentence = f"{sentence} : {joined}" if sentence else joined
     notes = " ".join((notes or "").split())
     if notes:
         sentence = f"{sentence}. {notes}" if sentence else notes
