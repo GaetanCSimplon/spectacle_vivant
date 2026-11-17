@@ -16,7 +16,7 @@ def _media_root(settings, tmp_path):
 
 
 def _confirmed_gig(tenant):
-    gig = GigFactory(tenant=tenant, status=Gig.Status.CONFIRMED)
+    gig = GigFactory(tenant=tenant, status=Gig.Status.CONFIRMED, promoter__siret="12345678901234")
     gig.refresh_from_db()
     return gig
 
@@ -103,7 +103,9 @@ def test_another_structure_gets_a_404_on_the_send_page(client):
 
 
 def test_each_engaging_action_has_its_own_alerts():
-    membership = MembershipFactory(tenant__siret="12345678901234", tenant__city="Pau")
+    membership = MembershipFactory(
+        tenant__siret="12345678901234", tenant__city="Pau", tenant__licence_exempt=True
+    )
     gig = _confirmed_gig(membership.tenant)
 
     invoice = [f.code for f in rules.for_action("invoice_issue", gig)]

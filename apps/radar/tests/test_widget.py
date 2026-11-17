@@ -9,7 +9,7 @@ pytestmark = pytest.mark.django_db
 
 @pytest.fixture
 def owner(client):
-    membership = MembershipFactory()
+    membership = MembershipFactory(tenant__licence_exempt=True)
     client.force_login(membership.user)
     return membership
 
@@ -50,7 +50,7 @@ def test_the_button_follows_a_change(client, owner):
     after = client.get(reverse("radar:button")).content.decode()
 
     assert "Radar : 2 points à regarder" in before
-    assert "Radar : 3 points à regarder" in after or "Radar : 4 points à regarder" in after
+    assert "Radar : 4 points à regarder" in after or "Radar : 5 points à regarder" in after
 
 
 def test_the_panel_lists_the_findings_of_one_date_and_of_the_structure(client, owner):

@@ -50,10 +50,10 @@ def test_the_navigation_links_to_radar(client):
 
 
 def test_the_date_page_shows_what_sticks_on_that_date_only(client):
-    membership = MembershipFactory()
+    membership = MembershipFactory(tenant__licence_exempt=True)
     client.force_login(membership.user)
     gig = GigFactory(tenant=membership.tenant, price="0.00")
-    ok = GigFactory(tenant=membership.tenant, venue__city="Pau")
+    ok = GigFactory(tenant=membership.tenant, venue__city="Pau", promoter__siret="12345678901234")
 
     content = client.get(reverse("gigs:detail", args=[gig.pk])).content.decode()
     clean = client.get(reverse("gigs:detail", args=[ok.pk])).content.decode()
@@ -79,9 +79,9 @@ def test_a_past_or_cancelled_date_shows_no_radar_block(client):
 
 
 def test_the_list_marks_a_date_with_points_to_look_at(client):
-    membership = MembershipFactory()
+    membership = MembershipFactory(tenant__licence_exempt=True)
     client.force_login(membership.user)
-    GigFactory(tenant=membership.tenant, price="0.00")
+    GigFactory(tenant=membership.tenant, price="0.00", promoter__siret="12345678901234")
 
     content = client.get(reverse("gigs:list")).content.decode()
 

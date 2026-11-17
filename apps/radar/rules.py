@@ -14,6 +14,7 @@ from django.db.models import Sum
 from django.urls import reverse
 from django.utils.translation import gettext_lazy as _
 
+from apps.documents.models import Invoice, Quote
 from apps.finance.models import Expense
 from apps.gigs.models import Gig
 
@@ -23,6 +24,10 @@ ORDER = {IMPORTANT: 0, FIX: 1, KNOW: 2}
 
 # A date's route sheet is expected complete this many days before the concert (RAD-20).
 ROADMAP_DAYS = 7
+
+# From this day, an organizer without SIREN can no longer be invoiced (electronic invoicing,
+# spec 04 §6.2): the alert turns from "à corriger" to "important" (Radar itself never blocks).
+SIREN_REQUIRED_FROM = datetime.date(2027, 9, 1)
 
 
 @dataclass(frozen=True)
@@ -92,6 +97,35 @@ EXPLANATIONS = {
     "RAD-35": Explanation(
         _("Sans prix de cession, ni le contrat, ni le devis, ni le bilan ne sont fiables."),
         _("Il reporterait le prix convenu avec l'organisateur dans la date."),
+    ),
+    "RAD-40": Explanation(
+        _(
+            "À partir du 1er septembre 2027, une facture doit porter le SIREN du client "
+            "professionnel (facturation électronique)."
+        ),
+        _("Il demanderait le SIRET à l'organisateur et le saisirait dans sa fiche."),
+    ),
+    "RAD-41": Explanation(
+        _(
+            "La licence d'entrepreneur de spectacles est mentionnée sur vos devis et factures. "
+            "Sans elle, et sans dispense déclarée, la ligne reste vide."
+        ),
+        _("Il renseignerait la licence, ou déclarerait la dispense si elle s'applique."),
+    ),
+    "RAD-42": Explanation(
+        _(
+            "Un client particulier doit pouvoir recourir gratuitement à un médiateur de la "
+            "consommation : son nom figure sur le devis et la facture."
+        ),
+        _("Il ajouterait le nom et le site de son médiateur dans la fiche de la structure."),
+    ),
+    "RAD-43": Explanation(
+        _("Le total facturé dépasserait le prix de cession de la date."),
+        _("Il vérifierait le montant avant d'émettre, ou corrigerait le prix de la date."),
+    ),
+    "RAD-44": Explanation(
+        _("Le devis de cette date n'a pas été accepté et sa durée de validité est dépassée."),
+        _("Il confirmerait que le prix convenu tient toujours, ou enverrait un nouveau devis."),
     ),
 }
 
@@ -221,9 +255,76 @@ def rad_29_expenses_above_price(gig, expenses_total):
     return Finding("RAD-29", FIX, message, reverse("finance:page", args=[gig.pk]), gig)
 
 
+def rad_40_no_siren(gig, today):
+    promoter = gig.promoter
+    if promoter.is_private or len([c for c in promoter.siret if c.isdigit()]) >= 9:
+        return None
+    message = _(
+        "%(gig)s : le SIRET de l'organisateur manque (son SIREN sera exigé sur la facture)."
+    ) % {"gig": _label(gig)}
+    severity = IMPORTANT if today >= SIREN_REQUIRED_FROM else FIX
+    url = reverse("addressbook:promoter-update", args=[promoter.pk])
+    return Finding("RAD-40", severity, message, url, gig)
+
+
+def rad_41_no_licence(tenant):
+    if tenant.licence_number.strip() or tenant.licence_exempt:
+        return None
+    message = _("Ma structure : ni numéro de licence, ni dispense déclarée.")
+    return Finding("RAD-41", KNOW, message, reverse("tenants:settings"))
+
+
+def rad_42_no_mediator(gig):
+    if not gig.promoter.is_private or gig.tenant.mediator.strip():
+        return None
+    message = _("%(gig)s : client particulier, mais aucun médiateur n'est renseigné.") % {
+        "gig": _label(gig)
+    }
+    return Finding("RAD-42", FIX, message, reverse("tenants:settings"), gig)
+
+
+def rad_43_over_invoiced(gig, draft):
+    """Issuing `draft` would bring the total invoiced above the price of the date."""
+    if gig.price <= 0:
+        return None
+    already = Invoice.objects.filter(
+        tenant=gig.tenant, gig=gig, status__in=[Invoice.Status.ISSUED, Invoice.Status.PAID]
+    ).exclude(kind=Invoice.Kind.CREDIT_NOTE)
+    total = (already.aggregate(total=Sum("total_excl_tax"))["total"] or Decimal("0")) + (
+        draft.total_excl_tax
+    )
+    if total <= gig.price:
+        return None
+    message = _(
+        "%(gig)s : le total facturé (%(total)s € HT) dépasserait le prix de cession "
+        "(%(price)s € HT)."
+    ) % {"gig": _label(gig), "total": f"{total:.2f}", "price": f"{gig.price:.2f}"}
+    return Finding("RAD-43", FIX, message, reverse("documents:billing", args=[gig.pk]), gig)
+
+
+def rad_44_expired_quote(gig):
+    """The quotes of the date were issued, none was accepted, and the latest has expired."""
+    quotes = list(
+        Quote.objects.filter(tenant=gig.tenant, gig=gig, status=Quote.Status.ISSUED).order_by(
+            "-created_at"
+        )
+    )
+    if not quotes or any(q.accepted_on for q in quotes) or not quotes[0].is_expired:
+        return None
+    message = _("%(gig)s : le devis %(number)s est expiré et n'a pas été accepté.") % {
+        "gig": _label(gig),
+        "number": quotes[0].number,
+    }
+    return Finding("RAD-44", FIX, message, reverse("documents:billing", args=[gig.pk]), gig)
+
+
 def tenant_findings(tenant):
     """The rules about the structure itself."""
-    found = [rad_01_legal_information(tenant), rad_02_bank_details(tenant)]
+    found = [
+        rad_01_legal_information(tenant),
+        rad_02_bank_details(tenant),
+        rad_41_no_licence(tenant),
+    ]
     return [f for f in found if f]
 
 
@@ -235,6 +336,8 @@ def gig_findings(gig, today, expenses_total=Decimal("0")):
         rad_22_times_out_of_order(gig),
         rad_26_no_place(gig),
         rad_35_no_price(gig),
+        rad_40_no_siren(gig, today),
+        rad_42_no_mediator(gig),
         rad_29_expenses_above_price(gig, expenses_total),
     ]
     return [f for f in found if f]
@@ -287,18 +390,27 @@ def attach_findings(gigs, today=None):
 ACTIONS = {
     "contract_send": {"RAD-01", "RAD-10"},
     "contract_sign": {"RAD-01", "RAD-10", "RAD-29"},
-    "quote_issue": {"RAD-01"},
-    "invoice_issue": {"RAD-01", "RAD-02"},
+    "quote_issue": {"RAD-01", "RAD-41", "RAD-42"},
+    "invoice_issue": {"RAD-01", "RAD-02", "RAD-40", "RAD-41", "RAD-42", "RAD-43", "RAD-44"},
     "roadmap_share": {"RAD-20", "RAD-22", "RAD-26"},
 }
 
 
-def for_action(action, gig, today=None):
+def for_action(action, gig, today=None, document=None):
     """The alerts to show before `action` on `gig`, most serious first. Never blocks: the user
-    can always go on."""
+    can always go on. `document`: the draft about to be issued (read by RAD-43)."""
     today = today or datetime.date.today()
     codes = ACTIONS[action]
     found = [f for f in tenant_findings(gig.tenant) + for_gig(gig, today) if f.code in codes]
+    if action == "invoice_issue":
+        found += [
+            f
+            for f in (
+                rad_43_over_invoiced(gig, document) if document else None,
+                rad_44_expired_quote(gig),
+            )
+            if f
+        ]
     if action == "roadmap_share" and not any(f.code == "RAD-20" for f in found):
         # Whatever the distance to the concert, a route sheet about to be shared needs its times.
         times = rad_20_roadmap_times(gig, today, horizon=None)
