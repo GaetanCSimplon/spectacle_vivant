@@ -1,11 +1,6 @@
-import html as html_lib
-import re
-
 import pytest
-from django.template.loader import render_to_string
 from django.urls import reverse
 
-from apps.documents.services import build_contract_context
 from apps.finance import exports as finance_exports
 from apps.finance.factories import ExpenseFactory
 from apps.finance.tests.helpers import issued_invoice, make_gig
@@ -209,37 +204,3 @@ def test_a_formula_in_the_analytic_code_is_neutralised():
     _header, rows = data_export.gigs_rows(gig.tenant)
 
     assert rows[0][-1] == "'=1+1"
-
-
-# --- the contracts ----------------------------------------------------------------------
-
-
-def _contract_text(template, gig):
-    gig.refresh_from_db()
-    html = render_to_string(template, build_contract_context(gig))
-    html = html.split("</style>")[1]
-    return " ".join(html_lib.unescape(re.sub(r"<[^>]+>", " ", html)).split())
-
-
-def test_model_2_uses_the_soundcheck_times_or_keeps_the_dots():
-    show = ShowFactory(soundcheck_minutes=90, soundcheck_to_set_minutes=30)
-    filled = _contract_text(
-        "documents/contracts/model_2.html", GigFactory(show=show, tenant=show.tenant)
-    )
-    empty = _contract_text("documents/contracts/model_2.html", GigFactory())
-
-    assert "exclusive des artistes pendant 90 minutes le jour de la représentation" in filled
-    assert "les artistes disposeront de 30 minutes pour se restaurer" in filled
-    assert "exclusive des artistes pendant …… le jour" in empty
-    assert "les artistes disposeront de …… pour se restaurer" in empty
-
-
-def test_model_3_uses_the_soundcheck_minutes_or_keeps_the_dots():
-    show = ShowFactory(soundcheck_minutes=90)
-    filled = _contract_text(
-        "documents/contracts/model_3.html", GigFactory(show=show, tenant=show.tenant)
-    )
-    empty = _contract_text("documents/contracts/model_3.html", GigFactory())
-
-    assert "Le Producteur disposera de 90 minutes pour installer son matériel" in filled
-    assert "Le Producteur disposera de …… minutes pour installer son matériel" in empty

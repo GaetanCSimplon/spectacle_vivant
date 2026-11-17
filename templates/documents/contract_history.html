@@ -20,7 +20,6 @@
     <div class="card mb-6 space-y-2 text-sm">
       <p class="font-semibold">
         {% blocktranslate with date=contract.signed_at|date:"d/m/Y" number=contract.signed_version.number %}Signé le {{ date }} — version {{ number }} figée{% endblocktranslate %}
-        {% if template_choices|length > 1 %}· {{ contract.get_template_display }}{% endif %}
       </p>
       {% if contract.signed_pdf %}
         <a href="{% url 'documents:contract-signed-pdf' gig.pk %}" class="btn btn-secondary btn-block btn-download">
@@ -70,27 +69,15 @@
       </a>
     {% endif %}
     {% if can_generate %}
-      <div x-data="{ template: '{{ current_template }}' }" class="flex flex-col gap-3">
       <form method="post" action="{% url 'documents:contract-generate' gig.pk %}" class="flex flex-col gap-3">
         {% csrf_token %}
-        {% if template_choices|length > 1 %}
-          <label class="text-sm font-medium" for="contract-template">{% translate "Modèle de contrat" %}</label>
-          <select name="template" id="contract-template" x-model="template">
-            {% for value, label in template_choices %}
-              <option value="{{ value }}" {% if value == current_template %}selected{% endif %}>
-                {{ label }}{% if forloop.first %} ({% translate "par défaut" %}){% endif %}
-              </option>
-            {% endfor %}
-          </select>
-        {% endif %}
         <button type="submit" class="btn btn-primary btn-block">
           {% if versions %}{% translate "Générer une nouvelle version" %}{% else %}{% translate "Générer le contrat" %}{% endif %}
         </button>
       </form>
-      <a href="{% url 'documents:contract-preview' gig.pk %}" :href="'{% url 'documents:contract-preview' gig.pk %}?template=' + template" target="_blank" class="btn btn-secondary">
+      <a href="{% url 'documents:contract-preview' gig.pk %}" target="_blank" class="btn btn-secondary">
         {% translate "Aperçu avant génération" %}
       </a>
-      </div>
       <a href="{% url 'documents:contract-complete' gig.pk %}" class="btn btn-secondary">
         {% translate "Compléter le contrat" %}
       </a>
@@ -123,7 +110,6 @@
           <span>
             {% blocktranslate with number=version.number %}Version {{ number }}{% endblocktranslate %}
             {% if forloop.first %}<span class="text-gray-500">({% translate "la plus récente" %})</span>{% if latest_is_stale %} <strong>{% translate "À actualiser" %}</strong> <span class="text-gray-600">{% translate "(des informations ont changé depuis)" %}</span>{% endif %}{% endif %}
-            {% if template_choices|length > 1 %}<span class="text-gray-500">· {{ version.get_template_display }}</span>{% endif %}
             <br>
             <span class="text-gray-500">{{ version.created_at|date:"d/m/Y H:i" }}</span>
           </span>

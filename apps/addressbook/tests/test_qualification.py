@@ -264,13 +264,7 @@ def test_the_venue_configuration_is_saved_and_shown(client):
     assert "Configuration : Debout" in page
 
 
-def test_the_completion_form_sets_the_venue_configuration_and_model_3_prints_it(client):
-    import html as html_lib
-    import re
-
-    from django.template.loader import render_to_string
-
-    from apps.documents.services import build_contract_context
+def test_the_completion_form_sets_the_venue_configuration(client):
     from apps.gigs.factories import GigFactory
 
     tenant = _login(client)
@@ -281,10 +275,8 @@ def test_the_completion_form_sets_the_venue_configuration_and_model_3_prints_it(
         {"venue-configuration": "Assis, 300 places"},
     )
 
-    gig.refresh_from_db()
-    html = render_to_string("documents/contracts/model_3.html", build_contract_context(gig))
-    text = " ".join(html_lib.unescape(re.sub(r"<[^>]+>", " ", html.split("</style>")[1])).split())
-    assert "Configuration : Assis, 300 places" in text
+    gig.venue.refresh_from_db()
+    assert gig.venue.configuration == "Assis, 300 places"
 
 
 def test_the_export_carries_the_six_criteria(client):

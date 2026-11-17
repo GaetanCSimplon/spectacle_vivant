@@ -235,12 +235,12 @@ def test_the_preview_is_always_possible_and_says_it_is_a_draft(client):
     response = client.get(reverse("documents:contract-preview", args=[gig.pk]))
     anomalies = checks.to_fix(checks.check_contract(gig))
     html = render_to_string(
-        "documents/contracts/model_1.html",
+        "documents/contracts/contract.html",
         services.build_contract_context(gig, None, draft_anomalies=anomalies),
     )
     ready = _ready_gig()
     ready_html = render_to_string(
-        "documents/contracts/model_1.html", services.build_contract_context(ready, ready.contract)
+        "documents/contracts/contract.html", services.build_contract_context(ready, ready.contract)
     )
 
     assert response.status_code == 200

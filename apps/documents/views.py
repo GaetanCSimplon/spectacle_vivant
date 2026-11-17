@@ -26,16 +26,6 @@ from .forms import (
 from .models import Contract, ContractVersion
 
 
-def requested_template(request, data):
-    """The wording picked in the form: None if absent, an error message if not offered."""
-    value = data.get("template")
-    if not value:
-        return None, None
-    if value not in dict(services.available_contract_templates()):
-        return None, _("Ce modèle de contrat n'existe pas.")
-    return value, None
-
-
 class ContractPreviewView(TenantScopedMixin, View):
     """Show the contract as it would be generated now, without storing anything.
 
@@ -48,14 +38,8 @@ class ContractPreviewView(TenantScopedMixin, View):
         frozen = contract and contract.status == Contract.Status.SIGNED
         if frozen or gig.status == Gig.Status.CANCELLED:
             return stored_contract_response(request, gig, contract)
-        template, error = requested_template(request, request.GET)
-        if error:
-            messages.error(request, error)
-            return redirect("documents:contract-history", gig_id=gig.pk)
         anomalies = checks.to_fix(checks.check_contract(gig, contract))
-        pdf_bytes = services.render_contract_pdf(
-            gig, contract, template, draft_anomalies=anomalies or None
-        )
+        pdf_bytes = services.render_contract_pdf(gig, contract, draft_anomalies=anomalies or None)
         return HttpResponse(pdf_bytes, content_type="application/pdf")
 
 
@@ -105,10 +89,6 @@ class ContractHistoryView(TenantScopedMixin, View):
             "mail": self.contract_mail(gig, contract),
             "can_add_signed_pdf": signed and not contract.signed_pdf,
             "signed_pdf_form": SignedPdfForm(),
-            "template_choices": services.available_contract_templates(),
-            "current_template": contract.template
-            if contract
-            else services.DEFAULT_CONTRACT_TEMPLATE,
         }
         return render(request, self.template_name, context)
 
@@ -226,10 +206,6 @@ class ContractSignedPdfView(TenantScopedMixin, View):
 class ContractGenerateView(TenantScopedMixin, View):
     def post(self, request, gig_id):
         gig = get_object_or_404(Gig, pk=gig_id, tenant=request.tenant)
-        template, error = requested_template(request, request.POST)
-        if error:
-            messages.error(request, error)
-            return redirect("documents:contract-history", gig_id=gig.pk)
         contract = Contract.objects.filter(gig=gig, tenant=request.tenant).first()
         signed = contract and contract.status == Contract.Status.SIGNED
         anomalies = checks.to_fix(checks.check_contract(gig, contract))
@@ -245,7 +221,7 @@ class ContractGenerateView(TenantScopedMixin, View):
             )
             return redirect("documents:contract-history", gig_id=gig.pk)
         try:
-            contract = services.generate_contract_pdf(gig, user=request.user, template=template)
+            contract = services.generate_contract_pdf(gig, user=request.user)
         except services.ContractNotAvailable:
             return no_contract_response(request, gig)
         if contract.status == Contract.Status.SIGNED:

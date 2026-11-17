@@ -9,7 +9,6 @@ from apps.tenants.models import Tenant
 
 from .. import invoicing
 from ..models import Invoice
-from ..services import build_contract_context
 
 pytestmark = pytest.mark.django_db
 
@@ -47,12 +46,6 @@ def _text(html):
 def _pdf_text(document):
     return _text(
         render_to_string("documents/billing_pdf.html", invoicing.build_pdf_context(document))
-    )
-
-
-def _contract_text(gig, template="model_1"):
-    return _text(
-        render_to_string(f"documents/contracts/{template}.html", build_contract_context(gig))
     )
 
 
@@ -130,16 +123,3 @@ def test_a_document_issued_before_the_bic_existed_still_renders():
     text = _pdf_text(quote)
 
     assert f"IBAN {IBAN}" in text and "BIC" not in text
-
-
-def test_model_1_shows_the_iban_and_the_bic_or_dots():
-    filled = _contract_text(_gig())
-    empty = _contract_text(_gig(iban="", bic=""))
-
-    assert f"Règlement par virement sur le compte : IBAN {IBAN} — BIC AGRIFRPP." in filled
-    assert "Règlement par virement sur le compte : IBAN …… — BIC ……." in empty
-
-
-@pytest.mark.parametrize("template", ["model_2", "model_3", "model_4"])
-def test_the_other_models_already_show_the_iban(template):
-    assert IBAN in _contract_text(_gig(), template)

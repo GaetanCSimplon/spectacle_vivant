@@ -1,5 +1,6 @@
 import datetime
 import html as html_lib
+import re
 
 import pytest
 from django.template.loader import render_to_string
@@ -54,7 +55,7 @@ def test_contract_html_contains_the_gig_details_in_french_format():
     # what template localization (French comma) needs.
     gig.refresh_from_db()
 
-    html = render_to_string("documents/contracts/model_1.html", build_contract_context(gig))
+    html = render_to_string("documents/contracts/contract.html", build_contract_context(gig))
 
     assert gig.show.title in html
     assert gig.promoter.name in html
@@ -108,47 +109,32 @@ def test_contract_preview_of_another_tenants_gig_returns_404(client):
 def _render(gig, contract=None):
     gig.refresh_from_db()
     html = render_to_string(
-        "documents/contracts/model_1.html", build_contract_context(gig, contract)
+        "documents/contracts/contract.html", build_contract_context(gig, contract)
     )
-    return " ".join(html_lib.unescape(html).split())
+    return " ".join(re.sub(r"<[^>]+>", " ", html_lib.unescape(html)).split())
 
 
-def test_contract_always_names_the_tenant_as_the_producer():
-    gig = GigFactory(invitations_count=5)
-
-    html = _render(gig)
-
-    assert "LE PRODUCTEUR fournira le spectacle" in html
-    assert "fournie par LE PRODUCTEUR" in html
-    assert "AU PRODUCTEUR ou à son représentant" in html
-    assert "verser AU PRODUCTEUR, en contrepartie" in html
-    assert "Obligations du producteur" in html
-
-
-def test_contract_keeps_the_performers_mention_of_article_4():
+def test_contract_names_the_tenant_as_the_producer_and_the_promoter_as_the_organiser():
     gig = GigFactory()
 
     html = _render(gig)
 
-    assert "le meilleur accueil au public et à L'ARTISTE" in html
-    assert "L'ARTISTE fournira" not in html
+    assert "Le producteur" in html and "L’organisateur" in html
+    assert gig.tenant.name in html and gig.promoter.name in html
+    assert "L'ARTISTE" not in html
 
 
 def test_contract_shows_the_signing_place():
-    gig = GigFactory(signing_place="Lyon")
+    html = _render(GigFactory(signing_place="Lyon", copies_count=3))
 
-    html = _render(gig)
+    assert "Fait à Lyon" in html
+    assert "Fait en 3 exemplaires originaux" in html
 
-    assert "Fait à Lyon en 2 exemplaires" in html
 
+def test_contract_shows_invitations_count():
+    html = _render(GigFactory(invitations_count=4))
 
-def test_contract_shows_invitations_only_when_there_are_some():
-    with_invitations = _render(GigFactory(invitations_count=4))
-    without = _render(GigFactory(invitations_count=0))
-
-    assert "fournira 4 invitations personnelles" in with_invitations
-    assert "invitations personnelles" not in without
-    assert "filtrer l'entrée des loges." in without
+    assert "Invitations réservées au producteur 4" in html
 
 
 def test_contract_shows_the_parties_details():
@@ -163,18 +149,15 @@ def test_contract_shows_the_parties_details():
 
     html = _render(gig)
 
-    assert "N° de licence : L-123" in html
-    assert "Représenté par Julie Martin" in html
-    assert "en qualité de Présidente" in html
-    assert "N° de licence : L-456" in html
-    assert "Représenté par Marc Durand" in html
+    assert "L-123" in html and "L-456" in html
+    assert "Représenté par Julie Martin, en qualité de Présidente" in html
+    assert "Représenté par Marc Durand, en qualité de Maire" in html
 
 
 def test_contract_shows_show_venue_and_schedule_details():
     gig = GigFactory(
         show__group_name="Les Nocturnes",
         show__sacem_number="SAC-1",
-        show__sacem_object_number="OBJ-2",
         venue__capacity=300,
         get_in_time=datetime.time(15, 30),
         soundcheck_time=datetime.time(17, 0),
@@ -185,37 +168,39 @@ def test_contract_shows_show_venue_and_schedule_details():
     html = _render(gig)
 
     assert "Les Nocturnes" in html
-    assert "numéro SACEM : SAC-1" in html
-    assert "numéro d'objet : OBJ-2" in html
-    assert "capacité de la salle est de 300 places" in html
-    assert "Heure de get in : 15h30" in html
-    assert "Heure de balances : 17h00" in html
-    assert "Heure de représentation : 21h15" in html
-    assert "soit 6 personnes" in html
+    assert "programme type déclaré à la SACEM : SAC-1" in html
+    assert "Jauge maximale autorisée 300" in html
+    assert "Arrivée de l’équipe 15h30" in html
+    assert "Installation et balances 17h00" in html
+    assert "Début de la représentation 21h15" in html
+    assert "6 personne(s)" in html
+
+
+def test_contract_unknown_arrival_and_capacity_point_to_the_welcome_sheet():
+    html = _render(GigFactory(get_in_time=None, soundcheck_time=None, venue__capacity=None))
+
+    assert html.count("À préciser dans la fiche d’accueil") == 3
 
 
 def test_contract_free_gig_hides_the_ticket_price():
     free = _render(GigFactory(is_free=True, ticket_price=15))
     paid = _render(GigFactory(is_free=False, ticket_price=15))
 
-    assert "Le concert est-il gratuit ? : Oui" in free
-    assert "prix des places" not in free
-    assert "Le concert est-il gratuit ? : Non" in paid
-    assert "prix des places est fixé à 15" in paid
+    assert "Prix des places Gratuit" in free
+    assert "Prix des places 15" in paid
 
 
-def test_contract_franchise_regime_quotes_article_293_b():
-    html = _render(GigFactory(tenant__vat_regime="franchise"))
+def test_contract_franchise_regime_shows_the_mention_without_vat_amounts():
+    html = _render(GigFactory(tenant__vat_regime="franchise", price="100.00"))
 
-    assert "TVA 0 €" in html
+    assert "100,00 € net de TVA" in html
     assert "article 293 B du CGI" in html
 
 
-def test_contract_not_taxable_regime_says_vat_does_not_apply_without_the_article():
-    """Article 293 B is the franchise en base: a structure not subject to VAT does not quote it."""
-    html = _render(GigFactory(tenant__vat_regime="not_taxable"))
+def test_contract_not_taxable_regime_does_not_quote_article_293_b():
+    html = _render(GigFactory(tenant__vat_regime="not_taxable", price="100.00"))
 
-    assert "TVA 0 €" in html and "TVA non applicable, article 261-7-1° b du CGI." in html
+    assert "TVA non applicable, article 261-7-1° b du CGI." in html
     assert "293 B" not in html
 
 
@@ -223,7 +208,7 @@ def test_contract_taxable_regime_leaves_vat_to_fill_in_without_a_rate():
     html = _render(GigFactory(tenant__vat_regime="taxable"))
 
     assert "293 B" not in html
-    assert "HT + TVA …… €" in html
+    assert "TVA — taux …… %" in html
 
 
 def test_contract_taxable_regime_computes_vat_when_a_rate_is_set():
@@ -232,14 +217,7 @@ def test_contract_taxable_regime_computes_vat_when_a_rate_is_set():
     html = _render(gig)
 
     assert "293 B" not in html
-    assert "…… €" not in html
-    assert "100,00 € HT + TVA (20,00 %) 20,00 € = 120,00 € T.T.C." in html
-
-
-def test_contract_shows_the_jurisdiction_city_of_the_tenant():
-    html = _render(GigFactory(tenant__jurisdiction_city="Montpellier"))
-
-    assert "tribunaux de MONTPELLIER" in html
+    assert "100,00 € " in html and "20,00 €" in html and "120,00 €" in html
 
 
 def test_contract_shows_the_signatory():
@@ -248,7 +226,7 @@ def test_contract_shows_the_signatory():
 
     html = _render(gig, contract)
 
-    assert "Julie Martin, Présidente" in html
+    assert "Représenté par Julie Martin, en qualité de Présidente" in html
 
 
 def test_contract_without_optional_fields_still_renders_and_generates_a_pdf():
@@ -257,30 +235,14 @@ def test_contract_without_optional_fields_still_renders_and_generates_a_pdf():
     html = _render(gig)
     contract = generate_contract_pdf(gig)
 
-    assert "Fait à …… en 2 exemplaires" in html
-    assert "N° de licence : ……" in html
-    assert "tribunaux de ……" in html
+    assert "Fait à ……" in html
     assert contract.latest_version.pdf_file.read().startswith(b"%PDF-")
 
 
-def test_contract_shows_the_special_conditions():
-    html = _render(GigFactory(conditions="Loge chauffée\nParking réservé"))
+def test_contract_escapes_html_in_free_text():
+    gig = GigFactory(price_includes="<script>alert(1)</script>")
 
-    assert "Conditions particulières" in html
-    assert "Loge chauffée" in html
-    assert "Parking réservé" in html
-
-
-def test_contract_hides_the_special_conditions_article_when_empty():
-    html = _render(GigFactory(conditions=""))
-
-    assert "Conditions particulières" not in html
-
-
-def test_contract_escapes_html_in_the_special_conditions():
-    gig = GigFactory(conditions="<script>alert(1)</script>")
-
-    html = render_to_string("documents/contracts/model_1.html", build_contract_context(gig))
+    html = render_to_string("documents/contracts/contract.html", build_contract_context(gig))
 
     assert "<script>" not in html
     assert "&lt;script&gt;" in html
@@ -319,7 +281,7 @@ def test_contract_preview_of_a_signed_contract_serves_the_frozen_pdf(client):
     contract.status = Contract.Status.SIGNED
     contract.save()
     frozen_bytes = contract.latest_version.pdf_file.read()
-    gig.conditions = "Ajoutée après la signature"
+    gig.price_includes = "Ajouté après la signature"
     gig.save()
 
     response = client.get(reverse("documents:contract-preview", args=[gig.pk]))
@@ -367,16 +329,5 @@ def test_contract_shows_the_vat_number_only_for_a_taxable_tenant():
     taxable = _render(GigFactory(tenant__vat_regime="taxable", tenant__vat_number="FR12345678901"))
     franchise = _render(GigFactory(tenant__vat_regime="franchise", tenant__vat_number="FR999"))
 
-    assert "N° de TVA : FR12345678901" in taxable
-    assert "N° de TVA" not in franchise
-
-
-def test_contract_html_shows_the_code_ape_only_when_filled():
-    gig = GigFactory(tenant__code_ape="9001Z")
-    gig.refresh_from_db()
-    html = render_to_string("documents/contracts/model_1.html", build_contract_context(gig))
-    assert "Code APE : 9001Z" in html
-
-    gig.tenant.code_ape = ""
-    html = render_to_string("documents/contracts/model_1.html", build_contract_context(gig))
-    assert "Code APE" not in html
+    assert "Numéro de TVA intracommunautaire du producteur : FR12345678901" in taxable
+    assert "FR999" not in franchise

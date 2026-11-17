@@ -273,36 +273,35 @@ def test_signing_leaves_a_date_precise_alone(tenant):
 # --- the contracts ----------------------------------------------------------------------------
 
 
-@pytest.mark.parametrize("template", ["model_2", "model_3", "model_4"])
-def test_a_contract_states_the_rule_before_the_signature(tenant, template):
+def _contract_html(gig):
+    return render_to_string("documents/contracts/contract.html", build_contract_context(gig))
+
+
+def test_a_contract_states_the_rule_before_the_signature(tenant):
     gig = _gig(tenant, deposit_term="signature_plus_10", balance_term="performance_plus_15")
+    gig.deposit_required = True
     services.refresh_due_dates(gig)
 
-    html = render_to_string(f"documents/contracts/{template}.html", build_contract_context(gig))
+    html = _contract_html(gig)
 
     assert "15 jours après la prestation, soit le 30/03/2027" in html
-    if template != "model_4":
-        assert "10 jours après la signature du contrat" in html
+    assert "10 jours après la signature du contrat" in html
 
 
-@pytest.mark.parametrize("template", ["model_2", "model_3", "model_4"])
-def test_a_contract_with_a_date_precise_prints_it_as_before(tenant, template):
+def test_a_contract_with_a_date_precise_prints_it(tenant):
     gig = _gig(tenant, deposit_due_on=D(2026, 12, 1), balance_due_on=D(2027, 4, 1))
+    gig.deposit_required = True
 
-    html = render_to_string(f"documents/contracts/{template}.html", build_contract_context(gig))
+    html = _contract_html(gig)
 
     assert "le 01/04/2027" in html
-    if template != "model_4":
-        assert "le 01/12/2026" in html
+    assert "le 01/12/2026" in html
 
 
-@pytest.mark.parametrize("template", ["model_2", "model_3", "model_4"])
-def test_a_contract_without_terms_keeps_its_dots(tenant, template):
-    gig = _gig(tenant)
+def test_a_contract_without_terms_prints_no_date_but_still_renders(tenant):
+    html = _contract_html(_gig(tenant))
 
-    html = render_to_string(f"documents/contracts/{template}.html", build_contract_context(gig))
-
-    assert "……" in html
+    assert "échéancier suivant" in html
 
 
 # --- the screens and the dashboard -------------------------------------------------------------

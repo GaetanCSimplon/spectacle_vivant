@@ -23,13 +23,11 @@ def signed_upload_to(instance, filename):
     return f"contracts/{uuid.uuid4().hex}/contrat-signe.pdf"
 
 
-class ContractTemplate(models.TextChoices):
-    """The cession contract wordings a user can pick from (see services.CONTRACT_TEMPLATES)."""
+class ContractVariant(models.TextChoices):
+    """The two wordings of article 5, chosen by the VAT regime of the structure (spec 03, D1)."""
 
-    MODEL_1 = "model_1", _("Modèle 1")
-    MODEL_2 = "model_2", _("Modèle 2")
-    MODEL_3 = "model_3", _("Modèle 3")
-    MODEL_4 = "model_4", _("Modèle 4")
+    WITH_VAT = "vat", _("Avec TVA")
+    WITHOUT_VAT = "no_vat", _("Sans TVA")
 
 
 class Contract(TenantOwnedModel):
@@ -42,12 +40,6 @@ class Contract(TenantOwnedModel):
     gig = models.OneToOneField("gigs.Gig", on_delete=models.CASCADE, related_name="contract")
     status = models.CharField(
         _("statut"), max_length=20, choices=Status.choices, default=Status.DRAFT
-    )
-    template = models.CharField(
-        _("modèle de contrat"),
-        max_length=20,
-        choices=ContractTemplate.choices,
-        default=ContractTemplate.MODEL_1,
     )
     signatory_name = models.CharField(_("nom du signataire"), max_length=255, blank=True)
     signatory_role = models.CharField(_("qualité du signataire"), max_length=255, blank=True)
@@ -87,12 +79,15 @@ class ContractVersion(TenantOwnedModel):
 
     contract = models.ForeignKey(Contract, on_delete=models.CASCADE, related_name="versions")
     number = models.PositiveIntegerField(_("numéro de version"))
-    template = models.CharField(
-        _("modèle de contrat"),
-        max_length=20,
-        choices=ContractTemplate.choices,
-        default=ContractTemplate.MODEL_1,
+    variant = models.CharField(
+        _("variante"),
+        max_length=10,
+        choices=ContractVariant.choices,
+        default=ContractVariant.WITH_VAT,
     )
+    # What the PDF was written from, frozen with it: the fiscal regime and the two parties.
+    fiscal_snapshot = models.JSONField(default=dict, blank=True)
+    parties_snapshot = models.JSONField(default=dict, blank=True)
     pdf_file = models.FileField(_("fichier PDF"), upload_to=version_upload_to)
     # Hash of the data the version was written from (empty for the versions made before it).
     facts_fingerprint = models.CharField(max_length=64, blank=True)
