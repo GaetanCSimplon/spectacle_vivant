@@ -55,6 +55,15 @@ class Tenant(AddressMixin, models.Model):
         ),
     )
     logo = models.FileField(_("logo"), upload_to=logo_upload_to, blank=True)
+    vat_exemption_note = models.CharField(
+        _("mention d'absence de TVA"),
+        max_length=255,
+        blank=True,
+        help_text=_(
+            "Fondement légal affiché sur le contrat sans TVA. Exemple : art. 293 B du CGI."
+        ),
+    )
+    vat_confirmed_on = models.DateField(_("régime de TVA confirmé le"), null=True, blank=True)
     vat_number = models.CharField(
         _("n° de TVA intracommunautaire"),
         max_length=20,
@@ -81,6 +90,12 @@ class Tenant(AddressMixin, models.Model):
     licence_exempt = models.BooleanField(
         _("moins de 7 représentations par an (pas de licence)"), default=False
     )
+    licence_categories = models.CharField(_("catégories de licence"), max_length=50, blank=True)
+    licence_valid_until = models.DateField(_("licence valable jusqu'au"), null=True, blank=True)
+    licence_exemption_reason = models.CharField(
+        _("motif de dispense de licence"), max_length=255, blank=True
+    )
+    contact_name = models.CharField(_("personne à contacter"), max_length=255, blank=True)
     share_capital = models.CharField(_("capital social"), max_length=50, blank=True)
     rcs = models.CharField(_("immatriculation RCS"), max_length=100, blank=True)
     vat_on_debits = models.BooleanField(_("TVA payée d'après les débits"), default=False)
