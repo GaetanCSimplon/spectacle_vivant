@@ -68,6 +68,7 @@
         {% if is_invoice and not is_credit_note and document.due_date %}<p>Échéance : {{ document.due_date|date:"d/m/Y" }}</p>{% endif %}
         {% if not is_invoice and document.valid_until %}<p>Valable jusqu'au {{ document.valid_until|date:"d/m/Y" }}</p>{% endif %}
         <p>Date de la prestation : {{ gig.date|date:"d/m/Y" }}</p>
+        {% if document.purchase_order_number %}<p>Bon de commande n° {{ document.purchase_order_number }}</p>{% endif %}
       </div>
     </div>
 

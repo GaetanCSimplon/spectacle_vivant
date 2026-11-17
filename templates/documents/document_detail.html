@@ -56,9 +56,60 @@
         {% translate "Émis le" %} {{ document.issue_date|date:"d/m/Y" }}
         {% if is_invoice and document.due_date %} · {% translate "échéance" %} {{ document.due_date|date:"d/m/Y" }}{% endif %}
         {% if not is_invoice and document.valid_until %} · {% translate "valable jusqu'au" %} {{ document.valid_until|date:"d/m/Y" }}{% endif %}
+        {% if is_invoice and document.purchase_order_number %} · {% translate "bon de commande" %} {{ document.purchase_order_number }}{% endif %}
       </p>
     {% endif %}
   </div>
+
+  {% if details_form %}
+    <form method="post" action="{% url 'documents:invoice-details' gig.pk document.pk %}" class="card mb-4 grid gap-3 text-sm sm:grid-cols-2">
+      {% csrf_token %}
+      {% for field in details_form %}
+        <label>
+          <span class="mb-1 block text-xs font-semibold uppercase text-gray-500">{{ field.label }}</span>
+          {{ field }}
+          <span class="mt-1 block text-gray-600">{{ field.help_text }}</span>
+        </label>
+      {% endfor %}
+      <div class="sm:col-span-2"><button type="submit" class="btn btn-secondary">{% translate "Enregistrer les détails" %}</button></div>
+    </form>
+  {% endif %}
+
+  {% if accept_form %}
+    <div class="card mb-4 text-sm">
+      {% if document.accepted_on %}
+        <p class="font-medium">{% blocktranslate with date=document.accepted_on|date:"d/m/Y" %}Devis accepté le {{ date }}.{% endblocktranslate %}</p>
+        {% if document.signed_file %}
+          <a href="{% url 'documents:quote-scan' gig.pk document.pk %}" class="btn btn-secondary btn-download mt-2">{% translate "Télécharger le devis signé" %}</a>
+        {% else %}
+          <form method="post" action="{% url 'documents:quote-scan' gig.pk document.pk %}" enctype="multipart/form-data" class="mt-2 flex flex-wrap items-end gap-2">
+            {% csrf_token %}
+            <label>
+              <span class="mb-1 block text-xs font-semibold uppercase text-gray-500">{% translate "Scan du devis signé (PDF)" %}</span>
+              <input type="file" name="signed_pdf" accept="application/pdf" required>
+            </label>
+            <button type="submit" class="btn btn-secondary">{% translate "Ajouter le scan" %}</button>
+          </form>
+        {% endif %}
+      {% else %}
+        {% if document.is_expired %}
+          <p class="mb-2 text-amber-900">{% blocktranslate with date=document.valid_until|date:"d/m/Y" %}Ce devis a expiré le {{ date }}.{% endblocktranslate %}</p>
+        {% endif %}
+        <form method="post" action="{% url 'documents:quote-accept' gig.pk document.pk %}" enctype="multipart/form-data" class="flex flex-wrap items-end gap-3">
+          {% csrf_token %}
+          <label>
+            <span class="mb-1 block text-xs font-semibold uppercase text-gray-500">{% translate "Reçu le" %}</span>
+            {{ accept_form.accepted_on }}
+          </label>
+          <label>
+            <span class="mb-1 block text-xs font-semibold uppercase text-gray-500">{% translate "Scan signé (PDF, facultatif)" %}</span>
+            <input type="file" name="signed_pdf" accept="application/pdf">
+          </label>
+          <button type="submit" class="btn btn-secondary">{% translate "Devis signé reçu" %}</button>
+        </form>
+      {% endif %}
+    </div>
+  {% endif %}
 
   {% if document.is_draft and missing %}
     <div class="mb-4 rounded-md bg-amber-50 px-4 py-3 text-sm text-amber-900">

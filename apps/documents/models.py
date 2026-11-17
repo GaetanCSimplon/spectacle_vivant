@@ -13,6 +13,11 @@ def version_upload_to(instance, filename):
     return f"contracts/{uuid.uuid4().hex}/{filename}"
 
 
+def quote_scan_upload_to(instance, filename):
+    # Same idea: an unguessable folder, and the uploader's own file name is not kept.
+    return f"quotes/{uuid.uuid4().hex}/devis-signe.pdf"
+
+
 def signed_upload_to(instance, filename):
     # The uploader's own file name is not kept.
     return f"contracts/{uuid.uuid4().hex}/contrat-signe.pdf"
@@ -255,6 +260,7 @@ class Invoice(BillingDocument):
         _("statut"), max_length=20, choices=Status.choices, default=Status.DRAFT
     )
     due_date = models.DateField(_("échéance"), null=True, blank=True)
+    purchase_order_number = models.CharField(_("n° de bon de commande"), max_length=50, blank=True)
     # What the invoice recalls of the order (quote, contract, deposit, balance), copied when it is
     # issued: nothing here is read again from the gig afterwards (CTR-10). Empty on credit notes
     # and on the invoices issued before it existed.
@@ -287,7 +293,12 @@ class Invoice(BillingDocument):
 
 
 class Quote(BillingDocument):
+    # Acceptance is the one thing that happens to a quote after it is issued.
+    MUTABLE_AFTER_ISSUE = BillingDocument.MUTABLE_AFTER_ISSUE | {"accepted_on", "signed_file"}
+
     valid_until = models.DateField(_("valable jusqu'au"), null=True, blank=True)
+    accepted_on = models.DateField(_("accepté le"), null=True, blank=True)
+    signed_file = models.FileField(_("devis signé"), upload_to=quote_scan_upload_to, blank=True)
 
     class Meta:
         ordering = ["-created_at"]
@@ -298,6 +309,16 @@ class Quote(BillingDocument):
                 name="unique_quote_number_per_tenant",
             ),
         ]
+
+    @property
+    def is_expired(self):
+        """Issued, never accepted, and past its validity date. Computed, never stored."""
+        return (
+            self.status == self.Status.ISSUED
+            and self.accepted_on is None
+            and self.valid_until is not None
+            and self.valid_until < timezone.localdate()
+        )
 
     def __str__(self):
         return f"Devis {self.number or '(brouillon)'}"

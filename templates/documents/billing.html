@@ -58,7 +58,7 @@
           <span class="min-w-0">
             <span class="font-medium">{{ quote.number|default:_("Brouillon") }}</span>{% if quote.title %}<br>
             <span>{{ quote.title }}</span>{% endif %}<br>
-            <span class="text-gray-500">{{ quote.get_status_display }}</span>
+            <span class="text-gray-500">{% if quote.accepted_on %}{% blocktranslate with date=quote.accepted_on|date:"d/m/Y" %}Accepté le {{ date }}{% endblocktranslate %}{% elif quote.is_expired %}{% translate "Expiré" %}{% else %}{{ quote.get_status_display }}{% endif %}</span>
           </span>
           <span class="shrink-0 font-medium">{{ quote.total_incl_tax }} €</span>
         </a>

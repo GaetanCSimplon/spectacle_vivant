@@ -24,6 +24,8 @@ ZERO = Decimal("0.00")
 # Shown on every issued PDF until a professional has reviewed the wording (see the roadmap).
 PDF_PROVISIONAL = True
 TITLE_MAX_LENGTH = 100
+# An invoice must be paid within 60 days of its issue (Code de commerce, L441-10).
+MAX_DUE_DAYS = 60
 # An invoice that is already fully paid can still be credited.
 CREDITABLE = (Invoice.Status.ISSUED, Invoice.Status.PAID)
 
@@ -254,15 +256,21 @@ def build_history_snapshot(invoice):
         return {}
     gig = invoice.gig
     schedule = payment_schedule(gig)
+    issued_quotes = Quote.objects.filter(tenant=invoice.tenant, gig=gig, status=Quote.Status.ISSUED)
+    # The accepted quote is the one the order follows; else the latest one issued.
     quote = (
-        Quote.objects.filter(tenant=invoice.tenant, gig=gig, status=Quote.Status.ISSUED)
-        .order_by("-issue_date", "-pk")
-        .first()
+        issued_quotes.filter(accepted_on__isnull=False).order_by("-accepted_on", "-pk").first()
+        or issued_quotes.order_by("-issue_date", "-pk").first()
     )
     contract = getattr(gig, "contract", None)
     signed = contract is not None and contract.status == contract.Status.SIGNED
     history = {
-        "quote": quote and {"number": quote.number, "issue_date": _iso(quote.issue_date)},
+        "quote": quote
+        and {
+            "number": quote.number,
+            "issue_date": _iso(quote.issue_date),
+            "accepted_on": _iso(quote.accepted_on),
+        },
         "contract": {
             "total_excl_tax": str(schedule["total_ht"]),
             "total_incl_tax": None if schedule["total_ttc"] is None else str(schedule["total_ttc"]),
@@ -317,7 +325,12 @@ def history_for_display(snapshot):
     contract = snapshot["contract"]
     deposit = snapshot.get("deposit")
     return {
-        "quote": quote and {"number": quote["number"], "issue_date": day(quote["issue_date"])},
+        "quote": quote
+        and {
+            "number": quote["number"],
+            "issue_date": day(quote["issue_date"]),
+            "accepted_on": day(quote.get("accepted_on")),
+        },
         "contract": {
             "total_excl_tax": amount(contract["total_excl_tax"]),
             "total_incl_tax": amount(contract["total_incl_tax"]),
@@ -427,9 +440,12 @@ def issue_invoice(invoice):
         if original is not None:
             _check_credit_note(locked, original)
         else:
-            locked.due_date = locked.due_date or locked.issue_date + datetime.timedelta(
-                days=locked.tenant.payment_term_days
-            )
+            if locked.due_date:
+                _check_due_date(locked)
+            else:
+                locked.due_date = locked.issue_date + datetime.timedelta(
+                    days=locked.tenant.payment_term_days
+                )
         locked.number = next_document_number(locked.tenant, DocumentSequence.Kind.INVOICE)
         locked.status = Invoice.Status.ISSUED
         _attach_pdf(locked)
@@ -439,6 +455,62 @@ def issue_invoice(invoice):
             original.save(update_fields=["status"])
     _copy_state(invoice, locked)
     return invoice
+
+
+def _check_due_date(invoice):
+    if invoice.due_date < invoice.issue_date:
+        raise InvoicingError(_("L'échéance ne peut pas être avant la date d'émission."))
+    if invoice.due_date > invoice.issue_date + datetime.timedelta(days=MAX_DUE_DAYS):
+        raise InvoicingError(
+            _("L'échéance ne peut pas dépasser %(n)s jours après l'émission.") % {"n": MAX_DUE_DAYS}
+        )
+
+
+def set_invoice_details(invoice, purchase_order_number="", due_date=None):
+    """The optional details of a draft invoice (not of a credit note)."""
+    _require_draft(invoice)
+    if invoice.kind == Invoice.Kind.CREDIT_NOTE:
+        raise InvoicingError(_("Un avoir n'a ni échéance ni bon de commande."))
+    invoice.purchase_order_number = (purchase_order_number or "").strip()
+    invoice.due_date = due_date
+    invoice.save(update_fields=["purchase_order_number", "due_date"])
+    return invoice
+
+
+def accept_quote(quote, accepted_on, signed_file=None):
+    """ "Devis signé reçu": the quote is accepted once, on a day between its issue and today."""
+    with transaction.atomic():
+        locked = _lock(quote)
+        if locked.is_draft:
+            raise InvoicingError(_("Seul un devis émis peut être accepté."))
+        if locked.accepted_on:
+            raise InvoicingError(_("Ce devis est déjà accepté."))
+        if accepted_on > timezone.localdate():
+            raise InvoicingError(_("La date de réception ne peut pas être dans le futur."))
+        if accepted_on < locked.issue_date:
+            raise InvoicingError(_("Le devis ne peut pas être accepté avant son émission."))
+        locked.accepted_on = accepted_on
+        fields = ["accepted_on"]
+        if signed_file:
+            locked.signed_file = signed_file
+            fields.append("signed_file")
+        locked.save(update_fields=fields)
+    _copy_state(quote, locked)
+    return quote
+
+
+def attach_quote_scan(quote, signed_file):
+    """The scan of an accepted quote, added afterwards. Added once, never replaced."""
+    with transaction.atomic():
+        locked = _lock(quote)
+        if not locked.accepted_on:
+            raise InvoicingError(_("Le devis n'est pas encore accepté."))
+        if locked.signed_file:
+            raise InvoicingError(_("Le devis signé est déjà enregistré."))
+        locked.signed_file = signed_file
+        locked.save(update_fields=["signed_file"])
+    _copy_state(quote, locked)
+    return quote
 
 
 def _credited(original):
