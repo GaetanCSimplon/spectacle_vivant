@@ -29,8 +29,12 @@
     {% if promoter.representative_name %}
       <p>
         {% translate "Représenté par" %} {{ promoter.representative_name }}{% if promoter.representative_role %}, {{ promoter.representative_role }}{% endif %}
+        {% if promoter.representative_confirmed %}<span class="text-gray-600">({% translate "habilitation confirmée" %})</span>{% endif %}
       </p>
     {% endif %}
+    {% if promoter.legal_form %}<p>{{ promoter.legal_form }}</p>{% endif %}
+    {% if promoter.licence_exempt %}<p>{% translate "Dispensé de licence" %}{% if promoter.licence_exemption_reason %} : {{ promoter.licence_exemption_reason }}{% endif %}</p>{% endif %}
+    {% if promoter.admin_contact_name %}<p class="text-gray-600">{% translate "Contact administratif" %} : {{ promoter.admin_contact_name }}{% if promoter.admin_contact_email %}, {{ promoter.admin_contact_email }}{% endif %}{% if promoter.admin_contact_phone %}, {{ promoter.admin_contact_phone }}{% endif %}</p>{% endif %}
   </div>
 
   <section id="formulaire" class="card mb-6 space-y-3 text-sm" aria-labelledby="invite-title">

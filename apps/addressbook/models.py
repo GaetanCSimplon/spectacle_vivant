@@ -101,6 +101,21 @@ class Promoter(AddressMixin, TenantOwnedModel):
     )
     representative_name = models.CharField(_("représentant légal"), max_length=255, blank=True)
     representative_role = models.CharField(_("qualité du représentant"), max_length=255, blank=True)
+    # "name — role" as it was when the user confirmed the signatory could sign: the confirmation
+    # only counts while it still matches, so any later change of signatory cancels it.
+    representative_confirmed_as = models.CharField(max_length=520, blank=True, editable=False)
+    representative_confirmed_on = models.DateField(null=True, blank=True, editable=False)
+    legal_form = models.CharField(_("nature juridique"), max_length=100, blank=True)
+    licence_categories = models.CharField(_("catégories de licence"), max_length=50, blank=True)
+    licence_exempt = models.BooleanField(_("dispensé de licence"), default=False)
+    licence_exemption_reason = models.CharField(
+        _("motif de dispense de licence"), max_length=255, blank=True
+    )
+    admin_contact_name = models.CharField(_("contact administratif"), max_length=255, blank=True)
+    admin_contact_email = models.EmailField(_("e-mail du contact administratif"), blank=True)
+    admin_contact_phone = models.CharField(
+        _("téléphone du contact administratif"), max_length=30, blank=True
+    )
     billing_address = models.TextField(_("adresse de facturation"), blank=True)
     email = models.EmailField(_("e-mail"), blank=True)
     phone = models.CharField(_("téléphone"), max_length=30, blank=True)
@@ -120,6 +135,16 @@ class Promoter(AddressMixin, TenantOwnedModel):
 
     def __str__(self):
         return self.name
+
+    @property
+    def signatory_key(self):
+        return f"{self.representative_name.strip()} — {self.representative_role.strip()}"
+
+    @property
+    def representative_confirmed(self):
+        return bool(self.representative_name.strip()) and (
+            self.representative_confirmed_as == self.signatory_key
+        )
 
     def labels_for(self, field):
         choices = self.QUALIFICATION[field][0]

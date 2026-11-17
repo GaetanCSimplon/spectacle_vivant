@@ -27,7 +27,9 @@ PROMOTER_FIELDS = [
     ("vat_number", _("N° de TVA intracommunautaire")),
     ("representative_name", _("Représentant légal")),
     ("representative_role", _("Qualité du représentant")),
+    ("legal_form", _("Nature juridique")),
     ("licence_number", _("N° de licence d'entrepreneur de spectacles")),
+    ("licence_categories", _("Catégories de la licence")),
     ("email", _("E-mail")),
     ("phone", _("Téléphone")),
 ]
