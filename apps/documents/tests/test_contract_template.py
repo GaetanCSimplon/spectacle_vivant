@@ -4,24 +4,19 @@ from django.urls import reverse
 
 from apps.documents.factories import make_contract_ready
 from apps.gigs.factories import GigFactory
+from apps.gigs.models import Gig
 from apps.tenants.factories import MembershipFactory
+from apps.tenants.models import Tenant
 
-from .. import services
-from ..models import Contract, ContractTemplate
-from ..services import build_contract_context, generate_contract_pdf
+from ..models import Contract, ContractVariant
+from ..services import (
+    build_contract_context,
+    contract_variant,
+    generate_contract_pdf,
+    render_contract_pdf,
+)
 
 pytestmark = pytest.mark.django_db
-
-
-@pytest.fixture
-def two_models():
-    """Several models are offered."""
-
-
-@pytest.fixture
-def one_model(monkeypatch):
-    for model in (ContractTemplate.MODEL_2, ContractTemplate.MODEL_3, ContractTemplate.MODEL_4):
-        monkeypatch.delitem(services.CONTRACT_TEMPLATES, model)
 
 
 def _member_gig(client):
@@ -30,136 +25,124 @@ def _member_gig(client):
     return GigFactory(tenant=membership.tenant)
 
 
-def test_a_new_contract_and_its_first_version_use_model_1():
-    contract = generate_contract_pdf(GigFactory())
-
-    assert contract.template == ContractTemplate.MODEL_1
-    assert contract.latest_version.template == ContractTemplate.MODEL_1
-
-
-def test_model_1_carries_no_draft_banner():
-    html = render_to_string(
-        "documents/contracts/model_1.html", build_contract_context(GigFactory())
+def _html(gig, contract=None):
+    return render_to_string(
+        "documents/contracts/contract.html", build_contract_context(gig, contract)
     )
 
-    assert "non relu" not in html
-    assert "PROJET" not in html
+
+def _gig_with_regime(regime, **tenant_fields):
+    gig = GigFactory()
+    Tenant.objects.filter(pk=gig.tenant.pk).update(vat_regime=regime, **tenant_fields)
+    return Gig.objects.get(pk=gig.pk)
 
 
-def test_only_models_with_a_template_file_are_offered():
-    assert services.available_contract_templates() == [
-        ("model_1", "Modèle 1"),
-        ("model_2", "Modèle 2"),
-        ("model_3", "Modèle 3"),
-        ("model_4", "Modèle 4"),
-    ]
+def test_the_variant_follows_the_vat_regime_of_the_structure():
+    assert contract_variant(Tenant(vat_regime="taxable")) == ContractVariant.WITH_VAT
+    assert contract_variant(Tenant(vat_regime="franchise")) == ContractVariant.WITHOUT_VAT
+    assert contract_variant(Tenant(vat_regime="not_taxable")) == ContractVariant.WITHOUT_VAT
 
 
-def test_regenerating_with_another_model_switches_the_contract_and_keeps_old_versions(two_models):
+def test_article_5_with_vat_shows_the_three_amounts():
+    gig = _gig_with_regime("taxable", vat_rate="20.00")
+
+    html = _html(gig)
+
+    assert "Prix de cession hors taxes" in html
+    assert "Total toutes taxes comprises" in html
+    assert "net de TVA" not in html
+
+
+def test_article_5_without_vat_shows_the_mention_and_no_zero_rate():
+    gig = _gig_with_regime("not_taxable", vat_exemption_note="Article 261 du CGI.")
+
+    html = _html(gig)
+
+    assert "net de TVA" in html
+    assert "Article 261 du CGI." in html
+    assert "Aucune TVA n’est facturée" in html
+    assert "Total toutes taxes comprises" not in html
+    assert "0 %" not in html
+
+
+def test_no_template_variable_is_left_in_the_document():
+    html = _html(GigFactory())
+
+    assert "{{" not in html
+    assert "{%" not in html
+
+
+def test_a_new_contract_and_its_first_version_get_the_variant_and_the_snapshots():
+    gig = _gig_with_regime("franchise")
+
+    version = generate_contract_pdf(gig).latest_version
+
+    assert version.variant == ContractVariant.WITHOUT_VAT
+    assert version.fiscal_snapshot["regime"] == "franchise"
+    assert version.parties_snapshot["producer"]["name"] == gig.tenant.name
+    assert version.parties_snapshot["organiser"]["name"] == gig.promoter.name
+
+
+def test_the_snapshot_keeps_the_identity_when_the_structure_changes_afterwards():
+    gig = GigFactory()
+    old_name = gig.tenant.name
+    version = generate_contract_pdf(gig).latest_version
+
+    Tenant.objects.filter(pk=gig.tenant.pk).update(name="Autre nom")
+    version.refresh_from_db()
+
+    assert version.parties_snapshot["producer"]["name"] == old_name
+
+
+def test_the_pdf_of_a_stored_version_is_rendered_from_its_snapshot():
+    gig = GigFactory()
+    version = generate_contract_pdf(gig).latest_version
+    snapshots = (version.fiscal_snapshot, version.parties_snapshot)
+    snapshots[1]["producer"]["name"] = "Nom figé"
+
+    html = render_to_string(
+        "documents/contracts/contract.html",
+        build_contract_context(gig, gig.contract, snapshots=snapshots),
+    )
+
+    assert "Nom figé" in html
+
+
+def test_regenerating_adds_a_version_and_keeps_the_old_one():
     gig = GigFactory()
     generate_contract_pdf(gig)
 
-    contract = generate_contract_pdf(gig, template=ContractTemplate.MODEL_2)
-
-    assert contract.template == ContractTemplate.MODEL_2
-    assert [v.template for v in contract.versions.all()] == ["model_2", "model_1"]
-
-
-def test_regenerating_without_a_choice_keeps_the_current_model(two_models):
-    gig = GigFactory()
-    generate_contract_pdf(gig, template=ContractTemplate.MODEL_2)
-
     contract = generate_contract_pdf(gig)
 
-    assert contract.template == ContractTemplate.MODEL_2
-    assert contract.latest_version.template == ContractTemplate.MODEL_2
+    assert [v.number for v in contract.versions.all()] == [2, 1]
 
 
-def test_a_model_without_template_file_is_refused():
-    with pytest.raises(ValueError):
-        generate_contract_pdf(GigFactory(), template="model_9")
-
-    assert not Contract.objects.exists()
-
-
-def test_a_signed_contract_keeps_its_model(two_models):
+def test_a_signed_contract_is_never_regenerated():
     gig = GigFactory()
     contract = generate_contract_pdf(gig)
     Contract.objects.filter(pk=contract.pk).update(status=Contract.Status.SIGNED)
 
-    contract = generate_contract_pdf(gig, template=ContractTemplate.MODEL_2)
+    contract = generate_contract_pdf(gig)
 
-    assert contract.template == ContractTemplate.MODEL_1
     assert contract.versions.count() == 1
 
 
-def test_the_generate_view_applies_the_chosen_model(client, two_models):
+def test_the_preview_renders_a_pdf():
+    assert render_contract_pdf(GigFactory()).startswith(b"%PDF")
+
+
+def test_the_generate_view_needs_no_model_choice(client):
     gig = _member_gig(client)
     make_contract_ready(gig)
 
-    response = client.post(
-        reverse("documents:contract-generate", args=[gig.pk]), {"template": "model_2"}
-    )
+    response = client.post(reverse("documents:contract-generate", args=[gig.pk]))
 
     assert response.status_code == 302
-    assert gig.contract.template == ContractTemplate.MODEL_2
+    assert gig.contract.latest_version.variant in ContractVariant.values
 
 
-def test_the_generate_view_refuses_an_unknown_model(client):
+def test_there_is_no_model_selector_any_more(client):
     gig = _member_gig(client)
-
-    response = client.post(
-        reverse("documents:contract-generate", args=[gig.pk]), {"template": "model_9"}
-    )
-
-    assert response.status_code == 302
-    assert not Contract.objects.exists()
-
-
-def test_the_generate_view_without_a_choice_uses_the_default(client):
-    gig = _member_gig(client)
-    make_contract_ready(gig)
-
-    client.post(reverse("documents:contract-generate", args=[gig.pk]))
-
-    assert gig.contract.template == ContractTemplate.MODEL_1
-
-
-def test_the_preview_uses_the_chosen_model_and_refuses_an_unknown_one(client, two_models):
-    gig = _member_gig(client)
-    url = reverse("documents:contract-preview", args=[gig.pk])
-
-    ok = client.get(url, {"template": "model_2"})
-    bad = client.get(url, {"template": "model_9"})
-
-    assert ok.status_code == 200
-    assert ok["Content-Type"] == "application/pdf"
-    assert bad.status_code == 302
-
-
-def test_the_selector_is_hidden_with_a_single_model(client, one_model):
-    gig = _member_gig(client)
-
-    response = client.get(reverse("documents:contract-history", args=[gig.pk]))
-
-    assert b'name="template"' not in response.content
-
-
-def test_the_selector_lists_the_models_and_preselects_the_current_one(client, two_models):
-    gig = _member_gig(client)
-    generate_contract_pdf(gig, template=ContractTemplate.MODEL_2)
-
-    html = client.get(reverse("documents:contract-history", args=[gig.pk])).content.decode()
-
-    assert 'name="template"' in html
-    assert "Modèle 1 (par défaut)" in html
-    assert '<option value="model_2" selected>' in html
-
-
-def test_no_selector_once_the_contract_is_signed(client, two_models):
-    gig = _member_gig(client)
-    contract = generate_contract_pdf(gig)
-    Contract.objects.filter(pk=contract.pk).update(status=Contract.Status.SIGNED)
 
     html = client.get(reverse("documents:contract-history", args=[gig.pk])).content.decode()
 

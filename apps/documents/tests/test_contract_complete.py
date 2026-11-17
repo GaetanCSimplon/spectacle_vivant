@@ -1,5 +1,6 @@
 import datetime
 import html as html_lib
+import re
 from decimal import Decimal
 
 import pytest
@@ -260,12 +261,12 @@ def test_completed_values_end_up_in_the_contract(client):
     gig.refresh_from_db()
     contract = Contract.objects.get(gig=gig)
     context = build_contract_context(gig, contract)
-    rendered = html_lib.unescape(render_to_string("documents/contracts/model_1.html", context))
-    text = " ".join(rendered.split())
-    assert "Heure de get in : 15h30" in text
-    assert "numéro SACEM : SAC-1" in text
-    assert "capacité de la salle est de 300 places" in text
-    assert "Léa Roux, Trésorière" in text
+    rendered = html_lib.unescape(render_to_string("documents/contracts/contract.html", context))
+    text = " ".join(re.sub(r"<[^>]+>", " ", rendered).split())
+    assert "Arrivée de l’équipe 15h30" in text
+    assert "programme type déclaré à la SACEM : SAC-1" in text
+    assert "Jauge maximale autorisée 300" in text
+    assert "Représenté par Léa Roux, en qualité de Trésorière" in text
 
 
 def test_the_hidden_fields_are_not_edited_and_keep_their_value(client):

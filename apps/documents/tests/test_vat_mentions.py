@@ -126,16 +126,15 @@ def test_a_franchise_pdf_has_no_association_sentence():
     assert ASSOCIATION not in _text(_issued(_gig(vat_regime="franchise")))
 
 
-# --- the contracts that share the texts (models 2 and 3) -----------------------------------------
+# --- the contract ---
 
 
-@pytest.mark.parametrize("template", ["model_2", "model_3"])
-def test_the_shared_contracts_carry_the_association_sentence(template):
+def test_the_contract_carries_the_association_sentence():
     from apps.documents.services import build_contract_context
 
     gig = _gig(vat_regime="not_taxable")
 
-    html = render_to_string(f"documents/contracts/{template}.html", build_contract_context(gig))
+    html = render_to_string("documents/contracts/contract.html", build_contract_context(gig))
 
     assert ASSOCIATION in html
 

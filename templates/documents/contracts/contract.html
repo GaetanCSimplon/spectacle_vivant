@@ -1,0 +1,175 @@
+{% extends "documents/contracts/_base.html" %}{% load formats %}
+
+{% comment %}
+  The single cession contract (spec 03). Only article 5 changes with the VAT regime of the structure.
+  Parties and fiscal data come from the snapshots frozen with the version.
+{% endcomment %}
+
+{% block content %}
+    {% with producer=parties.producer organiser=parties.organiser %}
+    <h1>Contrat de cession du droit d’exploitation d’un spectacle</h1>
+    <p style="text-align: center;">
+      Référence : {{ reference }}{% if version %} — Version : {{ version }}{% endif %} — Date : {{ today|date:"d/m/Y" }}
+    </p>
+
+    <h2>Entre les soussignés</h2>
+
+    <h3>Le producteur</h3>
+    <p>
+      {{ producer.name|default:"……" }}, {{ producer.legal_form|default:"……" }}, dont le siège ou l’adresse professionnelle est situé {{ producer.address|default:"……" }}, SIRET {{ producer.siret|siret|default:"……" }}.<br>
+      Représenté par {{ producer.signatory_name|default:"……" }}, en qualité de {{ producer.signatory_role|default:"……" }}, dûment habilité à signer le présent contrat.<br>
+      N° de licence d’entrepreneur de spectacles : {{ producer.licence|default:"……" }}.<br>
+      Contact : {{ producer.contact_name|default:"……" }} — {{ producer.contact_email|default:"……" }}{% if producer.contact_phone %} — {{ producer.contact_phone }}{% endif %}.
+    </p>
+    <p>Ci-après « le producteur ».</p>
+
+    <h3>L’organisateur</h3>
+    <p>
+      {{ organiser.name|default:"……" }}, {{ organiser.legal_form|default:"……" }}, dont le siège ou l’adresse professionnelle est situé {{ organiser.address|default:"……" }}{% if not organiser.is_private %}, SIRET {{ organiser.siret|siret|default:"……" }}{% endif %}.<br>
+      Représenté par {{ organiser.signatory_name|default:"……" }}, en qualité de {{ organiser.signatory_role|default:"……" }}, dûment habilité à signer le présent contrat.<br>
+      {% if organiser.licence %}N° de licence d’entrepreneur de spectacles : {{ organiser.licence }}.<br>{% endif %}
+      Contact : {{ organiser.contact_name|default:"……" }} — {{ organiser.contact_email|default:"……" }}{% if organiser.contact_phone %} — {{ organiser.contact_phone }}{% endif %}.
+    </p>
+    <p>Ci-après « l’organisateur ».</p>
+
+    <section>
+      <h2>Article 1 — Objet et représentation</h2>
+      <p>Le producteur s’engage à fournir à l’organisateur, qui l’accepte, la représentation du spectacle ci-dessous, dans les conditions du présent contrat et de ses annexes.</p>
+      <table>
+        <tr><th>Élément</th><th>Conditions convenues</th></tr>
+        <tr><td>Artiste / groupe</td><td>{{ show.group_name|default:"……" }}</td></tr>
+        <tr><td>Titre du spectacle</td><td>{{ show.title }}</td></tr>
+        <tr><td>Date</td><td>{{ gig.date|date:"d F Y" }}</td></tr>
+        <tr><td>Nombre de représentations</td><td>{{ gig.performances_count }}</td></tr>
+        <tr><td>Lieu et adresse</td><td>{{ venue.name }} — {{ venue.one_line_address }}</td></tr>
+        <tr><td>Intérieur / plein air</td><td>{{ gig.get_setting_display|default:"……" }}</td></tr>
+        <tr><td>Durée de la représentation</td><td>{{ show.duration_minutes }} minutes</td></tr>
+        <tr><td>Arrivée de l’équipe</td><td>{% if gig.get_in_time %}{{ gig.get_in_time|time:"H\hi" }}{% else %}À préciser dans la fiche d’accueil{% endif %}</td></tr>
+        <tr><td>Installation et balances</td><td>{% if gig.soundcheck_time %}{{ gig.soundcheck_time|time:"H\hi" }}{% else %}À préciser dans la fiche d’accueil{% endif %}</td></tr>
+        <tr><td>Début de la représentation</td><td>{{ gig.performance_time|time:"H\hi"|default:"……" }}</td></tr>
+        <tr><td>Accès du public</td><td>{% if gig.is_free %}Gratuit{% else %}Payant{% endif %}</td></tr>
+        <tr><td>Prix des places</td><td>{% if gig.is_free %}Gratuit{% elif gig.ticket_price is not None %}{{ gig.ticket_price }} €{% else %}……{% endif %}</td></tr>
+        <tr><td>Jauge maximale autorisée</td><td>{% if venue.capacity %}{{ venue.capacity }}{% else %}À préciser dans la fiche d’accueil{% endif %}</td></tr>
+        <tr><td>Invitations réservées au producteur</td><td>{{ gig.invitations_count }}</td></tr>
+      </table>
+      <p>Toute représentation supplémentaire ou modification de la date, du lieu ou du contenu substantiel du spectacle nécessite l’accord écrit des deux parties.</p>
+    </section>
+
+    <section>
+      <h2>Article 2 — Obligations du producteur et équipe en tournée</h2>
+      <p>Le producteur assure la fourniture du spectacle et sa responsabilité artistique. Il dispose des autorisations nécessaires à sa représentation et fournit les éléments et moyens qui lui incombent selon la fiche technique annexée.</p>
+      <p>Le producteur prend en charge l’équipe en tournée placée sous sa responsabilité. En qualité d’employeur de ses salariés, il assume leurs contrats, rémunérations, cotisations sociales et fiscales, déclarations et autres obligations légales et conventionnelles, notamment en matière de durée du travail et de sécurité. Il accomplit, si nécessaire, les formalités relatives à l’emploi de mineurs ou de personnels étrangers.</p>
+      <p>L’effectif total de l’équipe en tournée est de {{ gig.crew_headcount|default:"……" }} personne(s). Ce nombre comprend l’ensemble des personnes accompagnant le spectacle, et pas seulement les artistes.</p>
+      <p>Chaque partie remet à l’autre les justificatifs requis par la réglementation applicable, notamment au titre de la vigilance sociale lorsque celle-ci s’impose.</p>
+    </section>
+
+    <section>
+      <h2>Article 3 — Obligations de l’organisateur et personnel d’accueil</h2>
+      <p>L’organisateur met à disposition un lieu autorisé à accueillir la représentation et le public, en ordre de marche et conforme aux conditions convenues dans la fiche technique et la fiche d’accueil annexées.</p>
+      <p>Il prend en charge les moyens et personnels qui lui incombent pour l’exploitation du lieu, l’accueil du spectacle et du public, la sécurité, ainsi que la billetterie et la gestion des recettes lorsqu’il y a lieu. Il obtient les autorisations administratives nécessaires à l’organisation de la manifestation et veille au respect des règles de sécurité, de jauge et de diffusion sonore applicables.</p>
+      <p>L’organisateur assume, en qualité d’employeur, les contrats, rémunérations, cotisations sociales et fiscales, déclarations et autres obligations légales et conventionnelles concernant ses propres salariés. Chaque partie demeure responsable des personnels et prestataires qu’elle engage ; les parties coordonnent leurs interventions pour assurer la sécurité de tous.</p>
+    </section>
+
+    <section>
+      <h2>Article 4 — Accueil, restauration, hébergement et transport</h2>
+      <p>Les prises en charge convenues sont les suivantes :</p>
+      <table>
+        <tr><th>Poste</th><th>Conditions convenues</th></tr>
+        <tr><td>Effectif total en tournée</td><td>{{ gig.crew_headcount|default:"……" }} personne(s)</td></tr>
+        <tr><td>Restauration</td><td>{{ gig.meals|default:"……" }}</td></tr>
+        <tr><td>Hébergement</td><td>{{ gig.lodging|default:"……" }}</td></tr>
+        <tr><td>Transport et déplacements</td><td>{{ transport_text|default:"……" }}</td></tr>
+      </table>
+      <p>Ces informations proviennent des conditions particulières convenues pour cette représentation. La fiche d’accueil annexée en précise, si nécessaire, les modalités pratiques. Aucun supplément facturé par le producteur ne peut être réclamé sans accord écrit préalable de l’organisateur.</p>
+    </section>
+
+    <section>
+      <h2>Article 5 — Prix et règlement</h2>
+      {% if with_vat %}
+        <p>Le prix total convenu est le suivant :</p>
+        <table>
+          <tr><th>Désignation</th><th class="amount">Montant</th></tr>
+          <tr><td>Prix de cession hors taxes</td><td class="amount">{{ payment.total_ht }} €</td></tr>
+          <tr><td>TVA — taux {{ fiscal.rate|default:"……" }} %</td><td class="amount">{% if vat_amount is not None %}{{ vat_amount }} €{% else %}……{% endif %}</td></tr>
+          <tr><td>Total toutes taxes comprises</td><td class="amount">{% if payment.total_ttc is not None %}{{ payment.total_ttc }} €{% else %}……{% endif %}</td></tr>
+        </table>
+        {% if fiscal.vat_number %}<p>Numéro de TVA intracommunautaire du producteur : {{ fiscal.vat_number }}.</p>{% endif %}
+      {% else %}
+        <p>Le prix de cession convenu est de {{ payment.total_ht }} € net de TVA. Ce montant constitue le montant total à régler au titre de la cession, hors éventuels frais supplémentaires expressément convenus ci-dessous.</p>
+        <p>{{ fiscal.mention|default:"……" }}</p>
+        <p>Aucune TVA n’est facturée sur cette cession.</p>
+      {% endif %}
+      <p>Le prix comprend : {{ gig.price_includes|default:"……" }}.<br>
+      Les éventuels frais supplémentaires expressément convenus sont : {{ extra_fees_text }}.</p>
+      <p>L’organisateur règle le producteur sur présentation de facture, selon l’échéancier suivant : {{ payment_text }}</p>
+      <p>Le paiement est effectué par virement sur le compte figurant sur le relevé d’identité bancaire remis par le producteur. Toute modification des coordonnées bancaires fait l’objet d’une vérification auprès du contact habituel du producteur avant paiement.</p>
+      {% if gig.billing_notes %}<p>Les modalités de facturation, de dépôt et de paiement spécifiques à la commande sont les suivantes : {{ gig.billing_notes|linebreaksbr }}.</p>{% endif %}
+      <p>En cas de retard, les intérêts, pénalités et indemnités applicables sont ceux prévus par les dispositions légales régissant la relation entre les parties.</p>
+    </section>
+
+    <section>
+      <h2>Article 6 — Droits d’auteur et taxe sur les spectacles</h2>
+      <h3>Droits d’auteur</h3>
+      <p>L’organisateur accomplit les déclarations et demandes d’autorisation nécessaires auprès de la SACEM et, le cas échéant, des autres sociétés de gestion collective concernées. Il prend à sa charge les droits d’auteur dus au titre de la représentation, en complément du prix de cession.</p>
+      <p>Le producteur transmet en temps utile les informations nécessaires, notamment le programme des œuvres interprétées et, lorsqu’il existe, le numéro de programme type déclaré par l’artiste à la SACEM.</p>
+      <p>{% if show.sacem_number %}Numéro de programme type déclaré à la SACEM : {{ show.sacem_number }}.{% else %}Aucun numéro de programme type n’a été déclaré à ce jour : le producteur transmettra le programme des œuvres interprétées.{% endif %}</p>
+      <p>La communication de ce numéro ne dispense pas l’organisateur de déclarer la manifestation ni d’obtenir les autorisations nécessaires. Le producteur demeure responsable des autorisations et droits nécessaires aux éléments qu’il incorpore au spectacle, sous réserve des droits expressément mis à la charge de l’organisateur par le présent article.</p>
+      <h3>Taxe sur les spectacles</h3>
+      <p>Lorsque la représentation entre dans le champ de la taxe sur les spectacles de musiques actuelles et de variétés affectée au CNM, sa déclaration et son paiement incombent au redevable légal :</p>
+      <ul>
+        <li>pour une représentation payante : au détenteur de la billetterie pour le compte duquel les recettes sont encaissées ;</li>
+        <li>pour une représentation gratuite faisant l’objet de la présente cession : au producteur qui facture la cession.</li>
+      </ul>
+      <p>Chaque partie communique à l’autre les éléments nécessaires à ces démarches. La gratuité de l’accès du public ne dispense pas, à elle seule, de cette taxe. Lorsqu’elle incombe au producteur, la taxe est à sa charge et ne donne pas lieu à un supplément non prévu à l’article 5.</p>
+    </section>
+
+    <section>
+      <h2>Article 7 — Communication et captation</h2>
+      <p>L’organisateur prend en charge la communication relative à la représentation. Le producteur lui fournit les éléments promotionnels qu’il est autorisé à communiquer. L’organisateur les utilise uniquement pour promouvoir cette représentation, dans le respect des crédits et indications transmis.</p>
+      <p>Le présent contrat n’autorise pas, à lui seul, la captation, la retransmission ou l’exploitation sonore ou audiovisuelle du spectacle. Toute autorisation en ce sens nécessite un accord écrit distinct précisant les usages autorisés et les droits concernés.</p>
+    </section>
+
+    <section>
+      <h2>Article 8 — Assurances et responsabilités</h2>
+      <p>Chaque partie souscrit et maintient les assurances adaptées à ses activités, à ses responsabilités et aux biens dont elle a la propriété ou la garde, selon les risques qu’elle assume. Elle remet une attestation à l’autre partie sur demande.</p>
+      <p>Chaque partie répond des dommages qui lui sont imputables dans les conditions du droit applicable. Le présent contrat n’opère aucun transfert général de responsabilité pour les fautes ou obligations légales de l’autre partie.</p>
+    </section>
+
+    <section>
+      <h2>Article 9 — Annulation, report et force majeure</h2>
+      <h3>Annulation hors force majeure</h3>
+      <p>Toute demande d’annulation ou de report est communiquée sans délai par écrit à l’autre partie. Un report n’est acquis qu’après accord écrit des deux parties précisant la nouvelle date et ses conséquences financières.</p>
+      <p>Hors force majeure et hors accord spécifique applicable aux intempéries, l’annulation imputable à l’une des parties ouvre droit, pour l’autre partie, à réparation du préjudice direct, certain et justifié résultant de l’inexécution, selon les règles de droit commun. Les sommes déjà versées sont prises en compte dans le décompte final, sans double indemnisation. Un décompte précise les sommes conservées, restant dues ou à restituer.</p>
+      <h3>Force majeure</h3>
+      <p>La force majeure s’apprécie au regard de l’article 1218 du Code civil. La partie empêchée informe sans délai l’autre partie et lui transmet les justificatifs disponibles. Les parties examinent les mesures permettant de limiter les conséquences de l’empêchement et, si possible, un report.</p>
+      <p>En cas d’empêchement temporaire, l’exécution est suspendue, à moins que le retard ne justifie la résolution du contrat. En cas d’empêchement définitif, le contrat est résolu de plein droit dans les conditions légales applicables. Les éventuelles restitutions sont effectuées conformément à ces dispositions ; les acomptes ne sont pas automatiquement acquis au producteur.</p>
+      <h3>Représentation en plein air</h3>
+      <p>{{ outdoor_clause }}</p>
+      <p>Aucune stipulation financière ne peut imposer la tenue de la représentation au mépris de la sécurité des personnes ou d’une décision des autorités compétentes.</p>
+    </section>
+
+    <section>
+      <h2>Article 10 — Annexes, modifications et litiges</h2>
+      <p>La fiche technique et la fiche d’accueil identifiées ci-dessous sont annexées au présent contrat, en font partie intégrante et doivent être signées par les deux parties.</p>
+      <ul>
+        <li>Annexe 1 — Fiche technique du spectacle « {{ show.title }} ».</li>
+        <li>Annexe 2 — Fiche d’accueil de la représentation du {{ gig.date|date:"d/m/Y" }}.</li>
+      </ul>
+      <p>Les annexes précisent les modalités d’exécution du contrat. En cas de contradiction, les stipulations expresses du présent contrat prévalent, sauf dérogation expressément identifiée et acceptée par écrit par les deux parties. Toute modification ultérieure du contrat ou de ses annexes doit être acceptée par écrit par les deux parties.</p>
+      <p>Le contrat est soumis au droit français. Les parties recherchent une solution amiable à tout différend, sans que cette démarche fasse obstacle aux mesures urgentes ou conservatoires. À défaut d’accord, le litige relève de la juridiction compétente selon les règles de droit commun.</p>
+    </section>
+
+    <section>
+      <h2>Signatures</h2>
+      <p>Fait à {{ gig.signing_place|default:"……" }}, le ……………………….</p>
+      <p>Fait en {{ gig.copies_count }} exemplaires originaux. Chaque partie reçoit un exemplaire du contrat et de ses deux annexes signés. La signature peut être manuscrite ou électronique.</p>
+      <div class="approval">Faire précéder les signatures de la mention manuscrite « lu et approuvé ».</div>
+      <table class="signatures">
+        <tr><th>Pour le producteur</th><th>Pour l’organisateur</th></tr>
+        <tr><td>{{ producer.signatory_name }}</td><td>{{ organiser.signatory_name }}</td></tr>
+        <tr><td>{{ producer.signatory_role }}</td><td>{{ organiser.signatory_role }}</td></tr>
+        <tr><td class="signature-box">Signature :</td><td class="signature-box">Signature :</td></tr>
+      </table>
+    </section>
+    {% endwith %}
+{% endblock %}

@@ -1,4 +1,4 @@
-"""The VAT sentences follow the VAT regime of the structure, on all four contract models and on
+"""The VAT sentences follow the VAT regime of the structure, on the contract and on
 the invoice, the quote and the credit note. The wording is provisional (accountant to check)."""
 
 import html as html_lib
@@ -14,7 +14,7 @@ from apps.finance.tests.helpers import make_gig
 
 pytestmark = pytest.mark.django_db
 
-MODELS = [f"documents/contracts/model_{n}.html" for n in (1, 2, 3, 4)]
+MODELS = ["documents/contracts/contract.html"]
 ARTICLE = "293 B"
 
 

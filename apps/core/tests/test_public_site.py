@@ -254,13 +254,11 @@ def test_the_features_page_says_what_the_payroll_help_does_not_do(client):
     assert "Ne remplace pas un conseil juridique, social ou comptable" in content
 
 
-def test_the_features_page_numbers_match_the_application(client):
-    from apps.documents.models import ContractTemplate
-
+def test_the_features_page_says_the_contract_has_a_single_model(client):
     content = client.get(reverse("site-features")).content.decode()
 
-    assert len(ContractTemplate.choices) == 4  # the page says "quatre modèles"
-    assert "quatre modèles" in content
+    assert "quatre modèles" not in content
+    assert "avec ou sans TVA" in content
 
 
 def test_the_features_page_lists_the_same_coming_features_as_the_home(client):

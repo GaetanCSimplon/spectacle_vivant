@@ -8,45 +8,33 @@ from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 
 from apps.core.services import render_pdf
+from apps.gigs import hospitality
 from apps.gigs import services as gig_services
 from apps.gigs.models import Gig
 from apps.tenants import logo as logo_files
 from apps.tenants.models import Tenant
 
 from . import checks
-from .invoicing import legal_mentions, money
+from .invoicing import money, vat_mentions
 from .models import (
     Contract,
     ContractSequence,
     ContractShareLink,
-    ContractTemplate,
+    ContractVariant,
     ContractVersion,
 )
 
 TWO_PLACES = Decimal("0.01")
 
-# The tenant is always "LE PRODUCTEUR" in the contract body, with the article each
-# grammatical use needs (subject / "à" / "de").
-PARTY_FORMS = {
-    "subject": "LE PRODUCTEUR",
-    "to": "AU PRODUCTEUR",
-    "of": "DU PRODUCTEUR",
-}
+CONTRACT_TEMPLATE = "documents/contracts/contract.html"
+BLANK = "……"
 
 
-# The wordings that have a template file. A model is offered to users only once it is listed here.
-CONTRACT_TEMPLATES = {
-    ContractTemplate.MODEL_1: "documents/contracts/model_1.html",
-    ContractTemplate.MODEL_2: "documents/contracts/model_2.html",
-    ContractTemplate.MODEL_3: "documents/contracts/model_3.html",
-    ContractTemplate.MODEL_4: "documents/contracts/model_4.html",
-}
-DEFAULT_CONTRACT_TEMPLATE = ContractTemplate.MODEL_1
-
-
-def available_contract_templates():
-    """The (value, label) choices a user can pick from."""
-    return [choice for choice in ContractTemplate.choices if choice[0] in CONTRACT_TEMPLATES]
+def contract_variant(tenant):
+    """Article 5 with or without VAT: only the VAT regime of the structure decides (spec 03, D1)."""
+    if tenant.vat_regime == Tenant.VatRegime.TAXABLE:
+        return ContractVariant.WITH_VAT
+    return ContractVariant.WITHOUT_VAT
 
 
 class ContractNotAvailable(Exception):
@@ -96,39 +84,155 @@ def payment_schedule(gig):
     }
 
 
-def build_contract_context(gig, contract=None, draft_anomalies=None):
-    vat_amount, total_with_vat = _compute_vat(gig, gig.tenant)
+def _licence_text(obj):
+    """The licence line: the number with its categories and validity, or the reason for a waiver."""
+    if obj.licence_exempt:
+        reason = obj.licence_exemption_reason
+        return f"dispense de licence ({reason})" if reason else "dispense de licence"
+    parts = [obj.licence_number, obj.licence_categories]
+    if getattr(obj, "licence_valid_until", None):
+        parts.append(f"valable jusqu'au {obj.licence_valid_until:%d/%m/%Y}")
+    return ", ".join(part for part in parts if part)
+
+
+def build_fiscal_snapshot(tenant):
+    """The fiscal regime the contract is written with, frozen with each version (spec 03, §2.3)."""
+    regime = tenant.vat_regime
+    taxable = regime == Tenant.VatRegime.TAXABLE
+    mention = tenant.vat_exemption_note or " ".join(vat_mentions(regime))
     return {
-        "payment": payment_schedule(gig),
-        # The SIREN is the first nine digits of the SIRET.
-        "tenant_siren": (gig.tenant.siret or "")[:9],
-        "promoter_siren": (gig.promoter.siret or "")[:9],
-        "vat_mentions": legal_mentions({"vat_regime": gig.tenant.vat_regime}, False, False),
-        "contract": contract,
-        "party": PARTY_FORMS,
-        "vat_exempt": gig.tenant.vat_regime != Tenant.VatRegime.TAXABLE,
+        "regime": regime,
+        "rate": str(tenant.vat_rate) if taxable and tenant.vat_rate is not None else "",
+        "mention": mention,
+        "vat_number": tenant.vat_number,
+        "taken_on": timezone.localdate().isoformat(),
+    }
+
+
+def build_parties_snapshot(gig, contract=None):
+    """Who signs, as written in the contract: producer (the tenant) and organiser."""
+    tenant, promoter = gig.tenant, gig.promoter
+    producer_name = (contract and contract.signatory_name) or tenant.representative_name
+    producer_role = (contract and contract.signatory_role) or tenant.representative_role
+    return {
+        "producer": {
+            "name": tenant.name,
+            "legal_form": tenant.legal_form,
+            "address": tenant.one_line_address,
+            "siret": tenant.siret,
+            "signatory_name": producer_name,
+            "signatory_role": producer_role,
+            "licence": _licence_text(tenant),
+            "contact_name": tenant.contact_name,
+            "contact_email": tenant.email,
+            "contact_phone": tenant.phone,
+        },
+        "organiser": {
+            "name": promoter.name,
+            "legal_form": promoter.legal_form or ("Particulier" if promoter.is_private else ""),
+            "address": promoter.one_line_address,
+            "siret": promoter.siret,
+            "is_private": promoter.is_private,
+            "signatory_name": promoter.representative_name,
+            "signatory_role": promoter.representative_role,
+            "licence": _licence_text(promoter),
+            "contact_name": promoter.admin_contact_name,
+            "contact_email": promoter.admin_contact_email or promoter.email,
+            "contact_phone": promoter.admin_contact_phone or promoter.phone,
+        },
+    }
+
+
+def _payment_text(gig, payment, variant):
+    """The schedule sentence of article 5 (a deposit and a balance, or a single payment)."""
+    with_vat = variant == ContractVariant.WITH_VAT
+
+    def amount(ht, ttc):
+        if with_vat and ttc is not None:
+            return f"{ttc} € TTC"
+        return f"{ht} € net de TVA" if not with_vat else f"{ht} € HT"
+
+    balance_when = gig.balance_due_phrase
+    if gig.deposit_required:
+        deposit = f"Acompte de {amount(payment['deposit_ht'], payment['deposit_ttc'])}"
+        if gig.deposit_due_phrase:
+            deposit += f", exigible {gig.deposit_due_phrase}"
+        balance = f"Solde de {amount(payment['balance_ht'], payment['balance_ttc'])}"
+        if balance_when:
+            balance += f", exigible {balance_when}"
+        return f"{deposit}. {balance}."
+    total = f"Paiement de {amount(payment['total_ht'], payment['total_ttc'])}"
+    return f"{total}, exigible {balance_when}." if balance_when else f"{total}."
+
+
+def _outdoor_clause(gig):
+    if gig.setting != Gig.Setting.OUTDOOR:
+        return "Sans objet : la représentation a lieu en intérieur."
+    parts = [str(gig.get_outdoor_fallback_display())]
+    parts += [
+        text.strip()
+        for text in (
+            gig.outdoor_fallback_details,
+            gig.outdoor_procedure,
+            gig.outdoor_referents,
+            gig.outdoor_financial_terms,
+        )
+        if text.strip()
+    ]
+    return " ".join(part if part.endswith(".") else part + "." for part in parts if part)
+
+
+def _transport_text(gig):
+    covered = hospitality.compose(gig.transport_covered_by, None, None, gig.transport_notes)
+    return ". ".join(part for part in (covered, gig.local_transport) if part)
+
+
+def _extra_fees_text(gig):
+    if not gig.extra_fees_description.strip():
+        return "Aucun"
+    amount = f" ({gig.extra_fees_amount} €)" if gig.extra_fees_amount is not None else ""
+    return f"{gig.extra_fees_description.strip()}{amount}"
+
+
+def build_contract_context(gig, contract=None, draft_anomalies=None, snapshots=None, version=None):
+    """Everything the contract template reads; `snapshots` = (fiscal, parties) of a version."""
+    variant = contract_variant(gig.tenant)
+    fiscal, parties = snapshots or (
+        build_fiscal_snapshot(gig.tenant),
+        build_parties_snapshot(gig, contract),
+    )
+    payment = payment_schedule(gig)
+    vat_amount, _total = _compute_vat(gig, gig.tenant)
+    return {
+        "variant": variant,
+        "with_vat": variant == ContractVariant.WITH_VAT,
+        "fiscal": fiscal,
+        "parties": parties,
+        "payment": payment,
         "vat_amount": vat_amount,
-        "total_with_vat": total_with_vat,
+        "payment_text": _payment_text(gig, payment, variant),
+        "outdoor_clause": _outdoor_clause(gig),
+        "transport_text": _transport_text(gig),
+        "extra_fees_text": _extra_fees_text(gig),
+        "reference": contract.reference if contract and contract.reference else "Brouillon",
+        "version": version,
+        "contract": contract,
         "gig": gig,
         "tenant": gig.tenant,
         "logo_uri": logo_files.data_uri(gig.tenant.logo.name),
         "promoter": gig.promoter,
         "venue": gig.venue,
         "show": gig.show,
-        "today": timezone.now().date(),
+        "today": timezone.localdate(),
         # Set only for a preview of a contract that cannot be generated yet (spec 03, §10).
         "draft_anomalies": draft_anomalies,
     }
 
 
-def render_contract_pdf(gig, contract=None, template=None, draft_anomalies=None):
-    """Render the contract PDF bytes without storing anything (used for the preview).
-
-    `template` is the wording to use; by default the one the contract already has.
-    """
-    template = template or (contract.template if contract else DEFAULT_CONTRACT_TEMPLATE)
-    context = build_contract_context(gig, contract, draft_anomalies)
-    return render_pdf(CONTRACT_TEMPLATES[template], context)
+def render_contract_pdf(gig, contract=None, draft_anomalies=None, snapshots=None, version=None):
+    """Render the contract PDF bytes without storing anything (used for the preview)."""
+    context = build_contract_context(gig, contract, draft_anomalies, snapshots, version)
+    return render_pdf(CONTRACT_TEMPLATE, context)
 
 
 def next_contract_reference(tenant):
@@ -145,7 +249,7 @@ def next_contract_reference(tenant):
     return f"C-{year}-{sequence.last_number:03d}"
 
 
-def generate_contract_pdf(gig, user=None, template=None):
+def generate_contract_pdf(gig, user=None):
     """Render the contract PDF for a gig and store it as a new version.
 
     Each call adds a version; older ones are kept. A signed contract keeps its
@@ -160,27 +264,24 @@ def generate_contract_pdf(gig, user=None, template=None):
             if contract and contract.latest_version:
                 return contract
             raise ContractNotAvailable
-        template = template or (contract.template if contract else DEFAULT_CONTRACT_TEMPLATE)
-        if template not in CONTRACT_TEMPLATES:
-            raise ValueError(f"Unknown contract template: {template}")
         if contract is None:
-            contract = Contract.objects.create(gig=gig, tenant=gig.tenant, template=template)
-        elif contract.template != template:
-            contract.template = template
-            contract.save(update_fields=["template"])
+            contract = Contract.objects.create(gig=gig, tenant=gig.tenant)
         if not contract.reference:
             contract.reference = next_contract_reference(gig.tenant)
             contract.save(update_fields=["reference"])
 
         latest = contract.latest_version
         number = latest.number + 1 if latest else 1
-        pdf_bytes = render_contract_pdf(gig, contract, template)
+        snapshots = (build_fiscal_snapshot(gig.tenant), build_parties_snapshot(gig, contract))
+        pdf_bytes = render_contract_pdf(gig, contract, snapshots=snapshots, version=number)
         version = ContractVersion(
             tenant=gig.tenant,
             contract=contract,
             number=number,
             created_by=user,
-            template=template,
+            variant=contract_variant(gig.tenant),
+            fiscal_snapshot=snapshots[0],
+            parties_snapshot=snapshots[1],
             facts_fingerprint=checks.facts_fingerprint(gig, contract),
         )
         version.pdf_file.save(f"{contract.reference}-v{number}.pdf", ContentFile(pdf_bytes))

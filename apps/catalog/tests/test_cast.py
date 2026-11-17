@@ -1,7 +1,6 @@
 """The distribution of a show is chosen among the team, and a new member can be added on the way."""
 
 import pytest
-from django.template.loader import render_to_string
 from django.urls import reverse
 
 from apps.tenants.factories import MembershipFactory, PersonFactory
@@ -175,18 +174,3 @@ def test_the_distribution_text_leaves_out_a_technician_and_falls_back_to_the_old
     )
 
     assert show.distribution_text == "Léa A, Zoé C"
-
-
-def test_the_contract_names_the_cast():
-    from apps.documents.services import build_contract_context
-    from apps.documents.tests.test_contract_model_4 import TEMPLATE, _gig
-
-    gig = _gig()
-    gig.show.cast.add(
-        PersonFactory(tenant=gig.tenant, first_name="Léa", last_name="Durand", is_artist=True)
-    )
-
-    text = " ".join(render_to_string(TEMPLATE, build_contract_context(gig)).split())
-
-    assert "Nom des interprètes principaux : Léa Durand" in text
-    assert "Distribution artistique : Léa Durand" in text

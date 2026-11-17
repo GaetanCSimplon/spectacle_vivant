@@ -166,8 +166,7 @@ def test_the_fields_are_in_the_budget_block(client, tenant):
         assert budget < content.index(f'name="gig-{name}"') < roadmap
 
 
-@pytest.mark.parametrize("template", ["model_2", "model_3"])
-def test_the_contract_prints_the_composed_sentences(tenant, template):
+def test_the_contract_prints_the_composed_sentences(tenant):
     gig = make_gig(
         tenant=tenant,
         gig_fields={
@@ -176,7 +175,7 @@ def test_the_contract_prints_the_composed_sentences(tenant, template):
         },
     )
 
-    html = render_to_string(f"documents/contracts/{template}.html", build_contract_context(gig))
+    html = render_to_string("documents/contracts/contract.html", build_contract_context(gig))
 
     text = _text(html)
     assert "À la charge de l'Organisateur : 8 repas" in text
