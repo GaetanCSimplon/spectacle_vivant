@@ -129,13 +129,17 @@ class TenantProfileForm(ChoiceOrOtherMixin, SectionedFormMixin, AddressModelForm
                 "code_ape",
                 "code_ape_other",
                 "licence_number",
+                "licence_exempt",
+                "share_capital",
+                "rcs",
             ],
         ),
         (_("Logo"), ["logo"]),
         (_("Adresse"), ["address", "postal_code", "city", "department"]),
         (_("Contact"), ["phone", "email"]),
-        (_("TVA"), ["vat_regime", "vat_rate", "vat_number"]),
+        (_("TVA"), ["vat_regime", "vat_rate", "vat_number", "vat_on_debits"]),
         (_("Coordonnées bancaires"), ["iban", "bic"]),
+        (_("Devis et factures"), ["quote_validity_days", "payment_term_days", "mediator"]),
         (
             _("Représentant et tribunal"),
             [
@@ -188,6 +192,19 @@ class TenantProfileForm(ChoiceOrOtherMixin, SectionedFormMixin, AddressModelForm
         help_text=_("À remplir seulement si vous avez choisi « Autre » : 4 chiffres et 1 lettre."),
     )
 
+    # A delay left empty keeps its current value: it is never stored empty.
+    DELAY_FIELDS = ("quote_validity_days", "payment_term_days")
+
+    def clean_quote_validity_days(self):
+        return self._delay("quote_validity_days")
+
+    def clean_payment_term_days(self):
+        return self._delay("payment_term_days")
+
+    def _delay(self, name):
+        value = self.cleaned_data.get(name)
+        return getattr(self.instance, name) if value is None else value
+
     class Meta:
         model = Tenant
         fields = [
@@ -208,6 +225,13 @@ class TenantProfileForm(ChoiceOrOtherMixin, SectionedFormMixin, AddressModelForm
             "phone",
             "email",
             "licence_number",
+            "licence_exempt",
+            "share_capital",
+            "rcs",
+            "vat_on_debits",
+            "quote_validity_days",
+            "payment_term_days",
+            "mediator",
             "representative_first_name",
             "representative_last_name",
             "representative_role",
@@ -230,6 +254,8 @@ class TenantProfileForm(ChoiceOrOtherMixin, SectionedFormMixin, AddressModelForm
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self._old_logo = self.instance.logo.name if self.instance.pk else ""
+        for name in self.DELAY_FIELDS:
+            self.fields[name].required = False
         self._show_current_choices()
         self.initial["siret"] = format_siret(self.instance.siret)
         instance = self.instance

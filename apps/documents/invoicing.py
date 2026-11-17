@@ -23,8 +23,6 @@ CENT = Decimal("0.01")
 ZERO = Decimal("0.00")
 # Shown on every issued PDF until a professional has reviewed the wording (see the roadmap).
 PDF_PROVISIONAL = True
-PAYMENT_DELAY_DAYS = 30
-QUOTE_VALIDITY_DAYS = 30
 TITLE_MAX_LENGTH = 100
 # An invoice that is already fully paid can still be credited.
 CREDITABLE = (Invoice.Status.ISSUED, Invoice.Status.PAID)
@@ -367,6 +365,11 @@ def build_issuer_snapshot(tenant):
         "iban": tenant.iban,
         "bic": tenant.bic,
         "licence_number": tenant.licence_number,
+        "licence_exempt": tenant.licence_exempt,
+        "share_capital": tenant.share_capital,
+        "rcs": tenant.rcs,
+        "vat_on_debits": tenant.vat_on_debits,
+        "mediator": tenant.mediator,
         "representative_name": tenant.representative_name,
         "representative_role": tenant.representative_role,
         # The stored file of the logo: the live one for a draft, a private copy once issued.
@@ -380,6 +383,7 @@ def build_customer_snapshot(promoter, payment_method=""):
         "billing_address": promoter.full_address,
         "siret": promoter.siret,
         "vat_number": promoter.vat_number,
+        "is_private": promoter.is_private,
         "email": promoter.email,
         # How the customer pays, frozen with them: the PDF may be rebuilt from the snapshot.
         "payment_method": payment_method,
@@ -424,7 +428,7 @@ def issue_invoice(invoice):
             _check_credit_note(locked, original)
         else:
             locked.due_date = locked.due_date or locked.issue_date + datetime.timedelta(
-                days=PAYMENT_DELAY_DAYS
+                days=locked.tenant.payment_term_days
             )
         locked.number = next_document_number(locked.tenant, DocumentSequence.Kind.INVOICE)
         locked.status = Invoice.Status.ISSUED
@@ -464,7 +468,7 @@ def issue_quote(quote):
         locked = _lock(quote)
         _issue(locked)
         locked.valid_until = locked.valid_until or locked.issue_date + datetime.timedelta(
-            days=QUOTE_VALIDITY_DAYS
+            days=locked.tenant.quote_validity_days
         )
         locked.number = next_document_number(locked.tenant, DocumentSequence.Kind.QUOTE)
         locked.status = Quote.Status.ISSUED
@@ -481,6 +485,11 @@ def _copy_state(target, source):
 
 # --- PDF -------------------------------------------------------------------
 
+VAT_ON_DEBITS_MENTION = "Option pour le paiement de la TVA d'après les débits."
+# Wording to be checked by the lawyer (spec 04, § 9, task bp14).
+MEDIATOR_MENTION = (
+    "En cas de litige, vous pouvez recourir gratuitement au médiateur de la consommation : %s"
+)
 PAYMENT_MENTION = (
     "En cas de retard de paiement, des pénalités égales à trois fois le taux d'intérêt légal "
     "sont exigibles, ainsi qu'une indemnité forfaitaire pour frais de recouvrement de 40 €. "
@@ -506,15 +515,22 @@ def vat_mentions(vat_regime):
     return []
 
 
-def legal_mentions(issuer, is_invoice, is_credit_note):
+def legal_mentions(issuer, is_invoice, is_credit_note, customer=None):
     """The legal sentences printed at the bottom of a document.
 
     Provisional wording, to be checked by an accountant (F-56, Q13): all the texts
-    live here so that they can be corrected in one place.
+    live here so that they can be corrected in one place. A snapshot made before a key existed
+    reads as "no": professional customer, no mediator, no VAT on debits.
     """
+    is_private = bool((customer or {}).get("is_private"))
     mentions = vat_mentions(issuer["vat_regime"])
-    if is_invoice and not is_credit_note:
+    if is_invoice and issuer["vat_regime"] == Tenant.VatRegime.TAXABLE:
+        if issuer.get("vat_on_debits"):
+            mentions.append(VAT_ON_DEBITS_MENTION)
+    if is_invoice and not is_credit_note and not is_private:
         mentions.append(PAYMENT_MENTION)
+    if is_private and issuer.get("mediator"):
+        mentions.append(MEDIATOR_MENTION % issuer["mediator"])
     return mentions
 
 
@@ -553,7 +569,7 @@ def build_pdf_context(document):
         "total_excl_tax": total_excl_tax,
         "total_vat": total_vat,
         "total_incl_tax": total_incl_tax,
-        "mentions": legal_mentions(issuer, is_invoice, is_credit_note),
+        "mentions": legal_mentions(issuer, is_invoice, is_credit_note, customer),
         "history": history_for_display(getattr(document, "history_snapshot", None)),
     }
 

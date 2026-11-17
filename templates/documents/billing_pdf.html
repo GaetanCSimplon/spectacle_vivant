@@ -76,10 +76,13 @@
         <h2>Émetteur</h2>
         <p><strong>{{ issuer.name }}</strong>{% if issuer.legal_form %} — {{ issuer.legal_form }}{% endif %}</p>
         <p>{{ issuer.address|linebreaksbr }}</p>
+        {% if issuer.share_capital %}<p>Capital : {{ issuer.share_capital }}</p>{% endif %}
+        {% if issuer.rcs %}<p>RCS : {{ issuer.rcs }}</p>{% endif %}
         <p>SIRET : {{ issuer.siret|siret|default:"……" }}</p>
         {% if issuer.code_ape %}<p>Code APE : {{ issuer.code_ape }}</p>{% endif %}
         {% if show_vat %}<p>N° de TVA : {{ issuer.vat_number|default:"……" }}</p>{% endif %}
-        {% if issuer.licence_number %}<p>Licence d'entrepreneur de spectacles : {{ issuer.licence_number }}</p>{% endif %}
+        {% if issuer.licence_number %}<p>Licence d'entrepreneur de spectacles : {{ issuer.licence_number }}</p>
+        {% elif issuer.licence_exempt %}<p>Licence d'entrepreneur de spectacles : non soumis (moins de 7 représentations par an)</p>{% endif %}
       </div>
       <div class="party">
         <h2>Client</h2>
