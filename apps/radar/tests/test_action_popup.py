@@ -41,7 +41,7 @@ def test_the_send_page_shows_the_alerts_and_lets_the_user_go_on(client):
 
     assert "Radar : avant de continuer" in content
     assert "Continuer quand même" in content
-    assert reverse("documents:contract-complete", args=[gig.pk]) in content
+    assert reverse("documents:contract-history", args=[gig.pk]) in content
 
 
 def test_the_send_page_asks_a_plain_confirmation_without_alerts(client):

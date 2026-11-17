@@ -343,7 +343,10 @@ class GigListView(TenantScopedMixin, ListView):
         )
         context["upcoming_gigs"] = radar_rules.attach_findings(
             services.attach_progress(
-                live.filter(date__gte=today).select_related("promoter", "venue").order_by("date")
+                live.filter(date__gte=today)
+                .select_related("promoter", "venue", "tenant", "contract")
+                .prefetch_related("confirmations")
+                .order_by("date")
             )
         )
         context["past_gigs"] = services.attach_progress(

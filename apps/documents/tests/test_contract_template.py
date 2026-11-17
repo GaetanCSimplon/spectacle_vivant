@@ -2,6 +2,7 @@ import pytest
 from django.template.loader import render_to_string
 from django.urls import reverse
 
+from apps.documents.factories import make_contract_ready
 from apps.gigs.factories import GigFactory
 from apps.tenants.factories import MembershipFactory
 
@@ -94,6 +95,7 @@ def test_a_signed_contract_keeps_its_model(two_models):
 
 def test_the_generate_view_applies_the_chosen_model(client, two_models):
     gig = _member_gig(client)
+    make_contract_ready(gig)
 
     response = client.post(
         reverse("documents:contract-generate", args=[gig.pk]), {"template": "model_2"}
@@ -116,6 +118,7 @@ def test_the_generate_view_refuses_an_unknown_model(client):
 
 def test_the_generate_view_without_a_choice_uses_the_default(client):
     gig = _member_gig(client)
+    make_contract_ready(gig)
 
     client.post(reverse("documents:contract-generate", args=[gig.pk]))
 

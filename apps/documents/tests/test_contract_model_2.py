@@ -8,6 +8,7 @@ from django.template.loader import render_to_string
 from django.urls import reverse
 
 from apps.addressbook.factories import PromoterFactory
+from apps.documents.factories import make_contract_ready
 from apps.gigs.factories import GigFactory
 from apps.tenants.factories import MembershipFactory, TenantFactory
 
@@ -251,6 +252,7 @@ def test_the_user_picks_model_2_from_the_contract_page(client):
     membership = MembershipFactory()
     client.force_login(membership.user)
     gig = GigFactory(tenant=membership.tenant)
+    make_contract_ready(gig)
 
     page = client.get(reverse("documents:contract-history", args=[gig.pk])).content.decode()
     client.post(reverse("documents:contract-generate", args=[gig.pk]), {"template": "model_2"})

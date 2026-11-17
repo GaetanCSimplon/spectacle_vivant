@@ -13,6 +13,7 @@ from apps.gigs.models import Gig
 from apps.tenants import logo as logo_files
 from apps.tenants.models import Tenant
 
+from . import checks
 from .invoicing import legal_mentions, money
 from .models import (
     Contract,
@@ -95,7 +96,7 @@ def payment_schedule(gig):
     }
 
 
-def build_contract_context(gig, contract=None):
+def build_contract_context(gig, contract=None, draft_anomalies=None):
     vat_amount, total_with_vat = _compute_vat(gig, gig.tenant)
     return {
         "payment": payment_schedule(gig),
@@ -115,16 +116,19 @@ def build_contract_context(gig, contract=None):
         "venue": gig.venue,
         "show": gig.show,
         "today": timezone.now().date(),
+        # Set only for a preview of a contract that cannot be generated yet (spec 03, §10).
+        "draft_anomalies": draft_anomalies,
     }
 
 
-def render_contract_pdf(gig, contract=None, template=None):
+def render_contract_pdf(gig, contract=None, template=None, draft_anomalies=None):
     """Render the contract PDF bytes without storing anything (used for the preview).
 
     `template` is the wording to use; by default the one the contract already has.
     """
     template = template or (contract.template if contract else DEFAULT_CONTRACT_TEMPLATE)
-    return render_pdf(CONTRACT_TEMPLATES[template], build_contract_context(gig, contract))
+    context = build_contract_context(gig, contract, draft_anomalies)
+    return render_pdf(CONTRACT_TEMPLATES[template], context)
 
 
 def next_contract_reference(tenant):
@@ -172,7 +176,12 @@ def generate_contract_pdf(gig, user=None, template=None):
         number = latest.number + 1 if latest else 1
         pdf_bytes = render_contract_pdf(gig, contract, template)
         version = ContractVersion(
-            tenant=gig.tenant, contract=contract, number=number, created_by=user, template=template
+            tenant=gig.tenant,
+            contract=contract,
+            number=number,
+            created_by=user,
+            template=template,
+            facts_fingerprint=checks.facts_fingerprint(gig, contract),
         )
         version.pdf_file.save(f"{contract.reference}-v{number}.pdf", ContentFile(pdf_bytes))
         # The version that was sent is no longer the latest one.

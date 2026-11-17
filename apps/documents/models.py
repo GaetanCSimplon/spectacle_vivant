@@ -94,6 +94,8 @@ class ContractVersion(TenantOwnedModel):
         default=ContractTemplate.MODEL_1,
     )
     pdf_file = models.FileField(_("fichier PDF"), upload_to=version_upload_to)
+    # Hash of the data the version was written from (empty for the versions made before it).
+    facts_fingerprint = models.CharField(max_length=64, blank=True)
     created_at = models.DateTimeField(_("généré le"), auto_now_add=True)
     created_by = models.ForeignKey(
         settings.AUTH_USER_MODEL,
@@ -111,6 +113,27 @@ class ContractVersion(TenantOwnedModel):
 
     def __str__(self):
         return f"{self.contract} — v{self.number}"
+
+
+class ContractConfirmation(TenantOwnedModel):
+    """The user confirmed a fact the contract checks ask about (spec 03, §19).
+
+    `fingerprint` is the data that was confirmed: when it changes, the confirmation no longer
+    matches and is asked again.
+    """
+
+    gig = models.ForeignKey("gigs.Gig", on_delete=models.CASCADE, related_name="confirmations")
+    code = models.CharField(max_length=40)
+    fingerprint = models.CharField(max_length=300)
+    confirmed_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, related_name="+"
+    )
+    confirmed_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(fields=["gig", "code"], name="one_confirmation_per_gig_code")
+        ]
 
 
 class ContractShareLink(TenantOwnedModel):

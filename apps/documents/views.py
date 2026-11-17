@@ -4,6 +4,7 @@ from django.http import FileResponse, Http404, HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 from django.utils.translation import gettext_lazy as _
+from django.utils.translation import ngettext
 from django.views import View
 
 from apps.addressbook import services as addressbook_services
@@ -12,7 +13,7 @@ from apps.gigs import mail as gig_mail
 from apps.gigs.models import Gig
 from apps.radar import rules as radar_rules
 
-from . import services
+from . import checks, services
 from .forms import (
     ContractCompletionForm,
     DocumentFilterForm,
@@ -51,7 +52,10 @@ class ContractPreviewView(TenantScopedMixin, View):
         if error:
             messages.error(request, error)
             return redirect("documents:contract-history", gig_id=gig.pk)
-        pdf_bytes = services.render_contract_pdf(gig, contract, template)
+        anomalies = checks.to_fix(checks.check_contract(gig, contract))
+        pdf_bytes = services.render_contract_pdf(
+            gig, contract, template, draft_anomalies=anomalies or None
+        )
         return HttpResponse(pdf_bytes, content_type="application/pdf")
 
 
@@ -72,7 +76,21 @@ class ContractHistoryView(TenantScopedMixin, View):
         contract = Contract.objects.filter(gig=gig, tenant=request.tenant).first()
         versions = contract.versions.select_related("created_by") if contract else []
         signed = bool(contract and contract.status == Contract.Status.SIGNED)
+        anomalies = checks.check_contract(gig, contract)
+        latest = contract.latest_version if contract else None
         context = {
+            "anomalies": anomalies,
+            "anomaly_groups": checks.grouped(anomalies),
+            "to_fix_count": len(checks.to_fix(anomalies)),
+            "confirmable": True,
+            # Not sent, not signed, and written from data that has changed since.
+            "latest_is_stale": bool(
+                latest
+                and latest.facts_fingerprint
+                and not contract.sent_at
+                and not signed
+                and latest.facts_fingerprint != checks.facts_fingerprint(gig, contract)
+            ),
             "gig": gig,
             "contract": contract,
             "versions": versions,
@@ -212,6 +230,20 @@ class ContractGenerateView(TenantScopedMixin, View):
         if error:
             messages.error(request, error)
             return redirect("documents:contract-history", gig_id=gig.pk)
+        contract = Contract.objects.filter(gig=gig, tenant=request.tenant).first()
+        signed = contract and contract.status == Contract.Status.SIGNED
+        anomalies = checks.to_fix(checks.check_contract(gig, contract))
+        if anomalies and not signed and gig.status != Gig.Status.CANCELLED:
+            messages.error(
+                request,
+                ngettext(
+                    "Génération impossible : %(n)d élément à compléter.",
+                    "Génération impossible : %(n)d éléments à compléter.",
+                    len(anomalies),
+                )
+                % {"n": len(anomalies)},
+            )
+            return redirect("documents:contract-history", gig_id=gig.pk)
         try:
             contract = services.generate_contract_pdf(gig, user=request.user, template=template)
         except services.ContractNotAvailable:
@@ -220,6 +252,18 @@ class ContractGenerateView(TenantScopedMixin, View):
             messages.error(request, _("Ce contrat est signé : il ne peut plus être régénéré."))
         else:
             messages.success(request, _("Une nouvelle version du contrat a été générée."))
+        return redirect("documents:contract-history", gig_id=gig.pk)
+
+
+class ContractConfirmView(TenantScopedMixin, View):
+    """POST only: record a confirmation the checks ask for, as the data stands now."""
+
+    def post(self, request, gig_id):
+        gig = get_object_or_404(Gig, pk=gig_id, tenant=request.tenant)
+        if checks.confirm(gig, request.POST.get("code", ""), request.user):
+            messages.success(request, _("Confirmation enregistrée."))
+        else:
+            messages.error(request, _("Rien à confirmer ici."))
         return redirect("documents:contract-history", gig_id=gig.pk)
 
 
@@ -315,7 +359,13 @@ class ContractCompleteView(TenantScopedMixin, View):
         }
 
     def render_page(self, forms):
-        context = {"gig": self.gig, "forms": forms}
+        anomalies = checks.check_contract(self.gig, self.contract)
+        context = {
+            "gig": self.gig,
+            "forms": forms,
+            "anomaly_groups": checks.grouped(anomalies),
+            "to_fix_count": len(checks.to_fix(anomalies)),
+        }
         invitation = addressbook_services.latest_invitation(self.gig.promoter)
         context["invitation"] = invitation
         if invitation and invitation.status == invitation.Status.ACTIVE:
