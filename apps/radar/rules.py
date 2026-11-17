@@ -13,7 +13,9 @@ from decimal import Decimal
 from django.db.models import Sum
 from django.urls import reverse
 from django.utils.translation import gettext_lazy as _
+from django.utils.translation import ngettext
 
+from apps.documents import checks
 from apps.documents.models import Invoice, Quote
 from apps.finance.models import Expense
 from apps.gigs.models import Gig
@@ -161,26 +163,19 @@ def rad_02_bank_details(tenant):
     return Finding("RAD-02", FIX, message, reverse("tenants:settings"))
 
 
-def rad_10_contract_gaps(gig):
-    """What the contract of a confirmed date still lacks (it would print as dots)."""
+def rad_10_contract_gaps(gig, today=None):
+    """What the contract of a confirmed date still lacks (the checks of the contract engine)."""
     if gig.status != Gig.Status.CONFIRMED:
         return None
-    promoter = gig.promoter
-    checks = (
-        (_("le SIRET de l'organisateur"), promoter.siret),
-        (_("le représentant de l'organisateur"), promoter.representative_name),
-        (_("sa qualité"), promoter.representative_role),
-        (_("le mode de paiement"), gig.payment_method),
-        (_("le lieu de signature"), gig.signing_place),
-    )
-    missing = [str(label) for label, value in checks if not str(value).strip()]
-    if not missing:
+    count = len(checks.to_fix(checks.check_contract(gig, today=today)))
+    if not count:
         return None
-    message = _("%(gig)s : pour le contrat, il manque %(missing)s.") % {
-        "gig": _label(gig),
-        "missing": ", ".join(missing),
-    }
-    url = reverse("documents:contract-complete", args=[gig.pk])
+    message = ngettext(
+        "%(gig)s : pour le contrat, %(n)d élément à compléter.",
+        "%(gig)s : pour le contrat, %(n)d éléments à compléter.",
+        count,
+    ) % {"gig": _label(gig), "n": count}
+    url = reverse("documents:contract-history", args=[gig.pk])
     return Finding("RAD-10", IMPORTANT, message, url, gig)
 
 
@@ -331,7 +326,7 @@ def tenant_findings(tenant):
 def gig_findings(gig, today, expenses_total=Decimal("0")):
     """The rules about one date."""
     found = [
-        rad_10_contract_gaps(gig),
+        rad_10_contract_gaps(gig, today),
         rad_20_roadmap_times(gig, today),
         rad_22_times_out_of_order(gig),
         rad_26_no_place(gig),
@@ -350,7 +345,8 @@ def all_findings(tenant, today=None):
     gigs = list(
         Gig.objects.filter(tenant=tenant, date__gte=today)
         .exclude(status=Gig.Status.CANCELLED)
-        .select_related("promoter", "venue", "show")
+        .select_related("promoter", "venue", "show", "tenant", "contract")
+        .prefetch_related("confirmations")
         .annotate(expenses_total=Sum("expenses__amount"))
         .order_by("date")
     )

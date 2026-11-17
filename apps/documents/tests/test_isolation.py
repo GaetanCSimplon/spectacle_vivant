@@ -4,7 +4,7 @@ from apps.core.tests.isolation_registry import mark_isolation_tested
 from apps.tenants.factories import TenantFactory
 
 from ..factories import ContractFactory
-from ..models import Contract, ContractShareLink
+from ..models import Contract, ContractConfirmation, ContractShareLink
 
 mark_isolation_tested(Contract)
 mark_isolation_tested(ContractShareLink)
@@ -38,3 +38,6 @@ def test_share_links_do_not_mix_between_tenants():
 
     assert list(ContractShareLink.objects.filter(tenant=tenant_a)) == [link]
     assert not ContractShareLink.objects.filter(tenant=tenant_b).exists()
+
+
+mark_isolation_tested(ContractConfirmation)  # see test_contract_checks.py

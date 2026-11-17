@@ -4,6 +4,7 @@ from django.urls import reverse
 from django.utils import timezone
 
 from apps.core.tests.isolation_registry import mark_isolation_tested
+from apps.documents.factories import make_contract_ready
 from apps.gigs.factories import GigFactory
 from apps.tenants.factories import MembershipFactory, TenantFactory
 
@@ -139,6 +140,7 @@ def test_history_page_of_a_signed_contract_has_no_generate_button(client):
 def test_generate_view_creates_a_version_and_redirects(client):
     membership = _login(client)
     gig = GigFactory(tenant=membership.tenant)
+    make_contract_ready(gig)
 
     response = client.post(reverse("documents:contract-generate", args=[gig.pk]))
 

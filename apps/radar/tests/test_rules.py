@@ -1,8 +1,10 @@
 import datetime
 
 import pytest
+from django.urls import reverse
 
 from apps.addressbook.factories import VenueFactory
+from apps.documents.factories import make_contract_ready
 from apps.finance.factories import ExpenseFactory
 from apps.gigs.factories import GigFactory
 from apps.gigs.models import Gig
@@ -134,27 +136,21 @@ def test_every_rule_has_its_explanation():
         assert explanation.why and explanation.admin
 
 
-def test_rad_10_lists_what_the_contract_of_a_confirmed_date_lacks():
+def test_rad_10_counts_what_the_contract_of_a_confirmed_date_lacks():
     gig = _gig(status=Gig.Status.CONFIRMED, promoter__siret="")
 
     found = [f for f in rules.gig_findings(gig, TODAY) if f.code == "RAD-10"]
 
     assert _codes(found) == ["RAD-10"]
     assert found[0].severity == rules.IMPORTANT
-    for word in ("SIRET", "représentant", "mode de paiement", "lieu de signature"):
-        assert word in found[0].message
+    assert "éléments à compléter" in found[0].message
+    assert found[0].fix_url == reverse("documents:contract-history", args=[gig.pk])
 
 
 def test_rad_10_is_quiet_when_complete_and_for_other_statuses():
-    complete = _gig(
-        status=Gig.Status.CONFIRMED,
-        payment_method=Gig.PaymentMethod.TRANSFER,
-        signing_place="Lyon",
-    )
-    complete.promoter.siret = "12345678901234"
-    complete.promoter.representative_name = "Marie Durand"
-    complete.promoter.representative_role = "Maire"
+    complete = _gig(status=Gig.Status.CONFIRMED)
+    make_contract_ready(complete)
     option = _gig()  # an option has no contract yet
 
-    assert rules.gig_findings(complete, TODAY) == []
+    assert "RAD-10" not in _codes(rules.gig_findings(complete, TODAY))
     assert rules.gig_findings(option, TODAY) == []

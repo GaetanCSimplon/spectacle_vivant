@@ -175,6 +175,7 @@ ROUTES = [
     ("documents:contract-history", {"gig_id": "gig"}),
     ("documents:contract-sign", {"gig_id": "gig"}),
     ("documents:contract-signed-pdf", {"gig_id": "gig"}),
+    ("documents:contract-confirm", {"gig_id": "gig"}),
     ("documents:contract-generate", {"gig_id": "gig"}),
     ("documents:contract-share", {"gig_id": "gig"}),
     ("documents:contract-sent", {"gig_id": "gig", "action": "=envoye"}),

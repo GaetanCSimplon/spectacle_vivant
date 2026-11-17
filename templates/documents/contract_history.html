@@ -39,6 +39,7 @@
   {% if contract.sent_at and contract.status != 'signed' %}
     <p class="mb-3 text-sm font-semibold">{% blocktranslate with date=contract.sent_at|date:"d/m/Y" %}Envoyé à l'organisateur le {{ date }}{% endblocktranslate %}</p>
   {% endif %}
+  {% if can_generate %}{% include "documents/_contract_checks.html" %}{% endif %}
   <div class="mb-6 flex flex-col gap-3">
     {% if can_mark_sent %}
       <div class="space-y-2 rounded-md border border-page-line p-4 text-sm">
@@ -121,7 +122,7 @@
         <li class="card flex items-center justify-between text-sm">
           <span>
             {% blocktranslate with number=version.number %}Version {{ number }}{% endblocktranslate %}
-            {% if forloop.first %}<span class="text-gray-500">({% translate "la plus récente" %})</span>{% endif %}
+            {% if forloop.first %}<span class="text-gray-500">({% translate "la plus récente" %})</span>{% if latest_is_stale %} <strong>{% translate "À actualiser" %}</strong> <span class="text-gray-600">{% translate "(des informations ont changé depuis)" %}</span>{% endif %}{% endif %}
             {% if template_choices|length > 1 %}<span class="text-gray-500">· {{ version.get_template_display }}</span>{% endif %}
             <br>
             <span class="text-gray-500">{{ version.created_at|date:"d/m/Y H:i" }}</span>
