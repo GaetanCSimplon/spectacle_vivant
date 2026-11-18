@@ -1,4 +1,5 @@
 import uuid
+from decimal import Decimal
 
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
@@ -99,6 +100,17 @@ class Tenant(AddressMixin, models.Model):
     share_capital = models.CharField(_("capital social"), max_length=50, blank=True)
     rcs = models.CharField(_("immatriculation RCS"), max_length=100, blank=True)
     vat_on_debits = models.BooleanField(_("TVA payée d'après les débits"), default=False)
+    employer_cost_rate = models.DecimalField(
+        _("taux de repère du coût employeur"),
+        max_digits=3,
+        decimal_places=2,
+        default=Decimal("0.45"),
+        validators=[MinValueValidator(Decimal("0")), MaxValueValidator(Decimal("1"))],
+        help_text=_(
+            "Sert à afficher un coût employeur « estimation » (brut + ce taux). "
+            "Ordre de grandeur, pas un calcul de charges. 0,45 = 45 %."
+        ),
+    )
     quote_validity_days = models.PositiveSmallIntegerField(
         _("durée de validité d'un devis (jours)"),
         default=30,

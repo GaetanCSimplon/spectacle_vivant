@@ -144,6 +144,13 @@ def gig_balance(gig):
     )
 
 
+def estimated_employer_cost(gross, rate):
+    """Gross pay + reference rate, to the cent ("estimation" in the UI); None if no gross."""
+    if gross is None:
+        return None
+    return invoicing.money(Decimal(gross) * (1 + Decimal(rate)))
+
+
 # --- expenses --------------------------------------------------------------
 
 

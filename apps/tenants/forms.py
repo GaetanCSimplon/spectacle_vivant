@@ -153,6 +153,7 @@ class TenantProfileForm(ChoiceOrOtherMixin, SectionedFormMixin, AddressModelForm
         ),
         (_("Coordonnées bancaires"), ["iban", "bic"]),
         (_("Devis et factures"), ["quote_validity_days", "payment_term_days", "mediator"]),
+        (_("Social"), ["employer_cost_rate"]),
         (
             _("Représentant et tribunal"),
             [
@@ -206,13 +207,16 @@ class TenantProfileForm(ChoiceOrOtherMixin, SectionedFormMixin, AddressModelForm
     )
 
     # A delay left empty keeps its current value: it is never stored empty.
-    DELAY_FIELDS = ("quote_validity_days", "payment_term_days")
+    DELAY_FIELDS = ("quote_validity_days", "payment_term_days", "employer_cost_rate")
 
     def clean_quote_validity_days(self):
         return self._delay("quote_validity_days")
 
     def clean_payment_term_days(self):
         return self._delay("payment_term_days")
+
+    def clean_employer_cost_rate(self):
+        return self._delay("employer_cost_rate")
 
     def _delay(self, name):
         value = self.cleaned_data.get(name)
@@ -248,6 +252,7 @@ class TenantProfileForm(ChoiceOrOtherMixin, SectionedFormMixin, AddressModelForm
             "share_capital",
             "rcs",
             "vat_on_debits",
+            "employer_cost_rate",
             "quote_validity_days",
             "payment_term_days",
             "mediator",
