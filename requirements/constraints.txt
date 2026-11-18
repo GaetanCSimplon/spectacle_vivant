@@ -3,8 +3,8 @@
 # use, this one says WHICH version. Do not edit by hand: see docs/technique/services-production.md.
 asgiref==3.13.0
 boolean.py==5.0
-boto3==1.43.126
-botocore==1.43.126
+boto3==1.44.3
+botocore==1.44.3
 brotli==1.2.1
 CacheControl==0.14.4
 certifi==2026.10.23
@@ -17,15 +17,15 @@ cyclonedx-python-lib==11.12.0
 defusedxml==0.7.1
 distlib==0.4.4
 Django==5.2.19
-django-allauth==65.21.1
+django-allauth==65.22.1
 django-click==2.5.0
 django-environ==0.14.0
 django-htmx==1.29.0
 django-storages==1.14.6
 django-tailwind-cli==4.8.2
 factory_boy==3.3.3
-Faker==40.44.0
-filelock==4.2.9
+Faker==40.54.0
+filelock==4.2.10
 fonttools==4.68.0
 gunicorn==26.2.0
 identify==2.6.20
@@ -33,7 +33,7 @@ idna==3.20
 iniconfig==2.3.1
 jmespath==1.1.0
 license-expression==30.4.4
-markdown-it-py==4.2.0
+markdown-it-py==4.3.0
 mdurl==0.1.2
 msgpack==1.2.4
 nodeenv==1.12.0
@@ -46,8 +46,8 @@ pip_audit==2.10.1
 platformdirs==4.14.5
 pluggy==1.7.0
 pre_commit==4.7.0
-psycopg==3.3.8
-psycopg-binary==3.3.8
+psycopg==3.3.9
+psycopg-binary==3.3.9
 py-serializable==2.2.0
 pycparser==3.12
 pydyf==0.13.0
@@ -62,10 +62,10 @@ python-discovery==1.9.5
 PyYAML==6.0.3
 requests==2.34.2
 rich==15.0.0
-ruff==0.17.4
+ruff==0.17.5
 s3transfer==0.19.3
-semver==3.1.0
-sentry-sdk==2.74.0
+semver==3.1.1
+sentry-sdk==2.75.0
 six==1.17.0
 sortedcontainers==2.4.0
 sqlparse==0.6.1
