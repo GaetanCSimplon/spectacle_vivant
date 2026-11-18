@@ -31,7 +31,7 @@ Chaque mois, aider le propriétaire à vérifier le social de ses dates (écran 
   - Tests : accès propriétaire seul, 404 pour le tenant B, liens de correction, fragments HTMX.
   - Documents à relire : charte graphique, verification-visuelle.md.
   - Risques : accessibilité (état jamais en couleur seule) ; contrôle visuel dans Chromium.
-- [ ] PR 4 — Export CSV pour le prestataire
+- [x] PR 4 — Export CSV pour le prestataire
   - Objectif : remplacer le CSV F-93 par le CSV de la section 5 (colonnes de la spec, `reference_bordpro`, `statut_ligne`) ; garder BOM, protection contre les formules (`text()`) et nom `navette-sociale-AAAA-MM-<structure>.csv`. Le coût estimé n'y figure pas.
   - Fichiers : apps/tenants/social.py, vue d'export.
   - Tests : total CSV = total du service, caractères spéciaux, aucun n° de sécurité sociale dans les journaux ; export réservé au propriétaire ; isolation.
@@ -61,6 +61,7 @@ Chaque mois, aider le propriétaire à vérifier le social de ses dates (écran 
 - 2026-11-18 — Le champ `employer_cost_rate` (0,45, borné de 0 à 1) vit dans un groupe « Social » de « Ma structure » ; un taux laissé vide garde sa valeur actuelle.
 - 2026-11-18 — Heures : un artiste avec des cachets est compté cachets × 12 (`hours` ignoré) ; un technicien, ou un artiste sans cachets, est compté sur `hours`. Défraiements = dépenses de la date faites par la personne.
 - 2026-11-18 — Écran : chaque ligne « À compléter » renvoie à la fiche de la personne et à la date ; le spectacle sans n° d'objet renvoie à sa modification. Pas de lien par manque. Une date annulée avec équipe s'affiche en « À vérifier ».
+- 2026-11-18 — CSV : brut et défraiements en point décimal (spec §5), dates `JJ/MM/AAAA`, n° de sécurité sociale sans espaces (pour l'import), `date_debut` = `date_fin` = `Gig.date`.
 
 ## Points en suspens
 - Définition d'une paie à faire confirmer par un gestionnaire de paie.
@@ -70,6 +71,8 @@ Chaque mois, aider le propriétaire à vérifier le social de ses dates (écran 
 - RAD-54, 60 et 62 non codées : la Navette fait ses propres contrôles en attendant.
 - Contrôle « offre Collectif » : à brancher avec la phase 5.1 (quotas et formules).
 - Rendu du champ « Heures (technicien) » du bloc équipe d'une date non vérifié dans un navigateur.
+- Format CSV (n° de sécurité sociale sans espaces, dates `JJ/MM/AAAA`, `categorie`) : à valider avec un prestataire.
+- Téléchargement du CSV non vérifié dans un navigateur ni dans un tableur.
 - Rendu de l'écran « Vérifier mon social du mois » non vérifié dans un navigateur.
 - Rendu du groupe « Social » de « Ma structure » non vérifié dans un navigateur.
 
@@ -78,3 +81,4 @@ Chaque mois, aider le propriétaire à vérifier le social de ses dates (écran 
 - 2026-11-18 — PR 1 terminée : taux de repère, migration `tenants/0020`, `estimated_employer_cost` ; 2808 tests verts. Audit `tenant-guard` non fait (agent absent).
 - 2026-11-18 — PR 2 terminée : `GigMember.hours` (migration `gigs/0016`), `build_social_month` dans `apps/tenants/social.py` ; artiste avec cachets = cachets × 12, sinon heures saisies. `missing_items` signale désormais aussi « heures » (technicien) et « n° d'objet du spectacle » : l'écran et le CSV actuels les affichent dès maintenant. Audit `tenant-guard` non fait (agent absent).
 - 2026-11-18 — PR 3 terminée : écran « Vérifier mon social du mois » (`_social_month.html`, fragment HTMX pour le changement de mois) lu depuis `build_social_month` ; 2826 tests verts. Audit `tenant-guard` non fait (agent absent).
+- 2026-11-18 — PR 4 terminée : CSV de la spec §5 lu depuis `build_social_month` (22 colonnes, `statut_ligne`, `reference_bordpro` = id du `GigMember`), brut et défraiements en point décimal, dates `JJ/MM/AAAA`, fichier `navette-sociale-AAAA-MM-<structure>.csv`, bouton « Exporter pour ma paie (CSV) ». Ancien CSV F-93 supprimé. Audit `tenant-guard` non fait (agent absent).

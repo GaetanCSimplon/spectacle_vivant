@@ -430,8 +430,7 @@ class SocialExportView(OwnerRequiredMixin, View):
 
     def get(self, request):
         first = social.parse_month(request.GET.get("mois"), timezone.localdate())
-        start, end = social.month_bounds(first)
-        return social.csv_response(request.tenant, start, end)
+        return social.csv_response(request.tenant, first.year, first.month)
 
 
 class MessageTemplatesView(LoginRequiredMixin, TemplateView):
