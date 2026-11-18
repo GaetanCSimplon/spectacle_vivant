@@ -13,7 +13,7 @@ Chaque mois, aider le propriétaire à vérifier le social de ses dates (écran 
 - Code existant : apps/tenants/social.py, apps/gigs/models.py (GigMember), apps/tenants/models.py (Person), apps/radar/rules.py
 
 ## Découpage en PR
-- [ ] PR 1 — Cahier des charges et taux de repère
+- [x] PR 1 — Cahier des charges et taux de repère
   - Objectif : inscrire la Navette (nouvelle fiche F-xx, offre Collectif, sans contrôle d'offre) au cahier des charges ; ajouter le taux de repère sur `Tenant` (0,45 par défaut, réglable) et la fonction unique `estimated_employer_cost(gross, rate)` dans `apps/finance/services.py`.
   - Fichiers : docs/produit/cahier-des-charges.md, apps/tenants/models.py + migration, formulaire « Ma structure », apps/finance/services.py.
   - Tests : arrondi au centime, « — » si brut vide, taux modifiable ; isolation (un tenant ne lit pas le taux d'un autre).
@@ -58,6 +58,8 @@ Chaque mois, aider le propriétaire à vérifier le social de ses dates (écran 
 - 2026-11-18 — Une paie = un `GigMember` sur une date ; nouveau champ `hours` ; mois = `Gig.date`.
 - 2026-11-18 — N° de sécurité sociale exclu du PDF par défaut (case pour l'inclure) ; format CSV livré selon la spec, à valider ensuite avec un prestataire.
 
+- 2026-11-18 — Le champ `employer_cost_rate` (0,45, borné de 0 à 1) vit dans un groupe « Social » de « Ma structure » ; un taux laissé vide garde sa valeur actuelle.
+
 ## Points en suspens
 - Définition d'une paie à faire confirmer par un gestionnaire de paie.
 - Format CSV à valider avec un ou deux prestataires de paie du spectacle.
@@ -65,6 +67,8 @@ Chaque mois, aider le propriétaire à vérifier le social de ses dates (écran 
 - Engagement à cheval sur deux mois (`Gig.date` unique : sans objet tant qu'une date est un seul jour).
 - RAD-54, 60 et 62 non codées : la Navette fait ses propres contrôles en attendant.
 - Contrôle « offre Collectif » : à brancher avec la phase 5.1 (quotas et formules).
+- Rendu du groupe « Social » de « Ma structure » non vérifié dans un navigateur.
 
 ## Journal
 - 2026-11-18 — Plan validé.
+- 2026-11-18 — PR 1 terminée : taux de repère, migration `tenants/0020`, `estimated_employer_cost` ; 2808 tests verts. Audit `tenant-guard` non fait (agent absent).
