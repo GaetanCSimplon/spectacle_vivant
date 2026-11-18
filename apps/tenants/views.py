@@ -404,17 +404,21 @@ class SocialView(OwnerRequiredMixin, TemplateView):
 
     template_name = "tenants/social.html"
 
+    def get_template_names(self):
+        return (
+            ["tenants/_social_month.html"] if wants_fragment(self.request) else [self.template_name]
+        )
+
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         first = social.parse_month(self.request.GET.get("mois"), timezone.localdate())
-        start, end = social.month_bounds(first)
         tenant = self.request.tenant
         context.update(
             is_owner=True,
             month=first,
             previous_month=social.shift_month(first, -1),
             next_month=social.shift_month(first, 1),
-            rows=social.social_rows(tenant, start, end),
+            social_month=social.build_social_month(tenant, first.year, first.month),
             employer_missing=social.employer_missing(tenant),
         )
         return context

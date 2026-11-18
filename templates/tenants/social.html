@@ -8,60 +8,11 @@
   <h1 class="mb-2">{% translate "Bòrd" %}</h1>
   {% include "tenants/_tabs.html" with active="social" %}
   <p class="mb-3">{% include "components/_volet_chip.html" with volet="social" %}</p>
+  <h2 class="mb-2 text-lg">{% translate "Vérifier mon social du mois" %}</h2>
 
-  <p class="mb-4 text-sm text-gray-600">{% translate "Les personnes de votre équipe présentes sur vos dates du mois, avec leurs cachets, à transmettre à la personne qui fait la paie. Bòrd Pro prépare ces informations : il ne calcule ni les bulletins ni les déclarations sociales." %}</p>
+  <p class="mb-4 text-sm text-gray-600">{% translate "Vérifiez le social de vos dates du mois, puis transmettez-le à la personne qui fait la paie. Bòrd Pro prépare ces informations : il ne calcule ni les bulletins ni les déclarations sociales." %}</p>
 
-  <div class="mb-4 flex flex-wrap items-center justify-between gap-3">
-    <div class="flex items-center gap-2">
-      <a href="?mois={{ previous_month|date:'Y-m' }}" class="btn btn-secondary" aria-label="{% translate 'Mois précédent' %}">‹</a>
-      <h2 class="!mb-0 min-w-40 text-center text-base capitalize">{{ month|date:"F Y" }}</h2>
-      <a href="?mois={{ next_month|date:'Y-m' }}" class="btn btn-secondary" aria-label="{% translate 'Mois suivant' %}">›</a>
-    </div>
-    <a href="{% url 'tenants:social-export' %}?mois={{ month|date:'Y-m' }}" class="btn btn-secondary btn-download">{% translate "Exporter (CSV)" %}</a>
-  </div>
-
-  {% if employer_missing %}
-    <p class="card card-context mb-4 text-sm">
-      {% translate "Informations de votre structure à compléter pour la paie :" %}
-      <strong>{{ employer_missing|join:", " }}</strong>.
-      <a href="{% url 'tenants:settings' %}" class="text-blue-700 underline">{% translate "Informations de la structure" %}</a>
-    </p>
-  {% endif %}
-
-  {% if rows %}
-    <div class="overflow-x-auto rounded-lg border border-page-line bg-white">
-      <table class="w-full text-left text-sm">
-        <thead>
-          <tr class="border-b border-page-line text-xs uppercase text-gray-500">
-            <th scope="col" class="px-3 py-2">{% translate "Personne" %}</th>
-            <th scope="col" class="px-3 py-2">{% translate "Emploi" %}</th>
-            <th scope="col" class="px-3 py-2">{% translate "Date" %}</th>
-            <th scope="col" class="px-3 py-2">{% translate "Spectacle" %}</th>
-            <th scope="col" class="px-3 py-2">{% translate "N° d'objet" %}</th>
-            <th scope="col" class="px-3 py-2 text-right">{% translate "Cachets" %}</th>
-            <th scope="col" class="px-3 py-2 text-right">{% translate "Montant brut" %}</th>
-            <th scope="col" class="px-3 py-2">{% translate "À compléter" %}</th>
-          </tr>
-        </thead>
-        <tbody>
-          {% for row in rows %}
-            <tr class="border-b border-page-line last:border-0">
-              <td class="px-3 py-2"><a href="{% url 'tenants:person-detail' row.person.pk %}" class="text-blue-700 underline">{{ row.person.full_name }}</a></td>
-              <td class="px-3 py-2">{{ row.employment|default:"—" }}</td>
-              <td class="data px-3 py-2">{{ row.gig.date|date:"d/m/Y" }}</td>
-              <td class="px-3 py-2"><a href="{% url 'gigs:detail' row.gig.pk %}" class="text-blue-700 underline">{{ row.gig.show.title }}</a></td>
-              <td class="data px-3 py-2">{{ row.gig.show.sacem_object_number|default:"—" }}</td>
-              <td class="data px-3 py-2 text-right">{{ row.member.cachet_count|default_if_none:"—" }}</td>
-              <td class="data px-3 py-2 text-right">{% if row.member.cachet_amount is not None %}{{ row.member.cachet_amount }} €{% else %}—{% endif %}</td>
-              <td class="px-3 py-2">{% if row.missing %}<span class="pill pill-warn">{{ row.missing|join:", " }}</span>{% else %}<span class="text-gray-500">{% translate "Complet" %}</span>{% endif %}</td>
-            </tr>
-          {% endfor %}
-        </tbody>
-      </table>
-    </div>
-  {% else %}
-    <p class="card text-sm text-gray-600">{% translate "Aucune personne de l'équipe sur une date de ce mois. Ajoutez-les depuis la fiche d'une date (« Équipe de la date »), avec leur cachet." %}</p>
-  {% endif %}
+  {% include "tenants/_social_month.html" %}
 
   <p class="mt-4 text-xs text-gray-500">{% translate "Page et fichier réservés au propriétaire : ils contiennent des données personnelles (date de naissance, n° de sécurité sociale). Les personnes ajoutées à la main sur une date, sans fiche d'équipe, n'y figurent pas." %}</p>
 {% endblock %}

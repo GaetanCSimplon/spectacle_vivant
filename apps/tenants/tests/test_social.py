@@ -149,7 +149,9 @@ def test_someone_added_by_hand_and_a_cancelled_date_are_left_out(client):
     page = _page(client).content.decode()
 
     assert "Invité Manuel" not in page
-    assert "Date annulée" not in page
+    # not paid, but flagged "À vérifier" so the owner removes the team from it
+    assert "À vérifier" in page and "Date annulée" in page
+    assert "Léa Chanteuse" not in page
 
 
 def test_nothing_of_another_structure_ever_shows(client):
@@ -454,3 +456,61 @@ def test_the_month_of_another_tenant_is_invisible():
     month = _month(mine)
 
     assert month.shows == [] and month.gigs_without_team == [] and month.totals.expenses == 0
+
+
+# --- the screen "Vérifier mon social du mois" ---------------------------------------------------
+
+
+def test_the_screen_shows_the_summary_one_block_per_show_and_the_state_in_words(client):
+    tenant = _login(client)
+    person = _person(tenant)
+    gap = PersonFactory(tenant=tenant, first_name="Zoé", last_name="Incomplète")
+    _on(_gig(tenant, datetime.date(2026, 11, 14)), person)
+    other = _gig(
+        tenant, datetime.date(2026, 11, 15), show=ShowFactory(tenant=tenant, title="Autre")
+    )
+    GigMemberFactory(gig=other, person=gap, name=gap.full_name)
+
+    page = _page(client).content.decode()
+
+    assert "Vérifier mon social du mois" in page
+    assert "Mon Spectacle" in page and "Autre" in page
+    assert "Coût employeur (estimation)" in page
+    assert "Complet" not in page.split("Autre")[1].split("</section>")[0]
+    assert "À compléter" in page and "points à compléter" in page.replace(
+        "point à compléter", "points à compléter"
+    )
+    assert reverse("tenants:person-detail", args=[gap.pk]) in page
+    assert reverse("gigs:detail", args=[other.pk]) in page
+    assert reverse("catalog:show-update", args=[other.show.pk]) in page
+
+
+def test_a_date_without_team_is_listed_with_its_link(client):
+    tenant = _login(client)
+    gig = _gig(tenant, datetime.date(2026, 11, 9))
+
+    page = _page(client).content.decode()
+
+    assert "Dates sans équipe" in page and reverse("gigs:detail", args=[gig.pk]) in page
+
+
+def test_the_month_arrows_get_only_the_fragment_with_htmx(client):
+    _login(client)
+
+    response = client.get(reverse("tenants:social"), {"mois": "2026-11"}, HTTP_HX_REQUEST="true")
+
+    body = response.content.decode()
+    assert 'id="social-month"' in body and "<html" not in body
+
+
+def test_the_screen_of_another_structure_shows_nothing_of_the_first(client):
+    other = MembershipFactory().tenant
+    stranger = _person(other, last_name="Étrangère")
+    gig = _gig(other, datetime.date(2026, 11, 14), show=ShowFactory(tenant=other, title="Secret"))
+    _on(gig, stranger)
+    _login(client)
+
+    page = _page(client).content.decode()
+
+    assert "Étrangère" not in page and "Secret" not in page
+    assert reverse("gigs:detail", args=[gig.pk]) not in page
