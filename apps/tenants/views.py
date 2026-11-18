@@ -433,6 +433,17 @@ class SocialExportView(OwnerRequiredMixin, View):
         return social.csv_response(request.tenant, first.year, first.month)
 
 
+@method_decorator(never_cache, name="dispatch")
+class SocialPdfView(OwnerRequiredMixin, View):
+    """The month as the "Navette sociale" PDF (owner only); social security numbers on request."""
+
+    def get(self, request):
+        first = social.parse_month(request.GET.get("mois"), timezone.localdate())
+        return social.pdf_response(
+            request.tenant, first.year, first.month, include_ssn=request.GET.get("secu") == "1"
+        )
+
+
 class MessageTemplatesView(LoginRequiredMixin, TemplateView):
     """The e-mails the user sends to organisers and contacts: read by all, written by the owner.
 

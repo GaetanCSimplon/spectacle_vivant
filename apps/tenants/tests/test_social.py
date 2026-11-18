@@ -567,3 +567,78 @@ def test_the_screen_of_another_structure_shows_nothing_of_the_first(client):
 
     assert "Étrangère" not in page and "Secret" not in page
     assert reverse("gigs:detail", args=[gig.pk]) not in page
+
+
+# --- the PDF "Navette sociale" ------------------------------------------------------------------
+
+
+def _pdf(client, month="2026-11", **params):
+    return client.get(reverse("tenants:social-pdf"), {"mois": month, **params})
+
+
+def _pdf_text(response):
+    from pypdf import PdfReader
+
+    assert response["Content-Type"] == "application/pdf"
+    return " ".join(page.extract_text() for page in PdfReader(io.BytesIO(response.content)).pages)
+
+
+def test_the_pdf_has_the_right_name_and_says_it_is_an_estimation(client):
+    tenant = _login(client, name="Ma Compagnie")
+    _on(_gig(tenant, datetime.date(2026, 11, 14)), _person(tenant), amount="1000.00")
+
+    response = _pdf(client)
+    text = _pdf_text(response)
+
+    assert response["Content-Disposition"] == (
+        'attachment; filename="navette-sociale-2026-11-ma-compagnie.pdf"'
+    )
+    assert "Ce n'est pas un bulletin de paie" in text
+    assert "estimation" in text
+    assert "Léa Chanteuse" in text
+    assert "Cache-Control" in response and "no-store" in response["Cache-Control"]
+
+
+def test_the_pdf_leaves_out_the_social_security_number_unless_asked(client):
+    tenant = _login(client)
+    _on(_gig(tenant, datetime.date(2026, 11, 14)), _person(tenant))
+
+    assert SSN not in _pdf_text(_pdf(client)).replace(" ", "")
+    assert SSN in _pdf_text(_pdf(client, secu="1")).replace(" ", "")
+
+
+def test_the_pdf_totals_are_the_csv_totals(client):
+    tenant = _login(client)
+    for day, amount in ((3, "100.10"), (4, "200.20")):
+        _on(_gig(tenant, datetime.date(2026, 11, day)), _person(tenant), amount=amount)
+
+    _, *lines = _rows(_export(client))
+    total = sum(Decimal(line[social.HEADER.index("brut")]) for line in lines)
+
+    assert f"{total:.2f}".replace(".", ",") in _pdf_text(_pdf(client))
+
+
+def test_an_empty_month_still_gives_a_pdf(client):
+    _login(client)
+
+    assert "Aucune personne" in _pdf_text(_pdf(client))
+
+
+def test_the_pdf_flags_what_is_missing(client):
+    tenant = _login(client)
+    _on(_gig(tenant, datetime.date(2026, 11, 14)), _person(tenant), amount=None)
+
+    assert "À compléter" in _pdf_text(_pdf(client))
+
+
+def test_the_pdf_is_for_the_owner_only_and_never_shows_another_structure(client):
+    other = MembershipFactory().tenant
+    _on(_gig(other, datetime.date(2026, 11, 14)), _person(other, last_name="Autrui"))
+    _login(client, role="member")
+    assert _pdf(client).status_code == 403
+
+    client.logout()
+    _login(client)
+    assert "Autrui" not in _pdf_text(_pdf(client))
+    client.logout()
+    assert _pdf(client).status_code == 302

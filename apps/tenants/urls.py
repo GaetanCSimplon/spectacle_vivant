@@ -46,5 +46,6 @@ urlpatterns = [
     ),
     path("equipe/social/", views.SocialView.as_view(), name="social"),
     path("equipe/social/export/", views.SocialExportView.as_view(), name="social-export"),
+    path("equipe/social/pdf/", views.SocialPdfView.as_view(), name="social-pdf"),
     path("export-donnees/", views.DataExportView.as_view(), name="data-export"),
 ]
