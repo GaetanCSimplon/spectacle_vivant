@@ -1,0 +1,165 @@
+{% load i18n %}<!DOCTYPE html>
+<html lang="fr">
+  <head>
+    <meta charset="utf-8">
+    <style>
+      {% if fonts_uri %}
+      @font-face { font-family: "Archivo"; src: url("{{ fonts_uri }}/archivo-latin.woff2"); font-weight: 100 900; }
+      @font-face { font-family: "Instrument Sans"; src: url("{{ fonts_uri }}/instrument-sans-latin.woff2"); font-weight: 400 700; }
+      @font-face { font-family: "IBM Plex Mono"; src: url("{{ fonts_uri }}/ibm-plex-mono-400-latin.woff2"); font-weight: 400; }
+      {% endif %}
+      @page {
+        size: A4 landscape;
+        margin: 14mm 12mm 16mm;
+        @bottom-left { content: "{{ data.start|date:'F Y' }} · {{ tenant.name|cut:'"'|cut:'\\' }}"; font-size: 8px; color: #666; }
+        @bottom-center { content: "Confidentiel : données personnelles"; font-size: 8px; color: #666; }
+        @bottom-right { content: "Page " counter(page) " / " counter(pages); font-size: 8px; color: #666; }
+      }
+      body { font-family: "Instrument Sans", sans-serif; font-size: 10px; color: #111; line-height: 1.4; }
+      h1, h2, h3 { font-family: "Archivo", sans-serif; margin: 0 0 4px; }
+      h1 { font-size: 26px; }
+      h2 { font-size: 13px; }
+      h3 { font-size: 11px; }
+      .mono { font-family: "IBM Plex Mono", monospace; }
+      .num { text-align: right; white-space: nowrap; }
+      .rule { height: 3px; background: #1d4ed8; margin-bottom: 10px; }
+      .cols { display: flex; gap: 8mm; }
+      .cols > div { width: 50%; }
+      .box { border: 1px solid #999; padding: 6px 8px; margin-bottom: 8px; }
+      .box-todo { border: 2px solid #b45309; }
+      .cases { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 8px; }
+      .case { width: 48%; border: 1px solid #999; padding: 6px 8px; box-sizing: border-box; }
+      .case-est { border-style: dashed; }
+      .case b { display: block; font-size: 16px; font-family: "IBM Plex Mono", monospace; }
+      table { width: 100%; border-collapse: collapse; margin-bottom: 10px; }
+      th { text-align: left; font-size: 8.5px; color: #555; border-bottom: 1px solid #999; padding: 3px; }
+      td { padding: 3px; border-bottom: 1px solid #ddd; vertical-align: top; }
+      .est { background: #eef2ff; }
+      .band { background: #0f172a; color: #fff; padding: 5px 8px; margin: 8px 0 0; break-after: avoid; }
+      .dateline td { background: #dbeafe; font-weight: bold; }
+      .total td { border-top: 1px solid #111; font-weight: bold; }
+      .legend { font-size: 8.5px; color: #444; margin-bottom: 6px; }
+      .newpage { break-before: page; }
+      tr { break-inside: avoid; }
+    </style>
+  </head>
+  <body>
+    <div class="rule"></div>
+    <div class="cols">
+      <div>
+        <h1>Navette sociale</h1>
+        <h2 style="text-transform: capitalize;">{{ data.start|date:"F Y" }}</h2>
+        <p>{{ tenant.name }}{% if tenant.siret %} · SIRET <span class="mono">{{ tenant.siret }}</span>{% endif %}<br>Édité le {{ edited_at|date:"d/m/Y à H:i" }}</p>
+        <div class="box">
+          <h3>À quoi sert ce document ?</h3>
+          <p>Il rassemble, spectacle par spectacle, les paies du mois à faire : qui, combien de cachets ou d'heures, quel brut. <b>Ce n'est pas un bulletin de paie.</b> Bòrd Pro ne calcule ni cotisations ni déclarations.</p>
+        </div>
+        <div class="cases">
+          <div class="case">Paies à faire<b>{{ data.pay_count }}</b></div>
+          <div class="case">Personnes à payer<b>{{ data.people_count }}</b></div>
+          <div class="case">Salaires bruts<b>{{ data.totals.gross|floatformat:2 }} €</b></div>
+          <div class="case case-est">Coût total estimé pour la compagnie<b>≈ {{ data.totals.employer_cost|floatformat:2 }} €</b></div>
+        </div>
+        <p class="legend">Le coût est une estimation : salaire brut + {{ rate_percent }} % (taux de repère), pas un calcul de charges. Frais remboursés à part du brut : <b>{{ data.totals.expenses|floatformat:2 }} €</b>.</p>
+      </div>
+      <div>
+        {% if data.to_complete_count %}
+          <div class="box box-todo">
+            <h2>! {% blocktranslate count n=data.to_complete_count %}{{ n }} chose à compléter avant de faire la paie{% plural %}{{ n }} choses à compléter avant de faire la paie{% endblocktranslate %}</h2>
+            <ul style="margin: 0; padding-left: 14px;">
+              {% for block in data.shows %}{% for line in block.lines %}{% if not line.complete %}
+                <li>{{ line.row.person.full_name }}, {{ line.row.gig.date|date:"d/m/Y" }} : {{ line.row.missing|join:", " }}. <i>Où corriger : fiche de la personne ou de la date.</i></li>
+              {% endif %}{% endfor %}{% endfor %}
+              {% for gig in data.gigs_without_team %}
+                <li>{{ gig.date|date:"d/m/Y" }}, {{ gig.show.title }} : aucune équipe affectée. <i>Où corriger : fiche de la date.</i></li>
+              {% endfor %}
+            </ul>
+          </div>
+        {% else %}
+          <div class="box"><h2>✓ Tout est complet</h2></div>
+        {% endif %}
+        {% if data.cancelled_with_team %}
+          <div class="box">
+            <h3>À vérifier : dates annulées avec équipe encore affectée</h3>
+            {% for gig in data.cancelled_with_team %}<p>{{ gig.date|date:"d/m/Y" }}, {{ gig.show.title }}</p>{% endfor %}
+          </div>
+        {% endif %}
+        <div class="box">
+          <p><b>1 · Complète</b> ce qui manque, dans Bòrd Pro.</p>
+          <p><b>2 · Fais la paie</b> avec ton logiciel de paie ou le GUSO, à partir des pages suivantes.</p>
+          <p><b>3 · Ou transmets</b> le fichier CSV à ton prestataire de paie.</p>
+        </div>
+        <p class="legend">Offre Collectif.</p>
+      </div>
+    </div>
+
+    <div class="newpage"></div>
+    <p class="legend">* Heures : 1 cachet = 12 heures pour les artistes (règle France Travail) ; heures réelles pour les techniciens. Coût employeur estimé = salaire brut + {{ rate_percent }} % (taux de repère, réglable). Ordre de grandeur, pas un calcul de charges.</p>
+    {% for block in data.shows %}
+      <div class="band">
+        <b>{{ block.show.title }}</b> ·
+        {% if block.show.sacem_object_number %}<span class="mono">{{ block.show.sacem_object_number }}</span>{% else %}! N° d'objet à compléter{% endif %}
+        · {{ block.lines|length }} paie{{ block.lines|length|pluralize }}
+      </div>
+      <table>
+        <thead>
+          <tr>
+            <th>Qui</th><th>Travail</th>{% if include_ssn %}<th>N° de sécurité sociale</th>{% endif %}
+            <th class="num">Heures*</th><th class="num">Salaire brut</th><th class="num est">Coût employeur estimé</th><th class="num">Frais remboursés</th><th>État</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for line in block.lines %}
+            {% ifchanged line.row.gig.pk %}
+              <tr class="dateline"><td colspan="{% if include_ssn %}8{% else %}7{% endif %}">{{ line.row.gig.date|date:"l d/m/Y" }} · {{ line.row.gig.venue.city }} · {{ line.row.gig.venue.name }}</td></tr>
+            {% endifchanged %}
+            <tr>
+              <td>{{ line.row.person.full_name }} · {{ line.row.member.role|default:"—" }}, {{ line.row.employment|lower }}</td>
+              <td>{% if line.row.member.cachet_count %}{{ line.row.member.cachet_count }} cachet{{ line.row.member.cachet_count|pluralize }}{% elif line.hours is not None %}{{ line.hours|floatformat:"-2" }} h{% else %}—{% endif %}</td>
+              {% if include_ssn %}<td class="mono">{{ line.row.person.formatted_social_security_number|default:"—" }}</td>{% endif %}
+              <td class="num mono">{% if line.hours is not None %}{{ line.hours|floatformat:"-2" }}{% else %}—{% endif %}</td>
+              <td class="num mono">{% if line.gross is not None %}{{ line.gross|floatformat:2 }} €{% else %}—{% endif %}</td>
+              <td class="num mono est">{% if line.employer_cost is not None %}≈ {{ line.employer_cost|floatformat:2 }} €{% else %}—{% endif %}</td>
+              <td class="num mono">{{ line.expenses|floatformat:2 }} €</td>
+              <td>{% if line.complete %}✓ Prêt{% else %}! À compléter : {{ line.row.missing|join:", " }}{% endif %}</td>
+            </tr>
+          {% endfor %}
+          <tr class="total">
+            <td>Total du spectacle</td><td></td>{% if include_ssn %}<td></td>{% endif %}
+            <td class="num mono">{{ block.hours|floatformat:"-2" }}</td><td class="num mono">{{ block.gross|floatformat:2 }} €</td><td class="num mono est">≈ {{ block.employer_cost|floatformat:2 }} €</td><td class="num mono">{{ block.expenses|floatformat:2 }} €</td><td></td>
+          </tr>
+        </tbody>
+      </table>
+    {% empty %}
+      <p>Aucune personne de l'équipe sur une date de ce mois.</p>
+    {% endfor %}
+
+    {% if people %}
+      <h2 class="newpage">Récapitulatif par personne</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Qui</th><th>Travail</th>{% if include_ssn %}<th>N° de sécurité sociale</th>{% endif %}
+            <th class="num">Heures*</th><th class="num">Salaire brut</th><th class="num est">Coût employeur estimé</th><th class="num">Frais remboursés</th><th>État</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for t in people %}
+            <tr>
+              <td>{{ t.person.full_name }}</td>
+              <td>{% if t.cachets %}{{ t.cachets }} cachet{{ t.cachets|pluralize }}, {% endif %}{{ t.pays }} paie{{ t.pays|pluralize }}</td>
+              {% if include_ssn %}<td class="mono">{{ t.person.formatted_social_security_number|default:"—" }}</td>{% endif %}
+              <td class="num mono">{{ t.hours|floatformat:"-2" }}</td><td class="num mono">{{ t.gross|floatformat:2 }} €</td><td class="num mono est">≈ {{ t.employer_cost|floatformat:2 }} €</td><td class="num mono">{{ t.expenses|floatformat:2 }} €</td>
+              <td>{% if t.complete %}✓ Prêt{% else %}! À compléter{% endif %}</td>
+            </tr>
+          {% endfor %}
+          <tr class="total">
+            <td>Total du mois</td><td>{{ data.pay_count }} paie{{ data.pay_count|pluralize }}</td>{% if include_ssn %}<td></td>{% endif %}
+            <td class="num mono">{{ data.totals.hours|floatformat:"-2" }}</td><td class="num mono">{{ data.totals.gross|floatformat:2 }} €</td><td class="num mono est">≈ {{ data.totals.employer_cost|floatformat:2 }} €</td><td class="num mono">{{ data.totals.expenses|floatformat:2 }} €</td><td></td>
+          </tr>
+        </tbody>
+      </table>
+    {% endif %}
+    <p class="legend">Données arrêtées le {{ edited_at|date:"d/m/Y à H:i" }}.</p>
+  </body>
+</html>

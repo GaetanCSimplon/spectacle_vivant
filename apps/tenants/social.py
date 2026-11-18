@@ -10,13 +10,17 @@ import csv
 import datetime
 from dataclasses import dataclass, field
 from decimal import Decimal
+from pathlib import Path
 
+from django.contrib.staticfiles import finders
 from django.db.models import Sum
 from django.http import HttpResponse
+from django.utils import timezone
 from django.utils.cache import add_never_cache_headers
 from django.utils.text import slugify
 from django.utils.translation import gettext as _
 
+from apps.core.services import render_pdf
 from apps.finance.models import Expense
 from apps.finance.services import estimated_employer_cost
 from apps.gigs.models import Gig, GigMember
@@ -319,4 +323,58 @@ def csv_response(tenant, year, month):
                     m.pk,
                 ]
             )
+    return response
+
+
+def people_recap(data):
+    """One line per person for the month (the end of the PDF), same figures as the shows."""
+    people = {}
+    for block in data.shows:
+        for line in block.lines:
+            p = line.row.person
+            total = people.setdefault(
+                p.pk,
+                {
+                    "person": p,
+                    "pays": 0,
+                    "cachets": 0,
+                    "hours": Decimal("0"),
+                    "gross": Decimal("0"),
+                    "employer_cost": Decimal("0"),
+                    "expenses": Decimal("0"),
+                    "complete": True,
+                },
+            )
+            total["pays"] += 1
+            total["cachets"] += line.row.member.cachet_count or 0
+            total["hours"] += line.hours or 0
+            total["gross"] += line.gross or 0
+            total["employer_cost"] += line.employer_cost or 0
+            total["expenses"] += line.expenses
+            total["complete"] &= line.complete
+    return sorted(people.values(), key=lambda t: (t["person"].last_name, t["person"].first_name))
+
+
+def pdf_response(tenant, year, month, include_ssn=False):
+    """The "Navette sociale" PDF (A4 landscape), read from the same service as the screen and the
+    CSV. Social security numbers only when asked. Never cached."""
+    data = build_social_month(tenant, year, month)
+    fonts = finders.find("fonts/archivo-latin.woff2")
+    context = {
+        "tenant": tenant,
+        "data": data,
+        "people": people_recap(data),
+        "include_ssn": include_ssn,
+        "edited_at": timezone.localtime(),
+        "fonts_uri": fonts and Path(fonts).parent.as_uri(),
+        "rate_percent": (tenant.employer_cost_rate * 100).normalize(),
+    }
+    name = slugify(tenant.name) or "structure"
+    response = HttpResponse(
+        render_pdf("tenants/social_pdf.html", context), content_type="application/pdf"
+    )
+    response["Content-Disposition"] = (
+        f'attachment; filename="navette-sociale-{data.start:%Y-%m}-{name}.pdf"'
+    )
+    add_never_cache_headers(response)
     return response

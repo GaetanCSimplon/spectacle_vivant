@@ -37,7 +37,7 @@ Chaque mois, aider le propriétaire à vérifier le social de ses dates (écran 
   - Tests : total CSV = total du service, caractères spéciaux, aucun n° de sécurité sociale dans les journaux ; export réservé au propriétaire ; isolation.
   - Documents à relire : spec Navette §5.
   - Risques : colonnes « à vérifier » (date de naissance, catégorie) ; format à valider avec un prestataire de paie.
-- [ ] PR 5 — Export PDF « Navette sociale »
+- [x] PR 5 — Export PDF « Navette sociale »
   - Objectif : PDF A4 paysage WeasyPrint (section 4) : page 1 essentielle, détail par spectacle, récap par personne, pied de page ; case « inclure les n° de sécurité sociale » décochée par défaut.
   - Fichiers : gabarit PDF et vue d'export, polices Archivo, Instrument Sans, IBM Plex Mono.
   - Tests : total PDF = total CSV, n° de sécurité sociale absent par défaut, mention « estimation » présente, nom du fichier, accès propriétaire seul, isolation.
@@ -62,6 +62,7 @@ Chaque mois, aider le propriétaire à vérifier le social de ses dates (écran 
 - 2026-11-18 — Heures : un artiste avec des cachets est compté cachets × 12 (`hours` ignoré) ; un technicien, ou un artiste sans cachets, est compté sur `hours`. Défraiements = dépenses de la date faites par la personne.
 - 2026-11-18 — Écran : chaque ligne « À compléter » renvoie à la fiche de la personne et à la date ; le spectacle sans n° d'objet renvoie à sa modification. Pas de lien par manque. Une date annulée avec équipe s'affiche en « À vérifier ».
 - 2026-11-18 — CSV : brut et défraiements en point décimal (spec §5), dates `JJ/MM/AAAA`, n° de sécurité sociale sans espaces (pour l'import), `date_debut` = `date_fin` = `Gig.date`.
+- 2026-11-18 — PDF : une seule vue `equipe/social/pdf/` (`?secu=1` pour inclure les n° de sécurité sociale, absents par défaut) ; polices chargées depuis `static/fonts/` ; mention « Offre Collectif » en texte fixe ; « Radar t'a prévenu le [date] » repoussé à la PR 6 (aucune alerte stockée).
 
 ## Points en suspens
 - Définition d'une paie à faire confirmer par un gestionnaire de paie.
@@ -74,6 +75,8 @@ Chaque mois, aider le propriétaire à vérifier le social de ses dates (écran 
 - Format CSV (n° de sécurité sociale sans espaces, dates `JJ/MM/AAAA`, `categorie`) : à valider avec un prestataire.
 - Téléchargement du CSV non vérifié dans un navigateur ni dans un tableur.
 - Rendu de l'écran « Vérifier mon social du mois » non vérifié dans un navigateur.
+- Rendu du PDF (page 1, bandeaux, colonnes, glyphes « ≈ » et « ✓ » en police de repli) et de la case « n° de sécurité sociale » non vérifiés visuellement (aucun outil de rastérisation sur la machine).
+- Pied de page « Radar t'a prévenu le [date] » : à ajouter avec la PR 6.
 - Rendu du groupe « Social » de « Ma structure » non vérifié dans un navigateur.
 
 ## Journal
@@ -82,3 +85,4 @@ Chaque mois, aider le propriétaire à vérifier le social de ses dates (écran 
 - 2026-11-18 — PR 2 terminée : `GigMember.hours` (migration `gigs/0016`), `build_social_month` dans `apps/tenants/social.py` ; artiste avec cachets = cachets × 12, sinon heures saisies. `missing_items` signale désormais aussi « heures » (technicien) et « n° d'objet du spectacle » : l'écran et le CSV actuels les affichent dès maintenant. Audit `tenant-guard` non fait (agent absent).
 - 2026-11-18 — PR 3 terminée : écran « Vérifier mon social du mois » (`_social_month.html`, fragment HTMX pour le changement de mois) lu depuis `build_social_month` ; 2826 tests verts. Audit `tenant-guard` non fait (agent absent).
 - 2026-11-18 — PR 4 terminée : CSV de la spec §5 lu depuis `build_social_month` (22 colonnes, `statut_ligne`, `reference_bordpro` = id du `GigMember`), brut et défraiements en point décimal, dates `JJ/MM/AAAA`, fichier `navette-sociale-AAAA-MM-<structure>.csv`, bouton « Exporter pour ma paie (CSV) ». Ancien CSV F-93 supprimé. Audit `tenant-guard` non fait (agent absent).
+- 2026-11-18 — PR 5 terminée : `pdf_response` et `people_recap` dans `apps/tenants/social.py`, gabarit `tenants/social_pdf.html`, bouton et case sur l'écran Social ; 2837 tests verts. PDF vérifié par extraction de texte (3 pages A4 paysage, polices intégrées), pas à l'œil. Audit `tenant-guard` non fait (agent absent).
