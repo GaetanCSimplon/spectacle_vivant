@@ -1,0 +1,110 @@
+{% load i18n %}
+<div id="social-month">
+  <div class="mb-4 flex flex-wrap items-center justify-between gap-3">
+    <div class="flex items-center gap-2">
+      <a href="?mois={{ previous_month|date:'Y-m' }}" hx-get="?mois={{ previous_month|date:'Y-m' }}" hx-target="#social-month" hx-swap="outerHTML" hx-push-url="true" class="btn btn-secondary" aria-label="{% translate 'Mois précédent' %}">‹</a>
+      <h2 class="!mb-0 min-w-40 text-center text-base capitalize">{{ month|date:"F Y" }}</h2>
+      <a href="?mois={{ next_month|date:'Y-m' }}" hx-get="?mois={{ next_month|date:'Y-m' }}" hx-target="#social-month" hx-swap="outerHTML" hx-push-url="true" class="btn btn-secondary" aria-label="{% translate 'Mois suivant' %}">›</a>
+    </div>
+    <a href="{% url 'tenants:social-export' %}?mois={{ month|date:'Y-m' }}" class="btn btn-secondary btn-download">{% translate "Exporter (CSV)" %}</a>
+  </div>
+
+  {% if employer_missing %}
+    <p class="card card-context mb-4 text-sm">
+      {% translate "Informations de votre structure à compléter pour la paie :" %}
+      <strong>{{ employer_missing|join:", " }}</strong>.
+      <a href="{% url 'tenants:settings' %}" class="text-blue-700 underline">{% translate "Informations de la structure" %}</a>
+    </p>
+  {% endif %}
+
+  <section class="card mb-4" aria-label="{% translate 'Récapitulatif du mois' %}">
+    <dl class="grid grid-cols-2 gap-4 text-sm md:grid-cols-6">
+      <div><dt class="text-gray-500">{% translate "Paies" %}</dt><dd class="data text-lg">{{ social_month.pay_count }}</dd></div>
+      <div><dt class="text-gray-500">{% translate "Personnes" %}</dt><dd class="data text-lg">{{ social_month.people_count }}</dd></div>
+      <div><dt class="text-gray-500">{% translate "Heures" %}</dt><dd class="data text-lg">{{ social_month.totals.hours|floatformat:"-2" }}</dd></div>
+      <div><dt class="text-gray-500">{% translate "Brut total" %}</dt><dd class="data text-lg">{{ social_month.totals.gross|floatformat:2 }} €</dd></div>
+      <div><dt class="text-gray-500">{% translate "Coût employeur (estimation)" %}</dt><dd class="data text-lg">{{ social_month.totals.employer_cost|floatformat:2 }} €</dd></div>
+      <div><dt class="text-gray-500">{% translate "Défraiements (à part)" %}</dt><dd class="data text-lg">{{ social_month.totals.expenses|floatformat:2 }} €</dd></div>
+    </dl>
+    <p class="mt-3 text-sm">
+      {% if social_month.to_complete_count %}
+        <span class="pill pill-warn">{% blocktranslate count n=social_month.to_complete_count %}{{ n }} point à compléter{% plural %}{{ n }} points à compléter{% endblocktranslate %}</span>
+      {% else %}
+        <span class="pill">{% translate "Tout est complet" %}</span>
+      {% endif %}
+    </p>
+  </section>
+
+  {% for block in social_month.shows %}
+    <section class="mb-4">
+      <h3 class="mb-2 text-base">
+        {{ block.show.title }}
+        <span class="data text-sm text-gray-500">{% if block.show.sacem_object_number %}{% translate "N° d'objet" %} {{ block.show.sacem_object_number }}{% else %}{% translate "N° d'objet manquant" %} — <a href="{% url 'catalog:show-update' block.show.pk %}" class="text-blue-700 underline">{% translate "Compléter le spectacle" %}</a>{% endif %}</span>
+      </h3>
+      <div class="overflow-x-auto rounded-lg border border-page-line bg-white">
+        <table class="w-full text-left text-sm">
+          <thead>
+            <tr class="border-b border-page-line text-xs uppercase text-gray-500">
+              <th scope="col" class="px-3 py-2">{% translate "Personne" %}</th>
+              <th scope="col" class="px-3 py-2">{% translate "Emploi" %}</th>
+              <th scope="col" class="px-3 py-2">{% translate "Date" %}</th>
+              <th scope="col" class="px-3 py-2 text-right">{% translate "Heures" %}</th>
+              <th scope="col" class="px-3 py-2 text-right">{% translate "Brut" %}</th>
+              <th scope="col" class="px-3 py-2 text-right">{% translate "Coût estimé" %}</th>
+              <th scope="col" class="px-3 py-2 text-right">{% translate "Défraiements" %}</th>
+              <th scope="col" class="px-3 py-2">{% translate "État" %}</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for line in block.lines %}
+              <tr class="border-b border-page-line last:border-0">
+                <td class="px-3 py-2"><a href="{% url 'tenants:person-detail' line.row.person.pk %}" class="text-blue-700 underline">{{ line.row.person.full_name }}</a></td>
+                <td class="px-3 py-2">{{ line.row.employment|default:"—" }}</td>
+                <td class="data px-3 py-2"><a href="{% url 'gigs:detail' line.row.gig.pk %}" class="text-blue-700 underline">{{ line.row.gig.date|date:"d/m/Y" }}</a></td>
+                <td class="data px-3 py-2 text-right">{% if line.hours is not None %}{{ line.hours|floatformat:"-2" }}{% else %}—{% endif %}</td>
+                <td class="data px-3 py-2 text-right">{% if line.gross is not None %}{{ line.gross|floatformat:2 }} €{% else %}—{% endif %}</td>
+                <td class="data px-3 py-2 text-right">{% if line.employer_cost is not None %}{{ line.employer_cost|floatformat:2 }} €{% else %}—{% endif %}</td>
+                <td class="data px-3 py-2 text-right">{{ line.expenses|floatformat:2 }} €</td>
+                <td class="px-3 py-2">
+                  {% if line.complete %}
+                    {% translate "Complet" %}
+                  {% else %}
+                    <span class="pill pill-warn">{% translate "À compléter" %} : {{ line.row.missing|join:", " }}</span>
+                    <span class="ml-1 text-xs">
+                      <a href="{% url 'tenants:person-detail' line.row.person.pk %}" class="text-blue-700 underline">{% translate "Fiche" %}</a> ·
+                      <a href="{% url 'gigs:detail' line.row.gig.pk %}" class="text-blue-700 underline">{% translate "Date" %}</a>
+                    </span>
+                  {% endif %}
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </section>
+  {% empty %}
+    <p class="card text-sm text-gray-600">{% translate "Aucune personne de l'équipe sur une date de ce mois. Ajoutez-les depuis la fiche d'une date (« Équipe de la date »), avec leur cachet." %}</p>
+  {% endfor %}
+
+  {% if social_month.gigs_without_team %}
+    <section class="card mb-4">
+      <h3 class="mb-2 text-base">{% translate "Dates sans équipe" %} <span class="pill pill-warn">{% translate "À compléter" %}</span></h3>
+      <ul class="text-sm">
+        {% for gig in social_month.gigs_without_team %}
+          <li><a href="{% url 'gigs:detail' gig.pk %}" class="text-blue-700 underline">{{ gig.date|date:"d/m/Y" }} — {{ gig.show.title }}</a></li>
+        {% endfor %}
+      </ul>
+    </section>
+  {% endif %}
+
+  {% if social_month.cancelled_with_team %}
+    <section class="card mb-4">
+      <h3 class="mb-2 text-base">{% translate "Dates annulées avec équipe encore affectée" %} <span class="pill pill-warn">{% translate "À vérifier" %}</span></h3>
+      <ul class="text-sm">
+        {% for gig in social_month.cancelled_with_team %}
+          <li><a href="{% url 'gigs:detail' gig.pk %}" class="text-blue-700 underline">{{ gig.date|date:"d/m/Y" }} — {{ gig.show.title }}</a></li>
+        {% endfor %}
+      </ul>
+    </section>
+  {% endif %}
+</div>
