@@ -262,3 +262,35 @@ def test_a_cachet_never_shows_on_the_public_roadmap_or_its_pdf(client):
     assert "Léa Chanteuse" in page
     assert "4321" not in page and "4 321" not in page
     assert b"4321" not in pdf
+
+
+def test_the_owner_saves_the_hours_of_a_technician(client):
+    tenant = _login(client)
+    gig = GigFactory(tenant=tenant)
+    member = _member_on(gig)
+
+    client.post(_cachet_url(gig, member), {**_fields(member), f"m{member.pk}-hours": "7.5"})
+
+    member.refresh_from_db()
+    assert member.hours == Decimal("7.50")
+
+
+def test_negative_hours_are_refused(client):
+    tenant = _login(client)
+    gig = GigFactory(tenant=tenant)
+    member = _member_on(gig)
+
+    client.post(_cachet_url(gig, member), {**_fields(member), f"m{member.pk}-hours": "-1"})
+
+    member.refresh_from_db()
+    assert member.hours is None
+
+
+def test_a_plain_member_cannot_save_hours(client):
+    tenant = _login(client, role="member")
+    gig = GigFactory(tenant=tenant)
+    member = _member_on(gig)
+
+    response = client.post(_cachet_url(gig, member), {f"m{member.pk}-hours": "7"})
+
+    assert response.status_code == 403

@@ -9,6 +9,7 @@ import pytest
 from django.urls import reverse
 
 from apps.catalog.factories import ShowFactory
+from apps.finance.factories import ExpenseFactory
 from apps.gigs.factories import GigFactory, GigMemberFactory
 from apps.tenants import social
 from apps.tenants.factories import MembershipFactory, PersonFactory
@@ -323,3 +324,133 @@ def test_month_helpers_handle_the_year_end_and_leap_years():
 def test_the_amounts_stay_decimal_to_the_cent():
     assert social.amount(Decimal("1234.5")) == "1234,50"
     assert social.amount(None) == ""
+
+
+# --- build_social_month (Navette sociale) -----------------------------------------------------
+
+
+def _month(tenant):
+    return social.build_social_month(tenant, 2026, 11)
+
+
+def _tenant():
+    return MembershipFactory(role="owner").tenant
+
+
+def test_an_empty_month_has_no_pay_and_zero_totals():
+    month = _month(_tenant())
+
+    assert month.shows == [] and month.pay_count == 0 and month.to_complete_count == 0
+    assert month.totals.gross == 0 and month.totals.hours == 0
+
+
+def test_a_cachet_is_twelve_hours_and_the_cost_is_an_estimation():
+    tenant = _tenant()
+    _on(_gig(tenant, datetime.date(2026, 11, 5)), _person(tenant), count=2, amount="300.00")
+
+    month = _month(tenant)
+
+    line = month.shows[0].lines[0]
+    assert line.hours == 24
+    assert line.gross == Decimal("300.00")
+    assert line.employer_cost == Decimal("435.00")  # rate 0.45
+    assert month.totals.hours == 24 and month.totals.employer_cost == Decimal("435.00")
+
+
+def test_the_hours_of_a_technician_are_the_real_ones():
+    tenant = _tenant()
+    tech = _person(tenant, is_artist=False, is_technician=True)
+    member = _on(_gig(tenant, datetime.date(2026, 11, 5)), tech, count=None, amount="100.00")
+    member.hours = Decimal("7.50")
+    member.save()
+
+    assert _month(tenant).shows[0].lines[0].hours == Decimal("7.50")
+
+
+def test_a_technician_without_hours_is_to_complete():
+    tenant = _tenant()
+    tech = _person(tenant, is_artist=False, is_technician=True)
+    _on(_gig(tenant, datetime.date(2026, 11, 5)), tech, count=None)
+
+    month = _month(tenant)
+
+    assert "heures" in month.shows[0].lines[0].row.missing
+    assert month.to_complete_count == 1
+
+
+def test_a_line_without_gross_has_no_estimated_cost_and_is_to_complete():
+    tenant = _tenant()
+    _on(_gig(tenant, datetime.date(2026, 11, 5)), _person(tenant), amount=None)
+
+    line = _month(tenant).shows[0].lines[0]
+
+    assert line.employer_cost is None and not line.complete
+    assert "montant du cachet" in line.row.missing
+
+
+def test_two_shows_make_two_blocks_sorted_by_object_number():
+    tenant = _tenant()
+    second = ShowFactory(tenant=tenant, title="B", sacem_object_number="223P00000002")
+    first = ShowFactory(tenant=tenant, title="A", sacem_object_number="223P00000001")
+    person = _person(tenant)
+    _on(_gig(tenant, datetime.date(2026, 11, 5), show=second), person)
+    _on(_gig(tenant, datetime.date(2026, 11, 6), show=first), person)
+
+    month = _month(tenant)
+
+    assert [b.show.title for b in month.shows] == ["A", "B"]
+    assert month.pay_count == 2 and month.people_count == 1
+    assert month.totals.gross == Decimal("300.00")
+
+
+def test_a_show_without_object_number_is_to_complete():
+    tenant = _tenant()
+    show = ShowFactory(tenant=tenant, sacem_object_number="")
+    _on(_gig(tenant, datetime.date(2026, 11, 5), show=show), _person(tenant))
+
+    assert "n° d'objet du spectacle" in _month(tenant).shows[0].lines[0].row.missing
+
+
+def test_a_cancelled_date_is_not_paid_but_is_flagged_to_check():
+    tenant = _tenant()
+    gig = _gig(tenant, datetime.date(2026, 11, 5), status="cancelled")
+    _on(gig, _person(tenant))
+
+    month = _month(tenant)
+
+    assert month.shows == [] and month.cancelled_with_team == [gig]
+
+
+def test_a_date_without_team_is_to_complete_and_other_months_are_left_out():
+    tenant = _tenant()
+    gig = _gig(tenant, datetime.date(2026, 11, 5))
+    _gig(tenant, datetime.date(2026, 12, 5))
+
+    month = _month(tenant)
+
+    assert month.gigs_without_team == [gig] and month.to_complete_count == 1
+
+
+def test_expenses_are_kept_apart_from_the_gross():
+    tenant = _tenant()
+    person = _person(tenant)
+    gig = _gig(tenant, datetime.date(2026, 11, 5))
+    _on(gig, person, amount="100.00")
+    ExpenseFactory(gig=gig, person=person, amount="40.00")
+    ExpenseFactory(gig=gig, amount="99.00")  # paid by the structure: not a refund
+
+    line = _month(tenant).shows[0].lines[0]
+
+    assert line.expenses == Decimal("40.00") and line.gross == Decimal("100.00")
+
+
+def test_the_month_of_another_tenant_is_invisible():
+    mine, other = _tenant(), _tenant()
+    person = _person(other)
+    gig = _gig(other, datetime.date(2026, 11, 5))
+    _on(gig, person)
+    ExpenseFactory(gig=gig, person=person)
+
+    month = _month(mine)
+
+    assert month.shows == [] and month.gigs_without_team == [] and month.totals.expenses == 0

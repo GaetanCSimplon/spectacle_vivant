@@ -224,8 +224,9 @@ class MemberCachetForm(forms.ModelForm):
 
     class Meta:
         model = GigMember
-        fields = ["cachet_count", "cachet_amount"]
+        fields = ["cachet_count", "cachet_amount", "hours"]
         widgets = {
             "cachet_count": forms.NumberInput(attrs={"min": 0, "max": 99}),
             "cachet_amount": forms.NumberInput(attrs={"min": 0, "step": "0.01"}),
+            "hours": forms.NumberInput(attrs={"min": 0, "max": 999, "step": "0.25"}),
         }

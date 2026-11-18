@@ -17,6 +17,8 @@
                 {% csrf_token %}
                 <p><label for="{{ form.cachet_count.id_for_label }}">{% translate "Cachets" %} :</label>
                   {{ form.cachet_count }}</p>
+                <p><label for="{{ form.hours.id_for_label }}">{% translate "Heures (technicien)" %} :</label>
+                  {{ form.hours }}</p>
                 <p><label for="{{ form.cachet_amount.id_for_label }}">{% translate "Montant brut (€)" %} :</label>
                   {{ form.cachet_amount }}</p>
                 <button type="submit" class="btn btn-secondary">{% translate "Enregistrer" %}</button>
