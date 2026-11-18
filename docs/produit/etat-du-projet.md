@@ -1,6 +1,6 @@
 # État du projet — Bòrd Pro
 
-**Mis à jour le 2026-11-17 (contrat de cession unique et devis/factures v2 livrés : `v2026-11-17`).** Page à lire en premier : ce qui est en cours, ce qui bloque, ce qui reste à faire. Le détail sprint par sprint est dans `feuille-de-route.md` ; ici, une page.
+**Mis à jour le 2026-11-17 (contrat de cession unique et devis/factures v2 livrés : `v2026-11-17` et `v2026-11-17b`).** Page à lire en premier : ce qui est en cours, ce qui bloque, ce qui reste à faire. Le détail sprint par sprint est dans `feuille-de-route.md` ; ici, une page.
 
 **Règle de tenue** : je mets cette page à jour à chaque PR fusionnée qui change une ligne ci-dessous (la date en tête fait foi).
 
@@ -11,7 +11,7 @@ Les neuf critères de la recette du MVP (`cahier-des-charges.md` §11) sont couv
 | Sujet | État | Qui agit |
 |---|---|---|
 | **Radar** (copilote « Ce qui coince ») | V0 faite et fusionnée (#363 à #376, sans migration) : 8 règles (RAD-01, 02, 10, 20, 22, 26, 29, 35), page « Ce qui coince », pastilles sur les dates, **bouton Radar avec pastille sur toutes les pages et modale** (envoi et signature du contrat, émission devis et facture, partage de la feuille de route). **Livré** : règles et pages (`v2026-11-13b`), modales (`v2026-11-16`). Reste : RAD-11 (plan de migration à valider), confirmation d'une date, puis R0 et Paratge. Détail et reprise : `feuille-de-route.md`, section « Radar » | Utilisateur (choix de la suite) ; Claude |
-| **Contrat de cession unique** (spécification du 13/11) | PR A à G faites (#387 à #392 livrées dans `v2026-11-17`, PR G en revue) : un contrat à deux variantes de l'article 5 (avec ou sans TVA, selon le régime de la structure), contrôles de génération, PDF unique contrat + fiche technique + fiche d'accueil. Reste : recette de l'associé (page « Recette n°2 »), relecture juridique (`docs/metier/points-pour-le-juriste-contrat.md`), envoi par e-mail (V2). | Associé, juriste |
+| **Contrat de cession unique** (spécification du 13/11) | PR A à G faites et livrées (#387 à #392 dans `v2026-11-17`, PR G dans `v2026-11-17b`) : un contrat à deux variantes de l'article 5 (avec ou sans TVA, selon le régime de la structure), contrôles de génération, PDF unique contrat + fiche technique + fiche d'accueil. Reste : recette de l'associé (page « Recette n°2 »), relecture juridique (`docs/metier/points-pour-le-juriste-contrat.md`), envoi par e-mail (V2). | Associé, juriste |
 | Gestion sociale (informations d'équipe) | Faite (fiche, distribution, dépenses à rembourser) | — |
 | Feuille de route enrichie, puis espace équipe (lien personnel) | Faits et fusionnés (PR 1 à 4). La déclaration de dépense par photo ne se livre qu'avec le bucket S3 ; à tester depuis un vrai téléphone | Utilisateur |
 | Mise en page pour ordinateur (largeur 1440 px, deux colonnes, tableaux) | PR 1 à 4 faites (Bòrd, Accueil, Mes dates, fiche de date, listes, formulaires), PR 5 (éditeur de feuille de route avec aperçu) : fait, fusionné | — |
