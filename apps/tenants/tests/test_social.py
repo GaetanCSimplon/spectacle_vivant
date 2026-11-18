@@ -201,7 +201,7 @@ def test_what_is_missing_is_flagged_and_never_blocks(client):
 
     assert "Zoé Incomplète" in page
     assert "n° de sécurité sociale" in page and "montant du cachet" in page
-    assert "date de naissance" in rows[1][-1] and "nombre de cachets" in rows[1][-1]
+    assert rows[1][social.HEADER.index("statut_ligne")] == "a_completer"
 
 
 def test_a_structure_without_siret_is_told_to_complete_it(client):
@@ -221,39 +221,91 @@ def test_a_complete_structure_gets_no_banner(client):
 # --- the file -----------------------------------------------------------------------------------
 
 
-def test_the_csv_has_the_employer_the_person_and_the_cachet_on_each_line(client):
-    tenant = _login(
-        client, name="Ma Compagnie", siret="12345678901234", code_ape="9001Z", licence_number="L-1"
+def test_the_csv_has_one_line_per_pay_with_the_columns_of_the_spec(client):
+    tenant = _login(client, name="Ma Compagnie", siret="12345678901234")
+    person = _person(tenant, is_technician=True, guso_number="G-1")
+    show = ShowFactory(
+        tenant=tenant, title="Mon Spectacle", sacem_object_number="OBJ-42", analytic_code="ANA"
     )
-    person = _person(tenant, is_technician=True)
-    show = ShowFactory(tenant=tenant, title="Mon Spectacle", sacem_object_number="OBJ-42")
-    _on(_gig(tenant, datetime.date(2026, 11, 14), show=show), person, count=2, amount="1234.50")
+    gig = _gig(tenant, datetime.date(2026, 11, 14), show=show)
+    member = _on(gig, person, count=2, amount="1234.50")
+    ExpenseFactory(tenant=tenant, gig=gig, person=person, amount="20.10")
 
     response = _export(client)
     header, line = _rows(response)
 
     assert response["Content-Type"].startswith("text/csv")
-    assert response["Content-Disposition"] == 'attachment; filename="gestion-sociale-2026-11.csv"'
+    assert response["Content-Disposition"] == (
+        'attachment; filename="navette-sociale-2026-11-ma-compagnie.csv"'
+    )
     assert header == social.HEADER
     record = dict(zip(header, line, strict=True))
-    assert record["Structure"] == "Ma Compagnie"
-    assert (record["SIRET"], record["Code APE"], record["N° de licence"]) == (
-        "12345678901234",
-        "9001Z",
-        "L-1",
-    )
-    assert (record["Nom"], record["Prénom"]) == ("Chanteuse", "Léa")
-    assert record["Emploi"] == "Artiste et technicien"
-    assert record["Date de naissance"] == "17/05/1985"
-    assert record["N° de sécurité sociale"] == "1 85 05 78 006 084 91"
-    assert (record["Date"], record["Spectacle"], record["N° d'objet"]) == (
-        "14/11/2026",
-        "Mon Spectacle",
+    assert record["mois"] == "2026-11"
+    assert record["siret_employeur"] == "12345678901234"
+    assert (record["numero_objet"], record["spectacle"], record["code_analytique"]) == (
         "OBJ-42",
+        "Mon Spectacle",
+        "ANA",
     )
-    assert record["Nombre de cachets"] == "2"
-    assert record["Montant brut du cachet"] == "1234,50"
-    assert record["À compléter"] == ""
+    assert record["date_debut"] == record["date_fin"] == "14/11/2026"
+    assert (record["lieu"], record["commune"]) == (gig.venue.name, gig.venue.city)
+    assert (record["nom"], record["prenom"]) == ("Chanteuse", "Léa")
+    assert record["date_naissance"] == "17/05/1985"
+    assert record["numero_secu"] == SSN
+    assert record["numero_guso"] == "G-1"
+    assert record["categorie"] == "artiste et technicien"
+    assert record["nb_cachets"] == "2"
+    assert record["nb_heures"] == "24"
+    assert record["brut"] == "1234.50"  # decimal point; the expenses are apart from the gross
+    assert record["defraiements"] == "20.10"
+    assert record["statut_ligne"] == "complet"
+    assert record["reference_bordpro"] == str(member.pk)
+    assert "cout" not in "".join(header)
+
+
+def test_a_line_with_something_missing_says_so(client):
+    tenant = _login(client)
+    _on(_gig(tenant, datetime.date(2026, 11, 14)), _person(tenant, birth_date=None))
+
+    record = dict(zip(*_rows(_export(client)), strict=True))
+
+    assert record["statut_ligne"] == "a_completer"
+    assert record["date_naissance"] == ""
+
+
+def test_the_csv_total_is_the_total_of_the_screen_service(client):
+    tenant = _login(client)
+    for day, amount in ((3, "100.10"), (4, "200.20")):
+        _on(_gig(tenant, datetime.date(2026, 11, day)), _person(tenant), amount=amount)
+
+    _, *lines = _rows(_export(client))
+    column = social.HEADER.index("brut")
+
+    assert sum(Decimal(line[column]) for line in lines) == _month(tenant).totals.gross
+
+
+def test_a_cancelled_date_is_not_in_the_csv(client):
+    tenant = _login(client)
+    _on(_gig(tenant, datetime.date(2026, 11, 14), status="cancelled"), _person(tenant))
+
+    assert len(_rows(_export(client))) == 1
+
+
+def test_the_csv_never_logs_a_social_security_number(client, caplog):
+    tenant = _login(client)
+    _on(_gig(tenant, datetime.date(2026, 11, 14)), _person(tenant))
+
+    with caplog.at_level("DEBUG"):
+        _export(client)
+
+    assert SSN not in caplog.text
+
+
+def test_another_structure_gets_nothing_of_ours_in_the_csv(client):
+    _on(_gig(_login(client), datetime.date(2026, 11, 14)), _person(_login(client)))
+    _login(client)  # a second owner, of another structure
+
+    assert len(_rows(_export(client))) == 1
 
 
 def test_the_csv_only_holds_the_month_asked(client):
@@ -272,11 +324,12 @@ def test_the_csv_neutralises_formulas(client):
     person = _person(tenant, last_name="=cmd|' /C calc'!A0", first_name="+Léa")
     _on(_gig(tenant, datetime.date(2026, 11, 14)), person)
 
-    record = dict(zip(*_rows(_export(client)), strict=True))
+    response = _export(client)
+    record = dict(zip(*_rows(response), strict=True))
 
-    assert record["Structure"].startswith("'=")
-    assert record["Nom"].startswith("'=")
-    assert record["Prénom"].startswith("'+")
+    assert record["nom"].startswith("'=")
+    assert record["prenom"].startswith("'+")
+    assert "navette-sociale-2026-11-hyperlink1.csv" in response["Content-Disposition"]
 
 
 def test_a_plain_member_cannot_download_the_file(client):
@@ -324,8 +377,8 @@ def test_month_helpers_handle_the_year_end_and_leap_years():
 
 
 def test_the_amounts_stay_decimal_to_the_cent():
-    assert social.amount(Decimal("1234.5")) == "1234,50"
-    assert social.amount(None) == ""
+    assert social._number(Decimal("1234.5")) == "1234.50"
+    assert social._number(None) == ""
 
 
 # --- build_social_month (Navette sociale) -----------------------------------------------------

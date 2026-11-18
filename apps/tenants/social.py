@@ -14,6 +14,7 @@ from decimal import Decimal
 from django.db.models import Sum
 from django.http import HttpResponse
 from django.utils.cache import add_never_cache_headers
+from django.utils.text import slugify
 from django.utils.translation import gettext as _
 
 from apps.finance.models import Expense
@@ -138,72 +139,6 @@ def day(value):
     return value.strftime("%d/%m/%Y") if value else ""
 
 
-def amount(value):
-    return f"{Decimal(value):.2f}".replace(".", ",") if value is not None else ""
-
-
-HEADER = [
-    "Structure",
-    "SIRET",
-    "Code APE",
-    "N° de licence",
-    "Nom",
-    "Prénom",
-    "Emploi",
-    "Date de naissance",
-    "Adresse",
-    "Code postal",
-    "Ville",
-    "N° de sécurité sociale",
-    "Date",
-    "Spectacle",
-    "N° d'objet",
-    "Nombre de cachets",
-    "Montant brut du cachet",
-    "À compléter",
-]
-
-
-def csv_response(tenant, start, end):
-    """The owner's export: the employer's details are repeated on every line, so the file can be
-    imported as it is. Never cached (it holds social security numbers)."""
-    response = HttpResponse(content_type="text/csv; charset=utf-8")
-    response["Content-Disposition"] = (
-        f'attachment; filename="gestion-sociale-{start:%Y-%m}.csv"'
-        if start.day == 1 and end == month_bounds(start)[1]
-        else f'attachment; filename="gestion-sociale-{start}_{end}.csv"'
-    )
-    add_never_cache_headers(response)
-    response.write(BOM)
-    writer = csv.writer(response, delimiter=";", lineterminator="\r\n")
-    writer.writerow(HEADER)
-    for row in social_rows(tenant, start, end):
-        p, m = row.person, row.member
-        writer.writerow(
-            [
-                text(tenant.name),
-                text(tenant.siret),
-                text(tenant.code_ape),
-                text(tenant.licence_number),
-                text(p.last_name),
-                text(p.first_name),
-                text(row.employment),
-                day(p.birth_date),
-                text(p.address),
-                text(p.postal_code),
-                text(p.city),
-                text(p.formatted_social_security_number),
-                day(row.gig.date),
-                text(row.gig.show.title),
-                text(row.gig.show.sacem_object_number),
-                m.cachet_count if m.cachet_count is not None else "",
-                amount(m.cachet_amount),
-                text(", ".join(str(item) for item in row.missing)),
-            ]
-        )
-    return response
-
-
 @dataclass
 class SocialLine:
     row: SocialRow
@@ -309,3 +244,79 @@ def _add(target, line):
     target.gross += line.gross or 0
     target.employer_cost += line.employer_cost or 0
     target.expenses += line.expenses
+
+
+HEADER = [
+    "mois",
+    "siret_employeur",
+    "numero_objet",
+    "spectacle",
+    "code_analytique",
+    "date_debut",
+    "date_fin",
+    "lieu",
+    "commune",
+    "nom",
+    "prenom",
+    "date_naissance",
+    "numero_secu",
+    "numero_guso",
+    "categorie",
+    "fonction",
+    "nb_cachets",
+    "nb_heures",
+    "brut",
+    "defraiements",
+    "statut_ligne",
+    "reference_bordpro",
+]
+
+
+def _number(value):
+    """Decimal point, to the cent, as the payroll providers import it; empty when unknown."""
+    return "" if value is None else f"{Decimal(value):.2f}"
+
+
+def csv_response(tenant, year, month):
+    """The owner's file for the payroll provider: one line per pay, read from the same service as
+    the screen. No estimated cost in it. Never cached (it holds social security numbers)."""
+    data = build_social_month(tenant, year, month)
+    response = HttpResponse(content_type="text/csv; charset=utf-8")
+    name = slugify(tenant.name) or "structure"
+    response["Content-Disposition"] = (
+        f'attachment; filename="navette-sociale-{data.start:%Y-%m}-{name}.csv"'
+    )
+    add_never_cache_headers(response)
+    response.write(BOM)
+    writer = csv.writer(response, delimiter=";", lineterminator="\r\n")
+    writer.writerow(HEADER)
+    for block in data.shows:
+        for line in block.lines:
+            p, m, gig = line.row.person, line.row.member, line.row.gig
+            writer.writerow(
+                [
+                    f"{data.start:%Y-%m}",
+                    text(tenant.siret),
+                    text(block.show.sacem_object_number),
+                    text(block.show.title),
+                    text(block.show.analytic_code),
+                    day(gig.date),
+                    day(gig.date),
+                    text(gig.venue.name),
+                    text(gig.venue.city),
+                    text(p.last_name),
+                    text(p.first_name),
+                    day(p.birth_date),
+                    text(p.social_security_number),
+                    text(p.guso_number),
+                    text(line.row.employment.lower()),
+                    text(m.role),
+                    m.cachet_count if m.cachet_count is not None else "",
+                    "" if line.hours is None else f"{line.hours:f}",
+                    _number(line.gross),
+                    _number(line.expenses),
+                    "complet" if line.complete else "a_completer",
+                    m.pk,
+                ]
+            )
+    return response

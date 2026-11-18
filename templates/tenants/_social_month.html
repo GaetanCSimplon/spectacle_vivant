@@ -6,7 +6,7 @@
       <h2 class="!mb-0 min-w-40 text-center text-base capitalize">{{ month|date:"F Y" }}</h2>
       <a href="?mois={{ next_month|date:'Y-m' }}" hx-get="?mois={{ next_month|date:'Y-m' }}" hx-target="#social-month" hx-swap="outerHTML" hx-push-url="true" class="btn btn-secondary" aria-label="{% translate 'Mois suivant' %}">›</a>
     </div>
-    <a href="{% url 'tenants:social-export' %}?mois={{ month|date:'Y-m' }}" class="btn btn-secondary btn-download">{% translate "Exporter (CSV)" %}</a>
+    <a href="{% url 'tenants:social-export' %}?mois={{ month|date:'Y-m' }}" class="btn btn-secondary btn-download">{% translate "Exporter pour ma paie (CSV)" %}</a>
   </div>
 
   {% if employer_missing %}
