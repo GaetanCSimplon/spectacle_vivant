@@ -326,6 +326,15 @@ class GigMember(TenantOwnedModel):
         blank=True,
         validators=[MinValueValidator(Decimal("0"))],
     )
+    # Real hours worked (technicians); an artist's hours are cachets x 12 (Navette sociale).
+    hours = models.DecimalField(
+        _("heures travaillées"),
+        max_digits=5,
+        decimal_places=2,
+        null=True,
+        blank=True,
+        validators=[MinValueValidator(Decimal("0"))],
+    )
 
     class Meta:
         ordering = ["id"]

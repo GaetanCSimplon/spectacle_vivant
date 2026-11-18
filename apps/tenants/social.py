@@ -11,10 +11,13 @@ import datetime
 from dataclasses import dataclass, field
 from decimal import Decimal
 
+from django.db.models import Sum
 from django.http import HttpResponse
 from django.utils.cache import add_never_cache_headers
 from django.utils.translation import gettext as _
 
+from apps.finance.models import Expense
+from apps.finance.services import estimated_employer_cost
 from apps.gigs.models import Gig, GigMember
 
 BOM = "﻿"
@@ -51,11 +54,25 @@ def missing_items(member, person):
         items.append(_("n° de sécurité sociale"))
     if not person.address:
         items.append(_("adresse"))
-    if member.cachet_count is None:
-        items.append(_("nombre de cachets"))
+    if worked_hours(member, person) is None:
+        items.append(
+            _("heures") if person.is_technician and not person.is_artist else _("nombre de cachets")
+        )
     if member.cachet_amount is None:
         items.append(_("montant du cachet"))
+    if not member.gig.show.sacem_object_number:
+        items.append(_("n° d'objet du spectacle"))
     return items
+
+
+HOURS_PER_CACHET = 12  # France Travail rule, for artists paid by the cachet
+
+
+def worked_hours(member, person):
+    """Cachets x 12 for an artist with cachets; the real hours otherwise; None if unknown."""
+    if member.cachet_count is not None and (person.is_artist or member.hours is None):
+        return Decimal(member.cachet_count * HOURS_PER_CACHET)
+    return member.hours
 
 
 def employer_missing(tenant):
@@ -185,3 +202,110 @@ def csv_response(tenant, start, end):
             ]
         )
     return response
+
+
+@dataclass
+class SocialLine:
+    row: SocialRow
+    hours: Decimal | None
+    gross: Decimal | None
+    employer_cost: Decimal | None  # an estimation, never a real computation
+    expenses: Decimal  # paid back apart from the gross
+
+    @property
+    def complete(self):
+        return not self.row.missing
+
+
+@dataclass
+class SocialShow:
+    show: object
+    lines: list = field(default_factory=list)
+    hours: Decimal = Decimal("0")
+    gross: Decimal = Decimal("0")
+    employer_cost: Decimal = Decimal("0")
+    expenses: Decimal = Decimal("0")
+
+
+@dataclass
+class SocialMonth:
+    start: datetime.date
+    shows: list
+    totals: SocialShow
+    pay_count: int
+    people_count: int
+    gigs_without_team: list  # "À compléter"
+    cancelled_with_team: list  # "À vérifier"
+
+    @property
+    def to_complete_count(self):
+        return sum(1 for show in self.shows for line in show.lines if not line.complete) + len(
+            self.gigs_without_team
+        )
+
+
+def build_social_month(tenant, year, month):
+    """The single source of the month's figures, read by the screen and both exports.
+
+    One pay = one team member on one date; the month is the one of `Gig.date`. Amounts are
+    exact to the cent; the employer cost is an estimation (reference rate of the tenant).
+    """
+    start, end = month_bounds(datetime.date(year, month, 1))
+    rows = social_rows(tenant, start, end)
+    expenses = {
+        (e["gig"], e["person"]): e["total"]
+        for e in Expense.objects.filter(
+            tenant=tenant, gig__tenant=tenant, gig__date__range=(start, end), person__isnull=False
+        )
+        .values("gig", "person")
+        .annotate(total=Sum("amount"))
+    }
+    by_show = {}
+    for row in rows:
+        m = row.member
+        line = SocialLine(
+            row=row,
+            hours=worked_hours(m, row.person),
+            gross=m.cachet_amount,
+            employer_cost=estimated_employer_cost(m.cachet_amount, tenant.employer_cost_rate),
+            expenses=expenses.get((m.gig_id, m.person_id), Decimal("0")),
+        )
+        by_show.setdefault(row.gig.show_id, SocialShow(show=row.gig.show)).lines.append(line)
+    shows = sorted(
+        by_show.values(), key=lambda s: (s.show.sacem_object_number or "~", s.show.title)
+    )
+    totals = SocialShow(show=None)
+    for block in shows:
+        block.lines.sort(
+            key=lambda x: (x.row.gig.date, x.row.person.last_name, x.row.person.first_name)
+        )
+        for line in block.lines:
+            _add(block, line)
+            _add(totals, line)
+
+    gigs = Gig.objects.filter(tenant=tenant, date__range=(start, end)).select_related("show")
+    with_team = set(
+        GigMember.objects.filter(tenant=tenant, gig__in=gigs, person__isnull=False).values_list(
+            "gig_id", flat=True
+        )
+    )
+    return SocialMonth(
+        start=start,
+        shows=shows,
+        totals=totals,
+        pay_count=len(rows),
+        people_count=len({r.person.pk for r in rows}),
+        gigs_without_team=[
+            g for g in gigs.exclude(status=Gig.Status.CANCELLED) if g.pk not in with_team
+        ],
+        cancelled_with_team=[
+            g for g in gigs.filter(status=Gig.Status.CANCELLED) if g.pk in with_team
+        ],
+    )
+
+
+def _add(target, line):
+    target.hours += line.hours or 0
+    target.gross += line.gross or 0
+    target.employer_cost += line.employer_cost or 0
+    target.expenses += line.expenses
