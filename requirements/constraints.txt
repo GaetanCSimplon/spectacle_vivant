@@ -27,7 +27,7 @@ factory_boy==3.3.3
 Faker==40.44.0
 filelock==4.2.9
 fonttools==4.68.0
-gunicorn==26.2.0
+gunicorn==27.0.1
 identify==2.6.20
 idna==3.20
 iniconfig==2.3.1
