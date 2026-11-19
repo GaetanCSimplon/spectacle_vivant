@@ -26,7 +26,7 @@ from apps.gigs.models import OPTION_WARNING_DAYS, Gig, GigMember
 
 from .dashboard import awaiting_payment
 from .models import Expense, ExpenseClaim, Payment
-from .services import INVOICED, ZERO, expense_split
+from .services import INVOICED, ZERO, expense_split, team_fees_by_gig
 
 CONFIRMED = (Gig.Status.CONFIRMED, Gig.Status.SIGNED)
 SOON_DAYS = 30
@@ -304,13 +304,23 @@ def to_reimburse(tenant):
     return {"people": people, "total": sum((row["total"] for row in people), ZERO)}
 
 
-def expenses(tenant, filters):
-    """Expenses recorded in the period, by category (money really spent, as typed in)."""
+def expenses(tenant, filters, with_fees=False):
+    """Expenses recorded in the period, by category (money really spent, as typed in).
+
+    Activity reading, owner, nobody picked in "spent by": the team pay of the dates is added as
+    a "Cachets (équipe)" line, as in the Budget of a date.
+    """
     rows = _expense_rows(tenant, filters)
     by_category = [
         {"category": Expense.Category(row["category"]).label, "total": row["total"]}
         for row in rows.values("category").annotate(total=Sum("amount")).order_by("-total")
     ]
+    if with_fees and filters.view != "cash" and not filters.spender:
+        ids = _gigs(tenant, filters).values_list("pk", flat=True)
+        fees = sum(team_fees_by_gig(tenant, ids).values(), ZERO)
+        if fees:
+            by_category.append({"category": _("Cachets (équipe)"), "total": fees})
+            by_category.sort(key=lambda row: -row["total"])
     largest = by_category[0]["total"] if by_category else ZERO
     for row in by_category:  # bar length, relative to the largest category
         row["percent"] = int(row["total"] * 100 / largest) if largest else 0
@@ -490,7 +500,7 @@ def _planned_incl_tax(gig):
     return invoicing.money(gig.price * (100 + rate) / 100)
 
 
-def operations(tenant, filters, limit=None):
+def operations(tenant, filters, limit=None, with_fees=False):
     """One row per gig of the period: credit (the chosen figure), debit (its expenses), status
     and documents.
 
@@ -526,6 +536,9 @@ def operations(tenant, filters, limit=None):
         row["gig_id"]: row["total"]
         for row in spent_rows.values("gig_id").annotate(total=Sum("amount"))
     }
+
+    # The team pay is not an expense of a person: left out when "spent by" is filtered.
+    fees_by_gig = team_fees_by_gig(tenant, ids) if with_fees and not filters.spender else {}
 
     expected_by_gig = {}
     if filters.figure == "expected":
@@ -583,7 +596,8 @@ def operations(tenant, filters, limit=None):
                 "date": gig.date,
                 "label": gig.show.title,
                 "amount": amount,  # the credit: the figure chosen in the filters
-                "debit": spent_by_gig.get(gig.pk, ZERO),  # every expense of the date
+                "debit": spent_by_gig.get(gig.pk, ZERO)
+                + fees_by_gig.get(gig.pk, ZERO),  # expenses + team pay of the date
                 "status": status,
                 "documents": documents,
             }
@@ -716,12 +730,20 @@ def volet_figures(tenant, filters):
     }
 
 
-def summary(tenant, filters, today):
-    """Everything the page shows, in one dict."""
+def operations_total(rows):
+    """Debit, credit and balance (credit - debit) over every row of the period, to the cent."""
+    debit = sum((row["debit"] for row in rows), ZERO)
+    credit = sum((row["amount"] for row in rows), ZERO)
+    return {"debit": debit, "credit": credit, "balance": credit - debit}
+
+
+def summary(tenant, filters, today, with_fees=False):
+    """Everything the page shows, in one dict. `with_fees`: the owner sees the team pay."""
     revenue_totals = revenue(tenant, filters)
-    expense_totals = expenses(tenant, filters)
+    expense_totals = expenses(tenant, filters, with_fees)
     attention_items, attention_total = attention(tenant, today)
     monthly = monthly_series(tenant, filters)
+    ops = operations(tenant, filters, with_fees=with_fees)
     return {
         "filters": filters,
         "dates": date_counts(tenant, filters),
@@ -741,7 +763,8 @@ def summary(tenant, filters, today):
         "attention": attention_items,
         "attention_total": attention_total,
         "attention_urgent": any(item["rank"] == 0 for item in attention_items),
-        "operations": operations(tenant, filters),
+        "operations": ops,
+        "operations_total": operations_total(ops),
         "upcoming": upcoming(tenant, filters, today),
         "monthly": monthly,
         "chart": monthly_chart(monthly),

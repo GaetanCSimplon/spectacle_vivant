@@ -21,7 +21,7 @@ from apps.gigs.models import OPTION_WARNING_DAYS, Gig
 from apps.roadmaps.tour_requests import pending_requests
 
 from .models import Expense, Payment
-from .services import INVOICED, ZERO
+from .services import INVOICED, ZERO, team_fees_by_gig
 
 NEXT_GIGS_LIMIT = 5
 
@@ -428,7 +428,7 @@ def gig_payment_lines(gig):
     ]
 
 
-def year_overview(tenant, year):
+def year_overview(tenant, year, with_fees=False):
     """Planned against real money for the live gigs dated in `year`, all incl. tax (F-76).
 
     Cancelled gigs are left out. There is no planned expense yet: spent is what was recorded.
@@ -454,6 +454,8 @@ def year_overview(tenant, year):
         "total"
     ]
     invoiced, received, spent = invoiced or ZERO, received or ZERO, spent or ZERO
+    if with_fees:  # team pay (owner only), as in the Budget of a date
+        spent += sum(team_fees_by_gig(tenant, gigs.values_list("pk", flat=True)).values(), ZERO)
     return {
         "gig_count": gigs.count(),
         "planned": planned,
@@ -466,7 +468,9 @@ def year_overview(tenant, year):
     }
 
 
-def build_dashboard(tenant, today, period=DEFAULT_PERIOD, year=None, all_years=False):
+def build_dashboard(
+    tenant, today, period=DEFAULT_PERIOD, year=None, all_years=False, with_fees=False
+):
     """`year` is the year of the balance card (this year if None); `all_years` shows them all."""
     if period not in PERIODS:
         period = DEFAULT_PERIOD
@@ -486,7 +490,7 @@ def build_dashboard(tenant, today, period=DEFAULT_PERIOD, year=None, all_years=F
         "active_shows": active_shows_count(tenant, today),
         "upcoming_count": upcoming_count,
         "upcoming_hidden": max(upcoming_count - NEXT_GIGS_LIMIT, 0),
-        "overview": year_overview(tenant, shown_year),
+        "overview": year_overview(tenant, shown_year, with_fees),
         "invoiced_year": invoiced,
         "received_year": received,
         "awaiting": awaiting,

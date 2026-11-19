@@ -106,11 +106,12 @@ class BordView(LoginRequiredMixin, TemplateView):
         data = self.request.GET.copy()
         data.setdefault("period", "annee")
         form = BordFilterForm(data, tenant=tenant)
-        context.update(bord.summary(tenant, form.filters(today), today))
+        owner = is_tenant_owner(self.request.user, tenant)
+        context.update(bord.summary(tenant, form.filters(today), today, with_fees=owner))
         context.update(
             form=form,
             now=timezone.localtime(),
-            is_owner=is_tenant_owner(self.request.user, tenant),
+            is_owner=owner,
             figure_label=bord.FIGURES[context["filters"].figure],
             views=bord.VIEWS,
             query_pairs=[(k, v) for k, v in self.request.GET.items()],

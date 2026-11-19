@@ -11,6 +11,7 @@ from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 from django.views.generic import FormView, TemplateView
 
+from apps.accounts.services import is_tenant_owner
 from apps.finance import dashboard
 from apps.finance.dashboard import build_dashboard
 from apps.gigs import services as gig_services
@@ -128,7 +129,12 @@ class HomeView(LoginRequiredMixin, TemplateView):
             year = dashboard.parse_year(asked, self.request.tenant, today)
             context.update(
                 build_dashboard(
-                    self.request.tenant, today, period, year, all_years=asked == dashboard.ALL_YEARS
+                    self.request.tenant,
+                    today,
+                    period,
+                    year,
+                    all_years=asked == dashboard.ALL_YEARS,
+                    with_fees=is_tenant_owner(self.request.user, self.request.tenant),
                 )
             )
             gig_services.attach_progress(context["next_gigs"])

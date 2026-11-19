@@ -8,6 +8,8 @@ from django.urls import reverse
 from django.utils import timezone
 
 from apps.finance import bord, services
+from apps.gigs.factories import GigMemberFactory
+from apps.gigs.models import Gig
 from apps.tenants.factories import MembershipFactory, PersonFactory, TenantFactory
 from apps.tenants.models import Person
 
@@ -296,3 +298,68 @@ def test_the_table_has_a_debit_and_a_credit_column(client, tenant, gig):
 
     assert ">Débit<" in table and ">Crédit<" in table and ">Montant<" not in table
     assert "130 €" in table
+
+
+# --- Bord: team pay in the debit and the "Total" line (PR 3) ---
+
+
+def _fee(gig, amount):
+    GigMemberFactory(gig=gig, tenant=gig.tenant, cachet_amount=amount)
+
+
+def test_the_bord_debit_adds_the_team_pay_for_the_owner_only():
+    tenant = TenantFactory(**TENANT_FIELDS)
+    gig = make_gig(tenant=tenant, price="1000.00")
+    ExpenseFactory(gig=gig, amount="100.00")
+    _fee(gig, "250.50")
+    cancelled = make_gig(tenant=tenant, gig_fields={"status": Gig.Status.CANCELLED})
+    _fee(cancelled, "999.00")
+
+    owner = {r["gig"].pk: r for r in bord.operations(tenant, _filters(), with_fees=True)}
+    member = {r["gig"].pk: r for r in bord.operations(tenant, _filters())}
+
+    assert owner[gig.pk]["debit"] == D("350.50")
+    assert owner[cancelled.pk]["debit"] == D("0")
+    assert member[gig.pk]["debit"] == D("100.00")
+
+
+def test_the_team_pay_is_left_out_when_spent_by_is_filtered():
+    tenant = TenantFactory(**TENANT_FIELDS)
+    gig = make_gig(tenant=tenant)
+    ExpenseFactory(gig=gig, amount="100.00")
+    _fee(gig, "250.00")
+
+    row = bord.operations(tenant, _filters(spender="structure"), with_fees=True)[0]
+
+    assert row["debit"] == D("100.00")
+
+
+def test_the_team_pay_of_another_tenant_is_never_counted():
+    tenant, other = TenantFactory(**TENANT_FIELDS), TenantFactory(**TENANT_FIELDS)
+    gig = make_gig(tenant=tenant)
+    GigMemberFactory(gig=gig, tenant=other, cachet_amount="500.00")
+
+    assert bord.operations(tenant, _filters(), with_fees=True)[0]["debit"] == D("0")
+
+
+def test_the_total_covers_every_date_and_gives_the_balance():
+    tenant = TenantFactory(**TENANT_FIELDS)
+    for _i in range(23):  # more than the 20 rows shown
+        gig = make_gig(tenant=tenant, price="100.00")
+        ExpenseFactory(gig=gig, amount="30.10")
+
+    total = bord.operations_total(bord.operations(tenant, _filters()))
+
+    assert total["credit"] == D("2300.00") and total["debit"] == D("692.30")
+    assert total["balance"] == D("1607.70")
+    assert bord.operations_total([]) == {"debit": D("0"), "credit": D("0"), "balance": D("0")}
+
+
+def test_the_total_line_names_the_balance(client, tenant, gig):
+    page = client.get(reverse("tenants:profile")).content.decode()
+    table = page.split('id="operations"')[1].split("</table>")[0]
+    assert "<tfoot>" in table and "Excédent" in table
+
+    ExpenseFactory(gig=gig, amount="5000.00")
+    table = client.get(reverse("tenants:profile")).content.decode().split('id="operations"')[1]
+    assert "Déficit" in table.split("</table>")[0]
