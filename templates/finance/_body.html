@@ -15,6 +15,11 @@
     <p class="flex justify-between"><span>{% translate "Encaissé" %}</span><span>{{ balance.received|floatformat:"0g" }} €</span></p>
     <p class="flex justify-between text-gray-600"><span>{% translate "Reste à encaisser" %}</span><span>{{ balance.outstanding|floatformat:"0g" }} €</span></p>
     <p class="flex justify-between"><span>{% translate "Dépensé" %}</span><span>{{ balance.spent|floatformat:"0g" }} €</span></p>
+{% if is_owner %}
+    <p class="flex justify-between pl-4 text-gray-600"><span>{% translate "dont dépenses saisies" %}</span><span>{{ balance.entered|floatformat:"0g" }} €</span></p>
+    <p class="flex justify-between pl-4 text-gray-600"><span>{% translate "dont cachets (équipe)" %}</span><span>{{ balance.fees|floatformat:"0g" }} €</span></p>
+    {% if balance.fees_double_count %}<p class="rounded-lg bg-amber-50 p-2 text-amber-900">{% translate "Des cachets sont aussi saisis en dépense : ils sont peut-être comptés deux fois." %}</p>{% endif %}
+    {% endif %}
     <p class="flex justify-between border-t border-gray-200 pt-1 font-semibold"><span>{% translate "Résultat" %} ({% translate "encaissé − dépensé" %})</span><span>{{ balance.result|floatformat:"0g" }} €</span></p>
     <p class="pt-1 text-gray-500">{% blocktranslate with price=balance.planned_excl_tax %}Prix de cession : {{ price }} € HT.{% endblocktranslate %}</p>
   </div>

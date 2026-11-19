@@ -8,6 +8,7 @@ from django.http import FileResponse, Http404
 from django.shortcuts import get_object_or_404, redirect, render
 from django.views import View
 
+from apps.accounts.services import is_tenant_owner
 from apps.core.views import TenantScopedMixin, wants_fragment
 from apps.documents.models import Invoice
 from apps.gigs.models import Gig
@@ -63,9 +64,11 @@ class FinanceMixin(TenantScopedMixin):
                     or (PaymentForm(initial=_payment_initial(remaining)) if remaining else None),
                 }
             )
+        owner = is_tenant_owner(self.request.user, tenant)
         return {
             "gig": self.gig,
-            "balance": services.gig_balance(self.gig),
+            "is_owner": owner,
+            "balance": services.gig_balance(self.gig, with_fees=owner),
             "rows": rows,
             "claims": ExpenseClaim.objects.filter(
                 gig=self.gig, tenant=tenant, status=ExpenseClaim.Status.PENDING

@@ -13,6 +13,7 @@ from django.utils.translation import gettext_lazy as _
 
 from apps.documents import invoicing
 from apps.documents.models import Invoice
+from apps.gigs.models import Gig, GigMember
 
 from .models import Expense, ExpenseClaim, Payment
 
@@ -121,7 +122,13 @@ class GigBalance:
     planned_incl_tax: Decimal
     invoiced: Decimal
     received: Decimal
-    spent: Decimal
+    entered: Decimal  # expenses typed in for the date
+    fees: Decimal  # gross pay of the team members of the date (not an expense row)
+    fees_double_count: bool = False  # a "Cachets" expense exists next to the team fees
+
+    @property
+    def spent(self):
+        return self.entered + self.fees
 
     @property
     def outstanding(self):
@@ -132,15 +139,27 @@ class GigBalance:
         return self.received - self.spent
 
 
-def gig_balance(gig):
+def gig_balance(gig, with_fees=True):
+    """`with_fees=False` for a plain member: the pay of the team is private (owner only)."""
     rate = invoicing.vat_rate_for(gig.tenant)
     invoices = Invoice.objects.filter(gig=gig, tenant=gig.tenant, status__in=INVOICED)
+    expenses = Expense.objects.filter(gig=gig, tenant=gig.tenant)
+    fees = ZERO
+    if with_fees and gig.status != Gig.Status.CANCELLED:
+        fees = (
+            GigMember.objects.filter(gig=gig, tenant=gig.tenant).aggregate(
+                total=Sum("cachet_amount")
+            )["total"]
+            or ZERO
+        )
     return GigBalance(
         planned_excl_tax=gig.price,
         planned_incl_tax=invoicing.money(gig.price * (100 + rate) / 100),
         invoiced=sum((i.total_incl_tax for i in invoices), ZERO),
         received=_total(Payment.objects.filter(invoice__gig=gig, tenant=gig.tenant)),
-        spent=_total(Expense.objects.filter(gig=gig, tenant=gig.tenant)),
+        entered=_total(expenses),
+        fees=fees,
+        fees_double_count=fees > 0 and expenses.filter(category=Expense.Category.FEES).exists(),
     )
 
 
