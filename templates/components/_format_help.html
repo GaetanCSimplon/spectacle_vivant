@@ -1,0 +1,14 @@
+{% load i18n %}{% comment %}The « ? » button of a field whose format people get wrong: opens a bubble with the rule and an example. Needs `name` (the form field name); renders nothing for other fields.{% endcomment %}
+{% if name == "iban" %}{% translate "Un IBAN français compte 27 caractères et commence par FR. Espaces et tirets sont acceptés. Attention : la lettre O n'est pas le zéro 0, ni la lettre I le chiffre 1." as rule %}{% translate "FR76 3000 6000 0112 3456 7890 189" as example %}
+{% elif name == "bic" %}{% translate "8 ou 11 lettres et chiffres, indiqués sur votre relevé d'identité bancaire." as rule %}{% translate "AGRIFRPP" as example %}
+{% elif name == "siret" %}{% translate "14 chiffres : les 9 du SIREN suivis de 5 chiffres. Les espaces sont acceptés." as rule %}{% translate "123 456 789 00012" as example %}
+{% elif name == "vat_number" %}{% translate "FR, puis 2 caractères de clé et le SIREN (9 chiffres). Les espaces sont acceptés." as rule %}{% translate "FR12 345678901" as example %}
+{% elif name == "code_ape" %}{% translate "4 chiffres et 1 lettre, avec ou sans point." as rule %}{% translate "90.01Z" as example %}
+{% elif name == "social_security_number" %}{% translate "15 caractères, écrits sur la carte Vitale. Les espaces sont acceptés." as rule %}{% translate "1 85 05 78 006 084 91" as example %}
+{% elif name == "sacem_object_number" %}{% translate "Le numéro attribué à votre œuvre ou spectacle par la SACEM." as rule %}{% translate "123456" as example %}
+{% elif name == "postal_code" %}{% translate "5 chiffres." as rule %}{% translate "34000" as example %}
+{% endif %}
+{% if rule %}<span class="relative inline-block align-middle" x-data="{ open: false }" @keydown.escape="open = false" @click.outside="open = false">
+  <button type="button" class="ml-1 inline-flex h-6 w-6 items-center justify-center rounded-full border border-blue-700 text-sm font-bold text-blue-700" :aria-expanded="open" aria-controls="help-{{ field.auto_id }}" aria-label="{% translate 'Aide pour ce champ' %}" @click="open = !open">?</button>
+  <span id="help-{{ field.auto_id }}" x-show="open" x-cloak role="note" class="absolute left-0 top-8 z-10 w-64 rounded border border-blue-700 bg-white p-3 text-sm font-normal shadow">{{ rule }} <strong>{% translate "Exemple :" %}</strong> {{ example }}</span>
+</span>{% endif %}

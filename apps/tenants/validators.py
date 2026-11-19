@@ -7,15 +7,22 @@ IBAN_SHAPE = re.compile(r"^[A-Z]{2}\d{2}[A-Z0-9]{11,30}$")
 
 
 def normalize_iban(value):
-    """Spaces are only for reading: store the IBAN as capitals without them."""
-    return re.sub(r"\s+", "", value or "").upper()
+    """Spaces, dots and dashes are only for reading: store the IBAN as capitals without them."""
+    return re.sub(r"[\s.-]+", "", value or "").upper()
 
 
 def validate_iban(value):
     """Check the shape and the modulo-97 key, which catches most typing mistakes."""
     iban = normalize_iban(value)
     if not IBAN_SHAPE.match(iban):
-        raise ValidationError(_("Cet IBAN n'a pas un format valide."))
+        raise ValidationError(
+            _(
+                "Un IBAN commence par 2 lettres et 2 chiffres (FR76 pour la France, 27 caractères "
+                "au total) : vous en avez saisi %(count)d. Vérifiez chaque caractère, "
+                "en particulier la lettre O et le zéro 0, la lettre I et le chiffre 1."
+            )
+            % {"count": len(iban)}
+        )
     moved = iban[4:] + iban[:4]
     as_number = "".join(str(int(char, 36)) for char in moved)
     if int(as_number) % 97 != 1:
