@@ -20,7 +20,7 @@ Trois ajustements demandés avant le passage en production : aide à la saisie (
   - Fichiers : apps/finance/services.py, templates/gigs/gig_detail.html, vue de la date.
   - Tests : cachets comptés, aucun cachet, date sans équipe, double compte signalé, isolation.
   - Risques : double compte ; montants exacts au centime.
-- [ ] PR 3 — Bord : débit aligné et ligne « Total »
+- [x] PR 3 — Bord : débit aligné et ligne « Total »
   - Objectif : la colonne « Débit » des « Opérations récentes » inclut les cachets (même calcul que PR 2) ; le tableau de bord et les exports CSV sont alignés sur cette définition ; ligne « Total » (débit, crédit, solde crédit − débit) sur toutes les dates de la période (pas seulement les 20 affichées), solde écrit « Excédent », « À l'équilibre » ou « Déficit » (jamais en couleur seule), version mobile incluse.
   - Fichiers : apps/finance/bord.py, templates/tenants/_bord_results.html, exports CSV, tableau de bord.
   - Tests : excédent, équilibre, déficit, période vide, filtre « dépense faite par », plus de 20 dates, isolation.
@@ -35,6 +35,7 @@ Trois ajustements demandés avant le passage en production : aide à la saisie (
 - 2026-11-19 — Le « ? » est branché dans `_field_p.html` : il apparaît dans les formulaires à sections (structure, organisateur, lieu, équipe, spectacle). Les formulaires en `form.as_p` (onboarding, formulaires publics) n'ont pas l'aide.
 - 2026-11-19 — Les cachets restent privés au propriétaire : `gig_balance(gig, with_fees=…)` ne les compte ni ne les affiche pour un membre simple (sinon il les déduirait du « Dépensé »). Le Budget d'un membre et celui du propriétaire peuvent donc différer.
 - 2026-11-19 — La page « Paiements et dépenses » affiche la même ventilation que le Budget de la date.
+- 2026-11-19 — PR 3 : le filtre « dépense faite par » exclut les cachets du débit ; les exports CSV restent sans cachets (ils listent des lignes de dépense).
 
 ## Points en suspens
 - Bulle du « ? » non vérifiée dans un navigateur (affichage, clavier Échap) ; test de présence limité aux champs de « Ma structure ».
@@ -48,3 +49,4 @@ Trois ajustements demandés avant le passage en production : aide à la saisie (
 - 2026-11-19 — Plan validé.
 - 2026-11-19 — PR 1 terminée : bouton « ? » et messages IBAN (tirets et points acceptés, longueur saisie indiquée).
 - 2026-11-19 — PR 2 terminée : cachets de l'équipe comptés dans « Dépensé » du Budget (propriétaire seulement), avertissement de double compte.
+- 2026-11-19 — PR 3 terminée : débit du Bord, carte « frais », accueil et ligne « Total » alignés sur les cachets (propriétaire seulement).

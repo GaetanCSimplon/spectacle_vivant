@@ -139,6 +139,17 @@ class GigBalance:
         return self.received - self.spent
 
 
+def team_fees_by_gig(tenant, gig_ids):
+    """Gross pay of the team per gig id, cancelled gigs left out (owner only: private)."""
+    rows = (
+        GigMember.objects.filter(tenant=tenant, gig_id__in=gig_ids)
+        .exclude(gig__status=Gig.Status.CANCELLED)
+        .values("gig_id")
+        .annotate(total=Sum("cachet_amount"))
+    )
+    return {row["gig_id"]: row["total"] for row in rows if row["total"]}
+
+
 def gig_balance(gig, with_fees=True):
     """`with_fees=False` for a plain member: the pay of the team is private (owner only)."""
     rate = invoicing.vat_rate_for(gig.tenant)
