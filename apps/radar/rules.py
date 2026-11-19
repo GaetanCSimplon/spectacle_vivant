@@ -17,6 +17,7 @@ from django.utils.translation import ngettext
 
 from apps.documents import checks
 from apps.documents.models import Invoice, Quote
+from apps.documents.services import contract_key_facts
 from apps.finance.models import Expense
 from apps.gigs.models import Gig
 from apps.tenants import social
@@ -78,6 +79,13 @@ EXPLANATIONS = {
             "signe un document à jour ou rien."
         ),
         _("Il compléterait les informations de l'organisateur et de la date avant d'envoyer."),
+    ),
+    "RAD-11": Explanation(
+        _(
+            "Le contrat envoyé ou signé ne dit plus la même chose que la date : l'organisateur "
+            "risque de signer, ou d'avoir signé, un prix, un lieu ou un jour devenus faux."
+        ),
+        _("Il confirmerait avec l'organisateur, puis générerait une nouvelle version du contrat."),
     ),
     "RAD-20": Explanation(
         _(
@@ -187,6 +195,36 @@ def rad_10_contract_gaps(gig, today=None):
     ) % {"gig": _label(gig), "n": count}
     url = reverse("documents:contract-history", args=[gig.pk])
     return Finding("RAD-10", IMPORTANT, message, url, gig)
+
+
+def rad_11_contract_differs(gig):
+    """A contract already sent or signed whose price, date or venue is no longer the date's."""
+    contract = getattr(gig, "contract", None)
+    version = contract.latest_version if contract else None
+    if not version or not version.key_facts:
+        return None
+    if not (contract.sent_at or contract.status == contract.Status.SIGNED):
+        return None  # a draft is covered by "version à actualiser"
+    now = contract_key_facts(gig)
+    then = version.key_facts
+    changed = []
+    if now["price"] != then.get("price"):
+        changed.append(
+            _("le prix (contrat : %(then)s €, date : %(now)s €)")
+            % {"then": then.get("price"), "now": now["price"]}
+        )
+    if now["date"] != then.get("date"):
+        changed.append(_("le jour du concert"))
+    if now["venue_id"] != then.get("venue_id"):
+        changed.append(_("le lieu (contrat : %(then)s)") % {"then": then.get("venue")})
+    if not changed:
+        return None
+    message = _("%(gig)s : le contrat n'est plus à jour, %(what)s a changé depuis sa version.") % {
+        "gig": _label(gig),
+        "what": ", ".join(str(c) for c in changed),
+    }
+    url = reverse("documents:contract-history", args=[gig.pk])
+    return Finding("RAD-11", IMPORTANT, message, url, gig)
 
 
 def rad_20_roadmap_times(gig, today, horizon=ROADMAP_DAYS):
@@ -369,6 +407,7 @@ def gig_findings(gig, today, expenses_total=Decimal("0")):
     """The rules about one date."""
     found = [
         rad_10_contract_gaps(gig, today),
+        rad_11_contract_differs(gig),
         rad_20_roadmap_times(gig, today),
         rad_22_times_out_of_order(gig),
         rad_26_no_place(gig),
@@ -427,7 +466,7 @@ def attach_findings(gigs, today=None):
 # with Paratge later): the rules of the structure and of the date that bear on it.
 ACTIONS = {
     "contract_send": {"RAD-01", "RAD-10"},
-    "contract_sign": {"RAD-01", "RAD-10", "RAD-29"},
+    "contract_sign": {"RAD-01", "RAD-10", "RAD-11", "RAD-29"},
     "quote_issue": {"RAD-01", "RAD-41", "RAD-42"},
     "invoice_issue": {"RAD-01", "RAD-02", "RAD-40", "RAD-41", "RAD-42", "RAD-43", "RAD-44"},
     "roadmap_share": {"RAD-20", "RAD-22", "RAD-26"},
