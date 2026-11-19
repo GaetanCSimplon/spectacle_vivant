@@ -1,6 +1,6 @@
 # État du projet — Bòrd Pro
 
-**Mis à jour le 2026-11-17 (contrat de cession unique et devis/factures v2 livrés : `v2026-11-17` et `v2026-11-17b`).** Page à lire en premier : ce qui est en cours, ce qui bloque, ce qui reste à faire. Le détail sprint par sprint est dans `feuille-de-route.md` ; ici, une page.
+**Mis à jour le 2026-11-19 (Navette sociale, ajustements avant production et CI allégée livrés : `v2026-11-19`, aucune PR ouverte).** Page à lire en premier : ce qui est en cours, ce qui bloque, ce qui reste à faire. Le détail sprint par sprint est dans `feuille-de-route.md` ; ici, une page.
 
 **Règle de tenue** : je mets cette page à jour à chaque PR fusionnée qui change une ligne ci-dessous (la date en tête fait foi).
 
