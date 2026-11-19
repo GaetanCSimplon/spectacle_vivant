@@ -42,7 +42,7 @@ from .forms import (
     PersonForm,
     TenantProfileForm,
 )
-from .models import MessageTemplate, Person
+from .models import MessageTemplate, Person, SocialMonthFollow
 from .services import (
     CannotLeave,
     cancel_deletion,
@@ -413,14 +413,46 @@ class SocialView(OwnerRequiredMixin, TemplateView):
         context = super().get_context_data(**kwargs)
         first = social.parse_month(self.request.GET.get("mois"), timezone.localdate())
         tenant = self.request.tenant
+        month_data = social.build_social_month(tenant, first.year, first.month)
+        follow = SocialMonthFollow.objects.filter(tenant=tenant, month=first).first()
         context.update(
             is_owner=True,
+            follow=follow,
+            modified_since_export=social.modified_since_export(follow, month_data),
             month=first,
             previous_month=social.shift_month(first, -1),
             next_month=social.shift_month(first, 1),
-            social_month=social.build_social_month(tenant, first.year, first.month),
+            social_month=month_data,
             employer_missing=social.employer_missing(tenant),
         )
+        return context
+
+
+class SocialFollowView(OwnerRequiredMixin, View):
+    """Tick "Transmis à mon prestataire" / "Paie faite" for a month (owner only, POST only)."""
+
+    http_method_names = ["post"]
+
+    def post(self, request):
+        first = social.parse_month(request.POST.get("mois"), timezone.localdate())
+        social.set_follow(
+            request.tenant, first, "transmitted" in request.POST, "paid" in request.POST
+        )
+        return redirect(f"{reverse('tenants:social')}?mois={first:%Y-%m}")
+
+
+class SocialHistoryView(OwnerRequiredMixin, ListView):
+    """The months already followed, newest first (owner only)."""
+
+    template_name = "tenants/social_history.html"
+    context_object_name = "follows"
+
+    def get_queryset(self):
+        return SocialMonthFollow.objects.filter(tenant=self.request.tenant)
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["is_owner"] = True
         return context
 
 

@@ -642,3 +642,137 @@ def test_the_pdf_is_for_the_owner_only_and_never_shows_another_structure(client)
     assert "Autrui" not in _pdf_text(_pdf(client))
     client.logout()
     assert _pdf(client).status_code == 302
+
+
+# --- follow-up of the month and Radar reminder (RAD-65) ------------------------------------------
+
+
+from apps.core.tests.isolation_registry import mark_isolation_tested  # noqa: E402
+from apps.radar import rules  # noqa: E402
+from apps.tenants.factories import TenantFactory  # noqa: E402
+from apps.tenants.models import SocialMonthFollow  # noqa: E402
+
+mark_isolation_tested(SocialMonthFollow)
+
+LATE = datetime.date(2026, 11, 20)  # J-10 of November is the 20th
+EARLY = datetime.date(2026, 11, 19)
+
+
+def _incomplete_month(tenant):
+    # No gross amount: one point left to complete.
+    person = _person(tenant)
+    _on(_gig(tenant, datetime.date(2026, 11, 25)), person, amount=None)
+
+
+def _rad65(tenant, today):
+    return [f for f in rules.all_findings(tenant, today) if f.code == "RAD-65"]
+
+
+def test_the_reminder_waits_for_ten_days_before_the_end_of_the_month():
+    tenant = TenantFactory()
+    _incomplete_month(tenant)
+
+    assert _rad65(tenant, EARLY) == []
+    found = _rad65(tenant, LATE)
+    assert len(found) == 1
+    assert "11/2026" in found[0].message and "30/11/2026" in found[0].message
+    assert "Léa" not in found[0].message and "Chanteuse" not in found[0].message
+
+
+def test_no_reminder_without_a_pay_in_the_month():
+    assert _rad65(TenantFactory(), LATE) == []
+
+
+def test_the_reminder_closes_when_everything_is_complete():
+    tenant = TenantFactory()
+    show = ShowFactory(tenant=tenant, title="Complet", sacem_object_number="123456")
+    gig = _gig(tenant, datetime.date(2026, 11, 25), show=show)
+    member = _on(gig, _person(tenant), amount=None)
+    assert _rad65(tenant, LATE)
+
+    member.cachet_amount = Decimal("150.00")
+    member.save()
+
+    assert social.build_social_month(tenant, 2026, 11).to_complete_count == 0
+    assert _rad65(tenant, LATE) == []
+
+
+def test_the_reminder_closes_when_the_pay_is_done():
+    tenant = TenantFactory()
+    _incomplete_month(tenant)
+    social.set_follow(tenant, NOV, transmitted=True, paid=True)
+
+    assert _rad65(tenant, LATE) == []
+
+
+def test_the_reminder_of_one_structure_ignores_the_follow_up_of_another():
+    a, b = TenantFactory(), TenantFactory()
+    _incomplete_month(a)
+    _incomplete_month(b)
+    social.set_follow(a, NOV, transmitted=True, paid=True)
+
+    assert _rad65(a, LATE) == []
+    assert len(_rad65(b, LATE)) == 1
+
+
+def test_the_boxes_are_saved_and_kept(client):
+    tenant = _login(client)
+
+    response = client.post(
+        reverse("tenants:social-follow"), {"mois": "2026-11", "transmitted": "on"}
+    )
+
+    assert response.status_code == 302
+    follow = SocialMonthFollow.objects.get(tenant=tenant, month=NOV)
+    assert follow.transmitted_at and follow.paid_at is None
+    first = follow.transmitted_at
+    client.post(
+        reverse("tenants:social-follow"), {"mois": "2026-11", "transmitted": "on", "paid": "on"}
+    )
+    follow.refresh_from_db()
+    assert follow.transmitted_at == first and follow.paid_at
+    client.post(reverse("tenants:social-follow"), {"mois": "2026-11"})
+    follow.refresh_from_db()
+    assert follow.transmitted_at is None and follow.paid_at is None
+
+
+def test_an_export_is_remembered_and_a_later_change_is_flagged(client):
+    tenant = _login(client)
+    person = _person(tenant)
+    member = _on(_gig(tenant, datetime.date(2026, 11, 10)), person)
+
+    assert _export(client).status_code == 200
+    follow = SocialMonthFollow.objects.get(tenant=tenant, month=NOV)
+    assert follow.exported_at
+    assert "Modifié depuis le dernier export" not in _page(client).content.decode()
+
+    member.cachet_amount = Decimal("999.00")
+    member.save()
+
+    assert "Modifié depuis le dernier export" in _page(client).content.decode()
+
+
+def test_the_pdf_export_is_remembered_too(client):
+    tenant = _login(client)
+    _on(_gig(tenant, datetime.date(2026, 11, 10)), _person(tenant))
+
+    client.get(reverse("tenants:social-pdf"), {"mois": "2026-11"})
+
+    assert SocialMonthFollow.objects.filter(tenant=tenant, month=NOV).exists()
+
+
+def test_the_history_lists_my_months_only_and_is_owner_only(client):
+    other = TenantFactory()
+    SocialMonthFollow.objects.create(tenant=other, month=datetime.date(2026, 9, 1))
+    tenant = _login(client)
+    SocialMonthFollow.objects.create(tenant=tenant, month=datetime.date(2026, 10, 1))
+
+    content = client.get(reverse("tenants:social-history")).content.decode()
+
+    assert "octobre 2026" in content and "septembre 2026" not in content
+    assert client.get(reverse("tenants:social-history")).status_code == 200
+    member = _login(client, role="member")
+    assert member is not None
+    for name in ("tenants:social-history",):
+        assert client.get(reverse(name)).status_code == 403
+    assert client.post(reverse("tenants:social-follow"), {"mois": "2026-11"}).status_code == 403

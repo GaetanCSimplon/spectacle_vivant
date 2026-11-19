@@ -16,6 +16,21 @@
     </div>
   </div>
 
+  <section class="card mb-4 text-sm" aria-label="{% translate 'Suivi du mois' %}">
+    <form method="post" action="{% url 'tenants:social-follow' %}" class="flex flex-wrap items-center gap-4">
+      {% csrf_token %}
+      <input type="hidden" name="mois" value="{{ month|date:'Y-m' }}">
+      <label class="flex items-center gap-1"><input type="checkbox" name="transmitted" {% if follow.transmitted_at %}checked{% endif %}> {% translate "Transmis à mon prestataire" %}{% if follow.transmitted_at %} ({{ follow.transmitted_at|date:"d/m/Y" }}){% endif %}</label>
+      <label class="flex items-center gap-1"><input type="checkbox" name="paid" {% if follow.paid_at %}checked{% endif %}> {% translate "Paie faite" %}{% if follow.paid_at %} ({{ follow.paid_at|date:"d/m/Y" }}){% endif %}</label>
+      <button type="submit" class="btn btn-secondary">{% translate "Enregistrer" %}</button>
+      <a href="{% url 'tenants:social-history' %}" class="text-blue-700 underline">{% translate "Historique des mois" %}</a>
+    </form>
+    {% if follow.exported_at %}
+      <p class="mt-2 text-gray-600">{% blocktranslate with d=follow.exported_at|date:"d/m/Y à H:i" %}Dernier export le {{ d }}.{% endblocktranslate %}
+        {% if modified_since_export %}<span class="pill pill-warn">{% translate "Modifié depuis le dernier export" %}</span>{% endif %}</p>
+    {% endif %}
+  </section>
+
   {% if employer_missing %}
     <p class="card card-context mb-4 text-sm">
       {% translate "Informations de votre structure à compléter pour la paie :" %}

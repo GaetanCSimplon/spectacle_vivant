@@ -249,3 +249,28 @@ class MessageTemplate(TenantOwnedModel):
 
     def __str__(self):
         return self.get_kind_display()
+
+
+class SocialMonthFollow(TenantOwnedModel):
+    """Where the monthly social check stands for one month: handed to the payroll provider,
+    payroll done, and what the figures were at the last export (to say "modified since").
+
+    Nothing is frozen: an exported month can always be generated again (Navette sociale).
+    """
+
+    month = models.DateField(_("mois"), help_text=_("Premier jour du mois."))
+    transmitted_at = models.DateTimeField(_("transmis au prestataire"), null=True, blank=True)
+    paid_at = models.DateTimeField(_("paie faite"), null=True, blank=True)
+    exported_at = models.DateTimeField(_("dernier export"), null=True, blank=True)
+    exported_fingerprint = models.CharField(max_length=64, blank=True)
+
+    class Meta:
+        ordering = ["-month"]
+        verbose_name = _("suivi social du mois")
+        verbose_name_plural = _("suivis sociaux des mois")
+        constraints = [
+            models.UniqueConstraint(fields=["tenant", "month"], name="one_social_follow_per_month"),
+        ]
+
+    def __str__(self):
+        return f"{self.month:%Y-%m}"
