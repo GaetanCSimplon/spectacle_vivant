@@ -440,7 +440,9 @@ class GigDetailView(TenantScopedMixin, DetailView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context["balance"] = finance_services.gig_balance(self.object)
+        context["balance"] = finance_services.gig_balance(
+            self.object, with_fees=is_tenant_owner(self.request.user, self.request.tenant)
+        )
         if self.object.status != Gig.Status.CANCELLED and self.object.date >= timezone.localdate():
             context["radar"] = radar_rules.for_gig(self.object)
         context["progress"] = services.date_progress(self.object)

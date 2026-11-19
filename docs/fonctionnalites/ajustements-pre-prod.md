@@ -15,7 +15,7 @@ Trois ajustements demandés avant le passage en production : aide à la saisie (
   - Fichiers : templates/components/, `_field_p.html`, `_sectioned_form.html`, apps/tenants/validators.py, formulaires concernés.
   - Tests : IBAN avec et sans espaces, avec tirets, clé fausse, longueur fausse ; présence du « ? » sur chaque champ listé.
   - Risques : rendu à vérifier dans un navigateur (bulle, clavier, mobile 375 px sur les pages publiques éventuelles).
-- [ ] PR 2 — Cachets visibles dans le Budget de la date
+- [x] PR 2 — Cachets visibles dans le Budget de la date
   - Objectif : `gig_balance` reçoit un champ `fees` (somme des « Montant brut » des membres de l'équipe de la date, dates annulées exclues) ; le volet Budget affiche « Dépensé » avec « dont dépenses saisies » et « dont cachets (équipe) », « Résultat » en tient compte ; avertissement (sans blocage) si une dépense « Cachets » est aussi saisie à la main sur la date.
   - Fichiers : apps/finance/services.py, templates/gigs/gig_detail.html, vue de la date.
   - Tests : cachets comptés, aucun cachet, date sans équipe, double compte signalé, isolation.
@@ -33,13 +33,18 @@ Trois ajustements demandés avant le passage en production : aide à la saisie (
 - 2026-11-19 — Champs avec bouton « ? » : IBAN, BIC, SIRET, n° de TVA, code APE, n° de sécurité sociale, n° d'objet SACEM, code postal.
 
 - 2026-11-19 — Le « ? » est branché dans `_field_p.html` : il apparaît dans les formulaires à sections (structure, organisateur, lieu, équipe, spectacle). Les formulaires en `form.as_p` (onboarding, formulaires publics) n'ont pas l'aide.
+- 2026-11-19 — Les cachets restent privés au propriétaire : `gig_balance(gig, with_fees=…)` ne les compte ni ne les affiche pour un membre simple (sinon il les déduirait du « Dépensé »). Le Budget d'un membre et celui du propriétaire peuvent donc différer.
+- 2026-11-19 — La page « Paiements et dépenses » affiche la même ventilation que le Budget de la date.
 
 ## Points en suspens
 - Bulle du « ? » non vérifiée dans un navigateur (affichage, clavier Échap) ; test de présence limité aux champs de « Ma structure ».
 - « ? » absent des formulaires en `form.as_p` (onboarding, formulaires publics) : à ajouter ou non ?
 - L'IBAN refusé est-il un IBAN d'exemple ou une faute de frappe ? Non reproduit avec un IBAN valide.
+- PR 3 : reprendre la règle propriétaire / membre pour le débit du Bord, l'accueil (`overview.spent`) et les CSV.
+- Rendu de la PR 2 (lignes en retrait, avertissement) non vérifié dans un navigateur.
 - Total du Bord : écart d'arrondi possible d'un euro avec la somme des lignes.
 
 ## Journal
 - 2026-11-19 — Plan validé.
 - 2026-11-19 — PR 1 terminée : bouton « ? » et messages IBAN (tirets et points acceptés, longueur saisie indiquée).
+- 2026-11-19 — PR 2 terminée : cachets de l'équipe comptés dans « Dépensé » du Budget (propriétaire seulement), avertissement de double compte.

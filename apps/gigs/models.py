@@ -315,8 +315,9 @@ class GigMember(TenantOwnedModel):
     phone = models.CharField(_("téléphone"), max_length=50, blank=True)
     email = models.EmailField(_("e-mail"), blank=True)
     # Social management (F-93): what this person is paid for this date, as information for
-    # whoever does the payroll. Private (owner only), never copied to a roadmap, never computed
-    # from or against the expenses: nothing here is a payment.
+    # whoever does the payroll. Private (owner only), never copied to a roadmap. The total is
+    # added to the "spent" of the date (gig_balance) without creating an expense: nothing here
+    # is a payment.
     cachet_count = models.PositiveSmallIntegerField(_("nombre de cachets"), null=True, blank=True)
     cachet_amount = models.DecimalField(
         _("montant du cachet (brut)"),
