@@ -319,7 +319,7 @@ def csv_response(tenant, year, month):
                     text(line.row.employment.lower()),
                     text(m.role),
                     m.cachet_count if m.cachet_count is not None else "",
-                    "" if line.hours is None else f"{line.hours:f}",
+                    "" if line.hours is None else f"{line.hours:.2f}",
                     _number(line.gross),
                     _number(line.expenses),
                     "complet" if line.complete else "a_completer",

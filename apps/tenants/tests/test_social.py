@@ -255,7 +255,7 @@ def test_the_csv_has_one_line_per_pay_with_the_columns_of_the_spec(client):
     assert record["numero_guso"] == "G-1"
     assert record["categorie"] == "artiste et technicien"
     assert record["nb_cachets"] == "2"
-    assert record["nb_heures"] == "24"
+    assert record["nb_heures"] == "24.00"
     assert record["brut"] == "1234.50"  # decimal point; the expenses are apart from the gross
     assert record["defraiements"] == "20.10"
     assert record["statut_ligne"] == "complet"
@@ -629,6 +629,26 @@ def test_the_pdf_flags_what_is_missing(client):
     _on(_gig(tenant, datetime.date(2026, 11, 14)), _person(tenant), amount=None)
 
     assert "À compléter" in _pdf_text(_pdf(client))
+
+
+def test_the_pdf_does_not_print_a_dash_for_a_missing_role(client):
+    tenant = _login(client)
+    _on(_gig(tenant, datetime.date(2026, 11, 14)), _person(tenant))
+
+    assert "—, " not in _pdf_text(_pdf(client))
+
+
+def test_the_csv_hours_always_have_two_decimals(client):
+    tenant = _login(client)
+    tech = _person(tenant, is_artist=False, is_technician=True)
+    gig = _gig(tenant, datetime.date(2026, 11, 14))
+    GigMemberFactory(gig=gig, person=tech, name=tech.full_name, hours="8", cachet_amount="100")
+    _on(gig, _person(tenant), count=2)  # an artist: 2 cachets = 24 hours
+
+    header, *lines = _rows(_export(client))
+    hours = {line[header.index("nb_heures")] for line in lines}
+
+    assert hours == {"8.00", "24.00"}
 
 
 def test_the_pdf_is_for_the_owner_only_and_never_shows_another_structure(client):

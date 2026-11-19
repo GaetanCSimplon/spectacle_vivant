@@ -60,7 +60,7 @@
           <div class="case">Salaires bruts<b>{{ data.totals.gross|floatformat:2 }} €</b></div>
           <div class="case case-est">Coût total estimé pour la compagnie<b>≈ {{ data.totals.employer_cost|floatformat:2 }} €</b></div>
         </div>
-        <p class="legend">Le coût est une estimation : salaire brut + {{ rate_percent }} % (taux de repère), pas un calcul de charges. Frais remboursés à part du brut : <b>{{ data.totals.expenses|floatformat:2 }} €</b>.</p>
+        <p class="legend">Le coût est une estimation : salaire brut + {{ rate_percent }} % (taux de repère), pas un calcul de charges. Frais remboursés à part du brut : <b style="white-space: nowrap">{{ data.totals.expenses|floatformat:2 }}&nbsp;€</b>.</p>
       </div>
       <div>
         {% if data.to_complete_count %}
@@ -114,7 +114,7 @@
               <tr class="dateline"><td colspan="{% if include_ssn %}8{% else %}7{% endif %}">{{ line.row.gig.date|date:"l d/m/Y" }} · {{ line.row.gig.venue.city }} · {{ line.row.gig.venue.name }}</td></tr>
             {% endifchanged %}
             <tr>
-              <td>{{ line.row.person.full_name }} · {{ line.row.member.role|default:"—" }}, {{ line.row.employment|lower }}</td>
+              <td>{{ line.row.person.full_name }} · {% if line.row.member.role %}{{ line.row.member.role }}, {% endif %}{{ line.row.employment|lower }}</td>
               <td>{% if line.row.member.cachet_count %}{{ line.row.member.cachet_count }} cachet{{ line.row.member.cachet_count|pluralize }}{% elif line.hours is not None %}{{ line.hours|floatformat:"-2" }} h{% else %}—{% endif %}</td>
               {% if include_ssn %}<td class="mono">{{ line.row.person.formatted_social_security_number|default:"—" }}</td>{% endif %}
               <td class="num mono">{% if line.hours is not None %}{{ line.hours|floatformat:"-2" }}{% else %}—{% endif %}</td>
