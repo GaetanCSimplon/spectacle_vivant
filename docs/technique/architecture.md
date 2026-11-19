@@ -141,7 +141,7 @@ Les PDF figés et les justificatifs ne vont pas dans la base, mais dans un **buc
 | **Staging** | Copie de la production, pour tester en conditions réelles sans risque |
 | **Production** | Ce que voient les vrais utilisateurs |
 
-- **CI (intégration continue)** : à chaque modification poussée sur GitHub, un robot (GitHub Actions) lance les tests et le lint. Si ça échoue, on ne fusionne pas.
+- **CI (intégration continue)** : à chaque modification poussée sur GitHub, un robot (GitHub Actions) lance le lint puis les tests (`.github/workflows/ci.yml`). Si ça échoue, on ne fusionne pas. Pour économiser les minutes GitHub incluses : pas de CI si seuls des fichiers `.md` ou `docs/` changent, un nouveau push annule l'exécution précédente de la même branche, et le job dure 15 minutes au maximum. Le lint échoue avant l'installation des bibliothèques système de WeasyPrint. En local, `pre-commit` lance `ruff` à chaque commit et `pytest` à chaque push : `pip install -r requirements/dev.txt` puis `pre-commit install --hook-type pre-commit --hook-type pre-push`.
 - **CD (déploiement continu)** : après fusion, le code part automatiquement sur staging ; la production se déclenche à la main.
 - **Variables d'environnement** : les secrets (mot de passe de base, clés) vivent hors du code, dans un fichier `.env` en local et dans les réglages de Scalingo en production.
 

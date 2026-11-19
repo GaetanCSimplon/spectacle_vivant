@@ -11,3 +11,11 @@ repos:
         entry: .venv/bin/ruff format
         language: system
         types: [python]
+      # Before every push: the tests (the same ones as the CI, which costs GitHub minutes).
+      - id: pytest
+        name: pytest
+        entry: .venv/bin/pytest -q -x
+        language: system
+        pass_filenames: false
+        always_run: true
+        stages: [pre-push]
