@@ -8,6 +8,7 @@ someone added by hand to a date has none to give. Cancelled dates are left out.
 
 import csv
 import datetime
+import hashlib
 from dataclasses import dataclass, field
 from decimal import Decimal
 from pathlib import Path
@@ -24,6 +25,7 @@ from apps.core.services import render_pdf
 from apps.finance.models import Expense
 from apps.finance.services import estimated_employer_cost
 from apps.gigs.models import Gig, GigMember
+from apps.tenants.models import SocialMonthFollow
 
 BOM = "﻿"
 FORMULA_STARTS = ("=", "+", "-", "@", "\t", "\r")
@@ -285,6 +287,7 @@ def csv_response(tenant, year, month):
     """The owner's file for the payroll provider: one line per pay, read from the same service as
     the screen. No estimated cost in it. Never cached (it holds social security numbers)."""
     data = build_social_month(tenant, year, month)
+    record_export(tenant, data)
     response = HttpResponse(content_type="text/csv; charset=utf-8")
     name = slugify(tenant.name) or "structure"
     response["Content-Disposition"] = (
@@ -359,6 +362,7 @@ def pdf_response(tenant, year, month, include_ssn=False):
     """The "Navette sociale" PDF (A4 landscape), read from the same service as the screen and the
     CSV. Social security numbers only when asked. Never cached."""
     data = build_social_month(tenant, year, month)
+    record_export(tenant, data)
     fonts = finders.find("fonts/archivo-latin.woff2")
     context = {
         "tenant": tenant,
@@ -378,3 +382,39 @@ def pdf_response(tenant, year, month, include_ssn=False):
     )
     add_never_cache_headers(response)
     return response
+
+
+def fingerprint(data):
+    """A short signature of the month's figures, to tell whether they changed after an export."""
+    parts = [data.pay_count, data.people_count, data.to_complete_count, data.totals.hours]
+    parts += [data.totals.gross, data.totals.expenses]
+    parts += [(line.row.member.pk, line.gross, line.hours) for b in data.shows for line in b.lines]
+    return hashlib.sha256(repr(parts).encode()).hexdigest()
+
+
+def record_export(tenant, data):
+    """Remember that the month was exported now, and what it looked like."""
+    SocialMonthFollow.objects.update_or_create(
+        tenant=tenant,
+        month=data.start,
+        defaults={"exported_at": timezone.now(), "exported_fingerprint": fingerprint(data)},
+    )
+
+
+def modified_since_export(follow, data):
+    return bool(follow and follow.exported_at and follow.exported_fingerprint != fingerprint(data))
+
+
+def set_follow(tenant, month, transmitted, paid):
+    """Tick or untick "Transmis à mon prestataire" / "Paie faite" (the date is kept when
+    a box stays ticked)."""
+    follow, _created = SocialMonthFollow.objects.get_or_create(tenant=tenant, month=month)
+    now = timezone.now()
+    follow.transmitted_at = (follow.transmitted_at or now) if transmitted else None
+    follow.paid_at = (follow.paid_at or now) if paid else None
+    follow.save(update_fields=["transmitted_at", "paid_at"])
+    return follow
+
+
+# From this many days before the end of the month, Radar reminds the owner (RAD-65).
+REMINDER_DAYS = 10

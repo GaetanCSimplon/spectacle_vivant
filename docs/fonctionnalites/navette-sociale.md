@@ -43,7 +43,7 @@ Chaque mois, aider le propriétaire à vérifier le social de ses dates (écran 
   - Tests : total PDF = total CSV, n° de sécurité sociale absent par défaut, mention « estimation » présente, nom du fichier, accès propriétaire seul, isolation.
   - Documents à relire : spec Navette §4, charte graphique, maquette PDF.
   - Risques : PDF (plan à valider avant de coder) ; confidentialité ; rendu à vérifier visuellement.
-- [ ] PR 6 — Rappel Radar RAD-65 et suivi
+- [x] PR 6 — Rappel Radar RAD-65 et suivi
   - Objectif : règle `rad_65` à l'affichage (à partir de J-10, au moins un engagement salarié, « à faire » ou « à compléter », fermée quand tout est complet) ; cases « Transmis à mon prestataire » / « Paie faite », historique des mois, mention « modifié depuis le dernier export ».
   - Fichiers : apps/radar/rules.py, modèle de suivi mensuel (`TenantOwnedModel`) + migration, vue d'historique, docs/produit/feuille-de-route.md.
   - Tests : avant/après J-10, mois sans engagement, alerte fermée si complet, isolation du suivi.
@@ -63,6 +63,8 @@ Chaque mois, aider le propriétaire à vérifier le social de ses dates (écran 
 - 2026-11-18 — Écran : chaque ligne « À compléter » renvoie à la fiche de la personne et à la date ; le spectacle sans n° d'objet renvoie à sa modification. Pas de lien par manque. Une date annulée avec équipe s'affiche en « À vérifier ».
 - 2026-11-18 — CSV : brut et défraiements en point décimal (spec §5), dates `JJ/MM/AAAA`, n° de sécurité sociale sans espaces (pour l'import), `date_debut` = `date_fin` = `Gig.date`.
 - 2026-11-18 — PDF : une seule vue `equipe/social/pdf/` (`?secu=1` pour inclure les n° de sécurité sociale, absents par défaut) ; polices chargées depuis `static/fonts/` ; mention « Offre Collectif » en texte fixe ; « Radar t'a prévenu le [date] » repoussé à la PR 6 (aucune alerte stockée).
+- 2026-11-18 — RAD-65 : visible de tous les membres (aucun filtre par rôle), message avec des nombres seulement, gravité « À corriger » (Radar n'a pas de « à faire »). Elle apparaît à partir de J-10 s'il y a au moins une paie dans le mois, et se ferme quand tout est complet ou quand « Paie faite » est coché.
+- 2026-11-18 — Suivi : `SocialMonthFollow` (un par mois et par structure) garde les dates « Transmis » et « Paie faite », la date du dernier export (PDF ou CSV) et une empreinte des chiffres ; « Modifié depuis le dernier export » = l'empreinte a changé. Rien n'est figé.
 
 ## Points en suspens
 - Définition d'une paie à faire confirmer par un gestionnaire de paie.
@@ -78,6 +80,10 @@ Chaque mois, aider le propriétaire à vérifier le social de ses dates (écran 
 - Rendu du PDF (page 1, bandeaux, colonnes, glyphes « ≈ » et « ✓ » en police de repli) et de la case « n° de sécurité sociale » non vérifiés visuellement (aucun outil de rastérisation sur la machine).
 - Pied de page « Radar t'a prévenu le [date] » : à ajouter avec la PR 6.
 - Rendu du groupe « Social » de « Ma structure » non vérifié dans un navigateur.
+- RAD-65 recalcule le mois à chaque chargement du bouton Radar après J-10 : performance non mesurée.
+- Un mois qui n'a que des dates sans équipe ne déclenche pas RAD-65 (condition : au moins une paie).
+- Rendu des cases de suivi, de la mention « modifié » et de la page d'historique non vérifié dans un navigateur.
+- `test_tenant_coverage` lancé seul échoue (il dépend des tests collectés avant lui) ; il passe dans la suite complète.
 
 ## Journal
 - 2026-11-18 — Plan validé.
@@ -86,3 +92,4 @@ Chaque mois, aider le propriétaire à vérifier le social de ses dates (écran 
 - 2026-11-18 — PR 3 terminée : écran « Vérifier mon social du mois » (`_social_month.html`, fragment HTMX pour le changement de mois) lu depuis `build_social_month` ; 2826 tests verts. Audit `tenant-guard` non fait (agent absent).
 - 2026-11-18 — PR 4 terminée : CSV de la spec §5 lu depuis `build_social_month` (22 colonnes, `statut_ligne`, `reference_bordpro` = id du `GigMember`), brut et défraiements en point décimal, dates `JJ/MM/AAAA`, fichier `navette-sociale-AAAA-MM-<structure>.csv`, bouton « Exporter pour ma paie (CSV) ». Ancien CSV F-93 supprimé. Audit `tenant-guard` non fait (agent absent).
 - 2026-11-18 — PR 5 terminée : `pdf_response` et `people_recap` dans `apps/tenants/social.py`, gabarit `tenants/social_pdf.html`, bouton et case sur l'écran Social ; 2837 tests verts. PDF vérifié par extraction de texte (3 pages A4 paysage, polices intégrées), pas à l'œil. Audit `tenant-guard` non fait (agent absent).
+- 2026-11-18 — PR 6 terminée : `rad_65_social_month`, `SocialMonthFollow` (migration `tenants/0021`), cases de suivi, historique `equipe/social/historique/` ; 2846 tests verts. Audit `tenant-guard` non fait (agent absent). Fonctionnalité terminée.

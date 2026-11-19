@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}Historique du social — Bòrd Pro{% endblock %}
+
+{% block page_content %}
+  <h1 class="mb-2">{% translate "Bòrd" %}</h1>
+  {% include "tenants/_tabs.html" with active="social" %}
+  <h2 class="mb-2 text-lg">{% translate "Historique des mois" %}</h2>
+  <p class="mb-4 text-sm"><a href="{% url 'tenants:social' %}" class="text-blue-700 underline">{% translate "Retour au mois en cours" %}</a></p>
+
+  {% if follows %}
+    <div class="overflow-x-auto rounded-lg border border-page-line bg-white">
+      <table class="w-full text-left text-sm">
+        <thead>
+          <tr class="border-b border-page-line text-xs uppercase text-gray-500">
+            <th scope="col" class="px-3 py-2">{% translate "Mois" %}</th>
+            <th scope="col" class="px-3 py-2">{% translate "Dernier export" %}</th>
+            <th scope="col" class="px-3 py-2">{% translate "Transmis" %}</th>
+            <th scope="col" class="px-3 py-2">{% translate "Paie faite" %}</th>
+            <th scope="col" class="px-3 py-2">{% translate "Télécharger" %}</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for f in follows %}
+            <tr class="border-b border-page-line last:border-0">
+              <td class="px-3 py-2 capitalize"><a href="{% url 'tenants:social' %}?mois={{ f.month|date:'Y-m' }}" class="text-blue-700 underline">{{ f.month|date:"F Y" }}</a></td>
+              <td class="data px-3 py-2">{% if f.exported_at %}{{ f.exported_at|date:"d/m/Y" }}{% else %}{% translate "Pas encore exporté" %}{% endif %}</td>
+              <td class="px-3 py-2">{% if f.transmitted_at %}{% translate "Oui" %}, {{ f.transmitted_at|date:"d/m/Y" }}{% else %}{% translate "Non" %}{% endif %}</td>
+              <td class="px-3 py-2">{% if f.paid_at %}{% translate "Oui" %}, {{ f.paid_at|date:"d/m/Y" }}{% else %}{% translate "Non" %}{% endif %}</td>
+              <td class="px-3 py-2 text-xs">
+                <a href="{% url 'tenants:social-pdf' %}?mois={{ f.month|date:'Y-m' }}" class="text-blue-700 underline">PDF</a> ·
+                <a href="{% url 'tenants:social-export' %}?mois={{ f.month|date:'Y-m' }}" class="text-blue-700 underline">CSV</a>
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  {% else %}
+    <p class="card text-sm text-gray-600">{% translate "Aucun mois exporté ou suivi pour le moment." %}</p>
+  {% endif %}
+{% endblock %}

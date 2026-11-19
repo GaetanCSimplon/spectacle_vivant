@@ -19,6 +19,8 @@ from apps.documents import checks
 from apps.documents.models import Invoice, Quote
 from apps.finance.models import Expense
 from apps.gigs.models import Gig
+from apps.tenants import social
+from apps.tenants.models import SocialMonthFollow
 
 IMPORTANT, FIX, KNOW = "important", "fix", "know"
 SEVERITIES = {IMPORTANT: _("Important"), FIX: _("À corriger"), KNOW: _("À savoir")}
@@ -124,6 +126,14 @@ EXPLANATIONS = {
     "RAD-43": Explanation(
         _("Le total facturé dépasserait le prix de cession de la date."),
         _("Il vérifierait le montant avant d'émettre, ou corrigerait le prix de la date."),
+    ),
+    "RAD-65": Explanation(
+        _(
+            "La paie de vos artistes et techniciens se prépare avant la fin du mois : plus les "
+            "informations (brut, heures, n° de sécurité sociale) sont complètes, moins votre "
+            "prestataire de paie vous relance."
+        ),
+        _("Il vérifierait le mois avec son gestionnaire de paie, puis lui enverrait le tableau."),
     ),
     "RAD-44": Explanation(
         _("Le devis de cette date n'a pas été accepté et sa durée de validité est dépassée."),
@@ -313,9 +323,41 @@ def rad_44_expired_quote(gig):
     return Finding("RAD-44", FIX, message, reverse("documents:billing", args=[gig.pk]), gig)
 
 
-def tenant_findings(tenant):
+def rad_65_social_month(tenant, today):
+    """From 10 days before the end of the month, remind that the social check is due (RAD-65).
+    Only counts are shown, never a name or an amount. It closes when everything is complete or
+    when the month is marked "Paie faite"."""
+    first = today.replace(day=1)
+    last = social.month_bounds(first)[1]
+    if today < last - datetime.timedelta(days=social.REMINDER_DAYS):
+        return None
+    data = social.build_social_month(tenant, first.year, first.month)
+    missing = data.to_complete_count
+    if not data.pay_count or not missing:
+        return None
+    if SocialMonthFollow.objects.filter(tenant=tenant, month=first, paid_at__isnull=False).exists():
+        return None
+    message = ngettext(
+        "Navette sociale de %(month)s : %(pays)d paie à vérifier avant le %(last)s, "
+        "%(missing)d point à compléter.",
+        "Navette sociale de %(month)s : %(pays)d paies à vérifier avant le %(last)s, "
+        "%(missing)d points à compléter.",
+        missing,
+    ) % {
+        "month": f"{first:%m/%Y}",
+        "pays": data.pay_count,
+        "last": f"{last:%d/%m/%Y}",
+        "missing": missing,
+    }
+    url = reverse("tenants:social") + f"?mois={first:%Y-%m}"
+    return Finding("RAD-65", FIX, message, url)
+
+
+def tenant_findings(tenant, today=None):
     """The rules about the structure itself."""
+    today = today or datetime.date.today()
     found = [
+        rad_65_social_month(tenant, today),
         rad_01_legal_information(tenant),
         rad_02_bank_details(tenant),
         rad_41_no_licence(tenant),
@@ -350,7 +392,7 @@ def all_findings(tenant, today=None):
         .annotate(expenses_total=Sum("expenses__amount"))
         .order_by("date")
     )
-    found = tenant_findings(tenant)
+    found = tenant_findings(tenant, today)
     for gig in gigs:
         found.extend(gig_findings(gig, today, gig.expenses_total or Decimal("0")))
     # sorted() is stable: dates stay in order inside one severity.

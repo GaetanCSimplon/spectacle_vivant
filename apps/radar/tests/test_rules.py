@@ -129,7 +129,7 @@ def test_findings_are_sorted_most_serious_first_then_by_date():
 
 
 def test_every_rule_has_its_explanation():
-    codes = {f"RAD-{n:02d}" for n in (1, 2, 10, 20, 22, 26, 29, 35, 40, 41, 42, 43, 44)}
+    codes = {f"RAD-{n:02d}" for n in (1, 2, 10, 20, 22, 26, 29, 35, 40, 41, 42, 43, 44, 65)}
 
     assert codes == set(rules.EXPLANATIONS)
     for explanation in rules.EXPLANATIONS.values():

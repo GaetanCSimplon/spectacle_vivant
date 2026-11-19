@@ -45,6 +45,8 @@ urlpatterns = [
         name="person-access-revoke",
     ),
     path("equipe/social/", views.SocialView.as_view(), name="social"),
+    path("equipe/social/suivi/", views.SocialFollowView.as_view(), name="social-follow"),
+    path("equipe/social/historique/", views.SocialHistoryView.as_view(), name="social-history"),
     path("equipe/social/export/", views.SocialExportView.as_view(), name="social-export"),
     path("equipe/social/pdf/", views.SocialPdfView.as_view(), name="social-pdf"),
     path("export-donnees/", views.DataExportView.as_view(), name="data-export"),
