@@ -3,10 +3,16 @@ name: CI
 on:
   push:
     branches: [main]
+    paths-ignore: ["**.md", "docs/**"]
   pull_request:
-  # Also every Monday: a new vulnerability can appear without any change on our side.
-  schedule:
-    - cron: "0 6 * * 1"
+    paths-ignore: ["**.md", "docs/**"]
+  # The weekly vulnerability check lives in audit.yml.
+
+# A new push cancels the previous run still in progress on the same branch:
+# only the latest commit is worth testing, and every minute counts.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 env:
   DJANGO_SECRET_KEY: ci-secret-key-not-used-in-prod-but-long-enough-to-silence-w009
@@ -21,6 +27,8 @@ env:
 jobs:
   test:
     runs-on: ubuntu-24.04
+    # Safety net: a stuck job would otherwise run (and be billed) for up to 6 hours.
+    timeout-minutes: 15
 
     services:
       postgres:
@@ -43,6 +51,21 @@ jobs:
       - uses: actions/setup-python@v7
         with:
           python-version: "3.12"
+          # Reuse downloaded packages between runs instead of fetching them again.
+          cache: pip
+          cache-dependency-path: requirements/*.txt
+
+      # Fail fast: the Python dependencies and the lint come before the slow system
+      # dependencies. pip installs WeasyPrint without its system libraries (they are only
+      # needed at runtime, i.e. for the tests).
+      - name: Install Python dependencies
+        run: pip install -r requirements/dev.txt
+
+      - name: Lint (ruff)
+        run: ruff check .
+
+      - name: Check formatting (ruff)
+        run: ruff format --check .
 
       - name: Install WeasyPrint system dependencies
         # The Ubuntu mirror of the runners (azure.archive.ubuntu.com) is sometimes unreachable
@@ -66,15 +89,6 @@ jobs:
             -e 's|http://azure.archive.ubuntu.com/ubuntu/|http://archive.ubuntu.com/ubuntu/|' \
             /etc/apt/sources.list.d/ubuntu.sources || true
           install
-
-      - name: Install Python dependencies
-        run: pip install -r requirements/dev.txt
-
-      - name: Lint (ruff)
-        run: ruff check .
-
-      - name: Check formatting (ruff)
-        run: ruff format --check .
 
       - name: Check for missing migrations
         run: python manage.py makemigrations --check --no-input
@@ -105,20 +119,5 @@ jobs:
           S3_ACCESS_KEY_ID: ci-access-key
           S3_SECRET_ACCESS_KEY: ci-secret-key
 
-  # Known vulnerabilities in the installed packages. A separate job, so that a new advisory
-  # shows up in red without blocking the tests of an unrelated change.
-  audit:
-    runs-on: ubuntu-24.04
-
-    steps:
-      - uses: actions/checkout@v7
-
-      - uses: actions/setup-python@v7
-        with:
-          python-version: "3.12"
-
-      - name: Install Python dependencies
-        run: pip install -r requirements/prod.txt pip-audit -c requirements/constraints.txt
-
-      - name: Audit (pip-audit)
-        run: pip-audit --progress-spinner off
+  # The audit of known vulnerabilities lives in audit.yml: it only needs to run when the
+  # dependencies change, plus once a week.

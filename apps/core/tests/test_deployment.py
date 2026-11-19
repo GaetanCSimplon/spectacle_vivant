@@ -109,5 +109,5 @@ def test_django_stays_on_the_52_lts():
 
 def test_dependabot_and_the_audit_are_configured():
     assert "package-ecosystem: pip" in (ROOT / ".github/dependabot.yml").read_text()
-    assert "pip-audit" in (ROOT / ".github/workflows/ci.yml").read_text()
+    assert "pip-audit" in (ROOT / ".github/workflows/audit.yml").read_text()
     assert "pip-audit" in (ROOT / "requirements/dev.txt").read_text()

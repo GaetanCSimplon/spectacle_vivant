@@ -10,7 +10,7 @@ Mise en place le 2026-10-28. Deux branches :
 ## Règles
 - Jamais de correction directe sur `production`, sauf urgence (voir plus bas).
 - `production` avance **uniquement** par avancement rapide sur `main` (`--ff-only`) : pas de commit de fusion, `production` est toujours un état exact de `main`.
-- On ne livre qu'un état de `main` dont la CI (`test` et `audit`) est verte.
+- On ne livre qu'un état de `main` dont la CI (`test`) est verte et dont le dernier `audit` (workflow séparé, lancé chaque lundi et quand `requirements/` change) est vert.
 - Une migration déjà livrée n'est **jamais modifiée** (`CLAUDE.md` §7) : une correction passe par une nouvelle migration.
 - GitHub ne permet pas la protection de branche sur un dépôt privé gratuit : ces règles reposent sur la discipline, pas sur un blocage.
 

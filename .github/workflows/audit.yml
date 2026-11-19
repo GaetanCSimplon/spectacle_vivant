@@ -1,0 +1,41 @@
+name: Audit
+
+# Known vulnerabilities in the installed packages. A separate workflow, so that a new advisory
+# shows up in red without blocking the tests of an unrelated change, and so that it only runs
+# when it can find something new.
+on:
+  # Every Monday: a new vulnerability can appear without any change on our side.
+  schedule:
+    - cron: "0 6 * * 1"
+  # Whenever the dependencies change.
+  push:
+    branches: [main]
+    paths: ["requirements/**"]
+  pull_request:
+    paths: ["requirements/**"]
+  # Manual run from the Actions tab.
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  audit:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: requirements/*.txt
+
+      - name: Install Python dependencies
+        run: pip install -r requirements/prod.txt pip-audit -c requirements/constraints.txt
+
+      - name: Audit (pip-audit)
+        run: pip-audit --progress-spinner off
