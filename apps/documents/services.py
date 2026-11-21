@@ -208,6 +208,16 @@ def _extra_fees_text(gig):
     return f"{gig.extra_fees_description.strip()}{amount}"
 
 
+def contract_key_facts(gig):
+    """What a contract states that a later change of the date can contradict (RAD-11)."""
+    return {
+        "price": f"{Decimal(gig.price):.2f}",
+        "date": gig.date.isoformat(),
+        "venue_id": gig.venue_id,
+        "venue": gig.venue.name,
+    }
+
+
 def build_contract_context(
     gig, contract=None, draft_anomalies=None, snapshots=None, version=None, annexes=None
 ):
@@ -314,6 +324,7 @@ def generate_contract_pdf(gig, user=None):
             parties_snapshot=snapshots[1],
             annexes_snapshot=list(descriptions.values()),
             facts_fingerprint=checks.facts_fingerprint(gig, contract),
+            key_facts=contract_key_facts(gig),
         )
         version.pdf_file.save(f"{contract.reference}-v{number}.pdf", ContentFile(pdf_bytes))
         # The version that was sent is no longer the latest one.

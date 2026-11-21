@@ -129,7 +129,7 @@ def test_findings_are_sorted_most_serious_first_then_by_date():
 
 
 def test_every_rule_has_its_explanation():
-    codes = {f"RAD-{n:02d}" for n in (1, 2, 10, 20, 22, 26, 29, 35, 40, 41, 42, 43, 44, 65)}
+    codes = {f"RAD-{n:02d}" for n in (1, 2, 10, 11, 20, 22, 26, 29, 35, 40, 41, 42, 43, 44, 65)}
 
     assert codes == set(rules.EXPLANATIONS)
     for explanation in rules.EXPLANATIONS.values():
@@ -154,3 +154,104 @@ def test_rad_10_is_quiet_when_complete_and_for_other_statuses():
 
     assert "RAD-10" not in _codes(rules.gig_findings(complete, TODAY))
     assert rules.gig_findings(option, TODAY) == []
+
+
+def _sent_contract(gig, **version_kwargs):
+    """A contract whose latest version was written from the date as it is now, then sent."""
+    from django.utils import timezone
+
+    from apps.documents.factories import ContractFactory
+    from apps.documents.models import ContractVersion
+    from apps.documents.services import contract_key_facts
+
+    contract = ContractFactory(gig=gig, sent_at=timezone.now())
+    ContractVersion.objects.create(
+        tenant=gig.tenant,
+        contract=contract,
+        number=1,
+        key_facts=version_kwargs.pop("key_facts", contract_key_facts(gig)),
+        pdf_file="x.pdf",
+    )
+    return contract
+
+
+def _rad_11(gig):
+    gig = Gig.objects.get(pk=gig.pk)
+    return [f for f in rules.gig_findings(gig, TODAY) if f.code == "RAD-11"]
+
+
+def test_rad_11_is_quiet_while_the_sent_contract_matches_the_date():
+    gig = _gig(status=Gig.Status.CONFIRMED)
+    _sent_contract(gig)
+
+    assert _rad_11(gig) == []
+
+
+def test_rad_11_names_what_changed_after_the_contract_was_sent():
+    gig = _gig(status=Gig.Status.CONFIRMED, price="3000.00")
+    _sent_contract(gig)
+    gig.price = "3200.00"
+    gig.date += datetime.timedelta(days=1)
+    gig.venue = VenueFactory(tenant=gig.tenant, name="Autre salle")
+    gig.save()
+
+    found = _rad_11(gig)
+
+    assert _codes(found) == ["RAD-11"]
+    assert found[0].severity == rules.IMPORTANT
+    assert "3000.00" in found[0].message and "3200.00" in found[0].message
+    assert "le jour du concert" in found[0].message and "le lieu" in found[0].message
+    assert found[0].fix_url == reverse("documents:contract-history", args=[gig.pk])
+
+
+def test_rad_11_ignores_drafts_old_versions_and_a_signed_contract_that_still_matches():
+    from apps.documents.factories import ContractFactory
+    from apps.documents.models import Contract
+
+    draft = _gig(status=Gig.Status.CONFIRMED)
+    contract = _sent_contract(draft)
+    contract.sent_at = None
+    contract.save()
+    draft.price = "1.00"
+    draft.save()
+
+    old = _gig(status=Gig.Status.CONFIRMED)
+    _sent_contract(old, key_facts={})  # a version written before RAD-11 states nothing
+    old.price = "1.00"
+    old.save()
+
+    signed = _gig(status=Gig.Status.CONFIRMED)
+    ContractFactory(gig=signed, status=Contract.Status.SIGNED)
+
+    assert _rad_11(draft) == [] and _rad_11(old) == [] and _rad_11(signed) == []
+
+
+def test_rad_11_is_read_for_a_signed_contract_and_shown_before_signing():
+    from apps.documents.models import Contract
+
+    gig = _gig(status=Gig.Status.CONFIRMED, price="3000.00")
+    contract = _sent_contract(gig)
+    contract.status = Contract.Status.SIGNED
+    contract.save()
+    gig.price = "100.00"
+    gig.save()
+    gig = Gig.objects.get(pk=gig.pk)
+
+    assert "RAD-11" in _codes(rules.for_action("contract_sign", gig, TODAY))
+    assert "RAD-11" not in _codes(rules.for_action("contract_send", gig, TODAY))
+
+
+def test_generating_a_contract_records_its_key_facts():
+    from apps.documents.services import generate_contract_pdf
+
+    gig = _gig(status=Gig.Status.CONFIRMED, price="2500.00")
+    make_contract_ready(gig)
+
+    version = generate_contract_pdf(gig).latest_version
+
+    assert version.key_facts == {
+        "price": "2500.00",
+        "date": gig.date.isoformat(),
+        "venue_id": gig.venue_id,
+        "venue": gig.venue.name,
+    }

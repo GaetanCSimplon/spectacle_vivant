@@ -93,6 +93,8 @@ class ContractVersion(TenantOwnedModel):
     pdf_file = models.FileField(_("fichier PDF"), upload_to=version_upload_to)
     # Hash of the data the version was written from (empty for the versions made before it).
     facts_fingerprint = models.CharField(max_length=64, blank=True)
+    # Price, date and venue of the gig when the version was written (RAD-11); empty for older ones.
+    key_facts = models.JSONField(default=dict, blank=True)
     created_at = models.DateTimeField(_("généré le"), auto_now_add=True)
     created_by = models.ForeignKey(
         settings.AUTH_USER_MODEL,
