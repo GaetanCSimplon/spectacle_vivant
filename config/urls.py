@@ -12,12 +12,14 @@ Class-based views
     2. Add a URL to urlpatterns:  path('', Home.as_view(), name='home')
 Including another URLconf
     1. Import the include() function: from django.urls import include, path
+from django.views.generic import RedirectView
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 
 from django.contrib import admin
 from django.contrib.sitemaps.views import sitemap as sitemap_view
 from django.urls import include, path
+from django.views.generic import RedirectView
 
 from apps.addressbook import info_public_views
 from apps.addressbook import public_views as addressbook_public_views
@@ -27,6 +29,7 @@ from apps.core.views import (
     ContactThanksView,
     ContactView,
     FeaturesView,
+    PrefixRedirectView,
     apple_touch_icon,
     favicon,
     home,
@@ -59,11 +62,21 @@ urlpatterns = [
     path("infos/", include("apps.core.urls")),
     path("recherche/entreprises/", CompanySearchView.as_view(), name="lookup-companies"),
     path("recherche/communes/", CommuneSearchView.as_view(), name="lookup-communes"),
-    path("bord/", include("apps.tenants.urls")),
+    path("", include("apps.tenants.urls")),
+    path("bord/documents/", DocumentLibraryView.as_view(), name="document-library"),
+    path("bord/depenses/", finance_views.ExpenseListView.as_view(), name="bord-expenses"),
+    path(
+        "documents/",
+        RedirectView.as_view(pattern_name="document-library", permanent=True, query_string=True),
+    ),
     path("", include("apps.addressbook.urls")),
     path("radar/", include("apps.radar.urls")),
-    path("spectacles/", include("apps.catalog.urls")),
-    path("documents/", DocumentLibraryView.as_view(), name="document-library"),
+    path("structure/spectacles/", include("apps.catalog.urls")),
+    path("spectacles/", PrefixRedirectView.as_view(new_prefix="/structure/spectacles/")),
+    path(
+        "spectacles/<path:rest>",
+        PrefixRedirectView.as_view(new_prefix="/structure/spectacles/"),
+    ),
     path("dates/", include("apps.gigs.urls")),
     path("dates/<int:gig_id>/feuille-de-route/", include("apps.roadmaps.urls")),
     path("dates/<int:gig_id>/finances/", include("apps.finance.urls")),

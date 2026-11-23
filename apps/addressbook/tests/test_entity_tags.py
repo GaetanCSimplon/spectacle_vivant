@@ -7,10 +7,9 @@ from apps.tenants.factories import MembershipFactory
 
 from ..factories import ContactFactory, PromoterFactory, VenueFactory
 from ..models import Contact
+from .helpers import list_get
 
 pytestmark = pytest.mark.django_db
-
-LIST = "addressbook:contact-list"
 
 
 @pytest.fixture
@@ -21,7 +20,7 @@ def tenant(client):
 
 
 def _page(client):
-    return client.get(reverse(LIST)).content.decode()
+    return list_get(client, "contact").content.decode()
 
 
 def test_initials_come_from_the_first_and_last_words():

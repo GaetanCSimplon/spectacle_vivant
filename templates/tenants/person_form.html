@@ -1,9 +1,9 @@
-{% extends "base.html" %}
+{% extends "tenants/structure_base.html" %}
 {% load i18n %}
 
 {% block title %}{% if object %}Modifier une fiche{% else %}Nouvelle personne{% endif %} — Bòrd Pro{% endblock %}
 
-{% block page_content %}
+{% block structure_content %}
   <h1 class="mb-4">
     {% if object %}{% translate "Modifier la fiche" %}{% else %}{% translate "Ajouter une personne à l'équipe" %}{% endif %}
   </h1>

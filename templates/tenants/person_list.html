@@ -1,17 +1,19 @@
-{% extends "base.html" %}
+{% extends "tenants/structure_base.html" %}
 {% load i18n %}
 
-{% block title %}Équipe — Bòrd Pro{% endblock %}
-{% block main_width %}max-w-[90rem]{% endblock %}
+{% block title %}Équipe — Bòrd Pro  {% if not is_owner %}
+    <p class="mt-8 text-sm"><a href="{% url 'tenants:leave' %}" class="text-red-700 underline">{% translate "Quitter cette structure" %}</a></p>
+  {% endif %}
+{% endblock %}
 
-{% block page_content %}
-  <h1 class="mb-2">{% translate "Bòrd" %}</h1>
-  {% include "tenants/_tabs.html" with active="team" %}
+{% block structure_content %}
   <div class="mb-4 flex items-center justify-between gap-3">
     <p class="text-sm text-gray-600">{% translate "Les artistes et les personnes qui travaillent avec vous." %}</p>
-    {% url 'tenants:person-create' as add_url %}
-    {% translate "Ajouter" as add_label %}
-    {% include "components/_add_button.html" with url=add_url label=add_label %}
+    {% if is_owner %}
+      {% url 'tenants:person-create' as add_url %}
+      {% translate "Ajouter" as add_label %}
+      {% include "components/_add_button.html" with url=add_url label=add_label %}
+    {% endif %}
   </div>
 
   {% url 'tenants:person-list' as list_url %}
@@ -21,4 +23,7 @@
   <div id="results">
     {% include "tenants/_person_results.html" %}
   </div>
+  {% if not is_owner %}
+    <p class="mt-8 text-sm"><a href="{% url 'tenants:leave' %}" class="text-red-700 underline">{% translate "Quitter cette structure" %}</a></p>
+  {% endif %}
 {% endblock %}

@@ -3,6 +3,7 @@ import re
 import pytest
 from django.urls import reverse
 
+from apps.addressbook.tests.helpers import directory_url
 from apps.gigs.factories import GigFactory
 from apps.tenants.factories import MembershipFactory
 
@@ -26,20 +27,20 @@ def test_navigation_links_are_shown_when_logged_in(client):
 
     assert content.count("Navigation principale") == 2  # left column (desktop) + burger menu
     assert reverse("gigs:list") in content
-    assert reverse("addressbook:promoter-list") in content
+    assert reverse("addressbook:directory") in content
 
 
 @pytest.mark.parametrize(
     ("url_name", "label"),
     [
         ("home", "Accueil"),
-        ("gigs:list", "Mes dates"),
-        ("gigs:wizard-show", "Mes dates"),
-        ("catalog:show-list", "Spectacles"),
-        ("addressbook:promoter-list", "Contacts"),
-        ("addressbook:venue-list", "Contacts"),
-        ("addressbook:contact-list", "Contacts"),
+        ("gigs:list", "Dates"),
+        ("gigs:wizard-show", "Dates"),
+        ("addressbook:directory", "Contacts"),
+        ("tenants:social", "Social"),
         ("tenants:profile", "Bòrd"),
+        ("bord-expenses", "Bòrd"),
+        ("document-library", "Bòrd"),
     ],
 )
 def test_current_page_is_marked_active(client, url_name, label):
@@ -63,7 +64,7 @@ def test_phone_navigation_is_a_burger_menu_without_a_bottom_bar(client):
     assert 'aria-label="Menu"' in content and "<details" in content
     assert "fixed inset-x-0 bottom-0" not in content
     menu = content.split("<details", 1)[1].split("</details>", 1)[0]
-    for label in ("Accueil", "Mes dates", "Spectacles", "Contacts", "Bòrd"):
+    for label in ("Accueil", "Bòrd", "Dates", "Social", "Contacts"):
         assert label in menu
     assert "Se déconnecter" in menu and reverse("account_logout") in menu
 
@@ -71,14 +72,14 @@ def test_phone_navigation_is_a_burger_menu_without_a_bottom_bar(client):
 def test_list_headers_use_a_round_plus_on_a_phone_and_keep_the_label_for_screen_readers(client):
     _login(client)
     for name, label in (
-        ("addressbook:promoter-list", "Nouvel organisateur"),
-        ("addressbook:venue-list", "Nouveau lieu"),
+        (directory_url("promoter"), "Nouvel organisateur"),
+        (directory_url("venue"), "Nouveau lieu"),
         ("catalog:show-list", "Nouveau spectacle"),
         ("gigs:list", "Nouvelle date"),
         ("tenants:person-list", "Ajouter"),
-        ("addressbook:contact-list", "Nouveau contact"),
+        (directory_url("contact"), "Nouveau contact"),
     ):
-        content = client.get(reverse(name)).content.decode()
+        content = client.get(name if name.startswith("/") else reverse(name)).content.decode()
         assert f'aria-label="{label}"' in content, name
         assert f'<span class="hidden sm:inline">+ {label}</span>' in content, name
 
@@ -105,7 +106,7 @@ def test_desktop_navigation_is_a_column_on_the_left_and_the_burger_stays_on_a_ph
     assert content.index("<aside") < content.index("<main")
     assert 'class="hidden ' in aside and "lg:flex" in aside and "lg:w-60" in aside
     assert reverse("gigs:list") in aside and reverse("account_logout") in aside
-    for label in ("Accueil", "Mes dates", "Spectacles", "Contacts", "Bòrd"):
+    for label in ("Accueil", "Bòrd", "Dates", "Social", "Contacts"):
         assert label in aside
     # The top bar is for phones and tablets only, and keeps the burger menu.
     assert "lg:hidden" in content.split("<header")[1].split(">")[0]
@@ -138,14 +139,12 @@ def test_bord_comes_right_after_the_home_page_and_is_in_bold(client):
     sidebar = content.split("<aside")[1].split("</aside>")[0]
     nav = sidebar.split("<nav")[1].split("</nav>")[0]
     nav = re.sub(r"<svg.*?</svg>", "", nav, flags=re.S)  # the icons are not part of the labels
-    labels = re.findall(r">\s*(Accueil|Bòrd|Mes dates|Spectacles|Contacts)</a>", nav)
+    labels = re.findall(r">\s*(Accueil|Bòrd|Dates|Social|Contacts)</a>", nav)
 
-    assert labels == ["Accueil", "Bòrd", "Mes dates", "Spectacles", "Contacts"]
+    assert labels == ["Accueil", "Bòrd", "Dates", "Social", "Contacts"]
     bord_link = re.search(r"<a[^>]*>\s*Bòrd</a>", nav.replace("\n", " ")).group(0)
     assert "font-bold" in bord_link
-    assert "font-bold" not in re.search(r"<a[^>]*>\s*Mes dates</a>", nav.replace("\n", " ")).group(
-        0
-    )
+    assert "font-bold" not in re.search(r"<a[^>]*>\s*Dates</a>", nav.replace("\n", " ")).group(0)
 
 
 # --- "Retour" button (F-86) ----------------------------------------------------------------------
@@ -154,7 +153,7 @@ def test_bord_comes_right_after_the_home_page_and_is_in_bold(client):
 def test_every_signed_in_page_has_a_back_button_that_leads_to_my_dates_without_javascript(client):
     _login(client)
 
-    for name in ("gigs:list", "addressbook:promoter-list", "document-library"):
+    for name in ("gigs:list", "addressbook:directory", "document-library"):
         content = client.get(reverse(name)).content.decode()
 
         assert content.count("data-back-button") == 1, name

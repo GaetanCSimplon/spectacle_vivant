@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+{% load i18n %}
+{% comment %}
+  Frame of every page of "Ma structure": vertical tabs on the left, the page on the right.
+  Pages fill `structure_content` instead of `page_content`.
+{% endcomment %}
+{% block page_content %}
+  <p class="mb-4 text-sm font-semibold uppercase tracking-wide text-gray-600">{% translate "Ma structure" %}</p>
+  <div class="flex flex-col gap-6 lg:flex-row">
+    {% include "tenants/_structure_tabs.html" %}
+    <div class="min-w-0 flex-1">{% block structure_content %}{% endblock %}</div>
+  </div>
+{% endblock %}

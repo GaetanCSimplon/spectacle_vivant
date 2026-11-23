@@ -1,9 +1,9 @@
-{% extends "base.html" %}
+{% extends "tenants/structure_base.html" %}
 {% load i18n %}
 
 {% block title %}{{ show.title }} — Bòrd Pro{% endblock %}
 
-{% block page_content %}
+{% block structure_content %}
   <div class="mb-4 flex items-start justify-between gap-3">
     <div>
       <h1>{% include "components/_show_dot.html" %}{{ show.title }}</h1>

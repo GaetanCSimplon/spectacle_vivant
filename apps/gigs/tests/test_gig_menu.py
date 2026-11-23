@@ -45,7 +45,7 @@ def test_the_menu_comes_right_under_my_dates(client):
 
     aside = _aside(client, reverse("gigs:detail", args=[gig.pk]))
 
-    assert aside.index("Mes dates") < aside.index("Menu de la date") < aside.index("Spectacles")
+    assert aside.index("Dates") < aside.index("Menu de la date") < aside.index("Social")
 
 
 def test_no_menu_outside_a_date(client):

@@ -17,7 +17,7 @@ Remplacer le menu actuel par 5 entrées de travail quotidien (Accueil · Bord ·
   - Tests : un test par action confirmée ; test HTMX sur l'ajout de dépense depuis le volet Social ; cas d'erreur inchangés ; pas de message sur les actions anodines.
   - Documents à relire : charte (messages d'état), feuille-de-route.
   - Risques : message perdu ou doublé dans une réponse HTMX ; aucune donnée personnelle ni lien secret dans les textes (CLAUDE.md §6.3).
-- [ ] PR 1 + PR 2 — Menu à 5 entrées, nouvelles URL et « Ma structure » (`feature/nav-menu-urls` puis `feature/nav-ma-structure`, **livrées ensemble en production**)
+- [x] PR 1 + PR 2 — Menu à 5 entrées, nouvelles URL et « Ma structure » (`feature/nav-menu-urls` puis `feature/nav-ma-structure`, **livrées ensemble en production**)
   - Objectif PR 1 : menu Accueil · Bord · Dates · Social · Contacts, `active_menu` (R7), pied de menu « Ma structure » + nom de la structure, nouvelles URL (`/bord/depenses/`, `/bord/documents/` avec documents émis, `/social/`, `/contacts/?type=organisateurs|lieux|personnes`), redirections 301 définitives, mise à jour du cahier des charges ligne 227. `/radar/` reste accessible hors menu.
   - Objectif PR 2 : `/structure/` avec onglets verticaux (Fiche, Équipe, Spectacles, Paratge en explication seule, Documents, Compte et offre), droits NAV-D4, redirections de `/bord/informations/`, `/bord/equipe/`, `/spectacles/`, indicateur de complétude en toutes lettres.
   - Fichiers : templates/components/_nav.html, _sidebar.html, _header.html, _breadcrumb.html ; config/urls.py ; apps/core (active_menu) ; vues de tenants, catalog, documents, addressbook, finance (listes en lecture) ; gabarit à onglets de Ma structure ; docs/produit/cahier-des-charges.md.
@@ -48,9 +48,14 @@ Remplacer le menu actuel par 5 entrées de travail quotidien (Accueil · Bord ·
 - 2026-11-23 — Redirections 301 définitives, sans date de fin.
 - 2026-11-23 — PR 1 et PR 2 livrées ensemble en production, pour ne pas faire vivre deux menus différents.
 - 2026-11-23 — PR 0 inclut l'espace équipe par lien secret.
+- 2026-11-23 — `/contacts/` sans `?type=` affiche les organisateurs ; les fiches et formulaires gardent leurs chemins.
+- 2026-11-23 — Ma structure : Documents = modèles de messages (pour l'instant) ; Compte et offre = exports, suppression, texte « pas d'offre payante » ; Paratge = texte d'explication.
+- 2026-11-23 — NAV-D4 appliqué strictement : un `member` lit l'Équipe (plus de modification), gère les Spectacles, reçoit 403 sur Fiche, Documents, Compte, Paratge ; Social lui affiche une explication.
+- 2026-11-23 — « Quitter cette structure » placé sur la page Équipe pour un `member`.
 
 ## Points en suspens
-- Vérifier au démarrage de la PR 1 ce que devient la liste actuelle `/contacts/` (contacts seuls) face au nouvel annuaire à filtre.
+- Alertes Radar et contrôles de contrat qui pointent vers `tenants:settings` : un `member` qui clique reçoit 403 (à revoir si gênant).
+- Lien d'export ZIP absent de l'interface pour un `member` (adresse toujours ouverte).
 - Reprise du cachet de référence sur les dates : lire d'abord `GigMember.cachet_amount` (PR 3).
 - Les tickets A4, A6, C1 et le « doc 07 » cités dans le doc de navigation sont absents du dépôt.
 
@@ -67,3 +72,6 @@ Volontairement sans message : cases de la checklist d'une date, aperçus, télé
 ## Journal
 - 2026-11-23 — Plan validé.
 - 2026-11-23 — PR 0 implémentée (branche `feature/confirmations-actions`).
+- 2026-11-23 — PR 1 (étape A) implémentée sur `feature/nav-menu-urls` : menu à 5 entrées, `active_menu`, `/social/`, `/bord/documents/`, `/bord/depenses/`, annuaire `/contacts/?type=`, redirections 301. Étape B (Ma structure) à faire sur la même branche.
+- 2026-11-23 — PR 2 (étape B) implémentée sur la même branche : `/structure/` et ses six onglets, droits NAV-D4, redirections 301. Écarts : `member` ne modifie plus l'Équipe (lecture seule, comme NAV-D4) ; « Quitter cette structure » est sur la page Équipe pour un `member` ; Compte et offre regroupe exports, suppression et un texte « pas d'offre payante » ; onglet Documents = modèles de messages.
+- 2026-11-23 — PR 1 + PR 2 terminées (tests, ruff, contrôle visuel 1440 et 375 px). Prêtes pour commit et PR.

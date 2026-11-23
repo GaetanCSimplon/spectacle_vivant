@@ -15,12 +15,15 @@ import pytest
 from django.apps import apps as django_apps
 from django.core.files.base import ContentFile
 from django.urls import URLPattern, URLResolver, get_resolver, reverse
+from django.views.generic import RedirectView
 from weasyprint import HTML
 
 from apps.accounts.models import Membership
 from apps.addressbook.factories import ContactFactory, VenueFactory
+from apps.addressbook.views import DirectoryRedirectView
 from apps.catalog.models import Show
 from apps.core.models import TenantOwnedModel
+from apps.core.views import PrefixRedirectView
 from apps.documents import invoicing
 from apps.documents import services as doc_services
 from apps.documents.models import Invoice
@@ -305,6 +308,9 @@ def world(client):
 # --- helpers -------------------------------------------------------------------------
 
 
+MOVED_ADDRESSES = {RedirectView, DirectoryRedirectView, PrefixRedirectView}
+
+
 def _all_routes():
     """(full name, route text, view class) of every URL of the project."""
 
@@ -316,6 +322,8 @@ def _all_routes():
             elif isinstance(entry, URLPattern):
                 full = ":".join([*namespaces, entry.name or ""])
                 view = getattr(entry.callback, "view_class", None)
+                if view in MOVED_ADDRESSES:  # a 301 to a page that is audited itself
+                    continue
                 yield full, prefix + str(entry.pattern), view
 
     for route in walk(get_resolver().url_patterns, [], ""):

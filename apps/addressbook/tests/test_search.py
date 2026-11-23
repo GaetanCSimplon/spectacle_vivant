@@ -1,9 +1,9 @@
 import pytest
-from django.urls import reverse
 
 from apps.tenants.factories import MembershipFactory
 
 from ..factories import ContactFactory, PromoterFactory, VenueFactory
+from .helpers import list_get
 
 pytestmark = pytest.mark.django_db
 
@@ -17,7 +17,8 @@ def _login(client):
 
 
 def _get(client, url_name, q="", **headers):
-    return client.get(reverse(url_name), {"q": q} if q else {}, **headers).content.decode()
+    kind = url_name.split(":")[1].removesuffix("-list")
+    return list_get(client, kind, {"q": q} if q else {}, **headers).content.decode()
 
 
 def test_search_filters_promoters_by_name_ignoring_case(client):
@@ -128,7 +129,7 @@ def test_boosted_navigation_still_gets_the_full_page(client):
 
 
 def test_search_requires_login(client):
-    response = client.get(reverse("addressbook:promoter-list"), {"q": "a"})
+    response = list_get(client, "promoter", {"q": "a"})
 
     assert response.status_code == 302
 

@@ -9,6 +9,7 @@ from django.urls import reverse
 from apps.tenants.factories import MembershipFactory
 
 from ..factories import ContactFactory, PromoterFactory, VenueFactory
+from .helpers import directory_url, list_get
 
 pytestmark = pytest.mark.django_db
 
@@ -111,11 +112,11 @@ def test_each_list_offers_the_export_with_its_current_filters(client, tenant):
     PromoterFactory(tenant=tenant)
     VenueFactory(tenant=tenant)
 
-    contacts = client.get(reverse("addressbook:contact-list"), {"q": "a"}).content.decode()
-    promoters = client.get(reverse("addressbook:promoter-list")).content.decode()
-    venues = client.get(reverse("addressbook:venue-list")).content.decode()
+    contacts = list_get(client, "contact", {"q": "a"}).content.decode()
+    promoters = client.get(directory_url("promoter")).content.decode()
+    venues = client.get(directory_url("venue")).content.decode()
 
-    assert f"{reverse('addressbook:contact-export')}?q=a" in contacts
+    assert f"{reverse('addressbook:contact-export')}?type=personnes&amp;q=a" in contacts
     assert reverse("addressbook:promoter-export") in promoters
     assert reverse("addressbook:venue-export") in venues
     assert "Exporter (CSV)" in contacts
@@ -124,7 +125,7 @@ def test_each_list_offers_the_export_with_its_current_filters(client, tenant):
 def test_the_export_and_import_links_are_buttons_with_an_icon_class(client, tenant):
     ContactFactory(tenant=tenant, promoter=None, venue=None)
 
-    page = client.get(reverse("addressbook:contact-list")).content.decode()
+    page = client.get(directory_url("contact")).content.decode()
 
     export_tag = page.split(reverse("addressbook:contact-export"))[1].split(">")[0]
     import_tag = page.split(reverse("addressbook:import"))[1].split(">")[0]
@@ -136,7 +137,7 @@ def test_mail_and_phone_links_of_a_contact_are_at_least_24_px_high(client, tenan
     """WCAG 2.2 AA (target size): a 20 px link line was found by the accessibility audit."""
     ContactFactory(tenant=tenant, email="lea@ex.org", phone="0601020304")
 
-    page = client.get(reverse("addressbook:contact-list")).content.decode()
+    page = client.get(directory_url("contact")).content.decode()
 
     for target in ("mailto:lea@ex.org", "tel:0601020304"):
         tag = page.split(f'href="{target}"')[1].split(">")[0]

@@ -224,7 +224,7 @@ Un utilisateur = une structure en MVP (modèle `Membership` prêt pour plusieurs
 
 ## 7. Contraintes UX
 
-- Navigation principale : **Dates · Spectacles · Contacts · Documents/Finances · Ma structure** (5 entrées max).
+- Navigation principale : **Accueil · Bòrd · Dates · Social · Contacts** (5 entrées), plus **Ma structure** en pied de menu pour tout le paramétrage (fiche, équipe, spectacles, documents, compte).
 - Wizards pour les créations complexes (date, onboarding).
 - Tooltips contextuels ; textes d'aide courts. Messages d'erreur en français, compréhensibles.
 - Actions primaires évidentes (un bouton principal par écran).

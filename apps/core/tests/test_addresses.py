@@ -7,6 +7,7 @@ from django.urls import reverse
 from apps.addressbook.factories import PromoterFactory, VenueFactory
 from apps.addressbook.forms import PromoterForm, VenueForm
 from apps.addressbook.models import Venue
+from apps.addressbook.tests.helpers import list_get
 from apps.core.addresses import (
     DEPARTMENT_CHOICES,
     department_from_postal_code,
@@ -254,6 +255,6 @@ def test_the_promoter_search_also_finds_a_city(client):
     PromoterFactory(tenant=membership.tenant, name="Mairie A", city="Sète")
     PromoterFactory(tenant=membership.tenant, name="Mairie B", city="Lyon")
 
-    response = client.get(reverse("addressbook:promoter-list"), {"q": "sète"})
+    response = list_get(client, "promoter", {"q": "sète"})
 
     assert [p.name for p in response.context["object_list"]] == ["Mairie A"]

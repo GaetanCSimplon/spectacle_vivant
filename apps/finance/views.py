@@ -277,6 +277,16 @@ class ExpenseReceiptView(FinanceMixin, View):
         )
 
 
+class ExpenseListView(TenantScopedMixin, View):
+    """Bòrd › Dépenses: every expense of the structure, all dates together (read only)."""
+
+    def get(self, request):
+        expenses = Expense.objects.filter(tenant=request.tenant).select_related(
+            "gig__show", "person"
+        )
+        return render(request, "finance/expense_list.html", {"expenses": expenses})
+
+
 # --- exports -----------------------------------------------------------------
 
 

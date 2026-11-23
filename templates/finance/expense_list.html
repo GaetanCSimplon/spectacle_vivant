@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}Dépenses — Bòrd Pro{% endblock %}
+{% block main_width %}max-w-[90rem]{% endblock %}
+
+{% block page_content %}
+  <h1 class="mb-2">{% translate "Bòrd" %}</h1>
+  {% include "tenants/_tabs.html" with active="expenses" %}
+  <p class="mb-4 text-sm text-gray-600">{% translate "Toutes les dépenses de toutes vos dates. Pour en ajouter ou en modifier une, ouvrez la date concernée." %}</p>
+
+  {% if expenses %}
+    <table class="w-full text-sm">
+      <thead>
+        <tr class="border-b border-gray-200 text-left">
+          <th scope="col" class="py-2">{% translate "Date" %}</th>
+          <th scope="col">{% translate "Libellé" %}</th>
+          <th scope="col">{% translate "Catégorie" %}</th>
+          <th scope="col">{% translate "Pour la date" %}</th>
+          <th scope="col" class="text-right">{% translate "Montant" %}</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for expense in expenses %}
+          <tr class="border-b border-gray-100">
+            <td class="py-2">{{ expense.date|date:"d/m/Y" }}</td>
+            <td>{{ expense.label }}{% if expense.person %} <span class="text-gray-600">({{ expense.person }})</span>{% endif %}</td>
+            <td>{{ expense.get_category_display }}</td>
+            <td><a href="{% url 'finance:page' expense.gig.pk %}" class="text-blue-700 underline">{{ expense.gig }}</a></td>
+            <td class="text-right">{{ expense.amount }} €</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  {% else %}
+    <p class="text-gray-600">{% translate "Aucune dépense pour le moment." %}</p>
+  {% endif %}
+{% endblock %}

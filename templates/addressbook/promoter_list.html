@@ -16,7 +16,7 @@
     </div>
   </div>
 
-  {% url 'addressbook:promoter-list' as list_url %}
+  {% url 'addressbook:directory' as list_url %}
   {% translate "Rechercher un organisateur" as search_placeholder %}
   <form
     method="get"
@@ -29,6 +29,7 @@
     hx-swap="innerHTML"
     hx-push-url="true"
   >
+    <input type="hidden" name="type" value="organisateurs">
     <input
       type="search"
       name="q"

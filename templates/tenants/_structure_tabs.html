@@ -1,0 +1,22 @@
+{% load i18n %}
+{% comment %}Tabs of "Ma structure". A member only gets the tabs they may open (Équipe, Spectacles).{% endcomment %}
+{% with view=request.resolver_match.view_name ns=request.resolver_match.namespace %}
+<nav aria-label="{% translate 'Ma structure' %}" class="flex shrink-0 flex-row flex-wrap gap-1 border-b border-gray-200 pb-2 lg:w-56 lg:flex-col lg:border-b-0 lg:border-r lg:pb-0 lg:pr-4">
+  {% if structure_is_owner %}
+    {% url 'tenants:settings' as url %}
+    <a href="{{ url }}" class="rounded-md px-3 py-2 text-sm {% if view == 'tenants:settings' %}bg-blue-50 font-semibold text-blue-700{% else %}text-gray-700 hover:bg-gray-100{% endif %}"{% if view == 'tenants:settings' %} aria-current="true"{% endif %}>{% translate "Fiche" %}</a>
+  {% endif %}
+  {% url 'tenants:person-list' as url %}
+  <a href="{{ url }}" class="rounded-md px-3 py-2 text-sm {% if view|slice:':14' == 'tenants:person' %}bg-blue-50 font-semibold text-blue-700{% else %}text-gray-700 hover:bg-gray-100{% endif %}"{% if view|slice:':14' == 'tenants:person' %} aria-current="true"{% endif %}>{% translate "Équipe" %}</a>
+  {% url 'catalog:show-list' as url %}
+  <a href="{{ url }}" class="rounded-md px-3 py-2 text-sm {% if ns == 'catalog' %}bg-blue-50 font-semibold text-blue-700{% else %}text-gray-700 hover:bg-gray-100{% endif %}"{% if ns == 'catalog' %} aria-current="true"{% endif %}>{% translate "Spectacles" %}</a>
+  {% if structure_is_owner %}
+    {% url 'tenants:paratge' as url %}
+    <a href="{{ url }}" class="rounded-md px-3 py-2 text-sm {% if view == 'tenants:paratge' %}bg-blue-50 font-semibold text-blue-700{% else %}text-gray-700 hover:bg-gray-100{% endif %}"{% if view == 'tenants:paratge' %} aria-current="true"{% endif %}>{% translate "Paratge" %}</a>
+    {% url 'tenants:message-templates' as url %}
+    <a href="{{ url }}" class="rounded-md px-3 py-2 text-sm {% if view == 'tenants:message-templates' %}bg-blue-50 font-semibold text-blue-700{% else %}text-gray-700 hover:bg-gray-100{% endif %}"{% if view == 'tenants:message-templates' %} aria-current="true"{% endif %}>{% translate "Documents" %}</a>
+    {% url 'tenants:account' as url %}
+    <a href="{{ url }}" class="rounded-md px-3 py-2 text-sm {% if view == 'tenants:account' or view == 'tenants:data-export' or view == 'tenants:delete' %}bg-blue-50 font-semibold text-blue-700{% else %}text-gray-700 hover:bg-gray-100{% endif %}"{% if view == 'tenants:account' or view == 'tenants:data-export' or view == 'tenants:delete' %} aria-current="true"{% endif %}>{% translate "Compte et offre" %}</a>
+  {% endif %}
+</nav>
+{% endwith %}

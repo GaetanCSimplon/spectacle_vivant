@@ -9,6 +9,7 @@ from apps.tenants.factories import MembershipFactory
 from .. import imports
 from ..factories import ContactFactory, PromoterFactory, VenueFactory
 from ..models import Contact, Promoter, Venue
+from .helpers import directory_url
 
 pytestmark = pytest.mark.django_db
 
@@ -64,7 +65,7 @@ def test_the_confirmation_creates_the_contacts_in_this_structure(client, tenant)
 
     response = _import(client, "contacts", text)
 
-    assert response.url == reverse("addressbook:contact-list")
+    assert response.url == directory_url("contact")
     lea = Contact.objects.get(name="Léa Durand")
     assert lea.tenant == tenant and lea.role == "Accueil" and lea.email == "lea@ex.org"
     assert Contact.objects.filter(tenant=tenant).count() == 2
@@ -351,9 +352,9 @@ def test_the_template_is_an_empty_file_with_the_columns(client, tenant):
 
 def test_each_tab_links_to_the_import_for_its_own_kind(client, tenant):
     for name, kind in (
-        ("promoter-list", "organisateurs"),
-        ("venue-list", "lieux"),
-        ("contact-list", "contacts"),
+        ("promoter", "organisateurs"),
+        ("venue", "lieux"),
+        ("contact", "contacts"),
     ):
-        page = client.get(reverse(f"addressbook:{name}")).content.decode()
+        page = client.get(directory_url(name)).content.decode()
         assert f"{reverse(UPLOAD)}?type={kind}" in page

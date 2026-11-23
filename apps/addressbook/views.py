@@ -1,8 +1,14 @@
 from django.contrib import messages
 from django.db.models import ProtectedError
-from django.http import Http404, HttpResponse, HttpResponseBadRequest
+from django.http import (
+    Http404,
+    HttpResponse,
+    HttpResponseBadRequest,
+    HttpResponsePermanentRedirect,
+)
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse, reverse_lazy
+from django.utils.text import format_lazy
 from django.utils.translation import gettext_lazy as _
 from django.views import View
 from django.views.generic import CreateView, DeleteView, DetailView, ListView, UpdateView
@@ -20,6 +26,11 @@ from .forms import (
     VenueForm,
 )
 from .models import Contact, Promoter, Venue
+
+# The address book is one page, `/contacts/?type=organisateurs|lieux|personnes`.
+PROMOTERS_URL = format_lazy("{}?type=organisateurs", reverse_lazy("addressbook:directory"))
+VENUES_URL = format_lazy("{}?type=lieux", reverse_lazy("addressbook:directory"))
+CONTACTS_URL = format_lazy("{}?type=personnes", reverse_lazy("addressbook:directory"))
 
 
 class DetailRedirectMixin:
@@ -196,7 +207,7 @@ class PromoterDeleteView(TenantScopedMixin, DeleteView):
 
     model = Promoter
     template_name = "addressbook/promoter_confirm_delete.html"
-    success_url = reverse_lazy("addressbook:promoter-list")
+    success_url = PROMOTERS_URL
 
     def post(self, request, *args, **kwargs):
         try:
@@ -273,7 +284,7 @@ class VenueDeleteView(TenantScopedMixin, DeleteView):
 
     model = Venue
     template_name = "addressbook/venue_confirm_delete.html"
-    success_url = reverse_lazy("addressbook:venue-list")
+    success_url = VENUES_URL
 
     def post(self, request, *args, **kwargs):
         try:
@@ -330,7 +341,7 @@ class ContactQuickCreateView(ContactFormMixin, TenantScopedMixin, CreateView):
     model = Contact
     form_class = ContactForm
     template_name = "addressbook/contact_form.html"
-    success_url = reverse_lazy("addressbook:contact-list")
+    success_url = CONTACTS_URL
 
     def form_valid(self, form):
         response = super().form_valid(form)
@@ -384,7 +395,7 @@ class ContactUpdateView(ContactFormMixin, TenantScopedMixin, UpdateView):
     model = Contact
     form_class = ContactForm
     template_name = "addressbook/contact_form.html"
-    success_url = reverse_lazy("addressbook:contact-list")
+    success_url = CONTACTS_URL
 
     def form_valid(self, form):
         response = super().form_valid(form)
@@ -400,7 +411,7 @@ class ContactUpdateView(ContactFormMixin, TenantScopedMixin, UpdateView):
 class ContactDeleteView(TenantScopedMixin, DeleteView):
     model = Contact
     template_name = "addressbook/contact_confirm_delete.html"
-    success_url = reverse_lazy("addressbook:contact-list")
+    success_url = CONTACTS_URL
 
     def form_valid(self, form):
         response = super().form_valid(form)
@@ -426,7 +437,7 @@ class PromoterFollowUpView(TenantScopedMixin, View):
         if wants_fragment(request):
             return render(request, "addressbook/_follow_up_menu.html", {"promoter": promoter})
         messages.success(request, _("Le statut est enregistré."))
-        return redirect(request.POST.get("next") or "addressbook:promoter-list")
+        return redirect(request.POST.get("next") or PROMOTERS_URL)
 
 
 class ContactLinkView(TenantScopedMixin, View):
@@ -507,9 +518,9 @@ class ContactExportView(ExportMixin, ContactListView):
 
 IMPORT_SESSION_KEY = "addressbook_import"
 IMPORT_LISTS = {
-    "contacts": "addressbook:contact-list",
-    "lieux": "addressbook:venue-list",
-    "organisateurs": "addressbook:promoter-list",
+    "contacts": CONTACTS_URL,
+    "lieux": VENUES_URL,
+    "organisateurs": PROMOTERS_URL,
 }
 
 
@@ -577,3 +588,33 @@ class ImportTemplateView(TenantScopedMixin, View):
         response["Content-Disposition"] = f'attachment; filename="modele-{kind}.csv"'
         response.write(exports.BOM + ";".join(exports.EXPORTS[kind][0]) + "\r\n")
         return response
+
+
+class DirectoryView(View):
+    """`/contacts/?type=organisateurs|lieux|personnes`: the three existing lists under one page.
+
+    Each list keeps its own view (tenant scope, search and filters); this one only picks which.
+    """
+
+    lists = {
+        "organisateurs": PromoterListView,
+        "lieux": VenueListView,
+        "personnes": ContactListView,
+    }
+
+    def get(self, request):
+        view = self.lists.get(request.GET.get("type"), PromoterListView)
+        return view.as_view()(request)
+
+
+class DirectoryRedirectView(View):
+    """The former list addresses (`/organisateurs/`, `/lieux/`) lead to the directory (301)."""
+
+    kind = None
+
+    def get(self, request):
+        params = request.GET.copy()
+        params["type"] = self.kind
+        return HttpResponsePermanentRedirect(
+            f"{reverse('addressbook:directory')}?{params.urlencode()}"
+        )

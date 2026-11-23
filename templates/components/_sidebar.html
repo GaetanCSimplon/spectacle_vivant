@@ -10,9 +10,9 @@ Below that, the top bar with the burger menu (_header.html) is used instead.{% e
   </nav>
   <div class="border-t border-white/20 p-3">
     {% if request.tenant %}
-      <a href="{% url 'tenants:settings' %}" class="nav-link mb-1 flex min-h-11 items-center gap-2" title="{% translate 'Informations de la structure' %} : {{ request.tenant.name }}">
+      <a href="{{ structure_url }}" class="nav-link mb-1 flex min-h-11 items-center gap-2" title="{% translate 'Ma structure' %} : {{ request.tenant.name }}">
         {% include "components/_icon.html" with name="settings" size=20 %}
-        <span class="min-w-0"><span class="block truncate text-xs text-blue-200">{% translate "Informations de la structure" %}</span><span class="block truncate text-sm">{{ request.tenant.name }}</span></span>
+        <span class="min-w-0"><span class="block truncate text-xs text-blue-200">{% translate "Ma structure" %}</span><span class="block truncate text-sm">{{ request.tenant.name }}</span></span>
       </a>
     {% endif %}
     <form method="post" action="{% url 'account_logout' %}">
