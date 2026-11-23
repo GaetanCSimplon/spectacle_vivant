@@ -11,7 +11,7 @@ Remplacer le menu actuel par 5 entrées de travail quotidien (Accueil · Bord ·
 - docs/produit/feuille-de-route.md
 
 ## Découpage en PR
-- [ ] PR 0 — Confirmations des actions (`feature/confirmations-actions`)
+- [x] PR 0 — Confirmations des actions (`feature/confirmations-actions`)
   - Objectif : chaque action qui crée, modifie, supprime ou change un statut affiche un message de succès, y compris l'espace équipe (lien secret) et les réponses HTMX (volet Social de la date). Pas de modale « êtes-vous sûr ».
   - Fichiers : apps/finance/views.py, apps/finance/team_views.py, apps/gigs/views.py, apps/documents/billing_views.py, apps/roadmaps/views.py, apps/catalog/views.py, templates/base.html, un fragment de messages pour HTMX, relevé des actions dans ce fichier.
   - Tests : un test par action confirmée ; test HTMX sur l'ajout de dépense depuis le volet Social ; cas d'erreur inchangés ; pas de message sur les actions anodines.
@@ -54,5 +54,16 @@ Remplacer le menu actuel par 5 entrées de travail quotidien (Accueil · Bord ·
 - Reprise du cachet de référence sur les dates : lire d'abord `GigMember.cachet_amount` (PR 3).
 - Les tickets A4, A6, C1 et le « doc 07 » cités dans le doc de navigation sont absents du dépôt.
 
+## Relevé des actions (PR 0)
+Message de succès ajouté (`templates/components/_messages.html`, inclus dans `base.html`, `base_public.html` et les fragments `finance/_body`, `roadmaps/_body`, `documents/_document_lines`) :
+- Finance : paiement ajouté, modifié, supprimé ; dépense ajoutée, modifiée, supprimée ; remboursement marqué ou annulé ; proposition acceptée ou refusée.
+- Espace équipe (lien secret) : proposition envoyée, modifiée, retirée.
+- Feuille de route : notes, élément ajouté, modifié, supprimé ; personne ajoutée depuis l'équipe ; contact de lieu ajouté, supprimé.
+- Devis et factures : brouillon de devis ou de facture créé, brouillon d'avoir créé ; ligne ajoutée, modifiée, supprimée.
+- Spectacles : suppression.
+Déjà confirmées avant : dates (création, statut, prix, échéances, équipe, cachet, suppression), spectacles (création, modification), émission, acceptation, suppression de brouillon, partage de la feuille de route, tournées, documents joints, contacts et organisateurs.
+Volontairement sans message : cases de la checklist d'une date, aperçus, téléchargements, formulaires invalides (leurs erreurs restent affichées dans le formulaire).
+
 ## Journal
 - 2026-11-23 — Plan validé.
+- 2026-11-23 — PR 0 implémentée (branche `feature/confirmations-actions`).

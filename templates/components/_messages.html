@@ -1,0 +1,16 @@
+{% load static i18n %}
+{# Flash messages: included by the pages and by the HTMX fragments, so a message is never lost. #}
+{% for message in messages %}
+  {% if message.extra_tags == 'moment-signed' %}
+    {# Charter v1.3: the one "strong moment" of a view, with the accent gimic (decorative). #}
+    <div role="status" class="card mb-4 flex items-center gap-4">
+      <img src="{% static 'brand/gimic-accent.svg' %}" alt="" aria-hidden="true" width="56" height="56" class="h-14 w-14 shrink-0 object-contain">
+      <div>
+        <p class="font-heading text-xl font-extrabold text-blue-700">{% translate "Contrat signé." %}</p>
+        <p class="text-sm">{{ message }}</p>
+      </div>
+    </div>
+  {% else %}
+  <p role="status" class="message message-{% if message.level_tag == 'debug' %}info{% else %}{{ message.level_tag }}{% endif %}">{{ message }}</p>
+  {% endif %}
+{% endfor %}

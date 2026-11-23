@@ -6,10 +6,12 @@ to. A claim stays a proposal until the owner accepts it (see `services.accept_cl
 
 import os
 
+from django.contrib import messages
 from django.http import FileResponse, Http404
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 from django.utils import timezone
+from django.utils.translation import gettext as _
 from django.views import View
 
 from apps.core.views import protect_secret_page
@@ -66,6 +68,10 @@ class TeamExpensesView(TeamExpensesMixin, View):
             except services.ClaimError as error:
                 form.add_error(None, error.args[0])
             else:
+                messages.success(
+                    request,
+                    _("Votre dépense est envoyée : elle sera vérifiée avant d'être comptée."),
+                )
                 return redirect("team-expenses", token=token)
         return self.render_page(request, person, token, form, status=422)
 
@@ -90,6 +96,7 @@ class TeamExpenseEditView(TeamExpensesMixin, View):
         if not form.is_valid():
             return self.render_page(request, person, token, form, claim, status=422)
         services.save_claim(form.save(commit=False), previous_receipt=previous)
+        messages.success(request, _("Votre proposition est modifiée."))
         return redirect("team-expenses", token=token)
 
 
@@ -102,6 +109,7 @@ class TeamExpenseDeleteView(TeamExpensesMixin, View):
         if not claim.is_pending:
             raise Http404
         services.withdraw_claim(claim)
+        messages.success(request, _("Votre proposition est retirée."))
         return redirect("team-expenses", token=token)
 
 

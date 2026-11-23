@@ -4,6 +4,7 @@
   Needs: gig, roadmap, sections, notes_form, share_url.
 {% endcomment %}
 <div id="roadmap-body">
+  {% include "components/_messages.html" %}
   <h2 id="partage" class="mb-2 text-sm font-semibold uppercase text-gray-500">{% translate "Partage" %}</h2>
   <div class="card mb-6 space-y-3 text-sm">
     <a href="{% url 'roadmaps:preview' gig.pk %}" target="_blank" class="btn btn-secondary btn-sm xl:hidden">{% translate "Voir ce que verra l'artiste" %}</a>

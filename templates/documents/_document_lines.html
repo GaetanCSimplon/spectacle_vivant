@@ -4,6 +4,7 @@
   Needs: document, doc_type, gig, rows, show_vat, line_form, editing, edit_form, error.
 {% endcomment %}
 <div id="lines" class="mb-6">
+  {% include "components/_messages.html" %}
   {% if error %}
     <p class="mb-3 rounded-md bg-red-50 px-4 py-2 text-sm text-red-800">{{ error }}</p>
   {% endif %}

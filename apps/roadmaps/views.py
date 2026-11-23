@@ -180,9 +180,10 @@ class RoadmapMixin(TenantScopedMixin):
             return render(self.request, "roadmaps/_body.html", self.context(**kwargs))
         return self.render_page(**kwargs)
 
-    def done(self):
+    def done(self, message):
         """After a successful change: version +1 if shared, then the body (HTMX) or a redirect."""
         services.bump_version(self.roadmap)
+        messages.success(self.request, message)
         if wants_fragment(self.request):
             return render(self.request, "roadmaps/_body.html", self.context())
         return redirect("roadmaps:editor", gig_id=self.gig.pk)
@@ -201,7 +202,7 @@ class NotesView(RoadmapMixin, View):
         self.load(gig_id)
         form = NotesForm(request.POST, instance=self.roadmap)
         form.save()  # the only field is optional text: always valid
-        return self.done()
+        return self.done(_("Les notes sont enregistrées."))
 
 
 class ShareView(RoadmapMixin, View):
@@ -244,7 +245,7 @@ class ItemAddView(RoadmapMixin, View):
         item.tenant = request.tenant
         setattr(item, self.section.parent, self.parent_of(self.section))
         item.save()
-        return self.done()
+        return self.done(_("L'élément est ajouté."))
 
 
 class TeamMemberAddView(RoadmapMixin, View):
@@ -264,7 +265,7 @@ class TeamMemberAddView(RoadmapMixin, View):
         except services.AlreadyOnTheGig as error:
             messages.error(request, error.args[0])
             return redirect("roadmaps:editor", gig_id=self.gig.pk)
-        return self.done()
+        return self.done(_("La personne est ajoutée à la feuille de route."))
 
 
 class ItemEditView(RoadmapMixin, View):
@@ -283,7 +284,7 @@ class ItemEditView(RoadmapMixin, View):
         if not form.is_valid():
             return self.render_body_or_page(forms={section: form}, editing=(section, item.pk))
         form.save()
-        return self.done()
+        return self.done(_("L'élément est modifié."))
 
 
 class PlaceContactAddView(RoadmapMixin, View):
@@ -304,7 +305,7 @@ class PlaceContactAddView(RoadmapMixin, View):
         contact.tenant = request.tenant
         setattr(contact, "lodging" if section == "hebergements" else "meal", place)
         contact.save()
-        return self.done()
+        return self.done(_("Le contact est ajouté."))
 
 
 class PlaceContactDeleteView(RoadmapMixin, View):
@@ -321,7 +322,7 @@ class PlaceContactDeleteView(RoadmapMixin, View):
             tenant=request.tenant,
             **{"lodging" if section == "hebergements" else "meal": place},
         ).delete()
-        return self.done()
+        return self.done(_("Le contact est supprimé."))
 
 
 class ItemDeleteView(RoadmapMixin, View):
@@ -330,7 +331,7 @@ class ItemDeleteView(RoadmapMixin, View):
     def post(self, request, gig_id, section, pk):
         self.load(gig_id, section)
         self.get_item(pk).delete()
-        return self.done()
+        return self.done(_("L'élément est supprimé."))
 
 
 class PreviewView(RoadmapMixin, View):

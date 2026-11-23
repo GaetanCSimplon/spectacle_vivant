@@ -5,6 +5,7 @@
   The balance is a summary: whole euros (F-58). Every amount below it is exact to the cent.
 {% endcomment %}
 <div id="finance-body">
+  {% include "components/_messages.html" %}
   <h2 class="mb-2 text-sm font-semibold uppercase text-gray-500">{% translate "Bilan de la date" %}</h2>
   {% if gig.status == 'cancelled' %}
     <p class="rounded-lg bg-amber-50 p-3 text-sm text-amber-900 mb-4">{% translate "Cette date est annulée : le « Prévu » ci-dessous n'est plus attendu." %}</p>
