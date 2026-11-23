@@ -34,7 +34,8 @@ def cast_not_on_gig(gig):
 def add_team_member(gig, person):
     """Put a person of the team on the gig, copying what the roadmap shows.
 
-    The average fee is never copied: a roadmap can be shared with a public link.
+    The reference fee is copied into the private cachet of the date (owner only, a copy: later
+    changes to the reference do not touch the date). It never reaches a roadmap.
     """
     if person.tenant_id != gig.tenant_id:
         raise ValueError("A person of another tenant cannot join this gig.")
@@ -50,6 +51,7 @@ def add_team_member(gig, person):
         role=person.role,
         phone=person.phone,
         email=person.email,
+        cachet_amount=person.average_fee,
     )
 
 

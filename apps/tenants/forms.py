@@ -400,6 +400,7 @@ class PersonForm(SectionedFormMixin, AddressModelForm):
         "guso_number",
         "birth_date",
         "social_security_number",
+        "average_fee",
     ]
 
     # Typed with spaces ("1 85 05 78 006 084 91"): stored without them (see clean_*).
@@ -431,6 +432,7 @@ class PersonForm(SectionedFormMixin, AddressModelForm):
             "average_fee",
             "notes",
         ]
+        labels = {"average_fee": _("Cachet de référence (brut, €)")}
         widgets = {
             "role": forms.TextInput(attrs={"list": "person-roles"}),
             "status": forms.TextInput(attrs={"list": "person-statuses"}),
@@ -451,7 +453,8 @@ class PersonForm(SectionedFormMixin, AddressModelForm):
             ),
             "is_artist": _("Cochez l'une, l'autre ou les deux."),
             "average_fee": _(
-                "Facultatif, pour votre suivi. Il n'apparaît jamais dans vos documents."
+                "Facultatif. Visible par le propriétaire seulement, repris sur les nouvelles "
+                "dates. Il n'apparaît jamais dans vos documents."
             ),
             "notes": _("N'y notez pas de numéro de sécurité sociale : il a son propre champ."),
         }
@@ -482,7 +485,7 @@ class PersonForm(SectionedFormMixin, AddressModelForm):
         return birth_date
 
     def clean_average_fee(self):
-        fee = self.cleaned_data["average_fee"]
+        fee = self.cleaned_data.get("average_fee")
         if fee is not None and fee < 0:
             raise forms.ValidationError(_("Le cachet ne peut pas être négatif."))
         return fee
