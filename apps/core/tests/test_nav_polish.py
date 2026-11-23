@@ -48,7 +48,7 @@ def test_the_burger_menu_has_an_icon_before_each_entry(client):
     menu = content.split("lg:hidden", 1)[1].split("</details>", 1)[0]
     nav = menu.split("<nav", 1)[1]
 
-    assert nav.count("<svg") >= 6  # one icon per entry, plus none of them read aloud
+    assert nav.count("<svg") >= 5  # one icon per entry, plus none of them read aloud
     assert 'aria-hidden="true"' in nav
 
 

@@ -7,6 +7,7 @@ from apps.tenants.factories import MembershipFactory
 
 from ..factories import ContactFactory, PromoterFactory, VenueFactory
 from ..models import Contact, Promoter
+from .helpers import directory_url
 
 pytestmark = pytest.mark.django_db
 
@@ -44,11 +45,11 @@ def test_without_javascript_the_page_is_reloaded(client, tenant):
 
     response = client.post(
         reverse("addressbook:promoter-follow-up", args=[promoter.pk]),
-        {"follow_up": "signing", "next": reverse("addressbook:promoter-list")},
+        {"follow_up": "signing", "next": directory_url("promoter")},
     )
 
     promoter.refresh_from_db()
-    assert response.status_code == 302 and response.url == reverse("addressbook:promoter-list")
+    assert response.status_code == 302 and response.url == directory_url("promoter")
     assert promoter.follow_up == "signing"
 
 
@@ -98,7 +99,7 @@ def test_the_status_change_is_post_only_and_needs_a_login(client, tenant):
 def test_the_list_and_the_page_offer_the_menu_with_every_status(client, tenant):
     promoter = PromoterFactory(tenant=tenant, name="Mairie de Test", follow_up="negotiating")
 
-    list_page = client.get(reverse("addressbook:promoter-list")).content.decode()
+    list_page = client.get(directory_url("promoter")).content.decode()
     detail = client.get(reverse("addressbook:promoter-detail", args=[promoter.pk])).content.decode()
 
     for page in (list_page, detail):
@@ -232,7 +233,7 @@ def test_taking_the_last_link_off_leaves_the_contact_in_the_directory(client, te
 
     client.post(reverse("addressbook:venue-contact-detach", args=[venue.pk, contact.pk]))
 
-    page = client.get(reverse("addressbook:contact-list")).content.decode()
+    page = client.get(directory_url("contact")).content.decode()
     assert "Régisseur" in page and "Sans rattachement" in page
 
 

@@ -5,7 +5,8 @@
 {% block main_width %}max-w-[90rem]{% endblock %}
 
 {% block page_content %}
-  <h1>{% translate "Documents" %}</h1>
+  <h1 class="mb-2">{% translate "Bòrd" %}</h1>
+  {% include "tenants/_tabs.html" with active="documents" %}
   <p class="mb-4 text-sm text-gray-600">{% translate "Les contrats signés, devis, factures et avoirs émis, tous spectacles confondus." %}</p>
 
   <form

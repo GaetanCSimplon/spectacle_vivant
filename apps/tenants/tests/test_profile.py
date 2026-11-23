@@ -123,16 +123,10 @@ def test_too_long_siret_is_rejected(client):
     assert tenant.siret == ""
 
 
-def test_a_member_sees_the_page_read_only(client):
+def test_a_member_gets_a_403_on_the_page(client):
     _login(client, role="member")
 
-    response = client.get(URL)
-
-    content = response.content.decode()
-    assert response.status_code == 200
-    assert "Seul le propriétaire" in content
-    assert "disabled" in content
-    assert "Enregistrer" not in content
+    assert client.get(URL).status_code == 403
 
 
 def test_a_member_cannot_update_the_tenant(client):

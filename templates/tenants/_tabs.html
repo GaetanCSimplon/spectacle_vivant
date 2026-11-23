@@ -1,5 +1,5 @@
 {% load i18n %}
-{% comment %}Switch between the parts of "Bòrd". `active` = bord | team | social | settings; the social tab is for the owner only (`is_owner`).{% endcomment %}
+{% comment %}Switch between the parts of "Bòrd". `active` = bord | expenses | documents | team | settings.{% endcomment %}
 <div class="mb-4 flex gap-4 border-b border-gray-200 text-sm">
   <a
     href="{% url 'tenants:profile' %}"
@@ -7,23 +7,13 @@
     {% if active == 'bord' %}aria-current="true"{% endif %}
   >{% translate "Tableau de bord" %}</a>
   <a
-    href="{% url 'tenants:person-list' %}"
-    class="-mb-px border-b-2 pb-2 {% if active == 'team' %}border-blue-700 font-semibold text-blue-700{% else %}border-transparent text-gray-600 hover:text-gray-900{% endif %}"
-    {% if active == 'team' %}aria-current="true"{% endif %}
-  >{% translate "Équipe" %}</a>
-  {% if is_owner %}
-    <a
-      href="{% url 'tenants:social' %}"
-      class="-mb-px border-b-2 pb-2 {% if active == 'social' %}border-blue-700 font-semibold text-blue-700{% else %}border-transparent text-gray-600 hover:text-gray-900{% endif %}"
-      {% if active == 'social' %}aria-current="true"{% endif %}
-    >{% translate "Social" %}</a>
-  {% endif %}
+    href="{% url 'bord-expenses' %}"
+    class="-mb-px border-b-2 pb-2 {% if active == 'expenses' %}border-blue-700 font-semibold text-blue-700{% else %}border-transparent text-gray-600 hover:text-gray-900{% endif %}"
+    {% if active == 'expenses' %}aria-current="true"{% endif %}
+  >{% translate "Dépenses" %}</a>
   <a
-    href="{% url 'tenants:settings' %}"
-    class="-mb-px ml-auto inline-flex items-center gap-1 border-b-2 pb-2 {% if active == 'settings' %}border-blue-700 font-semibold text-blue-700{% else %}border-transparent text-gray-600 hover:text-gray-900{% endif %}"
-    {% if active == 'settings' %}aria-current="true"{% endif %}
-  >
-    {% include "components/_icon.html" with name="settings" size=16 %}
-    {% translate "Informations de la structure" %}
-  </a>
+    href="{% url 'document-library' %}"
+    class="-mb-px border-b-2 pb-2 {% if active == 'documents' %}border-blue-700 font-semibold text-blue-700{% else %}border-transparent text-gray-600 hover:text-gray-900{% endif %}"
+    {% if active == 'documents' %}aria-current="true"{% endif %}
+  >{% translate "Documents émis" %}</a>
 </div>

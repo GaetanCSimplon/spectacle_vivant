@@ -5,6 +5,7 @@ from apps.tenants.factories import MembershipFactory
 
 from ..factories import ContactFactory, PromoterFactory, VenueFactory
 from ..models import Contact
+from .helpers import directory_url
 
 pytestmark = pytest.mark.django_db
 
@@ -22,7 +23,7 @@ def _payload(**overrides):
 
 
 def test_contact_list_requires_login(client):
-    response = client.get(reverse("addressbook:contact-list"))
+    response = client.get(directory_url("contact"))
 
     assert response.status_code == 302
 
@@ -32,7 +33,7 @@ def test_contact_list_only_shows_the_current_tenants_contacts(client):
     ContactFactory(tenant=tenant, promoter=PromoterFactory(tenant=tenant), name="Le mien")
     ContactFactory(name="Un autre")
 
-    content = client.get(reverse("addressbook:contact-list")).content.decode()
+    content = client.get(directory_url("contact")).content.decode()
 
     assert "Le mien" in content
     assert "Un autre" not in content
@@ -156,7 +157,7 @@ def test_update_a_contact(client):
     )
 
     assert response.status_code == 302
-    assert response.url == reverse("addressbook:contact-list")
+    assert response.url == directory_url("contact")
     contact.refresh_from_db()
     assert contact.name == "Nouveau"
 
@@ -206,7 +207,7 @@ def test_delete_a_contact(client):
     response = client.post(reverse("addressbook:contact-delete", args=[contact.pk]))
 
     assert response.status_code == 302
-    assert response.url == reverse("addressbook:contact-list")
+    assert response.url == directory_url("contact")
     assert not Contact.objects.exists()
 
 
@@ -228,5 +229,5 @@ def test_deleting_a_promoter_keeps_its_contacts_in_the_directory(client):
     client.post(reverse("addressbook:promoter-delete", args=[promoter.pk]))
 
     assert Contact.objects.filter(pk=contact.pk).exists()
-    page = client.get(reverse("addressbook:contact-list")).content.decode()
+    page = client.get(directory_url("contact")).content.decode()
     assert contact.name in page and "Sans rattachement" in page

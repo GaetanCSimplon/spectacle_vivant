@@ -1,20 +1,17 @@
-{% extends "base.html" %}
+{% extends "tenants/structure_base.html" %}
 {% load i18n %}
 
 {% block title %}Informations de la structure — Bòrd Pro{% endblock %}
 
-{% block page_content %}
-  <h1 class="mb-2">{% translate "Bòrd" %}</h1>
-  {% include "tenants/_tabs.html" with active="settings" %}
+{% block structure_content %}
+  {% if gaps %}
+    <p class="mb-4 rounded-md bg-amber-50 px-4 py-2 text-sm text-amber-900" role="status">
+      {% translate "Pour émettre un devis ou une facture, il manque :" %} {{ gaps|join:", " }}.
+    </p>
+  {% endif %}
   <p class="mb-4 text-sm text-gray-600">
     {% translate "Ces informations apparaissent dans vos contrats. Tout champ laissé vide s'affiche en pointillés à compléter à la main." %}
   </p>
-
-  {% if not is_owner %}
-    <p class="mb-4 rounded-md bg-gray-100 px-4 py-2 text-sm text-gray-700">
-      {% translate "Seul le propriétaire du compte peut modifier les informations de la structure." %}
-    </p>
-  {% endif %}
 
   {% if is_owner %}{% include "components/_company_search.html" with street_field="address" keep_name=True %}{% endif %}
 
@@ -30,47 +27,4 @@
     {% endif %}
   </form>
 
-  <section class="mt-8 border-t border-gray-200 pt-4">
-    <h2 class="mb-2 text-base font-semibold">{% translate "Messages" %}</h2>
-    <a href="{% url 'tenants:message-templates' %}" class="btn btn-secondary btn-sm mb-1">{% translate "Modèles de messages" %}</a>
-    <span class="block text-sm text-gray-600">{% translate "Les e-mails préparés pour vos organisateurs et vos contacts : formulaire, contrat, relance." %}</span>
-  </section>
-
-  <section class="mt-8 border-t border-gray-200 pt-4">
-    <h2 class="mb-2 text-base font-semibold">{% translate "Exports et données" %}</h2>
-    <ul class="space-y-3 text-sm">
-      <li>
-        <a href="{% url 'export' %}" class="btn btn-secondary btn-sm btn-download mb-1">
-          {% translate "Exporter mes chiffres (CSV)" %}
-        </a>
-        <span class="block text-gray-600">{% translate "Factures, recettes et dépenses sur la période de votre choix, à ouvrir dans Excel ou à donner à votre comptable." %}</span>
-      </li>
-      <li>
-        <a href="{% url 'tenants:data-export' %}" class="btn btn-secondary btn-sm btn-download mb-1">
-          {% translate "Télécharger toutes mes données (ZIP)" %}
-        </a>
-        <span class="block text-gray-600">{% translate "Tout ce que contient votre compte : dates, spectacles, contacts, équipe, documents et justificatifs." %}</span>
-      </li>
-    </ul>
-  </section>
-
-  <section class="mt-8 border-t border-gray-200 pt-4">
-    <h2 class="mb-2 text-base font-semibold text-red-700">{% translate "Zone sensible" %}</h2>
-    {% if pending_deletion_date %}
-      <p class="mb-2 text-sm text-gray-700">
-        {% blocktranslate with date=pending_deletion_date|date:"d/m/Y" %}La suppression est prévue le {{ date }}. Toutes les données seront alors effacées.{% endblocktranslate %}
-      </p>
-      {% if is_owner %}
-        <form method="post" action="{% url 'tenants:cancel-deletion' %}">
-          {% csrf_token %}
-          <button type="submit" class="btn btn-secondary btn-block">{% translate "Annuler la suppression" %}</button>
-        </form>
-      {% endif %}
-    {% elif is_owner %}
-      <a href="{% url 'tenants:delete' %}" class="text-sm text-red-700 underline">{% translate "Supprimer ma structure et mes données" %}</a>
-    {% endif %}
-    {% if not is_owner %}
-      <a href="{% url 'tenants:leave' %}" class="text-sm text-red-700 underline">{% translate "Quitter cette structure" %}</a>
-    {% endif %}
-  </section>
 {% endblock %}

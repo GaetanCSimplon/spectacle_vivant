@@ -183,13 +183,13 @@ def test_an_unknown_kind_is_a_404(client):
     assert _save(client, "other", "a", "b").status_code == 404
 
 
-def test_a_member_reads_the_page_but_cannot_change_a_text(client):
+def test_a_member_can_neither_read_nor_change_the_texts(client):
     tenant = _login(client, Membership.Role.MEMBER)
 
     page = client.get(reverse(URL))
     response = _save(client, "form", "Objet", "Texte [Lien]")
 
-    assert page.status_code == 200 and "Seul le propriétaire" in page.content.decode()
+    assert page.status_code == 403
     assert response.status_code == 403
     assert not MessageTemplate.objects.filter(tenant=tenant).exists()
 
@@ -204,7 +204,7 @@ def test_the_page_shows_the_preview_and_the_settings_link(client):
     page = client.get(reverse(URL)).content.decode()
 
     assert "Aperçu" in page and "Marie Durand" in page
-    assert reverse(URL) in client.get(reverse("tenants:settings")).content.decode()
+    assert reverse(URL) in client.get(reverse("tenants:settings")).content.decode()  # tab
 
 
 # --- isolation ----------------------------------------------------------------------------

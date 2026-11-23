@@ -73,21 +73,27 @@ def _rows(response):
 
 
 @pytest.mark.parametrize("name", ["tenants:social", "tenants:social-export"])
-def test_a_plain_member_gets_a_403_and_a_visitor_is_sent_to_login(client, name):
+def test_a_visitor_is_sent_to_login(client, name):
     assert client.get(reverse(name)).status_code == 302
+
+
+def test_a_plain_member_cannot_download_the_social_files(client):
     _login(client, role="member")
 
-    assert client.get(reverse(name)).status_code == 403
+    assert client.get(reverse("tenants:social-export")).status_code == 403
+    assert client.get(reverse("tenants:social-pdf")).status_code == 403
 
 
-def test_the_social_tab_is_shown_to_the_owner_only(client):
-    _login(client)
-    assert reverse("tenants:social") in client.get(reverse("tenants:person-list")).content.decode()
+def test_a_plain_member_sees_the_entry_with_an_explanation_and_no_data(client):
+    tenant = _login(client, role="member")
+    GigMemberFactory(gig__tenant=tenant, name="Zoé Secrète")
 
-    _login(client, role="member")
-    assert (
-        reverse("tenants:social") not in client.get(reverse("tenants:person-list")).content.decode()
-    )
+    response = client.get(reverse("tenants:social"))
+    content = response.content.decode()
+
+    assert response.status_code == 200
+    assert "réservée au propriétaire" in content
+    assert "Zoé Secrète" not in content
 
 
 def test_the_page_and_the_file_are_never_cached(client):

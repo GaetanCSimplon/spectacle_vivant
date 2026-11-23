@@ -48,13 +48,6 @@ def test_bord_sends_a_user_without_a_tenant_to_onboarding(client, django_user_mo
     assert response.url == reverse("tenants-onboarding")
 
 
-def test_old_profile_wording_is_gone(client):
-    client.force_login(MembershipFactory().user)
-
-    for url in (URL, reverse("tenants:settings"), reverse("tenants:person-list")):
-        assert "Ma structure" not in client.get(url).content.decode()
-
-
 # --- the page itself -------------------------------------------------------
 
 
@@ -483,9 +476,3 @@ def test_the_volet_figures_never_count_another_tenants_dates(client):
     volets = client.get(URL).context["volets"]
 
     assert volets == {"contracts_total": 0, "contracts_signed": 0, "roadmaps_shared": 0}
-
-
-def test_only_the_owner_gets_the_link_to_the_social_follow_up(client):
-    _membership(client, role="member")
-
-    assert reverse("tenants:social") not in client.get(URL).content.decode()

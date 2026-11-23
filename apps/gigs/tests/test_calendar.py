@@ -295,13 +295,13 @@ def test_list_and_calendar_link_to_each_other(client):
         assert reverse("gigs:calendar") in page
 
 
-def test_main_navigation_keeps_mes_dates_active_on_the_calendar(client):
+def test_main_navigation_keeps_dates_active_on_the_calendar(client):
     _login(client)
 
     content = _calendar(client).content.decode()
 
     assert content.count('aria-current="page"') == 2  # top bar + bottom bar
-    assert re.search(r'aria-current="page"\s*>(?:(?!</a>).)*?Mes dates</a>', content, re.S)
+    assert re.search(r'aria-current="page"\s*>(?:(?!</a>).)*?Dates</a>', content, re.S)
 
 
 # --- the dates of the month use the cards of the list -------------------------------------

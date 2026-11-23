@@ -6,6 +6,7 @@ from apps.tenants.factories import MembershipFactory
 
 from ..factories import ContactFactory, VenueFactory
 from ..models import Venue
+from .helpers import directory_url
 
 pytestmark = pytest.mark.django_db
 
@@ -27,7 +28,7 @@ def _payload(**overrides):
 
 
 def test_venue_list_requires_login(client):
-    response = client.get(reverse("addressbook:venue-list"))
+    response = client.get(directory_url("venue"))
 
     assert response.status_code == 302
 
@@ -37,7 +38,7 @@ def test_venue_list_only_shows_the_current_tenants_venues(client):
     VenueFactory(tenant=tenant, name="La mienne")
     VenueFactory(name="Une autre")
 
-    content = client.get(reverse("addressbook:venue-list")).content.decode()
+    content = client.get(directory_url("venue")).content.decode()
 
     assert "La mienne" in content
     assert "Une autre" not in content

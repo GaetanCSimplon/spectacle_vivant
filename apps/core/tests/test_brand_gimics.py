@@ -30,7 +30,7 @@ def test_the_sidebar_and_the_burger_menu_use_the_same_icons(client):
         nav = html.split("<nav", 1)[1].split("</nav>", 1)[0]
         return re.findall(r'<svg aria-hidden="true" width="20"[^>]*>(.*?)</svg>', nav, re.S)
 
-    assert len(icons(sidebar)) == len(icons(burger)) == 7  # one per link
+    assert len(icons(sidebar)) == len(icons(burger)) == 5  # one per link
     assert icons(sidebar) == icons(burger)
     assert "brand/gimic-creme.svg" not in content
 

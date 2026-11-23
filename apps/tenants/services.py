@@ -4,6 +4,7 @@ from datetime import timedelta
 from django.core.files.storage import default_storage
 from django.db import transaction
 from django.utils import timezone
+from django.utils.translation import gettext as _
 
 from apps.accounts.models import Membership, User
 from apps.addressbook.models import Contact, Promoter, Venue
@@ -24,6 +25,22 @@ def create_tenant_for_user(user, **tenant_fields):
         tenant = Tenant.objects.create(**tenant_fields)
         Membership.objects.create(user=user, tenant=tenant, role=Membership.Role.OWNER)
     return tenant
+
+
+def invoice_gaps(tenant):
+    """What the structure still has to fill in to issue a quote or an invoice (labels)."""
+    gaps = []
+    if not tenant.name.strip():
+        gaps.append(_("le nom"))
+    if not tenant.siret.strip():
+        gaps.append(_("le SIRET"))
+    if not (tenant.address.strip() or tenant.city.strip()):
+        gaps.append(_("l'adresse"))
+    if not tenant.iban.strip():
+        gaps.append(_("l'IBAN"))
+    if not tenant.bic.strip():
+        gaps.append(_("le BIC"))
+    return gaps
 
 
 # --- personal space of a team member (a secret link, no account) ------------------------------

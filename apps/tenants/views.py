@@ -5,7 +5,7 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.exceptions import PermissionDenied
 from django.db.models import Count, ProtectedError, Q, Sum
 from django.http import FileResponse, Http404
-from django.shortcuts import get_object_or_404, redirect
+from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse, reverse_lazy
 from django.utils import timezone
 from django.utils.decorators import method_decorator
@@ -50,6 +50,7 @@ from .services import (
     deletion_date,
     disable_team_space,
     enable_team_space,
+    invoice_gaps,
     leave_tenant,
     request_deletion,
 )
@@ -129,45 +130,49 @@ class BordView(LoginRequiredMixin, TemplateView):
         return super().get_template_names()
 
 
-class TenantSettingsView(LoginRequiredMixin, UpdateView):
-    """ "Informations de la structure": the current tenant's own settings.
+class OwnerRequiredMixin(TenantScopedMixin):
+    """Only the tenant's owner may go on (a plain member gets a 403)."""
+
+    def dispatch(self, request, *args, **kwargs):
+        if request.user.is_authenticated and request.tenant is not None:
+            if not is_tenant_owner(request.user, request.tenant):
+                raise PermissionDenied
+        return super().dispatch(request, *args, **kwargs)
+
+
+class TenantSettingsView(OwnerRequiredMixin, UpdateView):
+    """ "Ma structure" › Fiche: the current tenant's own settings (owner only, others get a 403).
 
     The object is always `request.tenant` (never read from the URL or the form).
-    Only the owner can edit; other members see the same page read-only.
     """
 
     form_class = TenantProfileForm
     template_name = "tenants/settings.html"
     success_url = reverse_lazy("tenants:settings")
 
-    def dispatch(self, request, *args, **kwargs):
-        if request.user.is_authenticated:
-            if request.tenant is None:
-                raise Http404
-            self.is_owner = is_tenant_owner(request.user, request.tenant)
-        return super().dispatch(request, *args, **kwargs)
-
     def get_object(self, queryset=None):
         return self.request.tenant
 
-    def get_form(self, form_class=None):
-        form = super().get_form(form_class)
-        if not self.is_owner:
-            for field in form.fields.values():
-                field.disabled = True
-        return form
-
     def get_context_data(self, **kwargs):
-        return super().get_context_data(is_owner=self.is_owner, **kwargs)
-
-    def post(self, request, *args, **kwargs):
-        if not self.is_owner:
-            raise PermissionDenied
-        return super().post(request, *args, **kwargs)
+        return super().get_context_data(
+            is_owner=True, gaps=invoice_gaps(self.request.tenant), **kwargs
+        )
 
     def form_valid(self, form):
         messages.success(self.request, _("Les informations de votre structure sont enregistrées."))
         return super().form_valid(form)
+
+
+class AccountView(OwnerRequiredMixin, TemplateView):
+    """ "Ma structure" › Compte et offre: exports, deletion (owner only). No paid offer yet."""
+
+    template_name = "tenants/account.html"
+
+
+class ParatgeView(OwnerRequiredMixin, TemplateView):
+    """ "Ma structure" › Paratge: only explains what is coming (NAV-D5), owner only."""
+
+    template_name = "tenants/paratge.html"
 
 
 class DataExportView(TenantScopedMixin, TemplateView):
@@ -184,16 +189,6 @@ class DataExportView(TenantScopedMixin, TemplateView):
         )
         filename = f"export-{timezone.localdate()}.zip"
         return FileResponse(archive, as_attachment=True, filename=filename)
-
-
-class OwnerRequiredMixin(TenantScopedMixin):
-    """Only the tenant's owner may go on (a plain member gets a 403)."""
-
-    def dispatch(self, request, *args, **kwargs):
-        if request.user.is_authenticated and request.tenant is not None:
-            if not is_tenant_owner(request.user, request.tenant):
-                raise PermissionDenied
-        return super().dispatch(request, *args, **kwargs)
 
 
 class BordStatusView(OwnerRequiredMixin, View):
@@ -365,21 +360,21 @@ class PersonFormMixin:
         return reverse("tenants:person-detail", args=[self.object.pk])
 
 
-class PersonCreateView(PersonFormMixin, TenantScopedMixin, CreateView):
+class PersonCreateView(PersonFormMixin, OwnerRequiredMixin, CreateView):
     def form_valid(self, form):
         response = super().form_valid(form)
         messages.success(self.request, _("La personne a été ajoutée à votre équipe."))
         return response
 
 
-class PersonUpdateView(PersonFormMixin, TenantScopedMixin, UpdateView):
+class PersonUpdateView(PersonFormMixin, OwnerRequiredMixin, UpdateView):
     def form_valid(self, form):
         response = super().form_valid(form)
         messages.success(self.request, _("La fiche a été modifiée."))
         return response
 
 
-class PersonDeleteView(TenantScopedMixin, DeleteView):
+class PersonDeleteView(OwnerRequiredMixin, DeleteView):
     model = Person
     template_name = "tenants/person_confirm_delete.html"
     success_url = reverse_lazy("tenants:person-list")
@@ -404,6 +399,13 @@ class SocialView(OwnerRequiredMixin, TemplateView):
     cachets, ready to be handed to whoever does the payroll (F-93)."""
 
     template_name = "tenants/social.html"
+
+    def dispatch(self, request, *args, **kwargs):
+        # A member sees the entry, with an explanation instead of the data (NAV-D5).
+        if request.user.is_authenticated and request.tenant is not None:
+            if not is_tenant_owner(request.user, request.tenant):
+                return render(request, "tenants/social_owner_only.html")
+        return super().dispatch(request, *args, **kwargs)
 
     def get_template_names(self):
         return (
@@ -477,21 +479,14 @@ class SocialPdfView(OwnerRequiredMixin, View):
         )
 
 
-class MessageTemplatesView(LoginRequiredMixin, TemplateView):
-    """The e-mails the user sends to organisers and contacts: read by all, written by the owner.
+class MessageTemplatesView(OwnerRequiredMixin, TemplateView):
+    """The e-mails the user sends to organisers and contacts (owner only).
 
     One form per message, all posted here with the message kind; "reset" goes back to the
     default text. The structure is always `request.tenant`.
     """
 
     template_name = "tenants/message_templates.html"
-
-    def dispatch(self, request, *args, **kwargs):
-        if request.user.is_authenticated:
-            if request.tenant is None:
-                raise Http404
-            self.is_owner = is_tenant_owner(request.user, request.tenant)
-        return super().dispatch(request, *args, **kwargs)
 
     def get_context_data(self, bound=None, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -505,12 +500,10 @@ class MessageTemplatesView(LoginRequiredMixin, TemplateView):
                 section["form"]["subject"].value() or "", section["form"]["body"].value() or ""
             )
             section["preview"] = {"subject": subject, "body": body}
-        context.update(sections=sections, is_owner=self.is_owner)
+        context.update(sections=sections, is_owner=True)
         return context
 
     def post(self, request, *args, **kwargs):
-        if not self.is_owner:
-            raise PermissionDenied
         kind = request.POST.get("kind")
         if kind not in MessageTemplate.Kind.values:
             raise Http404

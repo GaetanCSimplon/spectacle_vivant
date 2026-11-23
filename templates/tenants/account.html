@@ -1,0 +1,42 @@
+{% extends "tenants/structure_base.html" %}
+{% load i18n %}
+
+{% block title %}Compte et offre — Bòrd Pro{% endblock %}
+
+{% block structure_content %}
+  <h2 class="mb-2 text-lg font-semibold">{% translate "Compte et offre" %}</h2>
+  <p class="mb-6 text-sm text-gray-600">{% translate "Bòrd Pro n'a pas encore d'offre payante : il n'y a rien à régler ici. Vous retrouvez vos exports et la suppression de votre structure." %}</p>
+
+  <section class="mb-8 border-b border-gray-200 pb-4">
+    <h2 class="mb-2 text-base font-semibold">{% translate "Exports et données" %}</h2>
+    <ul class="space-y-3 text-sm">
+      <li>
+        <a href="{% url 'export' %}" class="btn btn-secondary btn-sm btn-download mb-1">
+          {% translate "Exporter mes chiffres (CSV)" %}
+        </a>
+        <span class="block text-gray-600">{% translate "Factures, recettes et dépenses sur la période de votre choix, à ouvrir dans Excel ou à donner à votre comptable." %}</span>
+      </li>
+      <li>
+        <a href="{% url 'tenants:data-export' %}" class="btn btn-secondary btn-sm btn-download mb-1">
+          {% translate "Télécharger toutes mes données (ZIP)" %}
+        </a>
+        <span class="block text-gray-600">{% translate "Tout ce que contient votre compte : dates, spectacles, contacts, équipe, documents et justificatifs." %}</span>
+      </li>
+    </ul>
+  </section>
+
+  <section class="mb-8 border-b border-gray-200 pb-4">
+    <h2 class="mb-2 text-base font-semibold text-red-700">{% translate "Zone sensible" %}</h2>
+    {% if pending_deletion_date %}
+      <p class="mb-2 text-sm text-gray-700">
+        {% blocktranslate with date=pending_deletion_date|date:"d/m/Y" %}La suppression est prévue le {{ date }}. Toutes les données seront alors effacées.{% endblocktranslate %}
+      </p>
+      <form method="post" action="{% url 'tenants:cancel-deletion' %}">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-secondary btn-block">{% translate "Annuler la suppression" %}</button>
+      </form>
+    {% else %}
+      <a href="{% url 'tenants:delete' %}" class="text-sm text-red-700 underline">{% translate "Supprimer ma structure et mes données" %}</a>
+    {% endif %}
+  </section>
+{% endblock %}

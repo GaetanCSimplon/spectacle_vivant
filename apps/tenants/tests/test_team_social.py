@@ -153,7 +153,7 @@ def test_the_owner_export_has_the_new_columns(client):
 # --- a simple member ----------------------------------------------------------------------
 
 
-def test_a_member_sees_the_boxes_but_neither_the_birth_date_nor_the_number(client):
+def test_a_member_sees_the_card_but_neither_the_birth_date_nor_the_number(client):
     tenant = _login(client, "member")
     person = PersonFactory(
         tenant=tenant,
@@ -163,13 +163,11 @@ def test_a_member_sees_the_boxes_but_neither_the_birth_date_nor_the_number(clien
     )
 
     card = client.get(reverse("tenants:person-detail", args=[person.pk])).content.decode()
-    form = client.get(reverse("tenants:person-update", args=[person.pk])).content.decode()
     listing = client.get(reverse("tenants:person-list")).content.decode()
 
-    assert "Artiste" in card and 'name="is_artist"' in form
-    for page in (card, form, listing):
+    assert "Artiste" in card
+    for page in (card, listing):
         assert NIR not in page and NIR_SPACED not in page and "17/05/1985" not in page
-    assert 'name="social_security_number"' not in form and 'name="birth_date"' not in form
 
 
 def test_a_member_cannot_overwrite_them_by_posting_them(client):

@@ -6,6 +6,7 @@ from apps.tenants.factories import MembershipFactory
 
 from ..factories import ContactFactory, PromoterFactory
 from ..models import Promoter
+from .helpers import directory_url
 
 pytestmark = pytest.mark.django_db
 
@@ -31,7 +32,7 @@ def _payload(**overrides):
 
 
 def test_promoter_list_requires_login(client):
-    response = client.get(reverse("addressbook:promoter-list"))
+    response = client.get(directory_url("promoter"))
 
     assert response.status_code == 302
 
@@ -41,7 +42,7 @@ def test_promoter_list_only_shows_the_current_tenants_promoters(client):
     PromoterFactory(tenant=tenant, name="Le mien")
     PromoterFactory(name="Un autre")
 
-    content = client.get(reverse("addressbook:promoter-list")).content.decode()
+    content = client.get(directory_url("promoter")).content.decode()
 
     assert "Le mien" in content
     assert "Un autre" not in content

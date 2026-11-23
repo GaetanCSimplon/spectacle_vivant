@@ -7,7 +7,7 @@
     {% if user.is_authenticated %}
     <div class="flex items-center gap-1">
       {% if request.tenant %}
-        <a href="{% url 'tenants:settings' %}" class="flex size-11 items-center justify-center rounded-lg text-blue-700 hover:bg-gray-100" aria-label="{% translate 'Informations de la structure' %}" title="{% translate 'Informations de la structure' %}">{% include "components/_icon.html" with name="settings" size=24 %}</a>
+        <a href="{{ structure_url }}" class="flex size-11 items-center justify-center rounded-lg text-blue-700 hover:bg-gray-100" aria-label="{% translate 'Ma structure' %}" title="{% translate 'Ma structure' %}">{% include "components/_icon.html" with name="settings" size=24 %}</a>
       {% endif %}
       {# A burger menu. A <details> element, so it also works without JavaScript. #}
       <details class="group relative"

@@ -7,10 +7,9 @@ from apps.tenants.factories import MembershipFactory
 
 from ..factories import ContactFactory, PromoterFactory, VenueFactory
 from ..models import Contact
+from .helpers import list_get
 
 pytestmark = pytest.mark.django_db
-
-LIST = "addressbook:contact-list"
 
 
 @pytest.fixture
@@ -21,7 +20,7 @@ def tenant(client):
 
 
 def _page(client, **params):
-    return client.get(reverse(LIST), params).content.decode()
+    return list_get(client, "contact", params).content.decode()
 
 
 def test_a_contact_of_two_organisers_is_listed_once_with_both(client, tenant):
@@ -30,7 +29,7 @@ def test_a_contact_of_two_organisers_is_listed_once_with_both(client, tenant):
     contact = ContactFactory(tenant=tenant, promoter=first, name="Julie Garnier")
     contact.promoters.add(second)
 
-    response = client.get(reverse(LIST))
+    response = list_get(client, "contact")
     page = response.content.decode()
 
     assert len(response.context["object_list"]) == 1
@@ -80,8 +79,8 @@ def test_the_search_finds_a_contact_by_its_organiser_or_venue_name(client, tenan
     contact.venues.add(VenueFactory(tenant=tenant, name="Salle du Port"))
     ContactFactory(tenant=tenant, promoter=PromoterFactory(tenant=tenant), name="Autre")
 
-    by_promoter = client.get(reverse(LIST), {"q": "Lunes"}).context["object_list"]
-    by_venue = client.get(reverse(LIST), {"q": "Port"}).context["object_list"]
+    by_promoter = list_get(client, "contact", {"q": "Lunes"}).context["object_list"]
+    by_venue = list_get(client, "contact", {"q": "Port"}).context["object_list"]
 
     assert list(by_promoter) == [contact] and list(by_venue) == [contact]
 
@@ -90,7 +89,7 @@ def test_a_search_matching_two_attachments_does_not_duplicate_the_contact(client
     contact = ContactFactory(tenant=tenant, promoter=PromoterFactory(tenant=tenant, name="Ab 1"))
     contact.promoters.add(PromoterFactory(tenant=tenant, name="Ab 2"))
 
-    results = client.get(reverse(LIST), {"q": "Ab"}).context["object_list"]
+    results = list_get(client, "contact", {"q": "Ab"}).context["object_list"]
 
     assert list(results) == [contact]
 
@@ -100,7 +99,7 @@ def test_another_structures_contacts_never_appear(client, tenant):
 
     assert "Secret étranger" not in _page(client)
     assert "Secret étranger" not in _page(client, link="none")
-    assert "Secret étranger" not in client.get(reverse(LIST), {"q": "Secret"}).content.decode()
+    assert "Secret étranger" not in list_get(client, "contact", {"q": "Secret"}).content.decode()
 
 
 def test_the_empty_directory_invites_to_add_a_first_contact(client, tenant):

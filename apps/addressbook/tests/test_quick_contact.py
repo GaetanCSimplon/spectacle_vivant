@@ -8,6 +8,7 @@ from apps.tenants.factories import MembershipFactory
 
 from ..factories import PromoterFactory, VenueFactory
 from ..models import Contact
+from .helpers import directory_url
 
 pytestmark = pytest.mark.django_db
 
@@ -31,7 +32,7 @@ def test_a_contact_can_be_created_for_an_organiser(client):
     contact = Contact.objects.get()
     assert contact.tenant == tenant and list(contact.promoters.all()) == [promoter]
     assert not contact.venues.exists()
-    assert response.url == reverse("addressbook:contact-list")
+    assert response.url == directory_url("contact")
 
 
 def test_a_contact_can_work_for_several_organisers_and_venues(client):
@@ -96,4 +97,4 @@ def test_a_made_up_choice_is_refused(client, value):
 def test_the_form_needs_a_login_and_the_contact_list_links_to_it(client):
     assert client.get(reverse(URL)).url.startswith(reverse("account_login"))
     _login(client)
-    assert reverse(URL) in client.get(reverse("addressbook:contact-list")).content.decode()
+    assert reverse(URL) in client.get(directory_url("contact")).content.decode()

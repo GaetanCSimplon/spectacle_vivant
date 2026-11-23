@@ -1,12 +1,9 @@
-{% extends "base.html" %}
+{% extends "tenants/structure_base.html" %}
 {% load i18n %}
 
 {% block title %}Modèles de messages — Bòrd Pro{% endblock %}
 
-{% block page_content %}
-  <h1 class="mb-2">{% translate "Bòrd" %}</h1>
-  {% include "tenants/_tabs.html" with active="settings" %}
-  <p class="mb-2 text-sm"><a href="{% url 'tenants:settings' %}" class="underline">{% translate "← Informations de la structure" %}</a></p>
+{% block structure_content %}
   <h2 class="mb-2 text-lg font-semibold">{% translate "Modèles de messages" %}</h2>
   <p class="mb-4 text-sm text-gray-600">
     {% translate "Ces textes préparent les e-mails que vous envoyez depuis votre messagerie. Les mots entre crochets, comme [Contact], sont remplacés par les informations de la date. Tant que vous ne modifiez rien, le texte d'origine est utilisé." %}

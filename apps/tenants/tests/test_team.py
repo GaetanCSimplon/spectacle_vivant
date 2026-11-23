@@ -3,7 +3,6 @@
 import csv
 import io
 import zipfile
-from decimal import Decimal
 
 import pytest
 from django.urls import reverse
@@ -36,14 +35,16 @@ def _payload(**overrides):
 # --- CRUD ----------------------------------------------------------------------------
 
 
-def test_every_member_of_the_structure_can_manage_the_team(client):
+def test_a_member_reads_the_team_but_cannot_change_it(client):
     tenant = _login(client, role="member")
+    person = PersonFactory(tenant=tenant)
 
-    response = client.post(reverse("tenants:person-create"), _payload(average_fee="250.50"))
-
-    person = Person.objects.get(tenant=tenant)
-    assert response.url == reverse("tenants:person-detail", args=[person.pk])
-    assert (person.full_name, person.average_fee) == ("Léa Durand", Decimal("250.50"))
+    assert client.get(reverse(LIST)).status_code == 200
+    assert client.get(reverse("tenants:person-detail", args=[person.pk])).status_code == 200
+    assert client.post(reverse("tenants:person-create"), _payload()).status_code == 403
+    assert client.get(reverse("tenants:person-update", args=[person.pk])).status_code == 403
+    assert client.post(reverse("tenants:person-delete", args=[person.pk])).status_code == 403
+    assert Person.objects.filter(tenant=tenant).count() == 1
 
 
 def test_only_names_are_required(client):
@@ -110,7 +111,7 @@ def test_the_page_shows_the_two_tabs_and_the_fee_only_on_the_card(client):
     listing = client.get(reverse(LIST)).content.decode()
     detail = client.get(reverse("tenants:person-detail", args=[person.pk])).content.decode()
 
-    assert "Informations" in listing and "Équipe" in listing
+    assert "Fiche" in listing and "Équipe" in listing
     assert "300.00" not in listing
     assert "Cachet moyen" in detail
 

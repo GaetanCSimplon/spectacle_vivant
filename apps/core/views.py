@@ -3,12 +3,13 @@ import logging
 from django.conf import settings
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db.models import Q
-from django.http import Http404, HttpResponse, HttpResponseRedirect
+from django.http import Http404, HttpResponse, HttpResponsePermanentRedirect, HttpResponseRedirect
 from django.shortcuts import render
 from django.templatetags.static import static
 from django.urls import reverse_lazy
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
+from django.views import View
 from django.views.generic import FormView, TemplateView
 
 from apps.accounts.services import is_tenant_owner
@@ -225,3 +226,15 @@ def favicon(request):
 def apple_touch_icon(request):
     """iOS asks for /apple-touch-icon.png when a page does not declare one."""
     return HttpResponseRedirect(static("brand/apple-touch-icon.png"))
+
+
+class PrefixRedirectView(View):
+    """A whole family of former addresses (`/old/<rest>`) lead to `new_prefix + rest` (301)."""
+
+    new_prefix = ""
+
+    def get(self, request, rest=""):
+        query = request.META.get("QUERY_STRING")
+        return HttpResponsePermanentRedirect(
+            f"{self.new_prefix}{rest}{'?' + query if query else ''}"
+        )

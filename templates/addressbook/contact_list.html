@@ -18,7 +18,7 @@
 
   <p class="mb-4 text-sm text-gray-600">{% translate "Votre annuaire : les personnes avec qui vous travaillez, liées à un ou plusieurs organisateurs ou lieux, ou pas encore." %}</p>
 
-  {% url 'addressbook:contact-list' as list_url %}
+  {% url 'addressbook:directory' as list_url %}
   {% translate "Rechercher un contact" as search_placeholder %}
   <form
     method="get"
@@ -31,6 +31,7 @@
     hx-swap="innerHTML"
     hx-push-url="true"
   >
+    <input type="hidden" name="type" value="personnes">
     <input
       type="search"
       name="q"

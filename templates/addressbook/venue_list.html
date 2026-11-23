@@ -16,9 +16,9 @@
     </div>
   </div>
 
-  {% url 'addressbook:venue-list' as list_url %}
+  {% url 'addressbook:directory' as list_url %}
   {% translate "Rechercher un lieu" as search_placeholder %}
-  {% include "components/_search.html" with url=list_url placeholder=search_placeholder %}
+  {% include "components/_search.html" with url=list_url type="lieux" placeholder=search_placeholder %}
 
   <div id="results">
     {% include "addressbook/_venue_results.html" %}

@@ -141,27 +141,20 @@ def test_a_member_does_not_see_them_on_the_card_or_in_the_form(client):
     assert 'name="guso_number"' not in form and 'name="address"' not in form
 
 
-def test_a_member_cannot_set_them_even_by_posting_them(client):
-    tenant = _login(client, "member")
-
-    client.post(reverse("tenants:person-create"), _payload(**_private()))
-
-    person = tenant.person_set.get()
-    assert (person.address, person.guso_number) == ("", "")
-
-
-def test_a_member_editing_a_card_leaves_the_private_data_untouched(client):
+def test_a_member_cannot_write_a_card_at_all(client):
     tenant = _login(client, "member")
     person = _person(tenant)
 
-    client.post(
+    created = client.post(reverse("tenants:person-create"), _payload(**_private()))
+    edited = client.post(
         reverse("tenants:person-update", args=[person.pk]),
         _payload(role="Guitare", **_private(address="Pirate", guso_number="X")),
     )
 
+    assert (created.status_code, edited.status_code) == (403, 403)
     person.refresh_from_db()
-    assert person.role == "Guitare"
     assert (person.address, person.guso_number) == (SECRET_STREET, SECRET_GUSO)
+    assert tenant.person_set.count() == 1
 
 
 def test_a_member_export_has_no_private_columns(client):

@@ -7,10 +7,10 @@ from apps.tenants.factories import MembershipFactory
 
 from ..factories import PromoterFactory
 from ..models import Promoter
+from .helpers import list_get
 
 pytestmark = pytest.mark.django_db
 
-LIST = "addressbook:promoter-list"
 HTMX = {"HTTP_HX_REQUEST": "true"}
 
 
@@ -160,7 +160,7 @@ def test_detail_and_list_show_the_qualification(client, three):
     promoter = Promoter.objects.get(name="Mairie A")
 
     detail = client.get(reverse("addressbook:promoter-detail", args=[promoter.pk])).content.decode()
-    listing = client.get(reverse(LIST)).content.decode()
+    listing = list_get(client, "promoter").content.decode()
 
     assert "En négociation" in detail and "En négociation" in listing
     assert "Collectivité, Festival" in detail and "Collectivité, Festival" in listing
@@ -208,26 +208,28 @@ def test_the_detail_shows_the_indicative_capacity_and_the_other_details(client):
 def test_each_filter_matches_organisers_having_the_value_among_several(
     client, three, param, value, expected
 ):
-    assert _names(client.get(reverse(LIST), {param: value})) == expected
+    assert _names(list_get(client, "promoter", {param: value})) == expected
 
 
 def test_filters_combine_with_each_other_and_with_the_search(client, three):
-    assert _names(client.get(reverse(LIST), {"role": "programmer", "format": "seated"})) == [
+    assert _names(list_get(client, "promoter", {"role": "programmer", "format": "seated"})) == [
         "Salle B"
     ]
-    assert _names(client.get(reverse(LIST), {"follow_up": "active", "aesthetic": "jazz"})) == []
-    assert _names(client.get(reverse(LIST), {"q": "salle", "follow_up": "active"})) == ["Salle B"]
-    assert _names(client.get(reverse(LIST), {"q": "mairie", "follow_up": "active"})) == []
+    assert _names(list_get(client, "promoter", {"follow_up": "active", "aesthetic": "jazz"})) == []
+    assert _names(list_get(client, "promoter", {"q": "salle", "follow_up": "active"})) == [
+        "Salle B"
+    ]
+    assert _names(list_get(client, "promoter", {"q": "mairie", "follow_up": "active"})) == []
 
 
 def test_an_invalid_filter_value_is_ignored(client, three):
-    response = client.get(reverse(LIST), {"follow_up": "nope", "event_type": "Inconnu"})
+    response = list_get(client, "promoter", {"follow_up": "nope", "event_type": "Inconnu"})
 
     assert _names(response) == ["Bar C", "Mairie A", "Salle B"]
 
 
 def test_filtering_is_live_with_htmx_and_an_empty_result_is_explained(client, three):
-    response = client.get(reverse(LIST), {"follow_up": "dropped"}, **HTMX)
+    response = list_get(client, "promoter", {"follow_up": "dropped"}, **HTMX)
     content = response.content.decode()
 
     assert "<html" not in content
@@ -237,12 +239,12 @@ def test_filtering_is_live_with_htmx_and_an_empty_result_is_explained(client, th
 def test_the_filters_never_match_another_tenants_organisers(client, three):
     PromoterFactory(name="Autre", follow_up="active", kinds=["venue"], aesthetics=["jazz"])
 
-    assert "Autre" not in _names(client.get(reverse(LIST), {"kind": "venue"}))
-    assert "Autre" not in _names(client.get(reverse(LIST), {"aesthetic": "jazz"}))
+    assert "Autre" not in _names(list_get(client, "promoter", {"kind": "venue"}))
+    assert "Autre" not in _names(list_get(client, "promoter", {"aesthetic": "jazz"}))
 
 
 def test_every_filter_is_offered_on_the_list_page(client, three):
-    content = client.get(reverse(LIST)).content.decode()
+    content = list_get(client, "promoter").content.decode()
 
     for name in ("follow_up", "kind", "event_type", "aesthetic", "format", "period", "role"):
         assert f'name="{name}"' in content
