@@ -3,6 +3,8 @@
 
 {% block title %}{{ gig.promoter.name }}{% if gig.venue.city %} — {{ gig.venue.city }}{% endif %} — {{ gig.date|date:"d/m/Y" }} — Bòrd Pro{% endblock %}
 
+{% block breadcrumb %}{% url 'gigs:list' as dates %}{% include "components/_crumbs.html" with l1=_("Mes dates") u1=dates current=gig.display_title %}{% endblock %}
+
 {% block page_content %}
   <div class="mb-4 flex items-start justify-between gap-3">
     <div class="min-w-0">

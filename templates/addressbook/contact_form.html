@@ -5,6 +5,8 @@
   {% if object %}Modifier un contact{% else %}Nouveau contact{% endif %} — Bòrd Pro
 {% endblock %}
 
+{% block breadcrumb %}{% url 'addressbook:directory' as dir %}{% if object %}{% include "components/_crumbs.html" with l1=_("Contacts") u1=dir|add:"?type=personnes" current=_("Modifier") %}{% else %}{% include "components/_crumbs.html" with l1=_("Contacts") u1=dir|add:"?type=personnes" current=_("Nouveau contact") %}{% endif %}{% endblock %}
+
 {% block page_content %}
   <h1 class="mb-1">
     {% if object %}{% translate "Modifier le contact" %}{% else %}{% translate "Nouveau contact" %}{% endif %}

@@ -5,6 +5,8 @@
   {% if object %}Modifier un organisateur{% else %}Nouvel organisateur{% endif %} — Bòrd Pro
 {% endblock %}
 
+{% block breadcrumb %}{% url 'addressbook:directory' as dir %}{% if object %}{% url 'addressbook:promoter-detail' object.pk as detail %}{% endif %}{% if object %}{% include "components/_crumbs.html" with l1=_("Contacts") u1=dir|add:"?type=organisateurs" l2=object.name u2=detail current=_("Modifier") %}{% else %}{% include "components/_crumbs.html" with l1=_("Contacts") u1=dir|add:"?type=organisateurs" current=_("Nouvel organisateur") %}{% endif %}{% endblock %}
+
 {% block page_content %}
   <h1 class="mb-4">
     {% if object %}

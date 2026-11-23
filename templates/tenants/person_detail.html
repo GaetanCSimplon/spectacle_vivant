@@ -3,6 +3,8 @@
 
 {% block title %}{{ person.full_name }} — Bòrd Pro{% endblock %}
 
+{% block breadcrumb %}{% url 'tenants:person-list' as team %}{% include "components/_crumbs.html" with l1=_("Ma structure") u1=structure_url l2=_("Équipe") u2=team current=person.full_name %}{% endblock %}
+
 {% block structure_content %}
   <div class="mb-4 flex items-start justify-between gap-3">
     <h1>{{ person.full_name }}</h1>

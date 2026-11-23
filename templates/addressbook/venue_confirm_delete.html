@@ -4,6 +4,8 @@
 {% block title %}Supprimer {{ venue.name }} — Bòrd Pro{% endblock %}
 {% block main_width %}max-w-3xl{% endblock %}
 
+{% block breadcrumb %}{% url 'addressbook:directory' as dir %}{% url 'addressbook:venue-detail' object.pk as detail %}{% include "components/_crumbs.html" with l1=_("Contacts") u1=dir|add:"?type=lieux" l2=object.name u2=detail current=_("Supprimer") %}{% endblock %}
+
 {% block page_content %}
   <h1 class="mb-4">{% translate "Supprimer ce lieu ?" %}</h1>
   <p class="mb-6">

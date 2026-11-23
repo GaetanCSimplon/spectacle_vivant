@@ -3,6 +3,8 @@
 
 {% block title %}{% if object %}Modifier une fiche{% else %}Nouvelle personne{% endif %} — Bòrd Pro{% endblock %}
 
+{% block breadcrumb %}{% url 'tenants:person-list' as team %}{% include "components/_crumbs.html" with l1=_("Ma structure") u1=structure_url l2=_("Équipe") u2=team current=_("Modifier la fiche") %}{% endblock %}
+
 {% block structure_content %}
   <h1 class="mb-4">
     {% if object %}{% translate "Modifier la fiche" %}{% else %}{% translate "Ajouter une personne à l'équipe" %}{% endif %}

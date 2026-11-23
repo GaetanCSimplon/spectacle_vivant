@@ -3,6 +3,8 @@
 
 {% block title %}Historique du social — Bòrd Pro{% endblock %}
 
+{% block breadcrumb %}{% url 'tenants:social' as social %}{% include "components/_crumbs.html" with l1=_("Social") u1=social current=_("Historique") %}{% endblock %}
+
 {% block page_content %}
   <h1 class="mb-2">{% translate "Bòrd" %}</h1>
   {% include "tenants/_tabs.html" with active="social" %}

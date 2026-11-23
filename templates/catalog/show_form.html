@@ -5,6 +5,8 @@
   {% if object %}Modifier un spectacle{% else %}Nouveau spectacle{% endif %} — Bòrd Pro
 {% endblock %}
 
+{% block breadcrumb %}{% url 'catalog:show-list' as shows %}{% if object %}{% url 'catalog:show-detail' object.pk as detail %}{% include "components/_crumbs.html" with l1=_("Ma structure") u1=structure_url l2=_("Spectacles") u2=shows l3=object.title u3=detail current=_("Modifier") %}{% else %}{% include "components/_crumbs.html" with l1=_("Ma structure") u1=structure_url l2=_("Spectacles") u2=shows current=_("Nouveau spectacle") %}{% endif %}{% endblock %}
+
 {% block structure_content %}
   <h1 class="mb-4">
     {% if object %}{% translate "Modifier le spectacle" %}{% else %}{% translate "Nouveau spectacle" %}{% endif %}

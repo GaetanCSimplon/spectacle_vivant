@@ -3,6 +3,8 @@
 
 {% block title %}{{ venue.name }} — Bòrd Pro{% endblock %}
 
+{% block breadcrumb %}{% url 'addressbook:directory' as dir %}{% include "components/_crumbs.html" with l1=_("Contacts") u1=dir|add:"?type=lieux" current=venue.name %}{% endblock %}
+
 {% block page_content %}
   <div class="mb-4 flex items-start justify-between gap-3">
     <h1>{{ venue.name }}</h1>
