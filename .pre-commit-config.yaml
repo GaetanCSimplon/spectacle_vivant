@@ -14,7 +14,7 @@ repos:
       # Before every push: the tests (the same ones as the CI, which costs GitHub minutes).
       - id: pytest
         name: pytest
-        entry: .venv/bin/pytest -q -x
+        entry: .venv/bin/pytest -q -x -n auto
         language: system
         pass_filenames: false
         always_run: true
