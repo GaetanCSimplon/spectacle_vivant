@@ -57,6 +57,7 @@ class CreateDocumentView(TenantScopedMixin, View):
                 raise Http404
             document = invoicing.create_invoice(gig, INVOICE_KINDS[kind])
             doc_type = "factures"
+        messages.success(request, _("Le brouillon est créé."))
         return redirect(
             "documents:document-detail", gig_id=gig.pk, doc_type=doc_type, pk=document.pk
         )
@@ -196,6 +197,7 @@ class LineAddView(DocumentMixin, View):
             invoicing.add_line(self.document, **_line_values(form))
         except invoicing.InvoicingError as error:
             return self.render_lines_or_redirect(error=error.args[0])
+        messages.success(request, _("La ligne est ajoutée."))
         return self.render_lines_or_redirect()
 
 
@@ -224,6 +226,7 @@ class LineEditView(DocumentMixin, View):
             invoicing.update_line(line, **_line_values(form))
         except invoicing.InvoicingError as error:
             return self.render_lines_or_redirect(error=error.args[0])
+        messages.success(request, _("La ligne est modifiée."))
         return self.render_lines_or_redirect()
 
 
@@ -237,6 +240,7 @@ class LineRemoveView(DocumentMixin, View):
             invoicing.remove_line(line)
         except invoicing.InvoicingError as error:
             return self.render_lines_or_redirect(error=error.args[0])
+        messages.success(request, _("La ligne est supprimée."))
         return self.render_lines_or_redirect()
 
 
@@ -403,6 +407,7 @@ class CreditNoteView(DocumentMixin, View):
             note = invoicing.create_credit_note(self.document)
         except invoicing.InvoicingError as error:
             return self.refuse(error.args[0])
+        messages.success(request, _("Le brouillon d'avoir est créé."))
         return redirect(
             "documents:document-detail", gig_id=self.gig.pk, doc_type="factures", pk=note.pk
         )

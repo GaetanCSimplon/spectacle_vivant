@@ -6,6 +6,7 @@ import os
 from django.contrib import messages
 from django.http import FileResponse, Http404
 from django.shortcuts import get_object_or_404, redirect, render
+from django.utils.translation import gettext as _
 from django.views import View
 
 from apps.accounts.services import is_tenant_owner
@@ -88,7 +89,9 @@ class FinanceMixin(TenantScopedMixin):
             return render(self.request, "finance/_body.html", self.context(**kwargs))
         return self.render_page(**kwargs)
 
-    def done(self):
+    def done(self, message=None):
+        if message:
+            messages.success(self.request, message)
         if wants_fragment(self.request):
             return render(self.request, "finance/_body.html", self.context())
         return redirect("finance:page", gig_id=self.gig.pk)
@@ -120,7 +123,7 @@ class PaymentAddView(FinanceMixin, View):
             except services.PaymentError as error:
                 form.add_error(None, error.args[0])
             else:
-                return self.done()
+                return self.done(_("Le paiement est enregistré."))
         return self.render_body_or_page(payment_forms={invoice.pk: form})
 
 
@@ -143,7 +146,7 @@ class PaymentEditView(FinanceMixin, View):
             except services.PaymentError as error:
                 form.add_error(None, error.args[0])
             else:
-                return self.done()
+                return self.done(_("Le paiement est modifié."))
         return self.render_body_or_page(editing=("payment", payment.pk), edit_form=form)
 
 
@@ -153,7 +156,7 @@ class PaymentDeleteView(FinanceMixin, View):
     def post(self, request, gig_id, pk):
         self.load(gig_id)
         services.delete_payment(self.get_payment(pk))
-        return self.done()
+        return self.done(_("Le paiement est supprimé."))
 
 
 # --- expenses ----------------------------------------------------------------
@@ -171,7 +174,7 @@ class ExpenseAddView(FinanceMixin, View):
         expense.tenant = request.tenant
         expense.gig = self.gig
         services.save_expense(expense)
-        return self.done()
+        return self.done(_("La dépense est enregistrée."))
 
 
 class ExpenseEditView(FinanceMixin, View):
@@ -191,7 +194,7 @@ class ExpenseEditView(FinanceMixin, View):
         if not form.is_valid():
             return self.render_body_or_page(editing=("expense", expense.pk), edit_form=form)
         services.save_expense(form.save(commit=False), previous_receipt=previous)
-        return self.done()
+        return self.done(_("La dépense est modifiée."))
 
 
 class ExpenseReimburseView(FinanceMixin, View):
@@ -203,7 +206,13 @@ class ExpenseReimburseView(FinanceMixin, View):
         self.load(gig_id)
         expense = self.get_expense(pk)
         if expense.person_id is not None:
-            services.set_reimbursed(expense, request.POST.get("state") != "undo")
+            undo = request.POST.get("state") == "undo"
+            services.set_reimbursed(expense, not undo)
+            return self.done(
+                _("Le remboursement est annulé.")
+                if undo
+                else _("La dépense est marquée remboursée.")
+            )
         return self.done()
 
 
@@ -219,11 +228,14 @@ class ClaimDecideView(FinanceMixin, View):
         try:
             if self.action == "accept":
                 services.accept_claim(claim)
+                message = _("La proposition est acceptée : elle devient une dépense.")
             else:
                 services.refuse_claim(claim)
+                message = _("La proposition est refusée.")
         except services.ClaimError as error:
             messages.error(request, error.args[0])
-        return self.done()
+            return self.done()
+        return self.done(message)
 
 
 class ClaimReceiptView(FinanceMixin, View):
@@ -247,7 +259,7 @@ class ExpenseDeleteView(FinanceMixin, View):
     def post(self, request, gig_id, pk):
         self.load(gig_id)
         services.delete_expense(self.get_expense(pk))
-        return self.done()
+        return self.done(_("La dépense est supprimée."))
 
 
 class ExpenseReceiptView(FinanceMixin, View):

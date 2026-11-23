@@ -75,13 +75,15 @@ class ShowDeleteView(TenantScopedMixin, DeleteView):
 
     def post(self, request, *args, **kwargs):
         try:
-            return super().post(request, *args, **kwargs)
+            response = super().post(request, *args, **kwargs)
         except ProtectedError:
             messages.error(
                 request,
                 _("Impossible de supprimer : ce spectacle est utilisé par au moins une date."),
             )
             return redirect("catalog:show-detail", pk=self.object.pk)
+        messages.success(request, _("Le spectacle est supprimé."))
+        return response
 
 
 class ShowFileView(TenantScopedMixin, DetailView):
