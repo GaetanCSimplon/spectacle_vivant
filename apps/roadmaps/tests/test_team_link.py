@@ -211,3 +211,19 @@ def test_the_team_figures_never_count_another_tenants_people(client):
     content = client.get(reverse("gigs:detail", args=[gig.pk])).content.decode()
 
     assert "sur" not in content.split("Équipe :")[1].split("</p>")[0]
+
+
+def test_the_reference_fee_is_copied_to_the_date_once(client):
+    tenant = _login(client)
+    gig = _gig(tenant)
+    person = PersonFactory(tenant=tenant, average_fee="150.50")
+    other = PersonFactory(tenant=tenant, average_fee=None)
+
+    client.post(_add_url(gig), {"person": person.pk})
+    client.post(_add_url(gig), {"person": other.pk})
+    person.average_fee = "999.00"
+    person.save()
+
+    amounts = {m.person_id: m.cachet_amount for m in gig.members.all()}
+    assert str(amounts[person.pk]) == "150.50"
+    assert amounts[other.pk] is None

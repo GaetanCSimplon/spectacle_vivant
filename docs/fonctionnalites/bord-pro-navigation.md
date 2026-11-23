@@ -24,7 +24,7 @@ Remplacer le menu actuel par 5 entrées de travail quotidien (Accueil · Bord ·
   - Tests : chaque ancienne URL répond 301 vers la nouvelle ; une seule entrée active par page ; liens secrets publics inchangés ; isolation des tenants sur les nouvelles listes ; `member` : 403 sur Fiche, Documents, Compte, Paratge, lecture de Équipe, lecture et modification de Spectacles ; `member` voit l'entrée Social avec un message d'explication.
   - Documents à relire : doc de navigation §2, §3, §6 ; charte ; verification-visuelle.md.
   - Risques : nombreuses anciennes URL et liens d'e-mail (garder les noms de routes stables, chercher tous les `{% url %}`) ; Spectacles et Ma structure disparaissent du menu tant que la PR 2 n'est pas livrée (d'où la livraison groupée) ; droits déplacés, pas ajoutés (tester propriétaire, membre, autre tenant) ; vérifier le rendu dans un vrai navigateur.
-- [ ] PR 3 — Cachet de référence (`feature/nav-cachet-reference`)
+- [x] PR 3 — Cachet de référence (`feature/nav-cachet-reference`)
   - Objectif : `Person.average_fee` devient « cachet de référence (brut) », visible et modifiable par le propriétaire seul, repris en copie sur les dates (sans recalcul des dates existantes).
   - Fichiers : formulaire et gabarits de la fiche équipe (apps/tenants), reprise dans GigMember (lire l'existant avant).
   - Tests : un `member` ne voit pas le champ ; modifier la référence ne change pas les dates déjà saisies ; montant au centime.
@@ -52,11 +52,12 @@ Remplacer le menu actuel par 5 entrées de travail quotidien (Accueil · Bord ·
 - 2026-11-23 — Ma structure : Documents = modèles de messages (pour l'instant) ; Compte et offre = exports, suppression, texte « pas d'offre payante » ; Paratge = texte d'explication.
 - 2026-11-23 — NAV-D4 appliqué strictement : un `member` lit l'Équipe (plus de modification), gère les Spectacles, reçoit 403 sur Fiche, Documents, Compte, Paratge ; Social lui affiche une explication.
 - 2026-11-23 — « Quitter cette structure » placé sur la page Équipe pour un `member`.
+- 2026-11-23 — Cachet de référence : libellé changé dans le formulaire seulement (le `verbose_name` du modèle reste « cachet moyen » pour éviter une migration) ; copié sur la date à l'ajout d'une personne, pour artistes et techniciens.
 
 ## Points en suspens
 - Alertes Radar et contrôles de contrat qui pointent vers `tenants:settings` : un `member` qui clique reçoit 403 (à revoir si gênant).
 - Lien d'export ZIP absent de l'interface pour un `member` (adresse toujours ouverte).
-- Reprise du cachet de référence sur les dates : lire d'abord `GigMember.cachet_amount` (PR 3).
+- Le `verbose_name` « cachet moyen » reste dans l'admin et les messages d'erreur du modèle ; à aligner lors d'une prochaine migration.
 - Les tickets A4, A6, C1 et le « doc 07 » cités dans le doc de navigation sont absents du dépôt.
 
 ## Relevé des actions (PR 0)
@@ -74,4 +75,5 @@ Volontairement sans message : cases de la checklist d'une date, aperçus, télé
 - 2026-11-23 — PR 0 implémentée (branche `feature/confirmations-actions`).
 - 2026-11-23 — PR 1 (étape A) implémentée sur `feature/nav-menu-urls` : menu à 5 entrées, `active_menu`, `/social/`, `/bord/documents/`, `/bord/depenses/`, annuaire `/contacts/?type=`, redirections 301. Étape B (Ma structure) à faire sur la même branche.
 - 2026-11-23 — PR 2 (étape B) implémentée sur la même branche : `/structure/` et ses six onglets, droits NAV-D4, redirections 301. Écarts : `member` ne modifie plus l'Équipe (lecture seule, comme NAV-D4) ; « Quitter cette structure » est sur la page Équipe pour un `member` ; Compte et offre regroupe exports, suppression et un texte « pas d'offre payante » ; onglet Documents = modèles de messages.
+- 2026-11-23 — PR 3 implémentée sur `feature/nav-cachet-reference` : libellé « Cachet de référence (brut, €) » (libellé du formulaire, `verbose_name` inchangé pour éviter une migration), montant réservé au propriétaire (fiche et formulaire), copié dans `GigMember.cachet_amount` à l'ajout d'une personne sur une date (`add_team_member`). Suite complète : 2930 tests verts, ruff propre.
 - 2026-11-23 — PR 1 + PR 2 terminées (tests, ruff, contrôle visuel 1440 et 375 px). Prêtes pour commit et PR.

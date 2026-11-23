@@ -23,8 +23,8 @@
       {% if person.birth_date %}<p class="text-gray-600">{% translate "Né(e) le" %} <span class="data">{{ person.birth_date|date:"d/m/Y" }}</span> ({% blocktranslate count n=person.age %}{{ n }} an{% plural %}{{ n }} ans{% endblocktranslate %})</p>{% endif %}
       {% if person.social_security_number %}<p class="text-gray-600">{% translate "N° de sécurité sociale" %} : <span class="data">{{ person.formatted_social_security_number }}</span></p>{% endif %}
       {% if person.guso_number %}<p class="text-gray-600">{% translate "N° GUSO" %} : {{ person.guso_number }}</p>{% endif %}
+      {% if person.average_fee is not None %}<p class="text-gray-600">{% translate "Cachet de référence (brut)" %} : <span class="data">{{ person.average_fee }} €</span></p>{% endif %}
     {% endif %}
-    {% if person.average_fee is not None %}<p class="text-gray-600">{% translate "Cachet moyen" %} : {{ person.average_fee }} €</p>{% endif %}
     {% if person.notes %}<p class="text-gray-600">{{ person.notes|linebreaksbr }}</p>{% endif %}
   </div>
 

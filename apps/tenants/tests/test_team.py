@@ -113,7 +113,7 @@ def test_the_page_shows_the_two_tabs_and_the_fee_only_on_the_card(client):
 
     assert "Fiche" in listing and "Équipe" in listing
     assert "300.00" not in listing
-    assert "Cachet moyen" in detail
+    assert "Cachet de référence" in detail
 
 
 def test_the_form_proposes_the_structures_own_roles(client):
@@ -176,3 +176,12 @@ def test_the_data_export_holds_only_the_teams_own_people():
     assert [r[0] for r in rows[1:]] == ["Durand", "Sans"]
     column = rows[0].index("Cachet moyen")
     assert rows[1][column] == "250,00" and rows[2][column] == ""
+
+
+def test_a_member_never_sees_the_reference_fee(client):
+    tenant = _login(client, role="member")
+    person = PersonFactory(tenant=tenant, average_fee="300.00")
+
+    detail = client.get(reverse("tenants:person-detail", args=[person.pk])).content.decode()
+
+    assert "300" not in detail and "Cachet de référence" not in detail
