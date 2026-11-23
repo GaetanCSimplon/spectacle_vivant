@@ -4,6 +4,8 @@
 {% block title %}Supprimer {{ contact.name }} — Bòrd Pro{% endblock %}
 {% block main_width %}max-w-3xl{% endblock %}
 
+{% block breadcrumb %}{% url 'addressbook:directory' as dir %}{% include "components/_crumbs.html" with l1=_("Contacts") u1=dir|add:"?type=personnes" current=_("Supprimer") %}{% endblock %}
+
 {% block page_content %}
   <h1 class="mb-4">{% translate "Supprimer ce contact ?" %}</h1>
   <p class="mb-6">

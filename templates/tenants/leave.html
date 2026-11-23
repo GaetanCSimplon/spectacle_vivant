@@ -4,6 +4,8 @@
 {% block title %}Quitter la structure — Bòrd Pro{% endblock %}
 {% block main_width %}max-w-3xl{% endblock %}
 
+{% block breadcrumb %}{% url 'tenants:account' as account %}{% include "components/_crumbs.html" with l1=_("Ma structure") u1=structure_url l2=_("Compte et offre") u2=account current=_("Quitter cette structure") %}{% endblock %}
+
 {% block page_content %}
   <h1 class="mb-2">{% translate "Quitter cette structure" %}</h1>
   <p class="mb-4 text-sm text-gray-600">

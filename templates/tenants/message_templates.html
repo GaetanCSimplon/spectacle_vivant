@@ -3,6 +3,8 @@
 
 {% block title %}Modèles de messages — Bòrd Pro{% endblock %}
 
+{% block breadcrumb %}{% include "components/_crumbs.html" with l1=_("Ma structure") u1=structure_url current=_("Documents") %}{% endblock %}
+
 {% block structure_content %}
   <h2 class="mb-2 text-lg font-semibold">{% translate "Modèles de messages" %}</h2>
   <p class="mb-4 text-sm text-gray-600">

@@ -5,6 +5,8 @@
   {% if object %}Modifier un lieu{% else %}Nouveau lieu{% endif %} — Bòrd Pro
 {% endblock %}
 
+{% block breadcrumb %}{% url 'addressbook:directory' as dir %}{% if object %}{% url 'addressbook:venue-detail' object.pk as detail %}{% endif %}{% if object %}{% include "components/_crumbs.html" with l1=_("Contacts") u1=dir|add:"?type=lieux" l2=object.name u2=detail current=_("Modifier") %}{% else %}{% include "components/_crumbs.html" with l1=_("Contacts") u1=dir|add:"?type=lieux" current=_("Nouveau lieu") %}{% endif %}{% endblock %}
+
 {% block page_content %}
   <h1 class="mb-4">
     {% if object %}

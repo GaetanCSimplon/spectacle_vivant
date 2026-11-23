@@ -4,6 +4,8 @@
 {% block title %}Feuille de route — Bòrd Pro{% endblock %}
 {% block main_width %}max-w-[90rem]{% endblock %}
 
+{% block breadcrumb %}{% include "components/_breadcrumb.html" with current=_("Feuille de route") %}{% endblock %}
+
 {% block page_content %}
   <h1 class="mb-1">{% translate "Feuille de route" %}</h1>
   <p class="mb-3">{% include "components/_volet_chip.html" with volet="regie" %}</p>

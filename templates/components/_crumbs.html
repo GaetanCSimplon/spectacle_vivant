@@ -1,0 +1,12 @@
+{% load i18n %}{% comment %}
+  Generic breadcrumb (R8). Up to three links (l1/u1, l2/u2, l3/u3: label and address), then `current`,
+  the page itself, which is not a link. The pages of a date use _breadcrumb.html instead.
+{% endcomment %}
+<nav aria-label="{% translate "Fil d'Ariane" %}" class="mb-3 text-sm text-gray-600">
+  <ol class="flex flex-wrap items-center gap-x-1.5 gap-y-1">
+    {% if l1 %}<li><a href="{{ u1 }}" class="underline hover:text-gray-900">{{ l1 }}</a></li><li aria-hidden="true">›</li>{% endif %}
+    {% if l2 %}<li><a href="{{ u2 }}" class="underline hover:text-gray-900">{{ l2 }}</a></li><li aria-hidden="true">›</li>{% endif %}
+    {% if l3 %}<li class="min-w-0"><a href="{{ u3 }}" class="underline hover:text-gray-900">{{ l3 }}</a></li><li aria-hidden="true">›</li>{% endif %}
+    <li aria-current="page" class="min-w-0 font-semibold text-gray-900">{{ current }}</li>
+  </ol>
+</nav>

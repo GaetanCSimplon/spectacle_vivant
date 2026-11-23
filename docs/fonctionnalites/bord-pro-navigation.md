@@ -30,7 +30,7 @@ Remplacer le menu actuel par 5 entrées de travail quotidien (Accueil · Bord ·
   - Tests : un `member` ne voit pas le champ ; modifier la référence ne change pas les dates déjà saisies ; montant au centime.
   - Documents à relire : doc de navigation §3 (cachet), CLAUDE.md §6.2 et §10.
   - Risques : fuite du montant vers un membre ou une feuille de route ; aucun calcul de paie ; aucune migration (libellé seulement).
-- [ ] PR 4 — Fil d'Ariane et relevé des clics (`feature/nav-fil-ariane`)
+- [x] PR 4 — Fil d'Ariane et relevé des clics (`feature/nav-fil-ariane`)
   - Objectif : fil d'Ariane sur toutes les pages de niveau 2 ou plus (R8) ; relevé du nombre de clics des 13 tâches du §5.
   - Fichiers : templates/components/_breadcrumb.html et gabarits de niveau 2 ; tableau de relevé dans ce fichier.
   - Tests : présence et liens du fil d'Ariane sur les pages principales ; contrôle visuel dans un navigateur.
@@ -54,11 +54,15 @@ Remplacer le menu actuel par 5 entrées de travail quotidien (Accueil · Bord ·
 - 2026-11-23 — « Quitter cette structure » placé sur la page Équipe pour un `member`.
 - 2026-11-23 — Cachet de référence : libellé changé dans le formulaire seulement (le `verbose_name` du modèle reste « cachet moyen » pour éviter une migration) ; copié sur la date à l'ajout d'une personne, pour artistes et techniciens.
 
+- 2026-11-23 — Fil d'Ariane : composant générique `_crumbs.html` (jusqu'à trois liens), celui des dates reste `_breadcrumb.html` ; le bouton « Retour » est conservé ; un contact n'ayant pas de page de détail, son fil s'arrête à « Contacts › Modifier ».
+
 ## Points en suspens
 - Alertes Radar et contrôles de contrat qui pointent vers `tenants:settings` : un `member` qui clique reçoit 403 (à revoir si gênant).
 - Lien d'export ZIP absent de l'interface pour un `member` (adresse toujours ouverte).
 - Le `verbose_name` « cachet moyen » reste dans l'admin et les messages d'erreur du modèle ; à aligner lors d'une prochaine migration.
 - Les tickets A4, A6, C1 et le « doc 07 » cités dans le doc de navigation sont absents du dépôt.
+- Relevé des clics estimé d'après les gabarits : à confirmer en recette (chemins réels, navigateur).
+- Contrôle visuel du fil d'Ariane à 1440 et 375 px non fait.
 
 ## Relevé des actions (PR 0)
 Message de succès ajouté (`templates/components/_messages.html`, inclus dans `base.html`, `base_public.html` et les fragments `finance/_body`, `roadmaps/_body`, `documents/_document_lines`) :
@@ -70,6 +74,27 @@ Message de succès ajouté (`templates/components/_messages.html`, inclus dans `
 Déjà confirmées avant : dates (création, statut, prix, échéances, équipe, cachet, suppression), spectacles (création, modification), émission, acceptation, suppression de brouillon, partage de la feuille de route, tournées, documents joints, contacts et organisateurs.
 Volontairement sans message : cases de la checklist d'une date, aperçus, téléchargements, formulaires invalides (leurs erreurs restent affichées dans le formulaire).
 
+## Relevé des clics (PR 4)
+Relevé **estimé d'après les gabarits et les URL, pas mesuré en navigateur** (à confirmer en recette). « Cible » = §5 du doc de navigation ; « Actuel » = chemin réel depuis l'Accueil.
+| Tâche | Cible | Actuel (chemin) | Écart |
+|---|---|---|---|
+| Créer une date | 2 | 2 : Dates › Nouvelle date (puis assistant) | « + Créer » absent (hors chantier) |
+| Envoyer le contrat | 2 | 2–3 : Accueil › alerte/date › Contrat | ok si l'alerte est sur l'Accueil |
+| Émettre une facture | 3 | 3 : Dates › date › Devis et factures › Émettre (4 si on compte la liste) | onglets de date (C1) hors chantier |
+| Marquer un paiement reçu | 2 | 3 : Bòrd ou date › Paiements › Ajouter | pas d'action sur la ligne (R6) |
+| Valider un frais déclaré | 2 | 2 : Social ou Bòrd › Dépenses à valider › Valider | ok |
+| Saisir les cachets | 3 | 3 : Dates › date › Équipe (cachet prérempli depuis la fiche) | ok |
+| Partager la feuille de route | 3 | 3 : Dates › date › Feuille de route › Partager | ok |
+| Appeler l'organisateur | 2 | 3 : Dates › date › organisateur (numéro cliquable) | contacts non remontés sur la fiche |
+| Retrouver une facture émise | 2 | 2 : Bòrd › Documents émis | ok |
+| Trouver n'importe quoi | 2 | non disponible | recherche `/` hors chantier |
+| Modifier l'IBAN | 2 | 2 : Ma structure › Fiche › Enregistrer | ok |
+| Ajouter un membre | 3 | 3 : Ma structure › Équipe › Ajouter | ok |
+| Révoquer un lien secret | 3 | 3 : date › Feuille de route › Arrêter le partage | ok |
+
+## Fil d'Ariane (PR 4)
+Composant `templates/components/_crumbs.html` (jusqu'à trois liens puis la page courante, sans lien). Les pages d'une date gardent `_breadcrumb.html`. Posé sur : fiche de date, feuille de route, paiements et dépenses d'une date, informations reçues d'un organisateur ; fiches, formulaires et suppressions d'organisateurs, lieux et contacts, import ; fiches, formulaires et suppressions de personnes de l'équipe et de spectacles ; modèles de messages, quitter, supprimer, exporter mes données ; historique du social ; exports. Aucun fil sur les pages de premier niveau ni sur les pages publiques. Tests : `apps/core/tests/test_breadcrumbs.py`.
+
 ## Journal
 - 2026-11-23 — Plan validé.
 - 2026-11-23 — PR 0 implémentée (branche `feature/confirmations-actions`).
@@ -77,3 +102,4 @@ Volontairement sans message : cases de la checklist d'une date, aperçus, télé
 - 2026-11-23 — PR 2 (étape B) implémentée sur la même branche : `/structure/` et ses six onglets, droits NAV-D4, redirections 301. Écarts : `member` ne modifie plus l'Équipe (lecture seule, comme NAV-D4) ; « Quitter cette structure » est sur la page Équipe pour un `member` ; Compte et offre regroupe exports, suppression et un texte « pas d'offre payante » ; onglet Documents = modèles de messages.
 - 2026-11-23 — PR 3 implémentée sur `feature/nav-cachet-reference` : libellé « Cachet de référence (brut, €) » (libellé du formulaire, `verbose_name` inchangé pour éviter une migration), montant réservé au propriétaire (fiche et formulaire), copié dans `GigMember.cachet_amount` à l'ajout d'une personne sur une date (`add_team_member`). Suite complète : 2930 tests verts, ruff propre.
 - 2026-11-23 — PR 1 + PR 2 terminées (tests, ruff, contrôle visuel 1440 et 375 px). Prêtes pour commit et PR.
+- 2026-11-23 — PR 4 implémentée sur `feature/nav-fil-ariane` : fil d'Ariane généralisé, relevé des clics estimé.
