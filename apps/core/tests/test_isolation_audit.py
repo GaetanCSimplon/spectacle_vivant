@@ -14,6 +14,8 @@ import datetime
 import pytest
 from django.apps import apps as django_apps
 from django.core.files.base import ContentFile
+from django.db import transaction
+from django.test import override_settings
 from django.urls import URLPattern, URLResolver, get_resolver, reverse
 from django.views.generic import RedirectView
 from weasyprint import HTML
@@ -216,9 +218,11 @@ ROUTES = [
 # --- the dataset ---------------------------------------------------------------------
 
 
-@pytest.fixture(autouse=True)
-def _media_root(settings, tmp_path):
-    settings.MEDIA_ROOT = tmp_path
+@pytest.fixture(scope="module", autouse=True)
+def _media_root(tmp_path_factory):
+    # One media folder for the whole module: the shared dataset below saves its files in it.
+    with override_settings(MEDIA_ROOT=tmp_path_factory.mktemp("media")):
+        yield
 
 
 def _build_tenant_a():
@@ -296,13 +300,25 @@ def _build_tenant_a():
     }
 
 
+@pytest.fixture(scope="module")
+def _world_data(django_db_setup, django_db_blocker, _media_root):
+    """The dataset is built once per module (it takes seconds: PDFs, invoices...), not per test.
+
+    It lives in an outer transaction rolled back at the end of the module; every test runs in its
+    own savepoint inside it, so whatever a test changes is undone before the next one.
+    """
+    with django_db_blocker.unblock(), transaction.atomic():
+        a = _build_tenant_a()
+        membership_b = MembershipFactory(tenant__name="Structure B", role=Membership.Role.OWNER)
+        gig_b = GigFactory(tenant=membership_b.tenant)
+        yield {"a": a, "b_user": membership_b.user, "b_gig": gig_b}
+        transaction.set_rollback(True)
+
+
 @pytest.fixture
-def world(client):
-    a = _build_tenant_a()
-    membership_b = MembershipFactory(tenant__name="Structure B", role=Membership.Role.OWNER)
-    gig_b = GigFactory(tenant=membership_b.tenant)
-    client.force_login(membership_b.user)
-    return {"a": a, "b_gig": gig_b}
+def world(client, _world_data):
+    client.force_login(_world_data["b_user"])
+    return _world_data
 
 
 # --- helpers -------------------------------------------------------------------------

@@ -14,7 +14,7 @@ from apps.roadmaps.models import PlaceContact, Roadmap
 from apps.tenants.factories import TenantFactory
 from apps.tenants.models import Person, Tenant
 
-pytestmark = pytest.mark.django_db
+pytestmark = [pytest.mark.django_db, pytest.mark.slow]
 
 DEMO = "Compagnie des Nuits d'Été"
 
