@@ -179,6 +179,18 @@ def test_a_newer_valid_quote_replaces_the_expired_one():
     assert rules.rad_44_expired_quote(gig) is None
 
 
+def test_the_latest_quote_is_the_last_created_even_if_the_clock_stepped_back():
+    # WSL2 clocks can jump backwards: the first quote then gets the later `created_at`.
+    gig = _gig()
+    first = _issued_quote(gig)
+    _issued_quote(gig, expired=False)
+    Quote.objects.filter(pk=first.pk).update(
+        created_at=timezone.now() + datetime.timedelta(seconds=5)
+    )
+
+    assert rules.rad_44_expired_quote(gig) is None
+
+
 # --- before issuing -----------------------------------------------------------------------------
 
 
