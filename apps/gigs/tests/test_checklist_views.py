@@ -118,7 +118,7 @@ def test_the_page_without_javascript(client, gig):
 
 
 def test_there_is_no_to_do_line_and_no_progress(client, gig):
-    _tick(client, gig, "quote_sent")
+    _tick(client, gig, "rider_sent")
 
     content = client.get(_url("checklist", gig), **HTMX).content.decode().lower()
 
@@ -127,22 +127,22 @@ def test_there_is_no_to_do_line_and_no_progress(client, gig):
 
 
 def test_ticking_saves_at_once_and_answers_with_the_saved_box(client, gig):
-    response = _tick(client, gig, "quote_sent", **HTMX)
+    response = _tick(client, gig, "rider_sent", **HTMX)
 
     content = response.content.decode()
     assert response.status_code == 200
-    assert _done(gig) == {"quote_sent"}
-    assert 'id="checklist-quote_sent"' in content and _checked(content) == 1
+    assert _done(gig) == {"rider_sent"}
+    assert 'id="checklist-rider_sent"' in content and _checked(content) == 1
     assert 'id="checklist-updated"' in content and 'hx-swap-oob="true"' in content
     assert "Dernière modification" in content
 
 
 def test_a_tick_is_still_there_after_closing_and_reopening(client, gig):
-    _tick(client, gig, "contract_signed", **HTMX)
+    _tick(client, gig, "dpae_receipt_received", **HTMX)
 
     content = client.get(_url("checklist", gig), **HTMX).content.decode()
 
-    row = content.split('id="checklist-contract_signed"')[1].split("</li>")[0]
+    row = content.split('id="checklist-dpae_receipt_received"')[1].split("</li>")[0]
     assert _checked(row) == 1
     assert _checked(content) == 1
 
@@ -157,12 +157,12 @@ def test_unticking(client, gig):
 
 
 def test_ticking_one_box_never_changes_another(client, gig):
-    for key in ("quote_sent", "deposit_received", "closed"):
+    for key in ("rider_sent", "dpae_sent", "closed"):
         _tick(client, gig, key, **HTMX)
 
-    _tick(client, gig, "deposit_received", on=False, **HTMX)
+    _tick(client, gig, "dpae_sent", on=False, **HTMX)
 
-    assert _done(gig) == {"quote_sent", "closed"}
+    assert _done(gig) == {"rider_sent", "closed"}
 
 
 def test_an_unknown_box_is_a_400_and_writes_nothing(client, gig):
@@ -174,11 +174,11 @@ def test_an_unknown_box_is_a_400_and_writes_nothing(client, gig):
 
 
 def test_the_tick_without_javascript_goes_back_to_the_page(client, gig):
-    response = _tick(client, gig, "quote_sent")
+    response = _tick(client, gig, "rider_sent")
 
     assert response.status_code == 302
     assert response.url == _url("checklist", gig)
-    assert _done(gig) == {"quote_sent"}
+    assert _done(gig) == {"rider_sent"}
 
 
 def test_the_tick_view_is_post_only(client, gig):
@@ -187,7 +187,7 @@ def test_the_tick_view_is_post_only(client, gig):
 
 
 def test_reset_unticks_everything(client, gig):
-    for key in ("quote_sent", "closed"):
+    for key in ("rider_sent", "closed"):
         _tick(client, gig, key)
 
     response = client.post(_url("checklist-reset", gig), **HTMX)
@@ -198,7 +198,7 @@ def test_reset_unticks_everything(client, gig):
 
 
 def test_reset_without_javascript_goes_back_to_the_page(client, gig):
-    _tick(client, gig, "quote_sent")
+    _tick(client, gig, "rider_sent")
 
     response = client.post(_url("checklist-reset", gig))
 
@@ -215,7 +215,7 @@ def test_reset_asks_for_a_confirmation_and_a_failed_save_has_its_message(client,
 
 def test_a_checklist_belongs_to_its_own_date(client, membership, gig):
     other = GigFactory(tenant=membership.tenant)
-    _tick(client, gig, "quote_sent")
+    _tick(client, gig, "rider_sent")
 
     assert _done(other) == set()
     content = client.get(_url("checklist", other), **HTMX).content.decode()
@@ -226,8 +226,8 @@ def test_any_member_can_tick(client, membership, gig):
     member = MembershipFactory(role="member", tenant=membership.tenant)
     client.force_login(member.user)
 
-    assert _tick(client, gig, "quote_sent", **HTMX).status_code == 200
-    assert _done(gig) == {"quote_sent"}
+    assert _tick(client, gig, "rider_sent", **HTMX).status_code == 200
+    assert _done(gig) == {"rider_sent"}
 
 
 def test_ticking_changes_nothing_else_on_the_date(client, gig):
@@ -243,7 +243,7 @@ def test_another_tenants_date_is_a_404_everywhere(client, membership):
 
     assert client.get(_url("checklist", foreign)).status_code == 404
     assert client.get(_url("checklist", foreign), **HTMX).status_code == 404
-    assert _tick(client, foreign, "quote_sent", **HTMX).status_code == 404
+    assert _tick(client, foreign, "rider_sent", **HTMX).status_code == 404
     assert client.post(_url("checklist-reset", foreign), **HTMX).status_code == 404
     assert not GigChecklist.objects.exists()
 

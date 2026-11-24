@@ -75,10 +75,10 @@ def test_ticking_a_box_is_kept_and_leaves_the_others_alone():
     gig = GigFactory()
     user = UserFactory()
 
-    checklist.set_item(gig, "quote_sent", True, user)
-    checklist.set_item(gig, "deposit_received", True, user)
+    checklist.set_item(gig, "rider_sent", True, user)
+    checklist.set_item(gig, "dpae_sent", True, user)
 
-    assert _done(gig) == {"quote_sent", "deposit_received"}
+    assert _done(gig) == {"rider_sent", "dpae_sent"}
     row = GigChecklist.objects.get(gig=gig)
     assert row.tenant == gig.tenant and row.updated_by == user
     assert checklist.last_update(gig) is not None
@@ -105,10 +105,10 @@ def test_ticking_a_box_does_not_depend_on_the_order_or_on_the_other_boxes():
 def test_an_unchanged_box_does_not_touch_the_audit_trail():
     gig = GigFactory()
     first, second = UserFactory(), UserFactory()
-    checklist.set_item(gig, "quote_sent", True, first)
+    checklist.set_item(gig, "rider_sent", True, first)
     before = GigChecklist.objects.get(gig=gig)
 
-    checklist.set_item(gig, "quote_sent", True, second)
+    checklist.set_item(gig, "rider_sent", True, second)
 
     after = GigChecklist.objects.get(gig=gig)
     assert after.updated_by == first
@@ -119,8 +119,8 @@ def test_the_last_author_is_kept():
     gig = GigFactory()
     first, second = UserFactory(), UserFactory()
 
-    checklist.set_item(gig, "quote_sent", True, first)
-    checklist.set_item(gig, "quote_accepted", True, second)
+    checklist.set_item(gig, "rider_sent", True, first)
+    checklist.set_item(gig, "tech_sheet_sent", True, second)
 
     assert GigChecklist.objects.get(gig=gig).updated_by == second
 
@@ -140,7 +140,7 @@ def test_a_value_that_is_not_a_plain_boolean_is_refused(value):
     gig = GigFactory()
 
     with pytest.raises(checklist.InvalidChecklistItem):
-        checklist.set_item(gig, "quote_sent", value, None)
+        checklist.set_item(gig, "rider_sent", value, None)
 
     assert not GigChecklist.objects.exists()
 
@@ -148,9 +148,9 @@ def test_a_value_that_is_not_a_plain_boolean_is_refused(value):
 def test_reset_unticks_everything_and_records_who():
     gig = GigFactory()
     user = UserFactory()
-    for key in checklist.ITEM_KEYS:
+    for key in checklist.ITEM_KEYS - checklist.AUTOMATIC_KEYS:
         checklist.set_item(gig, key, True, None)
-    assert len(_done(gig)) == 16
+    assert len(_done(gig)) == 7
 
     checklist.reset(gig, user)
 
@@ -168,7 +168,7 @@ def test_reset_on_a_gig_without_checklist_creates_nothing():
 def test_a_checklist_belongs_to_one_gig_only():
     gig = GigFactory()
     other = GigFactory(tenant=gig.tenant)
-    checklist.set_item(gig, "quote_sent", True, None)
+    checklist.set_item(gig, "rider_sent", True, None)
 
     assert _done(other) == set()
     with pytest.raises(IntegrityError), transaction.atomic():
@@ -177,7 +177,7 @@ def test_a_checklist_belongs_to_one_gig_only():
 
 def test_deleting_the_gig_deletes_its_checklist():
     gig = GigFactory()
-    checklist.set_item(gig, "quote_sent", True, None)
+    checklist.set_item(gig, "rider_sent", True, None)
 
     Gig.objects.filter(pk=gig.pk).delete()
 
@@ -187,19 +187,19 @@ def test_deleting_the_gig_deletes_its_checklist():
 def test_deleting_the_user_keeps_the_checklist():
     gig = GigFactory()
     user = UserFactory()
-    checklist.set_item(gig, "quote_sent", True, user)
+    checklist.set_item(gig, "rider_sent", True, user)
 
     user.delete()
 
     row = GigChecklist.objects.get(gig=gig)
-    assert row.updated_by is None and row.items == {"quote_sent": True}
+    assert row.updated_by is None and row.items == {"rider_sent": True}
 
 
 def test_nothing_else_happens_when_a_box_is_ticked():
     """No status change, no price change, no document: the checklist is only a memo."""
     gig = GigFactory(status=Gig.Status.OPTION)
 
-    for key in checklist.ITEM_KEYS:
+    for key in checklist.ITEM_KEYS - checklist.AUTOMATIC_KEYS:
         checklist.set_item(gig, key, True, None)
 
     gig.refresh_from_db()
@@ -210,10 +210,104 @@ def test_nothing_else_happens_when_a_box_is_ticked():
 def test_two_tenants_never_share_a_checklist():
     gig_a = GigFactory(tenant=TenantFactory())
     gig_b = GigFactory(tenant=TenantFactory())
-    checklist.set_item(gig_a, "quote_sent", True, None)
+    checklist.set_item(gig_a, "rider_sent", True, None)
 
     assert _done(gig_b) == set()
     assert list(GigChecklist.objects.filter(tenant=gig_b.tenant)) == []
     # A gig seen under the wrong tenant finds no checklist and writes into none of the others.
     gig_b.tenant = gig_a.tenant
     assert _done(gig_b) == set()
+
+
+# --- automatic boxes (the app knows) ---
+
+
+def _invoice(gig, kind, status):
+    from apps.documents.models import Invoice
+
+    return Invoice.objects.create(gig=gig, tenant=gig.tenant, kind=kind, status=status)
+
+
+def test_an_empty_gig_has_no_automatic_box_done():
+    assert _done(GigFactory()) == set()
+
+
+def test_a_signed_invoiced_and_paid_gig_ticks_its_boxes():
+    from django.utils import timezone
+
+    from apps.documents.models import Contract, Invoice, Quote
+    from apps.roadmaps.models import Roadmap
+
+    gig = GigFactory()
+    scope = {"gig": gig, "tenant": gig.tenant}
+    Contract.objects.create(
+        **scope, status=Contract.Status.SIGNED, sent_at=timezone.now(), signed_at=timezone.now()
+    )
+    Quote.objects.create(**scope, status=Quote.Status.ISSUED, accepted_on=timezone.localdate())
+    Roadmap.objects.create(**scope, is_published=True)
+    _invoice(gig, Invoice.Kind.DEPOSIT, Invoice.Status.PAID)
+    _invoice(gig, Invoice.Kind.BALANCE, Invoice.Status.PAID)
+
+    assert _done(gig) == checklist.AUTOMATIC_KEYS
+
+
+def test_a_draft_quote_or_unsent_contract_ticks_nothing():
+    from apps.documents.models import Contract, Quote
+
+    gig = GigFactory()
+    Quote.objects.create(gig=gig, tenant=gig.tenant)
+    Contract.objects.create(gig=gig, tenant=gig.tenant)
+
+    assert _done(gig) == set()
+
+
+def test_an_issued_unpaid_invoice_is_sent_not_received():
+    from apps.documents.models import Invoice
+
+    gig = GigFactory()
+    _invoice(gig, Invoice.Kind.FULL, Invoice.Status.ISSUED)
+
+    assert _done(gig) == {"balance_invoice_sent"}
+
+
+def test_a_cancelled_invoice_and_a_draft_tick_nothing():
+    from apps.documents.models import Invoice
+
+    gig = GigFactory()
+    _invoice(gig, Invoice.Kind.DEPOSIT, Invoice.Status.CANCELLED)
+    _invoice(gig, Invoice.Kind.BALANCE, Invoice.Status.DRAFT)
+
+    assert _done(gig) == set()
+
+
+def test_an_automatic_box_cannot_be_ticked_by_hand():
+    with pytest.raises(checklist.InvalidChecklistItem):
+        checklist.set_item(GigFactory(), "contract_signed", True, None)
+
+
+def test_an_old_manual_tick_on_an_automatic_box_is_ignored():
+    gig = GigFactory()
+    GigChecklist.objects.create(gig=gig, tenant=gig.tenant, items={"contract_signed": True})
+
+    assert _done(gig) == set()
+
+
+def test_a_manual_box_stays_ticked_next_to_automatic_ones():
+    from apps.documents.models import Invoice
+
+    gig = GigFactory()
+    _invoice(gig, Invoice.Kind.DEPOSIT, Invoice.Status.ISSUED)
+    checklist.set_item(gig, "dpae_sent", True, None)
+
+    assert _done(gig) == {"deposit_invoice_sent", "dpae_sent"}
+
+
+def test_documents_of_another_tenant_tick_nothing():
+    from apps.documents.models import Invoice
+
+    gig, other = GigFactory(), TenantFactory()
+    Invoice.objects.create(
+        gig=gig, tenant=other, kind=Invoice.Kind.DEPOSIT, status=Invoice.Status.PAID
+    )
+
+    assert _done(gig) == set()
