@@ -1,6 +1,13 @@
 {% load i18n %}
 {% comment %}One box of the checklist (`gig`, `item`): a form of its own, saved when it changes.{% endcomment %}
 <li id="checklist-{{ item.key }}">
+  {% if item.auto %}
+  <div class="flex min-h-11 items-center gap-3">
+    <input type="checkbox" disabled {% if item.done %}checked{% endif %} class="h-5 w-5 shrink-0" aria-label="{{ item.label }}">
+    <span class="flex-1">{{ item.label }}</span>
+    <span class="text-xs text-stone-500">{% translate "automatique" %}</span>
+  </div>
+  {% else %}
   <form
     method="post"
     action="{% url 'gigs:checklist-item' gig.pk %}"
@@ -18,4 +25,5 @@
     </label>
     <noscript><button type="submit" class="btn btn-secondary">{% translate "Enregistrer" %}</button></noscript>
   </form>
+  {% endif %}
 </li>

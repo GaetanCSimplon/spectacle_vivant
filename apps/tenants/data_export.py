@@ -282,15 +282,22 @@ def checklists_rows(tenant):
         .select_related("gig__show")
         .order_by("gig__date", "id")
     )
-    rows = [
-        [
-            day(c.gig.date),
-            text(c.gig.show.title),
-            *(_yes(c.items.get(key) is True) for key, _label in boxes),
-            day(c.updated_at.date()),
-        ]
-        for c in checklists
-    ]
+    rows = []
+    for c in checklists:
+        done_keys = {
+            item["key"]
+            for section in gig_checklist.checklist_sections(c.gig)
+            for item in section["items"]
+            if item["done"]
+        }
+        rows.append(
+            [
+                day(c.gig.date),
+                text(c.gig.show.title),
+                *(_yes(key in done_keys) for key, _label in boxes),
+                day(c.updated_at.date()),
+            ]
+        )
     return header, rows
 
 

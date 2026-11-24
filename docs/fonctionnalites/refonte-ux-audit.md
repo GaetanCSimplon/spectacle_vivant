@@ -33,7 +33,7 @@ Appliquer les priorités P1 de l'audit UX/UI du 12/11/2026 et les maquettes 1 (M
   - Tests : catégorie retirée du formulaire ; ancienne dépense conservée et signalée (`fees_double_count`) ; montants au centime ; un `member` ne voit pas les cachets ; isolation.
   - Documents à relire : audit I4, UX-02 ; navette-sociale.md ; CLAUDE.md §6.1, §6.2, §10.
   - Risques : fuite des cachets vers un `member` ; aucun calcul de charges réelles.
-- [ ] PR 4 — Checklist automatique (I7, UX-03)
+- [x] PR 4 — Checklist automatique (I7, UX-03)
   - Objectif : service qui calcule l'état des cases d'après les données (contrat généré / signé, devis, factures émises, paiements reçus, feuille de route partagée). Les cases manuelles (DPAE, rider, fiche technique, archivage…) restent enregistrées. Une case automatique l'emporte sur l'ancienne coche manuelle. Mise à jour de F-83 dans le cahier des charges.
   - Fichiers : apps/gigs/checklist.py, docs/produit/cahier-des-charges.md.
   - Tests : date signée, facturée et payée → cases cochées ; date vide → rien ; case manuelle conservée ; isolation.
@@ -69,11 +69,12 @@ Appliquer les priorités P1 de l'audit UX/UI du 12/11/2026 et les maquettes 1 (M
 
 - 2026-11-24 — PR 3 : le coût employeur estimé (`fees_employer_cost`, taux de repère de la structure) reste une ligne d'information, jamais ajoutée à « Dépensé » ni aux « Reste ». La catégorie « Cachets » n'est plus proposée aux nouvelles dépenses ; une ancienne dépense reste modifiable et signalée.
 
+- 2026-11-24 — PR 4 : 9 cases automatiques (`automatic_items`) ; « Devis envoyé » = devis émis (l'app ne trace pas l'envoi). L'automatique l'emporte sur l'ancienne coche manuelle (ignorée, gardée en base). L'export des checklists utilise le même calcul.
+
 ## Points en suspens
 - Contrôle visuel dans Chromium à 1440 px des libellés longs « Reste réel (TTC encaissé − dépensé) » (PR 1, à faire à la main).
 - Page vitrine `templates/site/home.html` : « Ce qu'il reste après ces frais » à aligner (marketing, hors PR 1).
 - Suite de tests : 26 min. Voir `--reuse-db`, xdist et marqueur `slow` (PR à part).
-- L'app sait-elle « contrat envoyé » ? Sinon la case reste manuelle (PR 4).
 - Que devient une ancienne coche manuelle sur une case devenue automatique : l'automatique l'emporte (à confirmer en recette).
 - Liens profonds et alertes Radar vers l'ancienne checklist à garder fonctionnels (PR 6).
 - Hors fonctionnalité : I8 (« Client actif » automatique), UX-07 à UX-13, UX-15 à UX-18.
@@ -83,3 +84,4 @@ Appliquer les priorités P1 de l'audit UX/UI du 12/11/2026 et les maquettes 1 (M
 - 2026-11-24 — PR 1 terminée : libellés « Reste prévu » / « Reste réel », base HT/TTC, compteur de Mes dates. 2942 tests verts.
 - 2026-11-24 — PR 2 : déjà couverte par BRD-02/03/04 (Bòrd, vue activité rattachée à la date du concert, vue trésorerie à part). Reste : la ligne « Facturé en 2026 (caisse) » de l'Accueil suit encore la date de facture, étiquetée comme telle.
 - 2026-11-24 — PR 3 terminée : cachets depuis Social, coût employeur estimé en information.
+- 2026-11-24 — PR 4 terminée : checklist automatique.
