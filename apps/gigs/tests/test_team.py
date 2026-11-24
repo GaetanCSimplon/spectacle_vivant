@@ -64,7 +64,8 @@ def test_a_plain_member_sees_the_team_but_no_cachet(client):
 
     assert "Léa Chanteuse" in page
     assert "Montant brut" not in page
-    assert "123" not in page
+    # The whole amount, not "123": the factories number the structures ("Structure 123").
+    assert "123,45" not in page and "123.45" not in page
     assert _cachet_url(gig, member) not in page
 
 
