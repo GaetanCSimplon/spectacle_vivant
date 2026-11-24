@@ -11,3 +11,4 @@ select = ["E", "F", "I", "B", "UP", "DJ"]
 DJANGO_SETTINGS_MODULE = "config.settings.test"
 python_files = ["tests.py", "test_*.py"]
 addopts = "-ra"
+markers = ["slow: long tests (demo seeding); skipped in daily work with -m \"not slow\", always run before a PR and in the CI"]

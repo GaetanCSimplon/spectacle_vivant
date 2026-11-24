@@ -24,7 +24,7 @@ Résumé des changements par rapport à main :
 ## Étapes
 
 1. Si la branche actuelle est `main`, arrête-toi : on ne termine jamais une PR depuis main.
-2. Lance `pytest` puis `ruff check .`. Si quelque chose échoue, arrête-toi et montre-moi l'erreur. Vérifie aussi le reste de la définition de « terminé » (CLAUDE.md §8) : cas d'erreur testés, test d'isolation des tenants si un modèle ou une vue est concerné, pages publiques lisibles à 375 px.
+2. Lance `pytest -n auto --reuse-db` (suite complète en parallèle, ajouter `--create-db` si la PR contient une migration) puis `ruff check .`. Si quelque chose échoue, arrête-toi et montre-moi l'erreur. Vérifie aussi le reste de la définition de « terminé » (CLAUDE.md §8) : cas d'erreur testés, test d'isolation des tenants si un modèle ou une vue est concerné, pages publiques lisibles à 375 px.
 3. Si le subagent `tenant-guard` existe (`.claude/agents/tenant-guard.md`), délègue-lui l'audit des changements de cette branche et intègre son rapport.
 4. Débriefing pour moi, clair et pédagogique (je veux comprendre le code) :
    - ce qui a été fait, en 5 à 10 lignes ;

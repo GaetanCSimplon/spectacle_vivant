@@ -29,7 +29,8 @@ docker compose up -d db                 # PostgreSQL local
 python manage.py tailwind runserver     # serveur de dev + compilation Tailwind (1 seul terminal, recommandé)
 python manage.py runserver              # serveur de dev seul (sans compilation Tailwind)
 python manage.py makemigrations && python manage.py migrate
-pytest                                  # tests
+pytest -n auto --reuse-db               # tous les tests, en parallèle (rapide) ; ajouter --create-db après une migration
+pytest -n auto --reuse-db -m "not slow" # au quotidien : sans les tests longs (démo) ; la suite complète reste obligatoire avant une PR
 pytest -x -q apps/gigs                  # tests d'une app, arrêt au 1er échec
 ruff check . && ruff format .           # lint + format
 python manage.py check --deploy         # contrôle sécurité avant prod
