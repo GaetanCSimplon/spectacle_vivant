@@ -8,6 +8,8 @@ Night-blue block, as the four figure cards of the Bord.{% endcomment %}
     <div><dt>{% translate "Signé" %} (HT)</dt><dd class="data text-lg font-bold">{{ figures.signed|floatformat:"0g" }} €</dd></div>
     <div><dt>{% translate "Facturé" %} (HT)</dt><dd class="data text-lg font-bold">{{ figures.invoiced|floatformat:"0g" }} €</dd></div>
     <div><dt>{% translate "Encaissé" %} (TTC)</dt><dd class="data text-lg font-bold">{{ figures.received|floatformat:"0g" }} €</dd></div>
+    <div title="{% translate 'Prévisionnel moins les dépenses' %}"><dt>{% translate "Reste prévu" %} (HT)</dt><dd class="data text-lg font-bold">{{ figures.remaining_planned|floatformat:"0g" }} €</dd></div>
+    <div title="{% translate 'Encaissé moins dépensé' %}"><dt>{% translate "Reste réel" %} (TTC encaissé − dépensé)</dt><dd class="data text-lg font-bold">{{ figures.remaining_real|floatformat:"0g" }} €</dd></div>
   </dl>
   <p class="mt-3 text-sm"><a href="{% url 'tenants:profile' %}" class="btn btn-secondary btn-sm">{% translate "Voir le Bord pour le détail" %} →</a></p>
 </section>

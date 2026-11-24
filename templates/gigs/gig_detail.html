@@ -148,14 +148,15 @@
             {% endif %}
           {% elif volet.key == 'budget' %}
             <div class="space-y-1">
-              <p class="flex justify-between"><span>{% translate "Encaissé" %}</span><span class="data">{{ balance.received|floatformat:"0g" }} €</span></p>
+              <p class="flex justify-between"><span>{% translate "Encaissé" %} (TTC)</span><span class="data">{{ balance.received|floatformat:"0g" }} €</span></p>
               <p class="flex justify-between"><span>{% translate "Dépensé" %}</span><span class="data">{{ balance.spent|floatformat:"0g" }} €</span></p>
 {% if is_owner %}
     <p class="flex justify-between pl-4 text-gray-600"><span>{% translate "dont dépenses saisies" %}</span><span>{{ balance.entered|floatformat:"0g" }} €</span></p>
     <p class="flex justify-between pl-4 text-gray-600"><span>{% translate "dont cachets (équipe)" %}</span><span>{{ balance.fees|floatformat:"0g" }} €</span></p>
     {% if balance.fees_double_count %}<p class="rounded-lg bg-amber-50 p-2 text-amber-900">{% translate "Des cachets sont aussi saisis en dépense : ils sont peut-être comptés deux fois." %}</p>{% endif %}
     {% endif %}
-              <p class="flex justify-between font-semibold"><span>{% translate "Résultat" %}</span><span class="data">{{ balance.result|floatformat:"0g" }} €</span></p>
+              <p class="flex justify-between font-semibold" title="{% translate 'Prix de cession moins dépensé' %}"><span>{% translate "Reste prévu" %} (HT)</span><span class="data">{{ balance.remaining_planned|floatformat:"0g" }} €</span></p>
+              <p class="flex justify-between font-semibold" title="{% translate 'Encaissé moins dépensé' %}"><span>{% translate "Reste réel" %} (TTC encaissé − dépensé)</span><span class="data">{{ balance.result|floatformat:"0g" }} €</span></p>
             </div>
             <a href="{% url 'documents:billing' gig.pk %}" class="btn btn-secondary btn-block">{% translate "Devis et factures" %}</a>
             <a href="{% url 'finance:page' gig.pk %}" class="btn btn-secondary btn-block">{% translate "Paiements et dépenses" %}</a>

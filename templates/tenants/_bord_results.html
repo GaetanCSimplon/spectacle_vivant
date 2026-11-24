@@ -51,7 +51,8 @@
     {% endif %}
     <ul class="mt-2 space-y-0.5 border-t border-current pt-2 text-sm">
       <li class="flex justify-between gap-2"><span>{% if filters.view == 'cash' %}{% translate "Les frais payés sur la période" %}{% else %}{% translate "Les frais de ces dates" %}{% endif %}</span><strong class="data whitespace-nowrap">{{ expenses.total|floatformat:"0g" }} €</strong></li>
-      <li class="flex justify-between gap-2"><span>{% if filters.view == 'cash' %}{% translate "Reçu moins payé" %}{% else %}{% translate "Ce qu'il reste après ces frais" %}{% endif %} ({% if balance > 0 %}{% translate "excédent" %}{% elif balance < 0 %}{% translate "déficit" %}{% else %}{% translate "équilibre" %}{% endif %})</span><strong class="data whitespace-nowrap">{% if balance > 0 %}+ {% endif %}{{ balance|floatformat:"0g" }} €</strong></li>
+      {% if remaining_planned is not None %}<li class="flex justify-between gap-2" title="{% translate 'Prévisionnel moins les frais' %}"><span>{% translate "Reste prévu" %} (HT)</span><strong class="data whitespace-nowrap">{% if remaining_planned > 0 %}+ {% endif %}{{ remaining_planned|floatformat:"0g" }} €</strong></li>{% endif %}
+      <li class="flex justify-between gap-2" title="{% translate 'Encaissé moins dépensé' %}"><span>{% translate "Reste réel" %} (TTC encaissé − dépensé)</span><strong class="data whitespace-nowrap">{% if remaining_real > 0 %}+ {% endif %}{{ remaining_real|floatformat:"0g" }} €</strong></li>
       <li class="flex justify-between gap-2"><span>{% translate "Reste à encaisser" %}</span><strong class="data whitespace-nowrap">{{ receivables.remaining|floatformat:"0g" }} €</strong></li>
     </ul>
     {% if receivables.late %}<p class="mt-2"><span class="pill pill-bad">{% blocktranslate with amount=receivables.late|floatformat:"0g" %}dont {{ amount }} € en retard{% endblocktranslate %}</span></p>{% endif %}

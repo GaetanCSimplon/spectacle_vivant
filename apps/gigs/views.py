@@ -354,12 +354,19 @@ class GigListView(TenantScopedMixin, ListView):
         )
         context["cancelled_gigs"] = cancelled.order_by("-date")
         context["filter_form"] = self.get_filter_form()
-        context["figures"] = bord.figures_for_gigs(self.request.tenant, gigs)
+        context["figures"] = bord.figures_for_gigs(
+            self.request.tenant,
+            gigs,
+            with_fees=is_tenant_owner(self.request.user, self.request.tenant),
+        )
         context["editable_price"] = True
         context["roadmap_shortcut"] = True
         context["has_any_gig"] = Gig.objects.filter(tenant=self.request.tenant).exists()
-        context["year"] = today.year
-        context["year_count"] = services.count_gigs_for_year(self.request.tenant, today.year)
+        context["gig_count"] = (
+            len(context["upcoming_gigs"])
+            + len(context["past_gigs"])
+            + len(context["cancelled_gigs"])
+        )
         return context
 
 
@@ -380,7 +387,11 @@ class GigCalendarView(TenantScopedMixin, TemplateView):
             .select_related("show", "venue", "promoter")
             .order_by("date", "pk")
         )
-        figures = bord.figures_for_gigs(self.request.tenant, gigs)
+        figures = bord.figures_for_gigs(
+            self.request.tenant,
+            gigs,
+            with_fees=is_tenant_owner(self.request.user, self.request.tenant),
+        )
         # The same cards as the list ("Liste"): progress, payments, roadmap shortcut, price.
         gigs = services.attach_progress(services.with_roadmap_sharing(services.with_locks(gigs)))
         previous_month = (month_start - datetime.timedelta(days=1)).replace(day=1)

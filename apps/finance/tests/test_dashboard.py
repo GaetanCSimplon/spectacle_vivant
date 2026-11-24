@@ -270,8 +270,8 @@ def test_home_amounts_are_whole_euros_in_the_summary_but_stored_to_the_cent(clie
     text = _flat(client.get(reverse("home")).content.decode())
 
     # Each figure sits next to its own label (a bare "300 €" would also match "1 300 €").
-    assert "Facturé 1 001 €" in text  # 1000.60, half up
-    assert "Encaissé 300 €" in text  # 300.20
+    assert "Facturé (TTC) 1 001 €" in text  # 1000.60, half up
+    assert "Encaissé (TTC) 300 €" in text  # 300.20
     assert "Reste à encaisser 700 €" in text  # 700.40
     # No cents anywhere in the summary...
     assert not re.search(r"\d+[,.]\d{2} €", text)
@@ -431,5 +431,6 @@ def test_overview_is_shown_on_the_home_page(client):
 
     content = client.get(reverse("home")).content.decode()
 
-    assert "Solde de l&#x27;année" in content or "Solde de l'année" in content
+    assert "Reste réel de l&#x27;année" in content or "Reste réel de l'année" in content
+    assert "Reste prévu" in content
     assert "Reste à facturer" in content

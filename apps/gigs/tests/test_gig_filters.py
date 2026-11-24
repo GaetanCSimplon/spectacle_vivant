@@ -241,18 +241,18 @@ def test_count_is_zero_without_gigs():
     assert services.count_gigs_for_year(TenantFactory(), 2031) == 0
 
 
-def test_list_shows_the_yearly_count_with_the_right_plural(client):
+def test_list_shows_the_displayed_count_with_the_right_plural(client):
     tenant = _login(client)
     year = _today().year
     GigFactory(tenant=tenant, date=datetime.date(year, 12, 31))
 
-    assert f"1 date en {year}" in _list(client).content.decode()
+    assert "1 date affichée" in _list(client).content.decode()
 
     GigFactory(tenant=tenant, date=datetime.date(year, 1, 1))
-    assert f"2 dates en {year}" in _list(client).content.decode()
+    assert "2 dates affichées" in _list(client).content.decode()
 
 
-def test_yearly_count_ignores_the_active_filters(client):
+def test_count_follows_the_active_filters(client):
     tenant = _login(client)
     year = _today().year
     GigFactory(tenant=tenant, date=datetime.date(year, 6, 1), status=S.OPTION)
@@ -260,7 +260,7 @@ def test_yearly_count_ignores_the_active_filters(client):
 
     content = _list(client, status="option").content.decode()
 
-    assert f"2 dates en {year}" in content
+    assert "1 date affichée" in content
 
 
 # --- HTMX ----------------------------------------------------------------
