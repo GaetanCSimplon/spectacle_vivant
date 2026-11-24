@@ -348,9 +348,8 @@ def rad_43_over_invoiced(gig, draft):
 def rad_44_expired_quote(gig):
     """The quotes of the date were issued, none was accepted, and the latest has expired."""
     quotes = list(
-        Quote.objects.filter(tenant=gig.tenant, gig=gig, status=Quote.Status.ISSUED).order_by(
-            "-created_at", "-id"
-        )
+        # By id, not by created_at: the id always grows, a wall clock can step back (WSL2).
+        Quote.objects.filter(tenant=gig.tenant, gig=gig, status=Quote.Status.ISSUED).order_by("-id")
     )
     if not quotes or any(q.accepted_on for q in quotes) or not quotes[0].is_expired:
         return None
