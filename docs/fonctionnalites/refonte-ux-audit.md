@@ -15,7 +15,7 @@ Appliquer les priorités P1 de l'audit UX/UI du 12/11/2026 et les maquettes 1 (M
 - docs/produit/feuille-de-route.md
 
 ## Découpage en PR
-- [ ] PR 1 — Libellés financiers et base HT/TTC (I1, I3, I5, UX-01)
+- [x] PR 1 — Libellés financiers et base HT/TTC (I1, I3, I5, UX-01)
   - Objectif : « Reste prévu » (prévu − frais) et « Reste réel » (encaissé − dépensé), toujours côte à côte, sur Accueil, Bòrd, fiche date et Paiements et dépenses. Synthèses en HT ; TTC seulement sur factures et paiements, toujours écrit. Compteur de Mes dates = cartes affichées avec les filtres.
   - Fichiers : templates/core/home.html, templates/tenants/_bord_results.html, templates/gigs/gig_detail.html, templates/finance/_body.html, apps/finance/services.py (GigBalance), liste des dates.
   - Tests : un seul calcul (`gig_balance`) pour tous les écrans ; libellés présents ; compteur = nombre de cartes avec filtres ; montants au centime.
@@ -64,9 +64,13 @@ Appliquer les priorités P1 de l'audit UX/UI du 12/11/2026 et les maquettes 1 (M
 - 2026-11-24 — Périmètre : UX-01 à UX-06 (P1) et maquettes 1 et 4 seulement ; UX-07 à UX-19 et I8 hors de cette fonctionnalité.
 - 2026-11-24 — Chiffres : « Reste prévu » et « Reste réel » côte à côte ; vue activité rattachée à la date de prestation, vue trésorerie à part.
 - 2026-11-24 — Cachets : calculés depuis Social ; anciennes dépenses « Cachets » gardées en lecture avec avertissement, sans suppression ni migration.
+- 2026-11-24 — PR 1 : « Reste prévu » (prix HT − dépensé) et « Reste réel » (TTC encaissé − dépensé) viennent de deux fonctions uniques (`remaining_planned`, `remaining_real`, `apps/finance/services.py`). Sur Mes dates, ils sont ajoutés au bloc des chiffres. « Reste réel » reste TTC, écrit sur l'écran. Un `member` n'a pas les cachets dans ces restes.
+- 2026-11-24 — PR 1 : le compteur de Mes dates compte les cartes affichées (annulées comprises) et suit les filtres ; `count_gigs_for_year` reste pour le futur quota freemium.
 
 ## Points en suspens
-- « Reste réel » à côté de « Reste prévu » sur Mes dates : absent de la maquette 1, à arbitrer en PR 1.
+- Contrôle visuel dans Chromium à 1440 px des libellés longs « Reste réel (TTC encaissé − dépensé) » (PR 1, à faire à la main).
+- Page vitrine `templates/site/home.html` : « Ce qu'il reste après ces frais » à aligner (marketing, hors PR 1).
+- Suite de tests : 26 min. Voir `--reuse-db`, xdist et marqueur `slow` (PR à part).
 - L'app sait-elle « contrat envoyé » ? Sinon la case reste manuelle (PR 4).
 - Que devient une ancienne coche manuelle sur une case devenue automatique : l'automatique l'emporte (à confirmer en recette).
 - Liens profonds et alertes Radar vers l'ancienne checklist à garder fonctionnels (PR 6).
@@ -74,3 +78,4 @@ Appliquer les priorités P1 de l'audit UX/UI du 12/11/2026 et les maquettes 1 (M
 
 ## Journal
 - 2026-11-24 — Plan validé.
+- 2026-11-24 — PR 1 terminée : libellés « Reste prévu » / « Reste réel », base HT/TTC, compteur de Mes dates. 2942 tests verts.

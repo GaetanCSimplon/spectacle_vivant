@@ -26,7 +26,14 @@ from apps.gigs.models import OPTION_WARNING_DAYS, Gig, GigMember
 
 from .dashboard import awaiting_payment
 from .models import Expense, ExpenseClaim, Payment
-from .services import INVOICED, ZERO, expense_split, team_fees_by_gig
+from .services import (
+    INVOICED,
+    ZERO,
+    expense_split,
+    remaining_planned,
+    remaining_real,
+    team_fees_by_gig,
+)
 
 CONFIRMED = (Gig.Status.CONFIRMED, Gig.Status.SIGNED)
 SOON_DAYS = 30
@@ -89,7 +96,7 @@ def period_bounds(preset, today):
     return start, end
 
 
-def figures_for_gigs(tenant, gigs):
+def figures_for_gigs(tenant, gigs, with_fees=False):
     """Planned, signed, invoiced (excl. tax) and received (incl. tax) for exactly these dates.
 
     The same figures as the "activity" reading of the Bord, for a list of dates instead of a
@@ -98,12 +105,22 @@ def figures_for_gigs(tenant, gigs):
     gigs = Gig.objects.filter(tenant=tenant, pk__in=gigs.values("pk"))
     invoices = Invoice.objects.filter(tenant=tenant, status__in=INVOICED, gig__in=gigs)
     payments = Payment.objects.filter(tenant=tenant, invoice__gig__in=gigs)
+    planned = gigs.filter(status__in=CONFIRMED).aggregate(total=Sum("price"))["total"] or ZERO
+    received = payments.aggregate(total=Sum("amount"))["total"] or ZERO
+    spent = (
+        Expense.objects.filter(tenant=tenant, gig__in=gigs).aggregate(total=Sum("amount"))["total"]
+        or ZERO
+    )
+    if with_fees:  # team pay: owner only
+        spent += sum(team_fees_by_gig(tenant, gigs.values("pk")).values(), ZERO)
     return {
-        "planned": gigs.filter(status__in=CONFIRMED).aggregate(total=Sum("price"))["total"] or ZERO,
+        "planned": planned,
         "signed": gigs.filter(status=Gig.Status.SIGNED).aggregate(total=Sum("price"))["total"]
         or ZERO,
         "invoiced": invoices.aggregate(total=Sum("total_excl_tax"))["total"] or ZERO,
-        "received": payments.aggregate(total=Sum("amount"))["total"] or ZERO,
+        "received": received,
+        "remaining_planned": remaining_planned(planned, spent),
+        "remaining_real": remaining_real(received, spent),
     }
 
 
@@ -756,6 +773,11 @@ def summary(tenant, filters, today, with_fees=False):
         "balance": balance(
             revenue_totals, expense_totals, "received" if filters.view == "cash" else filters.figure
         ),
+        # "Reste prévu" only makes sense for the activity reading (the cash one has no price).
+        "remaining_planned": None
+        if filters.view == "cash"
+        else remaining_planned(revenue_totals["planned"], expense_totals["total"]),
+        "remaining_real": remaining_real(revenue_totals["received"], expense_totals["total"]),
         "receivables": receivables(tenant, today, filters.show),
         "people": people_mobilised(tenant, filters),
         "incomplete_dates": incomplete_dates(tenant, filters),

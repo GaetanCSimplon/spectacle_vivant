@@ -94,7 +94,8 @@ def test_the_page_shows_the_blocks_to_every_member(client):
         "Régie",
         "Ce que rapportent mes dates",
         "Les frais de ces dates",
-        "reste après ces frais",
+        "Reste prévu",
+        "Reste réel",
         "Reste à encaisser",
         "À traiter maintenant",
     ):

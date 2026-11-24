@@ -114,6 +114,16 @@ def delete_payment(payment):
 # --- balance of a gig ------------------------------------------------------
 
 
+def remaining_planned(planned_excl_tax, spent):
+    """ "Reste prévu": the price (excl. tax) minus the expenses. The only place this is computed."""
+    return planned_excl_tax - spent
+
+
+def remaining_real(received, spent):
+    """ "Reste réel": what was received minus what was spent. The only place this is computed."""
+    return received - spent
+
+
 @dataclass(frozen=True)
 class GigBalance:
     """All amounts incl. tax so they can be compared (F-57); `planned_excl_tax` is the price."""
@@ -135,8 +145,12 @@ class GigBalance:
         return self.invoiced - self.received
 
     @property
+    def remaining_planned(self):
+        return remaining_planned(self.planned_excl_tax, self.spent)
+
+    @property
     def result(self):
-        return self.received - self.spent
+        return remaining_real(self.received, self.spent)
 
 
 def team_fees_by_gig(tenant, gig_ids):

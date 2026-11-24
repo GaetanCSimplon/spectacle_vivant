@@ -100,3 +100,42 @@ def test_another_structures_dates_never_count(client):
     _gig(other, "99999.00")
 
     assert client.get(reverse("gigs:list")).context["figures"]["planned"] == D("100.00")
+
+
+def test_remaining_figures_use_the_same_formula_as_the_balance_of_a_date():
+    from apps.finance.factories import ExpenseFactory
+
+    tenant = TenantFactory()
+    gig = _gig(tenant, "1000.00")
+    ExpenseFactory(gig=gig, amount="120.50")
+
+    figures = bord.figures_for_gigs(tenant, Gig.objects.filter(pk=gig.pk))
+    balance = services.gig_balance(gig)
+
+    assert figures["remaining_planned"] == balance.remaining_planned == D("879.50")
+    assert figures["remaining_real"] == balance.result == D("-120.50")
+
+
+def test_remaining_figures_of_another_tenant_are_not_counted():
+    from apps.finance.factories import ExpenseFactory
+
+    tenant, other = TenantFactory(), TenantFactory()
+    ExpenseFactory(gig=_gig(other, "500.00"), amount="80.00")
+    mine = _gig(tenant, "1000.00")
+
+    figures = bord.figures_for_gigs(tenant, Gig.objects.filter(pk=mine.pk))
+
+    assert figures["remaining_planned"] == D("1000.00")
+
+
+@pytest.mark.parametrize("url", ["home", "tenants:profile", "gigs:list"])
+def test_the_two_remaining_labels_sit_side_by_side_on_each_summary(client, url):
+    tenant = _login(client)
+    _gig(tenant, "1000.00")
+
+    page = client.get(reverse(url)).content.decode()
+
+    assert "Reste prévu" in page
+    assert "Reste réel" in page
+    assert "Solde de l'année" not in page
+    assert "Ce qu'il reste après ces frais" not in page

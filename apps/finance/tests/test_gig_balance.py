@@ -101,3 +101,15 @@ def test_a_plain_member_never_sees_the_fees(client):
         text = client.get(url).content.decode()
         assert "777" not in text
         assert "cachets (équipe)" not in text
+
+
+def test_remaining_planned_and_real_come_from_the_same_two_functions():
+    gig = make_gig(price="1000.00")
+    ExpenseFactory(gig=gig, amount="50.10")
+
+    balance = services.gig_balance(gig)
+
+    assert balance.remaining_planned == services.remaining_planned(D("1000.00"), D("50.10"))
+    assert balance.remaining_planned == D("949.90")  # price excl. tax, not incl. tax
+    assert balance.result == services.remaining_real(balance.received, balance.spent)
+    assert balance.result == D("-50.10")

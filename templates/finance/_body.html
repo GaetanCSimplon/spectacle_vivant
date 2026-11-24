@@ -11,9 +11,9 @@
     <p class="rounded-lg bg-amber-50 p-3 text-sm text-amber-900 mb-4">{% translate "Cette date est annulée : le « Prévu » ci-dessous n'est plus attendu." %}</p>
   {% endif %}
   <div class="card mb-6 space-y-1 text-sm">
-    <p class="flex justify-between"><span>{% translate "Prévu" %} (TTC)</span><span>{{ balance.planned_incl_tax|floatformat:"0g" }} €</span></p>
+    <p class="flex justify-between"><span>{% translate "Prévu" %} (HT)</span><span>{{ balance.planned_excl_tax|floatformat:"0g" }} €</span></p>
     <p class="flex justify-between"><span>{% translate "Facturé" %} (TTC)</span><span>{{ balance.invoiced|floatformat:"0g" }} €</span></p>
-    <p class="flex justify-between"><span>{% translate "Encaissé" %}</span><span>{{ balance.received|floatformat:"0g" }} €</span></p>
+    <p class="flex justify-between"><span>{% translate "Encaissé" %} (TTC)</span><span>{{ balance.received|floatformat:"0g" }} €</span></p>
     <p class="flex justify-between text-gray-600"><span>{% translate "Reste à encaisser" %}</span><span>{{ balance.outstanding|floatformat:"0g" }} €</span></p>
     <p class="flex justify-between"><span>{% translate "Dépensé" %}</span><span>{{ balance.spent|floatformat:"0g" }} €</span></p>
 {% if is_owner %}
@@ -21,8 +21,8 @@
     <p class="flex justify-between pl-4 text-gray-600"><span>{% translate "dont cachets (équipe)" %}</span><span>{{ balance.fees|floatformat:"0g" }} €</span></p>
     {% if balance.fees_double_count %}<p class="rounded-lg bg-amber-50 p-2 text-amber-900">{% translate "Des cachets sont aussi saisis en dépense : ils sont peut-être comptés deux fois." %}</p>{% endif %}
     {% endif %}
-    <p class="flex justify-between border-t border-gray-200 pt-1 font-semibold"><span>{% translate "Résultat" %} ({% translate "encaissé − dépensé" %})</span><span>{{ balance.result|floatformat:"0g" }} €</span></p>
-    <p class="pt-1 text-gray-500">{% blocktranslate with price=balance.planned_excl_tax %}Prix de cession : {{ price }} € HT.{% endblocktranslate %}</p>
+    <p class="flex justify-between border-t border-gray-200 pt-1 font-semibold" title="{% translate 'Prévu moins dépensé' %}"><span>{% translate "Reste prévu" %} (HT)</span><span>{{ balance.remaining_planned|floatformat:"0g" }} €</span></p>
+    <p class="flex justify-between font-semibold" title="{% translate 'Encaissé moins dépensé' %}"><span>{% translate "Reste réel" %} (TTC encaissé − dépensé)</span><span>{{ balance.result|floatformat:"0g" }} €</span></p>
   </div>
 
   <h2 class="mb-2 text-sm font-semibold uppercase text-gray-500">{% translate "Paiements reçus" %}</h2>

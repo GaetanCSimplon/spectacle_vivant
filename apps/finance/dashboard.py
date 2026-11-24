@@ -21,7 +21,7 @@ from apps.gigs.models import OPTION_WARNING_DAYS, Gig
 from apps.roadmaps.tour_requests import pending_requests
 
 from .models import Expense, Payment
-from .services import INVOICED, ZERO, team_fees_by_gig
+from .services import INVOICED, ZERO, remaining_planned, remaining_real, team_fees_by_gig
 
 NEXT_GIGS_LIMIT = 5
 
@@ -437,13 +437,9 @@ def year_overview(tenant, year, with_fees=False):
     if year is not None:
         gigs = gigs.filter(date__year=year)
     rate = invoicing.vat_rate_for(tenant)
-    planned = sum(
-        (
-            invoicing.money(price * (100 + rate) / 100)
-            for price in gigs.values_list("price", flat=True)
-        ),
-        ZERO,
-    )
+    prices = list(gigs.values_list("price", flat=True))
+    planned_excl_tax = sum(prices, ZERO)
+    planned = sum((invoicing.money(price * (100 + rate) / 100) for price in prices), ZERO)
     invoiced = Invoice.objects.filter(tenant=tenant, gig__in=gigs, status__in=INVOICED).aggregate(
         total=Sum("total_incl_tax")
     )["total"]
@@ -464,7 +460,9 @@ def year_overview(tenant, year, with_fees=False):
         "spent": spent,
         "to_invoice": planned - invoiced,
         "to_collect": invoiced - received,
-        "result": received - spent,
+        "planned_excl_tax": planned_excl_tax,
+        "remaining_planned": remaining_planned(planned_excl_tax, spent),
+        "result": remaining_real(received, spent),
     }
 
 
