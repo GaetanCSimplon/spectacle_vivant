@@ -79,7 +79,8 @@ def test_the_pages_show_the_two_lines_and_the_warning(client):
 
     for url in (reverse("gigs:detail", args=[gig.pk]), reverse("finance:page", args=[gig.pk])):
         text = client.get(url).content.decode()
-        assert "dont cachets (équipe)" in text
+        assert "Cachets (depuis Social, estimé)" in text
+        assert "Coût employeur estimé" in text
         assert "dont dépenses saisies" in text
         assert "comptés deux fois" in text
 
@@ -100,7 +101,9 @@ def test_a_plain_member_never_sees_the_fees(client):
     for url in (reverse("gigs:detail", args=[gig.pk]), reverse("finance:page", args=[gig.pk])):
         text = client.get(url).content.decode()
         assert "777" not in text
-        assert "cachets (équipe)" not in text
+        assert "Cachets (depuis Social" not in text
+        assert "Coût employeur" not in text
+        assert "145" not in text
 
 
 def test_remaining_planned_and_real_come_from_the_same_two_functions():
@@ -113,3 +116,59 @@ def test_remaining_planned_and_real_come_from_the_same_two_functions():
     assert balance.remaining_planned == D("949.90")  # price excl. tax, not incl. tax
     assert balance.result == services.remaining_real(balance.received, balance.spent)
     assert balance.result == D("-50.10")
+
+
+def test_employer_cost_is_an_estimation_to_the_cent_and_not_spent():
+    gig = make_gig()  # default reference rate: 45 %
+    GigMemberFactory(gig=gig, cachet_amount="100.55")
+
+    balance = services.gig_balance(gig)
+
+    assert balance.fees_employer_cost == D("145.80")  # 100.55 x 1.45 = 145.7975
+    assert balance.spent == D("100.55")  # information only
+
+
+def test_a_plain_member_gets_no_employer_cost():
+    gig = make_gig()
+    GigMemberFactory(gig=gig, cachet_amount="100.00")
+
+    balance = services.gig_balance(gig, with_fees=False)
+
+    assert balance.fees == 0
+    assert balance.fees_employer_cost == 0
+
+
+def test_the_expense_form_no_longer_offers_fees_for_a_new_expense():
+    from ..forms import ExpenseForm
+
+    gig = make_gig()
+    form = ExpenseForm(tenant=gig.tenant)
+
+    assert Expense.Category.FEES not in [value for value, _ in form.fields["category"].choices]
+
+
+def test_an_old_fees_expense_stays_editable_and_flagged():
+    from ..forms import ExpenseForm
+
+    gig = make_gig()
+    old = ExpenseFactory(gig=gig, category=Expense.Category.FEES, amount="100.00")
+    GigMemberFactory(gig=gig, cachet_amount="100.00")
+
+    form = ExpenseForm(instance=old, tenant=gig.tenant)
+
+    assert Expense.Category.FEES in [value for value, _ in form.fields["category"].choices]
+    assert services.gig_balance(gig).fees_double_count
+    old.refresh_from_db()
+    assert old.amount == D("100.00")  # kept, never deleted
+
+
+def test_posting_a_new_fees_expense_is_refused(client):
+    gig = make_gig()
+    client.force_login(MembershipFactory(tenant=gig.tenant).user)
+
+    client.post(
+        reverse("finance:expense-add", args=[gig.pk]),
+        {"category": "fees", "label": "Cachet", "amount": "50.00", "date": "2026-11-01"},
+    )
+
+    assert not Expense.objects.filter(gig=gig).exists()

@@ -65,6 +65,14 @@ class ExpenseForm(forms.ModelForm):
         # Only the people of this structure can be chosen.
         self.fields["person"].queryset = Person.objects.filter(tenant=tenant)
         self.fields["person"].empty_label = _("La structure")
+        # Fees come from the team (Social). An old "Cachets" expense keeps its choice so it can
+        # still be edited; no new one can be entered.
+        if not (self.instance.pk and self.instance.category == Expense.Category.FEES):
+            self.fields["category"].choices = [
+                (value, label)
+                for value, label in self.fields["category"].choices
+                if value != Expense.Category.FEES
+            ]
 
     def clean_receipt_file(self):
         return validate_receipt(self.cleaned_data["receipt_file"])

@@ -21,13 +21,13 @@ Appliquer les priorités P1 de l'audit UX/UI du 12/11/2026 et les maquettes 1 (M
   - Tests : un seul calcul (`gig_balance`) pour tous les écrans ; libellés présents ; compteur = nombre de cartes avec filtres ; montants au centime.
   - Documents à relire : audit I1 à I3, I5 ; CLAUDE.md §6.2 ; maquettes 1 et 4.
   - Risques : comparer des montants sur la même base (HT/TTC) ; « Reste réel » absent de la maquette 1, à arbitrer.
-- [ ] PR 2 — Rattachement à la date de prestation (I2)
+- [x] PR 2 — Rattachement à la date de prestation (I2)
   - Objectif : la carte Budget de Bòrd rattache prévu et facturé à la date de prestation ; l'acompte d'une date 2027 sort du facturé 2026. La vue trésorerie reste séparée.
   - Fichiers : apps/finance, apps/tenants (agrégats du Bòrd).
   - Tests : acompte d'une date 2027 absent du facturé 2026 ; vue trésorerie inchangée ; isolation des tenants.
   - Documents à relire : audit I2 ; docs/produit/indicateurs-bord.md ; recette BRD-02/04.
   - Risques : changement de chiffres déjà affichés ; rien de stocké, aucune migration.
-- [ ] PR 3 — Cachets depuis Social (I4, UX-02)
+- [x] PR 3 — Cachets depuis Social (I4, UX-02)
   - Objectif : ligne « Cachets (depuis Social, estimé) » du budget de la date calculée depuis le brut de l'équipe, avec coût employeur estimé (`estimated_employer_cost`, mention « estimation »). Plus de saisie manuelle dans la catégorie « Cachets » pour les nouvelles dépenses ; les anciennes restent en lecture avec un avertissement, sans suppression.
   - Fichiers : formulaire de dépense, apps/finance/services.py, templates/finance/_body.html, fiche date.
   - Tests : catégorie retirée du formulaire ; ancienne dépense conservée et signalée (`fees_double_count`) ; montants au centime ; un `member` ne voit pas les cachets ; isolation.
@@ -67,6 +67,8 @@ Appliquer les priorités P1 de l'audit UX/UI du 12/11/2026 et les maquettes 1 (M
 - 2026-11-24 — PR 1 : « Reste prévu » (prix HT − dépensé) et « Reste réel » (TTC encaissé − dépensé) viennent de deux fonctions uniques (`remaining_planned`, `remaining_real`, `apps/finance/services.py`). Sur Mes dates, ils sont ajoutés au bloc des chiffres. « Reste réel » reste TTC, écrit sur l'écran. Un `member` n'a pas les cachets dans ces restes.
 - 2026-11-24 — PR 1 : le compteur de Mes dates compte les cartes affichées (annulées comprises) et suit les filtres ; `count_gigs_for_year` reste pour le futur quota freemium.
 
+- 2026-11-24 — PR 3 : le coût employeur estimé (`fees_employer_cost`, taux de repère de la structure) reste une ligne d'information, jamais ajoutée à « Dépensé » ni aux « Reste ». La catégorie « Cachets » n'est plus proposée aux nouvelles dépenses ; une ancienne dépense reste modifiable et signalée.
+
 ## Points en suspens
 - Contrôle visuel dans Chromium à 1440 px des libellés longs « Reste réel (TTC encaissé − dépensé) » (PR 1, à faire à la main).
 - Page vitrine `templates/site/home.html` : « Ce qu'il reste après ces frais » à aligner (marketing, hors PR 1).
@@ -79,3 +81,5 @@ Appliquer les priorités P1 de l'audit UX/UI du 12/11/2026 et les maquettes 1 (M
 ## Journal
 - 2026-11-24 — Plan validé.
 - 2026-11-24 — PR 1 terminée : libellés « Reste prévu » / « Reste réel », base HT/TTC, compteur de Mes dates. 2942 tests verts.
+- 2026-11-24 — PR 2 : déjà couverte par BRD-02/03/04 (Bòrd, vue activité rattachée à la date du concert, vue trésorerie à part). Reste : la ligne « Facturé en 2026 (caisse) » de l'Accueil suit encore la date de facture, étiquetée comme telle.
+- 2026-11-24 — PR 3 terminée : cachets depuis Social, coût employeur estimé en information.
