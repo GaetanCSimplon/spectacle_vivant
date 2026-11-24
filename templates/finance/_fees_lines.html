@@ -1,0 +1,6 @@
+{% load i18n %}
+<p class="flex justify-between pl-4 text-gray-600"><span>{% translate "Cachets (depuis Social, estimé)" %}</span><span>{{ balance.fees|floatformat:"0g" }} €</span></p>
+{% if balance.fees %}
+<p class="flex justify-between pl-4 text-xs text-gray-600" title="{% translate 'Cachets bruts plus le taux de repère de Ma structure. Information : non compté dans « Dépensé ».' %}"><span>{% translate "Coût employeur estimé" %} ({% translate "estimation" %})</span><span>{{ balance.fees_employer_cost|floatformat:"0g" }} €</span></p>
+{% endif %}
+{% if balance.fees_double_count %}<p class="rounded-lg bg-amber-50 p-2 text-amber-900">{% translate "Des dépenses « Cachets » saisies auparavant sont conservées : si elles reprennent les cachets de Social, ils sont comptés deux fois. Les cachets se saisissent maintenant dans l'équipe de la date." %}</p>{% endif %}

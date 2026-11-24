@@ -135,6 +135,7 @@ class GigBalance:
     entered: Decimal  # expenses typed in for the date
     fees: Decimal  # gross pay of the team members of the date (not an expense row)
     fees_double_count: bool = False  # a "Cachets" expense exists next to the team fees
+    fees_employer_cost: Decimal = ZERO  # estimation only: information, never added to `spent`
 
     @property
     def spent(self):
@@ -185,6 +186,7 @@ def gig_balance(gig, with_fees=True):
         entered=_total(expenses),
         fees=fees,
         fees_double_count=fees > 0 and expenses.filter(category=Expense.Category.FEES).exists(),
+        fees_employer_cost=estimated_employer_cost(fees, gig.tenant.employer_cost_rate) or ZERO,
     )
 
 
