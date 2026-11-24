@@ -1,0 +1,48 @@
+Bòrd Pro — Licence propriétaire, tous droits réservés
+Proprietary licence — All rights reserved
+
+Copyright © 2026 Gaëtan Courtieu & Jean-François Bonnier. Tous droits réservés.
+
+Ce dépôt est public pour être consulté, pas pour être réutilisé. Il n'est PAS
+sous licence libre ou « open source ».
+
+1. CE QUI EST PERMIS
+   Vous pouvez lire le code et la documentation de ce dépôt, et en faire une
+   copie temporaire sur votre ordinateur à seule fin de les consulter
+   (notamment pour les afficher via GitHub).
+
+2. CE QUI EST INTERDIT SANS AUTORISATION ÉCRITE PRÉALABLE
+   - copier, reproduire, modifier, traduire ou adapter tout ou partie du code,
+     des modèles de documents, des textes ou de la documentation ;
+   - redistribuer, publier, vendre, louer, sous-licencier ou mettre à
+     disposition tout ou partie du dépôt, y compris sous forme modifiée ;
+   - héberger ou exploiter le logiciel, ou un logiciel qui en dérive, comme
+     service, pour vous ou pour des tiers ;
+   - utiliser le contenu du dépôt pour entraîner, affiner ou évaluer un modèle
+     d'intelligence artificielle ;
+   - utiliser le nom « Bòrd Pro », ses logos et sa charte graphique.
+
+3. ÉLÉMENTS DE TIERS
+   Certains fichiers sont fournis par des tiers (documents du métier, modèles
+   de contrat, charte graphique, tableurs de partenaires, bibliothèques
+   libres). Ils restent la propriété de leurs auteurs ou sont soumis à leurs
+   propres licences. Cette licence ne vous donne aucun droit sur eux.
+   Les bibliothèques libres utilisées (voir requirements/) restent sous leurs
+   licences respectives.
+
+4. AUCUNE GARANTIE
+   Le contenu est fourni « en l'état », sans garantie d'aucune sorte. Les
+   modèles de contrats et de factures sont des exemples de travail, pas des
+   conseils juridiques. Le titulaire n'est responsable d'aucun dommage lié à
+   leur usage.
+
+5. AUTORISATION
+   Pour toute autre utilisation, écrivez à : contact@bordpro.fr
+
+---
+
+This repository is made public for viewing only. All rights are reserved. No
+licence is granted to copy, modify, distribute, host, run as a service, use to
+train AI models, or use the Bòrd Pro name and branding, except with prior
+written permission. Third-party material remains under its own terms. The
+content is provided "as is", without warranty of any kind.
