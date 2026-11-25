@@ -1,11 +1,12 @@
 {% load i18n %}
 {% comment %}Round button fixed at the bottom right of the page: opens the checklist of `gig` in a
 modal (a plain link to the page without JavaScript).
+Optional: query ("?restantes=1" on the date page).
 Needs `<div id="checklist-modal"></div>` somewhere on the page.{% endcomment %}
 <a
   id="checklist-button"
-  href="{% url 'gigs:checklist' gig.pk %}"
-  hx-get="{% url 'gigs:checklist' gig.pk %}"
+  href="{% url 'gigs:checklist' gig.pk %}{{ query }}"
+  hx-get="{% url 'gigs:checklist' gig.pk %}{{ query }}"
   hx-target="#checklist-modal"
   hx-swap="innerHTML"
   title="{% translate 'Checklist contractualisation' %}"

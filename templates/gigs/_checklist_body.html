@@ -23,6 +23,7 @@ The Alpine state only handles a failed save: the box goes back and a quiet messa
   </div>
   <div class="mt-4 flex flex-wrap items-center justify-between gap-3 border-t border-page-line pt-3">
     {% include "gigs/_checklist_updated.html" %}
+    {% if not remaining_only %}
     <form
       method="post"
       action="{% url 'gigs:checklist-reset' gig.pk %}"
@@ -34,5 +35,6 @@ The Alpine state only handles a failed save: the box goes back and a quiet messa
       {% csrf_token %}
       <button type="submit" class="text-sm text-red-700 underline">{% translate "Réinitialiser" %}</button>
     </form>
+    {% endif %}
   </div>
 </div>

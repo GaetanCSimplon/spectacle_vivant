@@ -500,11 +500,11 @@ def next_step(gig, progress):
     """The first step still to do, for a date that can move forward (confirmed or signed)."""
     if gig.status not in (Gig.Status.CONFIRMED, Gig.Status.SIGNED):
         return None
-    for volet in progress:
-        for step in volet["steps"]:
-            if not step["done"]:
-                return {"volet": volet, **step}
-    return None
+    todo = [(volet, step) for volet in progress for step in volet["steps"] if not step["done"]]
+    if not todo:
+        return None
+    volet, step = todo[0]
+    return {"volet": volet, **step, "then": [s["todo"] for _volet, s in todo[1:3]]}
 
 
 def gig_documents(gig):

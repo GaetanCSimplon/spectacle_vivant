@@ -30,11 +30,59 @@
     </section>
   {% endif %}
 
-  {% include "gigs/_checklist_button.html" %}
+  {% include "gigs/_checklist_button.html" with query="?restantes=1" %}
   <div id="checklist-modal"></div>
 
-  {# a. The date and its contacts, side by side #}
-  <div class="mb-4 grid grid-cols-1 gap-4 lg:grid-cols-2 lg:items-start">
+  {# a. What to do now: the only main-action button of the page #}
+  <section class="card card-cream mb-4 flex flex-wrap items-center justify-between gap-4" aria-labelledby="gig-next">
+    <div class="min-w-0 space-y-1 text-sm">
+      <p class="stat-label !text-xs !font-semibold">
+        {% translate "À faire maintenant" %}{% if gig.status != 'cancelled' %} · {% blocktranslate with n=overall_percent %}{{ n }} % de la date est prête{% endblocktranslate %}{% endif %}
+      </p>
+      <h2 id="gig-next" class="!text-xl font-bold">
+        {% if gig.status == 'option' %}{% translate "Confirmer la date" %}
+        {% elif gig.status == 'cancelled' %}{% translate "Cette date est annulée" %}
+        {% elif next_step %}{{ next_step.todo }}
+        {% else %}{% translate "Aucune action en attente pour cette date." %}{% endif %}
+      </h2>
+      {% if gig.status == 'option' %}
+        {% if gig.option_expiry.state == 'expired' %}
+          <p>{% translate "L'option a expiré : confirmez la date si l'organisateur est toujours d'accord, sinon annulez-la." %}</p>
+        {% else %}
+          <p>{% translate "Dès que l'organisateur a confirmé, confirmez la date." %}</p>
+        {% endif %}
+      {% elif gig.status == 'cancelled' %}
+        <p>{% translate "Elle reste dans votre historique." %}</p>
+      {% elif next_step.then %}
+        <p>{% translate "Ensuite :" %} {% for todo in next_step.then %}{{ todo|lower }}{% if not forloop.last %}, puis {% endif %}{% endfor %}.</p>
+      {% endif %}
+    </div>
+    {% if gig.status == 'option' %}
+      <form method="post" action="{% url 'gigs:confirm' gig.pk %}">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-primary">{% translate "Confirmer la date" %}</button>
+      </form>
+    {% elif gig.status == 'cancelled' %}
+      <form method="post" action="{% url 'gigs:reactivate' gig.pk %}">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-secondary">{% translate "Réactiver la date" %}</button>
+      </form>
+    {% elif next_step %}
+      <a href="{{ next_step.url }}" class="btn btn-primary">{{ next_step.todo }}</a>
+    {% endif %}
+  </section>
+
+  {# b. The date and its volets on the left, contacts, documents and follow-up on the right. #}
+  {# The Alpine state only handles a box that failed to save, as in the checklist modal. #}
+  <div
+    class="grid grid-cols-1 gap-4 lg:grid-cols-[minmax(0,1fr)_20rem] lg:items-start"
+    x-data="{ failed: false }"
+    @htmx:response-error="const box = $event.target.querySelector('input[name=value]'); if (box) { failed = true; box.checked = !box.checked }"
+    @htmx:send-error="const box = $event.target.querySelector('input[name=value]'); if (box) { failed = true; box.checked = !box.checked }"
+    @htmx:after-swap="failed = false"
+  >
+  <div class="min-w-0 space-y-4">
+  <p x-show="failed" x-cloak role="alert" class="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-800">{% translate "Modification non enregistrée. Réessayez." %}</p>
   <section class="card space-y-4 text-sm" aria-labelledby="gig-summary">
     <h2 id="gig-summary" class="stat-label !text-xs !font-semibold">{% translate "La date" %}</h2>
     <div class="space-y-1">
@@ -90,54 +138,15 @@
     </details>
   </section>
 
-    {% include "gigs/_date_contacts.html" %}
-  </div>
-
-  {# b. Next action on the left, the follow-up of the date on the right: one card #}
-  <div class="card mb-4 grid grid-cols-1 gap-6 lg:grid-cols-2 lg:gap-0">
-    <div class="lg:pr-6">
-      {# Next action: the status change comes first, then the first step still to do. #}
-      <section class="space-y-2 text-sm" aria-labelledby="gig-next">
-        <h2 id="gig-next" class="stat-label !text-xs !font-semibold">{% translate "Prochaine action" %}</h2>
-        {% if gig.status == 'option' %}
-          {% if gig.option_expiry.state == 'expired' %}
-            <p>{% translate "L'option a expiré : confirmez la date si l'organisateur est toujours d'accord, sinon annulez-la." %}</p>
-          {% else %}
-            <p>{% translate "Dès que l'organisateur a confirmé, confirmez la date." %}</p>
-          {% endif %}
-          <form method="post" action="{% url 'gigs:confirm' gig.pk %}">
-            {% csrf_token %}
-            <button type="submit" class="btn btn-primary">{% translate "Confirmer la date" %}</button>
-          </form>
-        {% elif gig.status == 'cancelled' %}
-          <p>{% translate "Cette date est annulée. Elle reste dans votre historique." %}</p>
-          <form method="post" action="{% url 'gigs:reactivate' gig.pk %}">
-            {% csrf_token %}
-            <button type="submit" class="btn btn-secondary">{% translate "Réactiver la date" %}</button>
-          </form>
-        {% elif next_step %}
-          <p>{{ next_step.volet.label }} : {{ next_step.todo|lower }}.</p>
-          <a href="{{ next_step.url }}" class="btn btn-primary">{{ next_step.todo }}</a>
-        {% else %}
-          <p>{% translate "Aucune action en attente pour cette date." %}</p>
-        {% endif %}
-      </section>
-    </div>
-    <div class="lg:border-l lg:border-page-line lg:pl-6">
-      {% include "gigs/_date_timeline.html" %}
-    </div>
-  </div>
-
-  <div class="mb-6">{% include "gigs/_date_documents.html" %}</div>
-  {% if offer_form %}{% include "gigs/_offer_form_dialog.html" %}{% endif %}
-
-
-  {# c. The four volets, as cards #}
-  <div class="grid grid-cols-1 gap-4 lg:grid-cols-2 lg:items-start">
     {% for volet in progress %}
       <section id="volet-{{ volet.key }}" class="overflow-hidden rounded-xl border border-page-line bg-white" aria-labelledby="volet-title-{{ volet.key }}">
         {% include "gigs/_volet_card_head.html" %}
         <div class="space-y-3 p-4 text-sm">
+          {% if volet.boxes %}
+            <ul class="divide-y divide-page-line">
+              {% for item in volet.boxes %}{% include "gigs/_checklist_item.html" %}{% endfor %}
+            </ul>
+          {% endif %}
           {% if volet.key == 'contrats' %}
             {% if gig.status != 'cancelled' %}
               <a href="{% url 'documents:contract-complete' gig.pk %}" class="btn btn-secondary btn-block">{% translate "Compléter le contrat" %}</a>
@@ -179,4 +188,12 @@
       </section>
     {% endfor %}
   </div>
+
+  <aside class="min-w-0 space-y-4 break-words">
+    {% include "gigs/_date_contacts.html" %}
+    {% include "gigs/_date_documents.html" %}
+    <div class="card">{% include "gigs/_date_timeline.html" %}</div>
+  </aside>
+  </div>
+  {% if offer_form %}{% include "gigs/_offer_form_dialog.html" %}{% endif %}
 {% endblock %}

@@ -249,14 +249,14 @@ def test_another_tenants_date_is_a_404_everywhere(client, membership):
 
 
 def test_the_buttons_are_on_the_date_and_on_the_contract_page(client, gig):
-    for url in (
-        reverse("gigs:detail", args=[gig.pk]),
-        reverse("documents:contract-history", args=[gig.pk]),
+    for url, query in (
+        (reverse("gigs:detail", args=[gig.pk]), "?restantes=1"),
+        (reverse("documents:contract-history", args=[gig.pk]), ""),
     ):
         content = client.get(url).content.decode()
 
         assert "Checklist contractualisation" in content
-        assert f'hx-get="{_url("checklist", gig)}"' in content
+        assert f'hx-get="{_url("checklist", gig)}{query}"' in content
         assert 'id="checklist-modal"' in content
 
 
@@ -267,3 +267,13 @@ def test_headings_follow_the_page_title_without_skipping_a_level(client, gig):
 
     assert "<h1" in page and '<h2 id="checklist-section-1"' in page and "<h3" not in page
     assert '<h3 id="checklist-section-1"' in modal
+
+
+def test_the_modal_of_the_date_page_lists_only_the_boxes_not_on_the_page(client, gig):
+    content = client.get(_url("checklist", gig) + "?restantes=1", **HTMX).content.decode()
+
+    shown = [key for keys in checklist.VOLET_ITEMS.values() for key in keys]
+    assert not any(f'id="checklist-{key}"' in content for key in shown)
+    assert content.count('type="checkbox"') == len(checklist.ITEM_KEYS) - len(shown)
+    assert 'id="checklist-roadmap_sent"' in content
+    assert "Réinitialiser" not in content  # it would also untick boxes the modal does not show
