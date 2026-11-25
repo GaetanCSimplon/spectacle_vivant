@@ -459,6 +459,13 @@ class GigDetailView(TenantScopedMixin, DetailView):
         context["progress"] = services.date_progress(self.object)
         context["overall_percent"] = services.overall_progress(context["progress"])
         context["next_step"] = services.next_step(self.object, context["progress"])
+        boxes = {
+            item["key"]: item
+            for section in checklist.checklist_sections(self.object)
+            for item in section["items"]
+        }
+        for volet in context["progress"]:
+            volet["boxes"] = [boxes[key] for key in checklist.VOLET_ITEMS.get(volet["key"], [])]
         context["timeline"] = services.gig_timeline(self.object)
         context["contacts"] = services.gig_contacts(self.object)
         context["documents"] = services.gig_documents(self.object)
@@ -702,6 +709,13 @@ class GigChecklistView(GigChecklistMixin, View):
 
     def get(self, request, pk):
         context = self._context(self._gig(request, pk))
+        # Opened from the date page: its volet cards already show some of the boxes.
+        if request.GET.get("restantes"):
+            shown = {key for keys in checklist.VOLET_ITEMS.values() for key in keys}
+            for section in context["sections"]:
+                section["items"] = [i for i in section["items"] if i["key"] not in shown]
+            context["sections"] = [s for s in context["sections"] if s["items"]]
+            context["remaining_only"] = True
         template = (
             "gigs/_checklist_dialog.html" if wants_fragment(request) else "gigs/gig_checklist.html"
         )

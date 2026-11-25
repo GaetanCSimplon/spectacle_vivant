@@ -64,6 +64,24 @@ SECTIONS = [
     ),
 ]
 
+# The boxes shown inside the volet cards of the date page; the modal of that page lists the others.
+VOLET_ITEMS = {
+    "contrats": [
+        "quote_sent",
+        "quote_accepted",
+        "contract_sent",
+        "contract_signed",
+        "tech_sheet_sent",
+        "rider_sent",
+    ],
+    "budget": [
+        "deposit_invoice_sent",
+        "deposit_received",
+        "balance_invoice_sent",
+        "balance_received",
+    ],
+}
+
 ITEM_KEYS = {key for _title, items in SECTIONS for key, _label in items}
 
 

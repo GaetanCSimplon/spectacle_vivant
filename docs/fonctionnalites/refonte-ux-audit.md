@@ -39,7 +39,7 @@ Appliquer les priorités P1 de l'audit UX/UI du 12/11/2026 et les maquettes 1 (M
   - Tests : date signée, facturée et payée → cases cochées ; date vide → rien ; case manuelle conservée ; isolation.
   - Documents à relire : specification-checklist-contractualisation.md ; F-83 ; audit I7.
   - Risques : vérifier si l'app sait réellement « contrat envoyé » (sinon la case reste manuelle) ; pas de migration (champ JSON).
-- [ ] PR 5 — Fiche date, première partie : volets C et B, « À faire maintenant »
+- [x] PR 5 — Fiche date, première partie : volets C et B, « À faire maintenant »
   - Objectif : volets C · Contrats et B · Budget empilés avec la checklist intégrée, bandeau « À faire maintenant », colonne de droite (contacts, documents, dernières actions). Un seul bouton corail par écran.
   - Fichiers : templates/gigs/gig_detail.html et fragments.
   - Tests : chaque volet rend ses cases et ses liens d'action ; 404 pour le tenant B ; accès `member`.
@@ -70,6 +70,7 @@ Appliquer les priorités P1 de l'audit UX/UI du 12/11/2026 et les maquettes 1 (M
 - 2026-11-24 — PR 3 : le coût employeur estimé (`fees_employer_cost`, taux de repère de la structure) reste une ligne d'information, jamais ajoutée à « Dépensé » ni aux « Reste ». La catégorie « Cachets » n'est plus proposée aux nouvelles dépenses ; une ancienne dépense reste modifiable et signalée.
 
 - 2026-11-24 — PR 4 : 9 cases automatiques (`automatic_items`) ; « Devis envoyé » = devis émis (l'app ne trace pas l'envoi). L'automatique l'emporte sur l'ancienne coche manuelle (ignorée, gardée en base). L'export des checklists utilise le même calcul.
+- 2026-11-25 — PR 5 : cases dans les volets C (devis, contrat, fiche technique, rider) et B (factures d'acompte et de solde) via `VOLET_ITEMS` ; la modale de la fiche (`?restantes=1`) ne liste que les autres, sans « Réinitialiser ». Les compteurs des volets restent ceux de l'avancement (Mes dates). Prix et échéances restent dans « La date ». Le bloc de droite garde le titre « Suivi de la date ».
 
 ## Points en suspens
 - Contrôle visuel dans Chromium à 1440 px des libellés longs « Reste réel (TTC encaissé − dépensé) » (PR 1, à faire à la main).
@@ -78,6 +79,11 @@ Appliquer les priorités P1 de l'audit UX/UI du 12/11/2026 et les maquettes 1 (M
 - Que devient une ancienne coche manuelle sur une case devenue automatique : l'automatique l'emporte (à confirmer en recette).
 - Liens profonds et alertes Radar vers l'ancienne checklist à garder fonctionnels (PR 6).
 - Hors fonctionnalité : I8 (« Client actif » automatique), UX-07 à UX-13, UX-15 à UX-18.
+- PR 5 : les boutons flottants (Radar, checklist) recouvrent « Documents » à 1440 px et le bandeau à 375 px ; celui de la checklist part en PR 6.
+- PR 5 : le compteur d'un volet (0/3, 0/2) peut différer du nombre de cases affichées.
+- PR 5 : le bandeau répète le même texte dans le titre et le bouton ; titres plus descriptifs possibles.
+- PR 5 : « Date créée » affichait « à venir » sur une date de test (calcul non modifié, à vérifier sur une vraie date).
+- `test_a_plain_member_never_sees_the_fees` a échoué une fois puis réussi : probablement instable (cherche « 145 » dans toute la page, jetons compris), à corriger à part.
 
 ## Journal
 - 2026-11-24 — Plan validé.
@@ -85,3 +91,4 @@ Appliquer les priorités P1 de l'audit UX/UI du 12/11/2026 et les maquettes 1 (M
 - 2026-11-24 — PR 2 : déjà couverte par BRD-02/03/04 (Bòrd, vue activité rattachée à la date du concert, vue trésorerie à part). Reste : la ligne « Facturé en 2026 (caisse) » de l'Accueil suit encore la date de facture, étiquetée comme telle.
 - 2026-11-24 — PR 3 terminée : cachets depuis Social, coût employeur estimé en information.
 - 2026-11-24 — PR 4 terminée : checklist automatique.
+- 2026-11-25 — PR 5 terminée : volets C et B, bandeau « À faire maintenant », colonne de droite. 2963 tests verts.

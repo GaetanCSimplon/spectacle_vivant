@@ -11,7 +11,7 @@ from apps.addressbook.factories import ContactFactory
 from apps.documents.models import Invoice
 from apps.documents.services import generate_contract_pdf, mark_contract_sent, mark_contract_signed
 from apps.finance.models import Payment
-from apps.gigs import services
+from apps.gigs import checklist, services
 from apps.gigs.factories import GigFactory
 from apps.gigs.models import Gig
 from apps.tenants.factories import MembershipFactory
@@ -41,7 +41,6 @@ def test_the_page_is_ordered_summary_then_timeline_then_the_four_volets(client):
 
     positions = [
         content.index("gig-summary"),
-        content.index("gig-timeline"),
         content.index('id="volet-contrats"'),
         content.index('id="volet-budget"'),
         content.index('id="volet-social"'),
@@ -313,15 +312,56 @@ def test_the_title_names_the_organiser_the_venue_and_the_city(client):
     assert gig.show.title not in heading  # the show is only a line under the title
 
 
-def test_the_next_action_and_the_follow_up_share_one_card_under_the_date_and_contacts(client):
+def test_the_next_action_comes_first_and_the_side_column_after_the_volets(client):
     gig = GigFactory(tenant=_login(client), status=Gig.Status.CONFIRMED)
 
     content = _page(client, gig)
 
-    order = [content.index(f'id="{name}"') for name in ("gig-summary", "gig-contacts")]
+    ids = ("gig-next", "gig-summary", "volet-regie", "gig-contacts", "gig-documents")
+    order = [content.index(f'id="{name}"') for name in (*ids, "gig-timeline")]
     assert order == sorted(order)
-    card = content.split('id="gig-next"')[0].rsplit('<div class="card', 1)[1]
-    assert 'id="gig-timeline"' in content.split(card, 1)[1].split('id="volet-')[0]
-    assert content.index('id="gig-contacts"') < content.index('id="gig-next"')
-    assert content.index('id="gig-next"') < content.index('id="gig-timeline"')
-    assert content.index('id="gig-timeline"') < content.index('id="gig-documents"')
+    assert "Ensuite : marquer le contrat comme envoyé" in content
+
+
+@pytest.mark.parametrize("status", [Gig.Status.OPTION, Gig.Status.CONFIRMED])
+def test_there_is_only_one_coral_button(client, status):
+    gig = GigFactory(tenant=_login(client), status=status)
+
+    assert _page(client, gig).count("btn-primary") == 1
+
+
+def test_the_contract_and_budget_volets_hold_their_boxes_once(client):
+    gig = GigFactory(tenant=_login(client), status=Gig.Status.CONFIRMED)
+
+    content = _page(client, gig)
+
+    for volet, keys in checklist.VOLET_ITEMS.items():
+        card = content.split(f'id="volet-{volet}"')[1].split("</section>")[0]
+        for key in keys:
+            assert f'id="checklist-{key}"' in card
+            assert content.count(f'id="checklist-{key}"') == 1
+
+
+def test_a_box_of_a_volet_is_read_only_when_automatic_and_stays_ticked_when_manual(client):
+    gig = GigFactory(tenant=_login(client), status=Gig.Status.CONFIRMED)
+    generate_contract_pdf(gig)
+    mark_contract_sent(gig)
+    checklist.set_item(gig, "rider_sent", True, None)
+
+    content = _page(client, gig)
+
+    sent = content.split('id="checklist-contract_sent"')[1].split("</li>")[0]
+    assert "disabled checked" in sent and "<form" not in sent
+    rider = content.split('id="checklist-rider_sent"')[1].split("</li>")[0]
+    assert 'value="true" checked' in rider
+
+
+def test_a_step_already_shown_as_a_box_is_not_listed_twice(client):
+    gig = GigFactory(tenant=_login(client), status=Gig.Status.CONFIRMED)
+
+    content = _page(client, gig)
+
+    contrats = content.split('id="volet-contrats"')[1].split("</section>")[0]
+    assert "Contrat généré" in contrats and contrats.count(">Contrat envoyé<") == 1
+    budget = content.split('id="volet-budget"')[1].split("</section>")[0]
+    assert "Facture émise" not in budget and "Factures payées" not in budget
