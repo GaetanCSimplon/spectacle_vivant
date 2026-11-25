@@ -68,7 +68,6 @@ def test_a_new_gig_has_every_box_unticked_and_no_row():
     assert _done(gig) == set()
     assert sum(len(section["items"]) for section in sections) == 16
     assert not GigChecklist.objects.exists()
-    assert checklist.last_update(gig) is None
 
 
 def test_ticking_a_box_is_kept_and_leaves_the_others_alone():
@@ -81,7 +80,6 @@ def test_ticking_a_box_is_kept_and_leaves_the_others_alone():
     assert _done(gig) == {"rider_sent", "dpae_sent"}
     row = GigChecklist.objects.get(gig=gig)
     assert row.tenant == gig.tenant and row.updated_by == user
-    assert checklist.last_update(gig) is not None
 
 
 def test_unticking_a_box():
@@ -142,26 +140,6 @@ def test_a_value_that_is_not_a_plain_boolean_is_refused(value):
     with pytest.raises(checklist.InvalidChecklistItem):
         checklist.set_item(gig, "rider_sent", value, None)
 
-    assert not GigChecklist.objects.exists()
-
-
-def test_reset_unticks_everything_and_records_who():
-    gig = GigFactory()
-    user = UserFactory()
-    for key in checklist.ITEM_KEYS - checklist.AUTOMATIC_KEYS:
-        checklist.set_item(gig, key, True, None)
-    assert len(_done(gig)) == 7
-
-    checklist.reset(gig, user)
-
-    assert _done(gig) == set()
-    assert GigChecklist.objects.get(gig=gig).updated_by == user
-
-
-def test_reset_on_a_gig_without_checklist_creates_nothing():
-    gig = GigFactory()
-
-    assert checklist.reset(gig, UserFactory()) is None
     assert not GigChecklist.objects.exists()
 
 

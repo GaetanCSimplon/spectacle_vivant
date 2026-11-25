@@ -15,6 +15,7 @@ from apps.catalog.models import Show
 from apps.documents.models import Contract, ContractVersion, Invoice, Quote
 from apps.finance.models import Expense
 from apps.roadmaps.models import Roadmap
+from apps.tenants.social import missing_items
 
 from . import payment_terms
 from .models import Gig, GigMember, PriceChange
@@ -374,6 +375,7 @@ def _progress_facts(gigs):
             "invoiced": False,
             "unpaid": False,
             "team": False,
+            "payroll_missing": False,
             "filled": False,
             "shared": False,
         }
@@ -396,8 +398,11 @@ def _progress_facts(gigs):
         if status != Invoice.Status.PAID:
             facts[gig_id]["unpaid"] = True
     members = GigMember.objects.filter(**scope, person__isnull=False)
-    for gig_id in members.values_list("gig_id", flat=True).distinct():
-        facts[gig_id]["team"] = True
+    for member in members.select_related("person", "gig__show"):
+        facts[member.gig_id]["team"] = True
+        # The same rule as Bòrd › Social, so the two never disagree.
+        if missing_items(member, member.person):
+            facts[member.gig_id]["payroll_missing"] = True
     for roadmap in Roadmap.objects.filter(**scope).prefetch_related("slots"):
         facts[roadmap.gig_id]["filled"] = bool(roadmap.slots.all())
         facts[roadmap.gig_id]["shared"] = roadmap.is_published
@@ -448,7 +453,13 @@ def _volets_from_facts(gig, row):
                     row["team"],
                     reverse("gigs:detail", args=[gig.pk]) + "#equipe",
                     _("Ajouter l'équipe"),
-                )
+                ),
+                (
+                    _("Infos de paie complètes"),
+                    row["team"] and not row["payroll_missing"],
+                    reverse("gigs:detail", args=[gig.pk]) + "#equipe",
+                    _("Compléter les infos de paie"),
+                ),
             ],
         ),
         _volet(
@@ -477,7 +488,8 @@ def date_progress(gig):
     """The four volets of a date, each with its steps (charter v1.3: C, B, S, R).
 
     Contrats: generated, sent, signed. Budget: an invoice issued, then every invoice paid.
-    Social: someone from the team is on the date. Régie: the roadmap has slots, then is shared.
+    Social: someone from the team is on the date, then nothing is missing for the payroll.
+    Régie: the roadmap has slots, then is shared.
     """
     return _volets_from_facts(gig, _progress_facts([gig])[gig.pk])
 

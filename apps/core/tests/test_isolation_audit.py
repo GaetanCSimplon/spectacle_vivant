@@ -129,7 +129,6 @@ ROUTES = [
     ("gigs:price", {"pk": "gig"}),
     ("gigs:checklist", {"pk": "gig"}),
     ("gigs:checklist-item", {"pk": "gig"}),
-    ("gigs:checklist-reset", {"pk": "gig"}),
     ("gigs:terms", {"pk": "gig"}),
     ("gigs:confirm", {"pk": "gig"}),
     ("gigs:cancel", {"pk": "gig"}),

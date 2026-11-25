@@ -21,11 +21,6 @@ urlpatterns = [
     path("<int:pk>/agenda/", views.GigIcalView.as_view(), name="ical"),
     path("<int:pk>/checklist/", views.GigChecklistView.as_view(), name="checklist"),
     path("<int:pk>/checklist/case/", views.GigChecklistItemView.as_view(), name="checklist-item"),
-    path(
-        "<int:pk>/checklist/reinitialiser/",
-        views.GigChecklistResetView.as_view(),
-        name="checklist-reset",
-    ),
     path("<int:pk>/equipe/ajouter/", views.GigTeamAddView.as_view(), name="team-add"),
     path(
         "<int:pk>/equipe/<int:member_pk>/cachet/",
