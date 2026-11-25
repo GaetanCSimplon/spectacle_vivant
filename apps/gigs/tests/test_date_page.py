@@ -13,10 +13,19 @@ from apps.documents.services import generate_contract_pdf, mark_contract_sent, m
 from apps.finance.models import Payment
 from apps.gigs import checklist, services
 from apps.gigs.factories import GigFactory
-from apps.gigs.models import Gig
-from apps.tenants.factories import MembershipFactory
+from apps.gigs.models import Gig, GigMember
+from apps.roadmaps.factories import RoadmapFactory
+from apps.roadmaps.models import RoadmapSlot
+from apps.tenants.factories import MembershipFactory, PersonFactory
 
 pytestmark = pytest.mark.django_db
+
+COMPLETE = {
+    "is_artist": True,
+    "birth_date": datetime.date(1990, 1, 1),
+    "social_security_number": "190017512345678",
+    "address": "1 rue du Port",
+}
 
 
 @pytest.fixture(autouse=True)
@@ -330,12 +339,14 @@ def test_there_is_only_one_coral_button(client, status):
     assert _page(client, gig).count("btn-primary") == 1
 
 
-def test_the_contract_and_budget_volets_hold_their_boxes_once(client):
+def test_the_volets_hold_their_boxes_once(client):
     gig = GigFactory(tenant=_login(client), status=Gig.Status.CONFIRMED)
 
     content = _page(client, gig)
 
     for volet, keys in checklist.VOLET_ITEMS.items():
+        if volet == "cloture":
+            continue
         card = content.split(f'id="volet-{volet}"')[1].split("</section>")[0]
         for key in keys:
             assert f'id="checklist-{key}"' in card
@@ -354,6 +365,74 @@ def test_a_box_of_a_volet_is_read_only_when_automatic_and_stays_ticked_when_manu
     assert "disabled checked" in sent and "<form" not in sent
     rider = content.split('id="checklist-rider_sent"')[1].split("</li>")[0]
     assert 'value="true" checked' in rider
+
+
+def _social(gig):
+    return services.date_progress(gig)[2]
+
+
+@pytest.mark.parametrize("missing", [{"address": ""}, {"birth_date": None}])
+def test_payroll_information_is_incomplete_without_address_or_birth_date(client, missing):
+    tenant = _login(client)
+    gig = GigFactory(tenant=tenant, status=Gig.Status.CONFIRMED)
+    gig.show.sacem_object_number = "123"
+    gig.show.save()
+    person = PersonFactory(tenant=tenant, **{**COMPLETE, **missing})
+    GigMember.objects.create(
+        tenant=tenant, gig=gig, person=person, name="Calou", cachet_count=1, cachet_amount=100
+    )
+
+    assert [step["done"] for step in _social(gig)["steps"]] == [True, False]
+    social = _page(client, gig).split('id="volet-social"')[1].split("</section>")[0]
+    assert "Fiche à compléter" in social and "1/2" in social
+
+    for field, value in COMPLETE.items():
+        setattr(person, field, value)
+    person.save()
+
+    assert _social(gig)["done"]
+    assert "Fiche à compléter" not in _page(client, gig)
+
+
+def test_a_member_sees_the_step_but_not_who_is_incomplete(client):
+    membership = MembershipFactory(role="member")
+    client.force_login(membership.user)
+    gig = GigFactory(tenant=membership.tenant, status=Gig.Status.CONFIRMED)
+    person = PersonFactory(tenant=membership.tenant, address="12 rue Secrète")
+    GigMember.objects.create(tenant=membership.tenant, gig=gig, person=person, name="Calou")
+
+    content = _page(client, gig)
+
+    assert "Infos de paie complètes" in content
+    assert "Fiche à compléter" not in content and "12 rue Secrète" not in content
+
+
+def test_a_date_without_team_has_no_complete_payroll_information():
+    assert [step["done"] for step in _social(GigFactory())["steps"]] == [False, False]
+
+
+def test_the_regie_volet_shows_the_program_of_the_day(client):
+    gig = GigFactory(tenant=_login(client), status=Gig.Status.CONFIRMED)
+    regie = _page(client, gig).split('id="volet-regie"')[1].split("</section>")[0]
+    assert "Aucun horaire pour l" in regie
+    roadmap = RoadmapFactory(tenant=gig.tenant, gig=gig)
+    RoadmapSlot.objects.create(
+        tenant=gig.tenant, roadmap=roadmap, time=datetime.time(17, 30), label="Balances plateau"
+    )
+
+    regie = _page(client, gig).split('id="volet-regie"')[1].split("</section>")[0]
+
+    assert "17:30" in regie and "Balances plateau" in regie
+
+
+def test_every_box_but_the_roadmap_one_is_once_on_the_page(client):
+    gig = GigFactory(tenant=_login(client), status=Gig.Status.CONFIRMED)
+
+    content = _page(client, gig)
+
+    for key in checklist.ITEM_KEYS - {"roadmap_sent"}:
+        assert content.count(f'id="checklist-{key}"') == 1
+    assert 'id="checklist-roadmap_sent"' not in content
 
 
 def test_a_step_already_shown_as_a_box_is_not_listed_twice(client):

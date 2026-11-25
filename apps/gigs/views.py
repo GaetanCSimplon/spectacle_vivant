@@ -2,6 +2,8 @@ import datetime
 
 from django.contrib import messages
 from django.core.exceptions import PermissionDenied
+from django.db.models import Value
+from django.db.models.functions import Coalesce
 from django.http import HttpResponseBadRequest
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
@@ -21,7 +23,9 @@ from apps.finance import services as finance_services
 from apps.radar import rules as radar_rules
 from apps.roadmaps import services as roadmap_services
 from apps.roadmaps import tour_requests as roadmap_tour_requests
+from apps.roadmaps.models import RoadmapSlot
 from apps.tenants.models import Person
+from apps.tenants.social import missing_items
 
 from . import checklist, ical, mail, services
 from .forms import (
@@ -466,6 +470,10 @@ class GigDetailView(TenantScopedMixin, DetailView):
         }
         for volet in context["progress"]:
             volet["boxes"] = [boxes[key] for key in checklist.VOLET_ITEMS.get(volet["key"], [])]
+        context["closing_boxes"] = [boxes[key] for key in checklist.VOLET_ITEMS["cloture"]]
+        context["program"] = RoadmapSlot.objects.filter(
+            tenant=self.request.tenant, roadmap__gig=self.object
+        ).order_by(Coalesce("day", Value(self.object.date)), "time", "id")
         context["timeline"] = services.gig_timeline(self.object)
         context["contacts"] = services.gig_contacts(self.object)
         context["documents"] = services.gig_documents(self.object)
@@ -484,12 +492,15 @@ class GigDetailView(TenantScopedMixin, DetailView):
             invitation is None or invitation.status != invitation.Status.ANSWERED
         )
         context["price_changes"] = list(self.object.price_changes.all())
-        context["crew"] = list(self.object.members.all())
+        context["crew"] = list(self.object.members.select_related("person", "gig__show"))
         context["team_total"] = Person.objects.filter(tenant=self.request.tenant).count()
         context["team_on_gig"] = sum(1 for member in context["crew"] if member.person_id)
         # "Équipe de la date" (F-88): the cachets are private (owner only).
         context["is_owner"] = is_tenant_owner(self.request.user, self.request.tenant)
         if context["is_owner"]:
+            context["payroll_incomplete"] = {
+                m.pk for m in context["crew"] if m.person and missing_items(m, m.person)
+            }
             context["crew_rows"] = [
                 (member, MemberCachetForm(instance=member, prefix=f"m{member.pk}"))
                 for member in context["crew"]
@@ -690,70 +701,35 @@ class GigTermsView(TenantScopedMixin, View):
         return self._page(request, gig, form)
 
 
-class GigChecklistMixin(TenantScopedMixin):
-    """The contracting checklist of a gig (F-83). Any member of the tenant may read and tick."""
-
-    def _gig(self, request, pk):
-        return get_object_or_404(Gig.objects.select_related("show"), pk=pk, tenant=request.tenant)
-
-    def _context(self, gig):
-        return {
-            "gig": gig,
-            "sections": checklist.checklist_sections(gig),
-            "updated_at": checklist.last_update(gig),
-        }
-
-
-class GigChecklistView(GigChecklistMixin, View):
-    """The checklist as a modal (HTMX) or as a page when JavaScript is off."""
+class GigChecklistView(TenantScopedMixin, View):
+    """The former checklist page (F-83): its boxes are now on the date page."""
 
     def get(self, request, pk):
-        context = self._context(self._gig(request, pk))
-        # Opened from the date page: its volet cards already show some of the boxes.
-        if request.GET.get("restantes"):
-            shown = {key for keys in checklist.VOLET_ITEMS.values() for key in keys}
-            for section in context["sections"]:
-                section["items"] = [i for i in section["items"] if i["key"] not in shown]
-            context["sections"] = [s for s in context["sections"] if s["items"]]
-            context["remaining_only"] = True
-        template = (
-            "gigs/_checklist_dialog.html" if wants_fragment(request) else "gigs/gig_checklist.html"
-        )
-        return render(request, template, context)
+        gig = get_object_or_404(Gig, pk=pk, tenant=request.tenant)
+        return redirect("gigs:detail", pk=gig.pk)
 
 
-class GigChecklistItemView(GigChecklistMixin, View):
-    """Tick or untick one box; the others are never touched."""
+class GigChecklistItemView(TenantScopedMixin, View):
+    """Tick or untick one box; the others are never touched. Any member of the tenant may."""
 
     http_method_names = ["post"]
 
     def post(self, request, pk):
-        gig = self._gig(request, pk)
+        gig = get_object_or_404(Gig, pk=pk, tenant=request.tenant)
         key = request.POST.get("item", "")
         try:
             checklist.set_item(gig, key, request.POST.get("value") == "true", request.user)
         except checklist.InvalidChecklistItem:
             return HttpResponseBadRequest()
         if not wants_fragment(request):
-            return redirect("gigs:checklist", pk=gig.pk)
-        context = self._context(gig)
+            return redirect(reverse("gigs:detail", args=[gig.pk]) + f"#checklist-{key}")
         item = next(
-            i for section in context["sections"] for i in section["items"] if i["key"] == key
+            i
+            for section in checklist.checklist_sections(gig)
+            for i in section["items"]
+            if i["key"] == key
         )
-        return render(request, "gigs/_checklist_item_reply.html", {**context, "item": item})
-
-
-class GigChecklistResetView(GigChecklistMixin, View):
-    """Untick every box (the confirmation is asked by the page before posting)."""
-
-    http_method_names = ["post"]
-
-    def post(self, request, pk):
-        gig = self._gig(request, pk)
-        checklist.reset(gig, request.user)
-        if not wants_fragment(request):
-            return redirect("gigs:checklist", pk=gig.pk)
-        return render(request, "gigs/_checklist_body.html", self._context(gig))
+        return render(request, "gigs/_checklist_item.html", {"gig": gig, "item": item})
 
 
 class GigTeamAddView(TenantScopedMixin, View):

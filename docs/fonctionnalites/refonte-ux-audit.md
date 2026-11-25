@@ -45,7 +45,7 @@ Appliquer les priorités P1 de l'audit UX/UI du 12/11/2026 et les maquettes 1 (M
   - Tests : chaque volet rend ses cases et ses liens d'action ; 404 pour le tenant B ; accès `member`.
   - Documents à relire : maquette 4 ; charte ; verification-visuelle.md ; audit UX-04.
   - Risques : plus grosse refonte de gabarit ; contrôle visuel dans Chromium à 1440 px ; liens profonds existants.
-- [ ] PR 6 — Fiche date, deuxième partie : volets S et R, retrait de la modale (I6, UX-04, UX-14)
+- [x] PR 6 — Fiche date, deuxième partie : volets S et R, retrait de la modale (I6, UX-04, UX-14)
   - Objectif : volet S · Social (« Équipe ajoutée », « Infos de paie complètes ») et volet R · Régie (feuille de route remplie, partagée, programme). Suppression de la modale de checklist et du bouton flottant. Lettre S partout dans l'avancement.
   - Fichiers : gig_detail.html, templates/gigs/_checklist_*.html, _volet_*.html.
   - Tests : « Infos de paie complètes » incomplète tant que adresse ou date de naissance manquent ; anciennes URL de la checklist toujours répondues.
@@ -71,19 +71,22 @@ Appliquer les priorités P1 de l'audit UX/UI du 12/11/2026 et les maquettes 1 (M
 
 - 2026-11-24 — PR 4 : 9 cases automatiques (`automatic_items`) ; « Devis envoyé » = devis émis (l'app ne trace pas l'envoi). L'automatique l'emporte sur l'ancienne coche manuelle (ignorée, gardée en base). L'export des checklists utilise le même calcul.
 - 2026-11-25 — PR 5 : cases dans les volets C (devis, contrat, fiche technique, rider) et B (factures d'acompte et de solde) via `VOLET_ITEMS` ; la modale de la fiche (`?restantes=1`) ne liste que les autres, sans « Réinitialiser ». Les compteurs des volets restent ceux de l'avancement (Mes dates). Prix et échéances restent dans « La date ». Le bloc de droite garde le titre « Suivi de la date ».
+- 2026-11-25 — PR 6 : « Infos de paie complètes » suit la règle de Bòrd › Social (`missing_items`), pas seulement l'adresse et la date de naissance. Cases de clôture dans la carte « La date ». « Réinitialiser » supprimé avec la modale. L'ancienne adresse `/checklist/` mène à la fiche date. La case « Feuille de route envoyée » n'est plus affichée (dite par « Feuille de route partagée »), elle reste dans l'export.
 
 ## Points en suspens
 - Contrôle visuel dans Chromium à 1440 px des libellés longs « Reste réel (TTC encaissé − dépensé) » (PR 1, à faire à la main).
 - Page vitrine `templates/site/home.html` : « Ce qu'il reste après ces frais » à aligner (marketing, hors PR 1).
 - Suite de tests : 26 min. Voir `--reuse-db`, xdist et marqueur `slow` (PR à part).
 - Que devient une ancienne coche manuelle sur une case devenue automatique : l'automatique l'emporte (à confirmer en recette).
-- Liens profonds et alertes Radar vers l'ancienne checklist à garder fonctionnels (PR 6).
 - Hors fonctionnalité : I8 (« Client actif » automatique), UX-07 à UX-13, UX-15 à UX-18.
-- PR 5 : les boutons flottants (Radar, checklist) recouvrent « Documents » à 1440 px et le bandeau à 375 px ; celui de la checklist part en PR 6.
+- PR 5 : les boutons flottants (Radar, checklist) recouvrent « Documents » à 1440 px et le bandeau à 375 px ; celui de la checklist est parti en PR 6, celui du Radar reste.
 - PR 5 : le compteur d'un volet (0/3, 0/2) peut différer du nombre de cases affichées.
 - PR 5 : le bandeau répète le même texte dans le titre et le bouton ; titres plus descriptifs possibles.
 - PR 5 : « Date créée » affichait « à venir » sur une date de test (calcul non modifié, à vérifier sur une vraie date).
 - `test_a_plain_member_never_sees_the_fees` a échoué une fois puis réussi : probablement instable (cherche « 145 » dans toute la page, jetons compris), à corriger à part.
+- PR 6 : les cases de clôture laissent un espace large avant « Autres actions » (carte « La date »).
+- PR 6 : non repris de la maquette 4 : « Envoyer le formulaire à… », « Copier le lien », « Ajouter un créneau », « Demander la régie » dans les volets.
+- PR 6 : le volet S affiche 0/2 ou 1/2 pour des dates, même passées, qui étaient complètes.
 
 ## Journal
 - 2026-11-24 — Plan validé.
@@ -92,3 +95,4 @@ Appliquer les priorités P1 de l'audit UX/UI du 12/11/2026 et les maquettes 1 (M
 - 2026-11-24 — PR 3 terminée : cachets depuis Social, coût employeur estimé en information.
 - 2026-11-24 — PR 4 terminée : checklist automatique.
 - 2026-11-25 — PR 5 terminée : volets C et B, bandeau « À faire maintenant », colonne de droite. 2963 tests verts.
+- 2026-11-25 — PR 6 terminée : volets S et R, modale de checklist supprimée. 2956 tests verts.

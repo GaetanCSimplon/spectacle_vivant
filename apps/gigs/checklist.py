@@ -64,7 +64,8 @@ SECTIONS = [
     ),
 ]
 
-# The boxes shown inside the volet cards of the date page; the modal of that page lists the others.
+# Where each box is shown on the date page: its volet, or "La date" for the closing ones.
+# "roadmap_sent" has no box: the step "Feuille de route partagée" of Régie already says it.
 VOLET_ITEMS = {
     "contrats": [
         "quote_sent",
@@ -80,6 +81,8 @@ VOLET_ITEMS = {
         "balance_invoice_sent",
         "balance_received",
     ],
+    "social": ["crew_contracts_signed", "dpae_sent", "dpae_receipt_received"],
+    "cloture": ["documents_archived", "closed"],
 }
 
 ITEM_KEYS = {key for _title, items in SECTIONS for key, _label in items}
@@ -147,15 +150,6 @@ def checklist_sections(gig):
     ]
 
 
-def last_update(gig):
-    """When the checklist last changed (None if it never did)."""
-    return (
-        GigChecklist.objects.filter(gig=gig, tenant=gig.tenant)
-        .values_list("updated_at", flat=True)
-        .first()
-    )
-
-
 def set_item(gig, key, value, user):
     """Tick or untick one box, leaving every other box as it is."""
     if key not in ITEM_KEYS or key in AUTOMATIC_KEYS or not isinstance(value, bool):
@@ -168,20 +162,6 @@ def set_item(gig, key, value, user):
         if checklist.items.get(key, False) is value:
             return checklist
         checklist.items = {**checklist.items, key: value}
-        checklist.updated_by = user
-        checklist.save(update_fields=["items", "updated_by", "updated_at"])
-    return checklist
-
-
-def reset(gig, user):
-    """Untick every box. A gig that never had a checklist gets none."""
-    with transaction.atomic():
-        checklist = (
-            GigChecklist.objects.select_for_update().filter(gig=gig, tenant=gig.tenant).first()
-        )
-        if checklist is None:
-            return None
-        checklist.items = {}
         checklist.updated_by = user
         checklist.save(update_fields=["items", "updated_by", "updated_at"])
     return checklist

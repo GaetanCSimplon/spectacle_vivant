@@ -4,7 +4,7 @@
   <h2 id="volet-title-{{ volet.key }}" class="flex-1 !text-base font-bold !text-inherit">{{ volet.letter }} · {{ volet.label }}</h2>
   <span class="data text-sm">{{ volet.done_count }}/{{ volet.total }}</span>
 </div>
-{# B: its boxes say everything its steps say. #}
+{# B: its boxes say everything its steps say. S and R: their boxes say something else. #}
 {% if volet.key != 'budget' %}
 <ul class="space-y-1 border-b border-page-line px-4 py-3 text-sm">
   {% for step in volet.steps %}

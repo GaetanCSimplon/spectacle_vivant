@@ -61,7 +61,8 @@ def test_each_volet_is_done_by_its_own_event():
         tenant=gig.tenant, roadmap=roadmap, time=datetime.time(18, 0), label="Concert"
     )
 
-    assert _steps(gig) == {"contrats": True, "budget": False, "social": True, "regie": True}
+    # Social stays to do: the person has no payroll information yet.
+    assert _steps(gig) == {"contrats": True, "budget": False, "social": False, "regie": True}
 
 
 def test_the_date_page_shows_the_four_letters_with_a_text_for_each(client):

@@ -88,15 +88,7 @@ def test_the_fragments_need_a_login(client):
         assert client.get(reverse(name)).status_code == 302
 
 
-def test_the_panel_is_a_native_dialog_opened_at_once_like_the_checklist(client, owner):
+def test_the_panel_is_a_native_dialog_opened_at_once(client, owner):
     content = client.get(reverse("radar:panel")).content.decode()
 
     assert "<dialog" in content and "showModal()" in content and "Fermer" in content
-
-
-def test_the_checklist_button_has_an_id_so_that_radar_can_move_aside(client, owner):
-    gig = GigFactory(tenant=owner.tenant)
-
-    content = client.get(reverse("gigs:detail", args=[gig.pk])).content.decode()
-
-    assert 'id="checklist-button"' in content

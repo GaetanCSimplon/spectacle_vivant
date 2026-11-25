@@ -71,7 +71,6 @@ def _pages(gig):
         reverse("documents:document-issue", args=[gig.pk, "factures", invoice.pk]),
         reverse("gigs:price", args=[gig.pk]),
         reverse("gigs:terms", args=[gig.pk]),
-        reverse("gigs:checklist", args=[gig.pk]),
     ]
 
 

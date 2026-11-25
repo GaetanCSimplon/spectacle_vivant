@@ -323,11 +323,6 @@
       font-semibold transition-colors active:translate-y-px;
   }
 
-  /* Floating round button (the checklist of a date): vivid coral, a tool and not the main action. */
-  .fab {
-    @apply bg-coral-500 text-blue-700 hover:bg-coral-600;
-  }
-
   /* Disabled and loading (HTMX adds `htmx-request` while the request runs): same shape, paler. */
   .btn:disabled,
   .btn[aria-disabled="true"],

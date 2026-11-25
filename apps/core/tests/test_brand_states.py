@@ -168,14 +168,12 @@ def test_no_filled_icon_is_left_and_the_icon_partial_is_outline():
 def test_the_icons_are_used_where_the_filled_ones_were(client):
     membership = MembershipFactory()
     client.force_login(membership.user)
-    gig = GigFactory(tenant=membership.tenant)
+    GigFactory(tenant=membership.tenant)
 
     list_page = client.get(reverse("gigs:list")).content.decode()
-    detail = client.get(reverse("gigs:detail", args=[gig.pk])).content.decode()
     bord = client.get(reverse("tenants:profile")).content.decode()
 
     assert 'stroke-width="1.75"' in list_page  # the pencils
-    assert 'stroke-width="1.75"' in detail  # the checklist button
     assert 'stroke-width="1.75"' in bord  # the gear of "Informations de la structure"
 
 

@@ -11,7 +11,7 @@
       {% if is_owner %}
         {% for member, form in crew_rows %}
           <li class="space-y-2 border-b border-page-line pb-3 last:border-0 last:pb-0">
-            <p class="font-medium">{{ member.name }}{% if member.role %} <span class="font-normal text-gray-600">· {{ member.role }}</span>{% endif %}</p>
+            <p class="font-medium">{{ member.name }}{% if member.role %} <span class="font-normal text-gray-600">· {{ member.role }}</span>{% endif %}{% if member.pk in payroll_incomplete %} <a href="{% url 'tenants:person-update' member.person_id %}" class="pill pill-warn">{% translate "Fiche à compléter" %}</a>{% endif %}</p>
             {% if member.person_id %}
               <form method="post" action="{% url 'gigs:member-cachet' gig.pk member.pk %}" class="flex flex-wrap items-end gap-3">
                 {% csrf_token %}

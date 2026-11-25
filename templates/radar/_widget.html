@@ -1,13 +1,8 @@
 {% load i18n %}
-{% comment %}Radar on every connected page: a button bottom right; its modal (a native <dialog>, like the
-checklist's) is loaded into #radar-modal at the click. The button is read on load and again after
-every request that changes something (htmx), so its notification follows each step. On a date's
-pages (`gig` in the context) it looks at that date. When the page has the checklist button, Radar
-sits on its left (see css/source.css).{% endcomment %}
-<style>
-  /* Written here, not in the compiled CSS: it must win over `right-4` and never wait for a build. */
-  body:has(#checklist-button) #radar-button { right: 4.75rem !important; }
-</style>
+{% comment %}Radar on every connected page: a button bottom right; its modal (a native <dialog>) is loaded
+into #radar-modal at the click. The button is read on load and again after every request that
+changes something (htmx), so its notification follows each step. On a date's pages (`gig` in the
+context) it looks at that date.{% endcomment %}
 <div class="print:hidden">
   <div id="radar-button" class="fixed bottom-4 right-4 z-40"
        hx-get="{% url 'radar:button' %}{% if gig.pk %}?gig={{ gig.pk }}{% endif %}"
