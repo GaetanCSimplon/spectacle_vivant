@@ -348,7 +348,7 @@ def test_the_page_is_in_three_blocks_with_their_chips(client, tenant):
     [
         ("contract", "gig-event_name", "block-budget"),
         ("budget", "gig-deposit_term", "block-roadmap"),
-        ("roadmap", "gig-get_in_time", None),
+        ("roadmap", "gig-crew_headcount", None),
     ],
 )
 def test_each_field_sits_in_its_block(client, tenant, block, field, other):

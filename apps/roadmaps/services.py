@@ -2,7 +2,7 @@ import datetime
 import secrets
 from dataclasses import dataclass
 
-from django.db.models import F
+from django.db.models import F, Q
 from django.urls import reverse
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
@@ -13,6 +13,13 @@ from apps.gigs.models import GigMember
 from apps.tenants.models import Person
 
 from .models import Roadmap, RoadmapSlot, tel_link
+
+# The times of a gig (read by the contract, Radar and the calendar) and the slots that give them.
+SLOT_KINDS = {
+    "get_in_time": RoadmapSlot.Kind.ARRIVAL,
+    "soundcheck_time": RoadmapSlot.Kind.SOUNDCHECK,
+    "performance_time": RoadmapSlot.Kind.PERFORMANCE,
+}
 
 
 class AlreadyOnTheGig(Exception):
@@ -70,6 +77,36 @@ def get_or_create_roadmap(gig):
             if time is not None
         )
     return roadmap
+
+
+def concert_day_kinds(gig, item):
+    """The slot kind of `item` if it is a slot of the day of the concert, else nothing."""
+    if isinstance(item, RoadmapSlot) and item.day in (None, gig.date):
+        return {item.kind}
+    return set()
+
+
+def sync_gig_times(gig, kinds):
+    """Copy the times of these kinds of slot onto the gig: the earliest slot of the concert day.
+
+    No slot left of a kind: the time is emptied. Only pass the kinds a change touched, so that a
+    time without any slot is never lost.
+    """
+    changed = []
+    for field, kind in SLOT_KINDS.items():
+        if kind not in kinds:
+            continue
+        slot = (
+            RoadmapSlot.objects.filter(
+                Q(day=None) | Q(day=gig.date), tenant=gig.tenant, roadmap__gig=gig, kind=kind
+            )
+            .order_by("time")
+            .first()
+        )
+        setattr(gig, field, slot.time if slot else None)
+        changed.append(field)
+    if changed:
+        gig.save(update_fields=changed)
 
 
 def bump_version(roadmap):

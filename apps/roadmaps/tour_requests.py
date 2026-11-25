@@ -17,7 +17,7 @@ from apps.addressbook.models import Contact
 from apps.gigs.models import Gig
 
 from .models import Lodging, Meal, Roadmap, RoadmapRequest, RoadmapSlot
-from .services import bump_version, get_or_create_roadmap
+from .services import SLOT_KINDS, bump_version, get_or_create_roadmap
 
 REQUEST_DAYS = 7
 
@@ -61,11 +61,6 @@ TIME_KEYS = {
     "lodging_arrival_time",
 }
 ALL_KEYS = {key for _label, keys in GROUPS.values() for key in keys}
-SLOT_KINDS = {
-    "get_in_time": RoadmapSlot.Kind.ARRIVAL,
-    "soundcheck_time": RoadmapSlot.Kind.SOUNDCHECK,
-    "performance_time": RoadmapSlot.Kind.PERFORMANCE,
-}
 
 
 class RequestClosed(Exception):

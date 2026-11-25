@@ -51,7 +51,7 @@ Appliquer les priorités P1 de l'audit UX/UI du 12/11/2026 et les maquettes 1 (M
   - Tests : « Infos de paie complètes » incomplète tant que adresse ou date de naissance manquent ; anciennes URL de la checklist toujours répondues.
   - Documents à relire : maquette 4 ; audit I6 ; apps/radar (liens vers la checklist).
   - Risques : liens et alertes Radar qui pointent vers la checklist.
-- [ ] PR 7 — Compléter le contrat sans ressaisie (UX-05, UX-06)
+- [x] PR 7 — Compléter le contrat sans ressaisie (UX-05, UX-06)
   - Objectif : horaires lus dans la feuille de route ; SIRET, APE et représentant lus dans la fiche de l'organisateur, en lecture avec un lien « modifier ». Enregistrement automatique avant « Envoyer un formulaire à l'organisateur ».
   - Fichiers : GigCompletionForm et sa page (apps/documents).
   - Tests : valeurs non saisissables ; PDF du contrat inchangé pour les mêmes données ; enregistrement avant envoi ; isolation.
@@ -72,6 +72,7 @@ Appliquer les priorités P1 de l'audit UX/UI du 12/11/2026 et les maquettes 1 (M
 - 2026-11-24 — PR 4 : 9 cases automatiques (`automatic_items`) ; « Devis envoyé » = devis émis (l'app ne trace pas l'envoi). L'automatique l'emporte sur l'ancienne coche manuelle (ignorée, gardée en base). L'export des checklists utilise le même calcul.
 - 2026-11-25 — PR 5 : cases dans les volets C (devis, contrat, fiche technique, rider) et B (factures d'acompte et de solde) via `VOLET_ITEMS` ; la modale de la fiche (`?restantes=1`) ne liste que les autres, sans « Réinitialiser ». Les compteurs des volets restent ceux de l'avancement (Mes dates). Prix et échéances restent dans « La date ». Le bloc de droite garde le titre « Suivi de la date ».
 - 2026-11-25 — PR 6 : « Infos de paie complètes » suit la règle de Bòrd › Social (`missing_items`), pas seulement l'adresse et la date de naissance. Cases de clôture dans la carte « La date ». « Réinitialiser » supprimé avec la modale. L'ancienne adresse `/checklist/` mène à la fiche date. La case « Feuille de route envoyée » n'est plus affichée (dite par « Feuille de route partagée »), elle reste dans l'export.
+- 2026-11-25 — PR 7 : les créneaux du jour du concert donnent les horaires de la date (le plus tôt gagne ; supprimer le dernier vide l'heure) ; migration `roadmaps/0010` pour les dates existantes, le créneau l'emporte. N° de TVA et licence restent saisissables. Les boutons qui quittent « Compléter le contrat » enregistrent d'abord la page.
 
 ## Points en suspens
 - Contrôle visuel dans Chromium à 1440 px des libellés longs « Reste réel (TTC encaissé − dépensé) » (PR 1, à faire à la main).
@@ -87,6 +88,11 @@ Appliquer les priorités P1 de l'audit UX/UI du 12/11/2026 et les maquettes 1 (M
 - PR 6 : les cases de clôture laissent un espace large avant « Autres actions » (carte « La date »).
 - PR 6 : non repris de la maquette 4 : « Envoyer le formulaire à… », « Copier le lien », « Ajouter un créneau », « Demander la régie » dans les volets.
 - PR 6 : le volet S affiche 0/2 ou 1/2 pour des dates, même passées, qui étaient complètes.
+- PR 7 : après « modifier » (fiche organisateur ou feuille de route), pas de retour automatique sur « Compléter le contrat ».
+- PR 7 : une réponse de régie appliquée écrit sur le premier créneau du type, même s'il est d'un autre jour (comportement antérieur).
+- PR 7 : changer la date d'un concert ne recalcule pas les horaires depuis les créneaux datés.
+- PR 7 : sur « Compléter le contrat », les valeurs en lecture sont serrées entre deux lignes.
+- PR 7 : avant la livraison, sauvegarder la base (migration `roadmaps/0010`, sans retour arrière).
 
 ## Journal
 - 2026-11-24 — Plan validé.
@@ -96,3 +102,4 @@ Appliquer les priorités P1 de l'audit UX/UI du 12/11/2026 et les maquettes 1 (M
 - 2026-11-24 — PR 4 terminée : checklist automatique.
 - 2026-11-25 — PR 5 terminée : volets C et B, bandeau « À faire maintenant », colonne de droite. 2963 tests verts.
 - 2026-11-25 — PR 6 terminée : volets S et R, modale de checklist supprimée. 2956 tests verts.
+- 2026-11-25 — PR 7 terminée : compléter le contrat sans ressaisie. 2967 tests verts. Dernière PR du découpage.

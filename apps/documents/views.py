@@ -387,6 +387,24 @@ class ContractCompleteView(TenantScopedMixin, View):
             for form in forms.values():
                 form.save()
         messages.success(request, _("Les informations ont bien été enregistrées."))
+        return self.redirect_after_save(request.POST.get("then"))
+
+    def redirect_after_save(self, then):
+        """The buttons that leave the page save it first. `then` only picks from this list."""
+        if then == "invite":
+            addressbook_services.create_invitation(
+                self.gig.promoter, self.request.user, gig=self.gig
+            )
+            messages.success(
+                self.request, _("Le lien est prêt : copiez-le et envoyez-le à l'organisateur.")
+            )
+            return redirect("documents:contract-complete", gig_id=self.gig.pk)
+        if then == "promoter":
+            return redirect("addressbook:promoter-update", pk=self.gig.promoter.pk)
+        if then == "answer":
+            return redirect("addressbook:promoter-answer", pk=self.gig.promoter.pk)
+        if then == "roadmap":
+            return redirect("roadmaps:editor", gig_id=self.gig.pk)
         return redirect("gigs:detail", pk=self.gig.pk)
 
 
