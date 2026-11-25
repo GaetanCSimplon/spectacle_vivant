@@ -7,6 +7,7 @@ import pytest
 from django.template.loader import render_to_string
 from django.urls import reverse
 
+from apps.addressbook.models import PromoterInvitation
 from apps.gigs.factories import GigFactory
 from apps.gigs.models import Gig
 from apps.tenants.factories import MembershipFactory
@@ -30,9 +31,6 @@ def _login(client, role="owner"):
 
 def _payload(**overrides):
     data = {
-        "gig-get_in_time": "15:30",
-        "gig-soundcheck_time": "17:00",
-        "gig-performance_time": "21:15",
         "gig-crew_headcount": "6",
         "gig-invitations_count": "4",
         "gig-signing_place": "Lyon",
@@ -42,10 +40,7 @@ def _payload(**overrides):
         "show-sacem_number": "SAC-1",
         "show-sacem_object_number": "22-3-P-513447-57",
         "venue-capacity": "300",
-        "promoter-siret": "98765432100011",
         "promoter-licence_number": "L-1",
-        "promoter-representative_name": "Marc Durand",
-        "promoter-representative_role": "Maire",
         "contract-signatory_name": "Léa Roux",
         "contract-signatory_role": "Trésorière",
     }
@@ -97,9 +92,6 @@ def test_saving_updates_every_related_object(client):
     gig.show.refresh_from_db()
     gig.venue.refresh_from_db()
     gig.promoter.refresh_from_db()
-    assert gig.get_in_time == datetime.time(15, 30)
-    assert gig.soundcheck_time == datetime.time(17, 0)
-    assert gig.performance_time == datetime.time(21, 15)
     assert gig.crew_headcount == 6
     assert gig.invitations_count == 4
     assert gig.signing_place == "Lyon"
@@ -109,7 +101,6 @@ def test_saving_updates_every_related_object(client):
     assert gig.show.sacem_object_number == "22-3-P-513447-57"
     assert gig.venue.capacity == 300
     assert gig.promoter.licence_number == "L-1"
-    assert gig.promoter.representative_name == "Marc Durand"
 
 
 def test_saving_creates_a_draft_contract_with_the_signatory(client):
@@ -170,14 +161,13 @@ def test_empty_optional_fields_are_accepted(client):
     assert response.status_code == 302
     gig.refresh_from_db()
     assert gig.invitations_count == 0
-    assert gig.get_in_time is None
     assert gig.crew_headcount is None
 
 
 def test_invalid_values_save_nothing_and_show_errors(client):
     tenant = _login(client)
     gig = GigFactory(tenant=tenant)
-    data = _payload(**{"gig-crew_headcount": "-3", "gig-get_in_time": "pas une heure"})
+    data = _payload(**{"gig-crew_headcount": "-3", "gig-invitations_count": "pas un nombre"})
 
     response = client.post(_url(gig), data)
 
@@ -254,7 +244,7 @@ def test_a_signed_contract_can_no_longer_be_edited(client):
 
 def test_completed_values_end_up_in_the_contract(client):
     tenant = _login(client)
-    gig = GigFactory(tenant=tenant)
+    gig = GigFactory(tenant=tenant, get_in_time=datetime.time(15, 30))
 
     client.post(_url(gig), _payload())
 
@@ -408,9 +398,83 @@ def test_the_page_offers_to_send_the_form_to_the_organiser(client):
 
     page = client.get(_url(gig)).content.decode()
 
+    assert 'name="then" value="invite"' in page
     assert "Envoyer un formulaire à l'organisateur" in page
-    assert f'action="{_invite_url(gig)}"' in page
-    assert f'name="gig" value="{gig.pk}"' in page
+
+
+def test_sending_the_form_saves_the_page_first(client):
+    tenant = _login(client)
+    gig = GigFactory(tenant=tenant, status="option")
+
+    response = client.post(_url(gig), _payload(then="invite"))
+
+    assert response.url == _url(gig)
+    gig.refresh_from_db()
+    assert gig.signing_place == "Lyon"
+    assert PromoterInvitation.objects.get(promoter=gig.promoter).gig == gig
+    assert "Un lien est actif jusqu'au" in client.get(response.url).content.decode()
+
+
+def test_an_invalid_page_creates_no_link(client):
+    tenant = _login(client)
+    gig = GigFactory(tenant=tenant, status="option")
+
+    response = client.post(_url(gig), _payload(then="invite", **{"gig-crew_headcount": "-1"}))
+
+    assert response.status_code == 200
+    assert not PromoterInvitation.objects.exists()
+
+
+@pytest.mark.parametrize(
+    ("then", "name", "key"),
+    [
+        ("promoter", "addressbook:promoter-update", "promoter"),
+        ("answer", "addressbook:promoter-answer", "promoter"),
+        ("roadmap", "roadmaps:editor", "gig"),
+        ("https://example.org", "gigs:detail", "gig"),
+    ],
+)
+def test_leaving_the_page_saves_it_and_only_goes_to_known_places(client, then, name, key):
+    tenant = _login(client)
+    gig = GigFactory(tenant=tenant)
+
+    response = client.post(_url(gig), _payload(then=then))
+
+    assert response.url == reverse(name, args=[gig.promoter.pk if key == "promoter" else gig.pk])
+    gig.refresh_from_db()
+    assert gig.signing_place == "Lyon"
+
+
+def test_times_and_organiser_identity_are_shown_but_cannot_be_typed_here(client):
+    tenant = _login(client)
+    gig = GigFactory(tenant=tenant, performance_time=datetime.time(21, 15))
+    gig.promoter.siret = "98765432100011"
+    gig.promoter.representative_name = "Marc Durand"
+    gig.promoter.save()
+
+    page = client.get(_url(gig)).content.decode()
+    client.post(
+        _url(gig),
+        _payload(
+            **{
+                "gig-performance_time": "10:00",
+                "promoter-siret": "1",
+                "promoter-code_ape": "9001Z",
+                "promoter-representative_name": "Autre",
+            }
+        ),
+    )
+
+    for shown in ("21:15", "98765432100011", "Marc Durand", "non renseigné"):
+        assert shown in page
+    for name in ("gig-get_in_time", "gig-performance_time", "promoter-siret", "promoter-code_ape"):
+        assert f'name="{name}"' not in page
+    gig.refresh_from_db()
+    gig.promoter.refresh_from_db()
+    assert gig.performance_time == datetime.time(21, 15)
+    assert gig.promoter.siret == "98765432100011"
+    assert gig.promoter.code_ape == ""
+    assert gig.promoter.representative_name == "Marc Durand"
 
 
 def test_sending_the_form_from_here_comes_back_here_and_shows_the_link(client):
@@ -440,7 +504,7 @@ def test_an_answered_form_is_offered_for_review_from_here(client):
     page = client.get(_url(gig)).content.decode()
 
     assert "L'organisateur a répondu le" in page
-    assert reverse("addressbook:promoter-answer", args=[gig.promoter.pk]) in page
+    assert 'name="then" value="answer"' in page
 
 
 def test_the_gig_of_another_organiser_or_structure_is_ignored(client):

@@ -20,6 +20,8 @@
 
   <form method="post" class="space-y-6">
     {% csrf_token %}
+    {# The Enter key presses the first submit button of a form: it must only save. #}
+    <button type="submit" class="sr-only" tabindex="-1" aria-hidden="true">{% translate "Enregistrer" %}</button>
 
     <div class="space-y-8" x-data="{ free: {{ forms.gig.is_free.value|yesno:'true,false' }}, setting: '{{ forms.gig.setting.value|default:'' }}' }">
 
@@ -49,20 +51,26 @@
 
     <fieldset class="space-y-3 rounded-md border border-gray-200 p-4">
       <legend class="px-1 text-sm font-semibold">{% translate "L'organisateur" %}</legend>
+      <dl class="form-grid text-sm">
+        <div><dt class="text-gray-600">{% translate "SIRET" %}</dt><dd>{{ gig.promoter.siret|default:_("non renseigné") }}</dd></div>
+        <div><dt class="text-gray-600">{% translate "Code APE" %}</dt><dd>{{ gig.promoter.code_ape|default:_("non renseigné") }}</dd></div>
+        <div><dt class="text-gray-600">{% translate "Représentant" %}</dt><dd>{{ gig.promoter.representative_name|default:_("non renseigné") }}</dd></div>
+        <div><dt class="text-gray-600">{% translate "Qualité du représentant" %}</dt><dd>{{ gig.promoter.representative_role|default:_("non renseigné") }}</dd></div>
+      </dl>
+      <button type="submit" name="then" value="promoter" class="text-sm text-blue-700 underline">{% translate "Modifier la fiche de l'organisateur" %}</button>
       <div class="form-grid">{{ forms.promoter.as_p }}</div>
-      {# The organiser can fill these in themselves: the link is made by a separate form (below), a form cannot sit inside this one. #}
+      {# The organiser can fill these in themselves. #}
       <div id="formulaire-organisateur" class="space-y-2 border-t border-page-line pt-3 text-sm">
         {% if invitation and invitation.status == 'answered' %}
           <p class="font-medium text-blue-900">{% blocktranslate with date=invitation.completed_at|date:"d/m/Y" %}L'organisateur a répondu le {{ date }}.{% endblocktranslate %}</p>
-          <a href="{% url 'addressbook:promoter-answer' gig.promoter.pk %}" class="btn btn-secondary">{% translate "Vérifier les informations reçues" %}</a>
-          <p class="text-gray-600">{% translate "Enregistrez d'abord vos modifications de cette page : l'aller-retour ne les garde pas." %}</p>
+          <button type="submit" name="then" value="answer" class="btn btn-secondary">{% translate "Vérifier les informations reçues" %}</button>
         {% elif invitation and invitation.status == 'active' %}
           <p>{% blocktranslate with date=invitation.expires_at|date:"d/m/Y" %}Un lien est actif jusqu'au {{ date }}. Envoyez-le à l'organisateur : il remplira ses informations sans compte, une seule fois, et vous vérifierez avant de les enregistrer.{% endblocktranslate %}</p>
           {% include "components/_mail_actions.html" %}
         {% else %}
           <p>{% translate "Plutôt que de tout saisir vous-même, envoyez un lien à l'organisateur : il remplit ses informations (SIRET, adresse, représentant…) et vous vérifiez avant de les enregistrer." %}</p>
-          <button type="submit" form="promoter-invite-form" class="btn btn-secondary">{% translate "Envoyer un formulaire à l'organisateur" %}</button>
-          <p class="text-gray-600">{% translate "Enregistrez d'abord vos modifications de cette page : l'envoi les quitte sans les garder." %}</p>
+          <button type="submit" name="then" value="invite" class="btn btn-secondary">{% translate "Envoyer un formulaire à l'organisateur" %}</button>
+          <p class="text-gray-600">{% translate "Vos modifications de cette page sont enregistrées avant." %}</p>
         {% endif %}
       </div>
     </fieldset>
@@ -90,6 +98,12 @@
       <h2 id="block-roadmap" class="flex items-center gap-2 text-base font-semibold">{% include "components/_volet_chip.html" with volet="regie" %}{% translate "La feuille de route" %}</h2>
       <fieldset class="space-y-3 rounded-md border border-gray-200 p-4">
         <legend class="px-1 text-sm font-semibold">{% translate "Horaires et accueil sur place" %}</legend>
+        <dl class="form-grid text-sm">
+          <div><dt class="text-gray-600">{% translate "Arrivée (get in)" %}</dt><dd>{{ gig.get_in_time|time:"H:i"|default:_("non renseigné") }}</dd></div>
+          <div><dt class="text-gray-600">{% translate "Balances" %}</dt><dd>{{ gig.soundcheck_time|time:"H:i"|default:_("non renseigné") }}</dd></div>
+          <div><dt class="text-gray-600">{% translate "Concert" %}</dt><dd>{{ gig.performance_time|time:"H:i"|default:_("non renseigné") }}</dd></div>
+        </dl>
+        <button type="submit" name="then" value="roadmap" class="text-sm text-blue-700 underline">{% translate "Modifier les horaires dans la feuille de route" %}</button>
         <div class="form-grid">{% for field in forms.gig.roadmap_fields %}{% include "components/_field_p.html" %}{% endfor %}</div>
       </fieldset>
     </section>
@@ -103,12 +117,6 @@
         {% translate "Annuler" %}
       </a>
     </div>
-  </form>
-
-  {# Linked to the button of the organiser block by its id; `gig` brings the user back here. #}
-  <form id="promoter-invite-form" method="post" action="{% url 'addressbook:promoter-invite' gig.promoter.pk %}">
-    {% csrf_token %}
-    <input type="hidden" name="gig" value="{{ gig.pk }}">
   </form>
 
   {% include "components/_legal_notice.html" %}

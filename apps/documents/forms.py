@@ -18,21 +18,12 @@ from . import library
 from .invoicing import MAX_DUE_DAYS
 from .models import KIND_UNITS, Contract, LineKind, LineUnit, Quote
 
-TIME_FORMAT = "%H:%M"
-
-
-def _time_widget():
-    return forms.TimeInput(attrs={"type": "time"}, format=TIME_FORMAT)
-
 
 class GigCompletionForm(PaymentTermsMixin, forms.ModelForm):
     class Meta:
         model = Gig
         fields = [
             "option_expires_on",
-            "get_in_time",
-            "soundcheck_time",
-            "performance_time",
             "crew_headcount",
             "invitations_count",
             "signing_place",
@@ -86,9 +77,6 @@ class GigCompletionForm(PaymentTermsMixin, forms.ModelForm):
             "billing_notes": forms.Textarea(attrs={"rows": 2}),
             "setting": forms.Select(attrs={"x-model": "setting"}),
             **PaymentTermsMixin.term_widgets(),
-            "get_in_time": _time_widget(),
-            "soundcheck_time": _time_widget(),
-            "performance_time": _time_widget(),
             "is_free": forms.CheckboxInput(attrs={"x-model": "free"}),
             "ticket_price": forms.NumberInput(attrs={":disabled": "free", "step": "0.01"}),
         }
@@ -154,9 +142,6 @@ class GigCompletionForm(PaymentTermsMixin, forms.ModelForm):
         "transport_notes",
     )
     ROADMAP_FIELDS = (
-        "get_in_time",
-        "soundcheck_time",
-        "performance_time",
         "crew_headcount",
         "local_transport",
         "other_hospitality",
@@ -275,16 +260,12 @@ class VenueCompletionForm(forms.ModelForm):
 
 
 class PromoterCompletionForm(PromoterIdentifiersMixin, forms.ModelForm):
+    # SIRET, APE and representative are shown on the page and edited on the organiser's card.
+    code_ape = None
+
     class Meta:
         model = Promoter
-        fields = [
-            "siret",
-            "code_ape",
-            "vat_number",
-            "licence_number",
-            "representative_name",
-            "representative_role",
-        ]
+        fields = ["vat_number", "licence_number"]
 
 
 class ContractCompletionForm(forms.ModelForm):

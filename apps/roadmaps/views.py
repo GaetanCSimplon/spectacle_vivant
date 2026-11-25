@@ -245,6 +245,7 @@ class ItemAddView(RoadmapMixin, View):
         item.tenant = request.tenant
         setattr(item, self.section.parent, self.parent_of(self.section))
         item.save()
+        services.sync_gig_times(self.gig, services.concert_day_kinds(self.gig, item))
         return self.done(_("L'élément est ajouté."))
 
 
@@ -280,10 +281,13 @@ class ItemEditView(RoadmapMixin, View):
     def post(self, request, gig_id, section, pk):
         self.load(gig_id, section)
         item = self.get_item(pk)
+        # Read before validation, which writes the new values onto the item.
+        kinds = services.concert_day_kinds(self.gig, item)
         form = self.section_form(self.section, request.POST, instance=item)
         if not form.is_valid():
             return self.render_body_or_page(forms={section: form}, editing=(section, item.pk))
         form.save()
+        services.sync_gig_times(self.gig, kinds | services.concert_day_kinds(self.gig, item))
         return self.done(_("L'élément est modifié."))
 
 
@@ -330,7 +334,10 @@ class ItemDeleteView(RoadmapMixin, View):
 
     def post(self, request, gig_id, section, pk):
         self.load(gig_id, section)
-        self.get_item(pk).delete()
+        item = self.get_item(pk)
+        kinds = services.concert_day_kinds(self.gig, item)
+        item.delete()
+        services.sync_gig_times(self.gig, kinds)
         return self.done(_("L'élément est supprimé."))
 
 
